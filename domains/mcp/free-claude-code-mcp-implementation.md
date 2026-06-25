@@ -23,9 +23,9 @@ class MessagesRequest(BaseModel):
     mcp_servers: list[dict[str, Any]] | None = None
 ```
 
-This field is accepted on ingress but **never serialized** to provider bodies when building native Anthropic Messages requests. It is a Claude Code SDK field that the proxy allows through for client compatibility.
+This field is accepted on ingress and **IS serialized** to provider bodies for all Anthropic-native providers via `_dump_request_fields` in `core/anthropic/native_messages_request.py`. The `_REQUEST_FIELDS` tuple lists `"mcp_servers"` as a recognized request field that gets dumped into native request bodies for providers such as OpenRouter, DeepSeek, Fireworks, Wafer, Kimi, Z.ai, and others.
 
-The `_REQUEST_FIELDS` tuple in `core/anthropic/native_messages_request.py` lists `"mcp_servers"` as a recognized request field that gets dumped into native request bodies for Anthropic-native providers (OpenRouter, DeepSeek, Fireworks, Wafer, Kimi, Z.ai, etc.).
+However, some providers **reject** `mcp_servers` at the pre-flight stage (see DeepSeek below), so the proxy cannot blindly forward it to every Anthropic-native provider.
 
 ## MCP Server Rejection on DeepSeek
 

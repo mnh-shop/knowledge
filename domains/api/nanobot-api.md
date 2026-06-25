@@ -95,8 +95,7 @@ The API section in the config file:
   "api": {
     "host": "127.0.0.1",
     "port": 8900,
-    "timeout": 120,
-    "model": "nanobot"
+    "timeout": 120
   }
 }
 ```
@@ -115,7 +114,7 @@ The API is started via `nanobot serve` (defined in `nanobot/cli/commands.py`):
 
 | Test File | Covers |
 |-----------|--------|
-| `tests/api/test_api_server.py` | API endpoint behavior, request parsing, error handling |
+| `tests/test_openai_api.py` | API endpoint behavior, request parsing, error handling |
 | `tests/utils/test_restart.py` | API server restart functionality |
 
 ## Key Files Reference

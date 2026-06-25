@@ -90,7 +90,7 @@ This registered an MCP server endpoint with the AgentField control plane, making
 
 ### ARD (Agent Resource Discovery) -- `application/mcp-server+json`
 
-The ARD system retains `application/mcp-server+json` as an `ArtifactType` for catalog entries. MCP servers can still be registered and discovered as **external resources** through the ARD catalog, but AgentField no longer has a first-party MCP client or protocol adapter.
+The `application/mcp-server+json` media type appears as an `ArtifactType` in ARD **test code only** (`type_test.go`, `execute_test.go`), not in production. Production ARD uses `application/json` for external entries. MCP servers can still be registered and discovered as **external resources** through the ARD catalog, but AgentField no longer has a first-party MCP client or protocol adapter.
 
 ARD external invocation (`callExternalARD` in `execute.go`) can forward HTTP requests to external bindings, providing a path for limited MCP interaction via the ARD layer without native MCP support.
 
@@ -101,6 +101,10 @@ Two test scripts survive in `control-plane/scripts/`:
 - `test-mcp-endpoints.sh` -- Comprehensive MCP endpoint test suite (7 tests covering status, health, tools, restart, error cases, SSE events)
 
 These scripts reference endpoints that no longer exist in the current codebase.
+
+### Web Client Type Stubs
+
+The web client (`web/client/src/types/mcp.ts`) retains **17 MCP type stubs** (`MCPToolInfo`, `MCPServerInfo`, `MCPServerHealth`, `MCSServerStatus`, etc.) with a TODO comment: "Remove these once we switch to MCP entirely." These stubs are stale but remain referenced by two surviving API service functions (`mcpApi.getServerHealth`, `mcpApi.listServers`) and the `useMCPHealthSSE` hook. No Web UI components (`MCPServerList`, etc.) render from these stubs.
 
 ### MCP in Docs References
 

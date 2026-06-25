@@ -23,8 +23,9 @@ Represents an authenticated connection to an LLM provider API:
 
 ```rust
 pub struct Endpoint {
-    base_url: String,   // e.g. https://api.openai.com
-    api_key: String,    // Provider API key
+    provider: ProviderKind, // Provider kind (OpenAi, Anthropic, Google)
+    base_url: String,       // e.g. https://api.openai.com
+    api_key: String,        // Provider API key
 }
 ```
 
@@ -32,7 +33,7 @@ Construction:
 ```rust
 Endpoint::from_env(provider: ProviderKind) -> Result<Self>
 ```
-- Reads API key from environment: `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `GOOGLE_API_KEY`
+- Reads API key from environment: `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `GEMINI_API_KEY`
 - Reads base URL from environment or uses provider default
 - OpenAI default: `https://api.openai.com`
 - Anthropic default: `https://api.anthropic.com`
@@ -66,13 +67,13 @@ pub fn send(&self, request_json: &str, proxy_url: Option<&str>) -> Result<String
 pub fn forward_post(url, headers, body, proxy_url) -> Result<Upstream>
 
 // Streaming GET forwarder for reverse proxy
-pub fn forward_get(url, proxy_url) -> Result<Upstream>
+pub fn forward_get(url, headers, proxy_url) -> Result<Upstream>
 ```
 
 Key behavior of `send()`:
 - Suppresses ambient `HTTPS_PROXY` by default (looping back through daemon)
 - Uses explicit upstream proxy when provided
-- 30-second global timeout (`UPSTREAM_TIMEOUT`)
+- 600-second (10-minute) global timeout (`UPSTREAM_TIMEOUT`)
 - Uses `ureq` HTTP library (blocking)
 
 ### Upstream Struct (Streaming)
@@ -207,11 +208,8 @@ impl HttpHandler for Interceptor {
 
 ```rust
 struct BreakdownPayload {
-    blocks: Vec<BreakdownBlock>,  // Per-message token attribution
-    window,                        // Context window for the model
-    fresh, cache_read, cache_write, output,  // Token counts
-    cost_usd,                      // Calculated cost
-    // Plus agent/project metadata
+    turn: BreakdownTurn,           // Identity + frozen pricing + usage
+    blocks: Vec<BreakdownBlock>,   // Per-source attribution blocks
 }
 ```
 
@@ -225,7 +223,6 @@ Each `BreakdownBlock` tracks:
 - `role`: message role
 - `msg_index`: message index in conversation
 - `tokens`, `fresh_tok`, `cache_read_tok`, `cache_write_tok`
-- `cost_usd`, `input_cost`, `output_cost`
 
 Pricing rates are model-aware:
 - Claude, Opus, Sonnet models use larger context windows
@@ -239,7 +236,7 @@ pub fn ca_cert_path() -> Result<PathBuf>             // Path to CA cert file
 ```
 - Generates local CA certificate for HTTPS interception
 - The proxy generates per-host certificates signed by this CA
-- `llmtrim setup` command exposes certificate installation steps
+- `llmtrim setup` command runs full one-command bootstrap (CA, env, autostart, daemon)
 
 ### Staged Compression Pipeline
 
@@ -268,8 +265,8 @@ After each request, the interceptor records a `Record` containing:
 - `input_before`, `input_after` token counts
 - `output_before`, `output_after` token counts
 - `cache_read_tokens`, `cache_write_tokens`
+- `fresh_input_tokens` (uncached tokens billed at full rate)
 - `frozen_input_tokens` (prompt cache breakpoint)
-- `stages` list of applied stages
 - `output_shaped` flag
 - `compress_micros` timing
 
@@ -287,14 +284,20 @@ Source: `crates/llmtrim-cli/src/main.rs`
 llmtrim <COMMAND> [ARGS]
 
 Commands:
-  compress   Read provider request JSON from stdin, compress it, forward to provider
-  serve      Start the HTTPS reverse proxy daemon
-  wrap       Launch an agent under the compression proxy
-  mcp        MCP protocol subcommands (run, install)
-  status     Show daemon status and usage statistics
+  compress   Read provider request JSON from stdin, compress it, write to stdout
+  send       Compress stdin and forward to the provider, print the response
+  serve      Start the HTTPS reverse proxy daemon (foreground)
+  start      Start the background interceptor daemon (no-op if running)
   stop       Stop the running daemon
+  setup      Full one-command bootstrap: CA, environment, autostart, daemon
+  uninstall  Undo everything setup did (daemon, autostart, env, CA, binary)
+  wrap       Launch an agent with compression proxy enforced
+  mcp        MCP protocol subcommands (run, install)
+  ca         Print the local CA certificate path and trust instructions
+  status     Show daemon status and usage statistics (aliases: monitor, gain)
   doctor     Run diagnostics and print report
-  setup      Generate and print CA certificate setup instructions
+  eval       Measure retrieval recall + token savings on a corpus
+  discover   Scan the capture corpus for where tokens still escape compression
   autostart  Enable/disable daemon auto-start
   bench      Run benchmarks (quality, suite, agent, latency, compare)
   update     Self-update
@@ -303,14 +306,14 @@ Commands:
 ### Compress Command
 
 ```
-llmtrim compress [--provider <provider>] [--model <model>]
+llmtrim compress [--provider <provider>]
 ```
 
 - Reads a provider request JSON body from stdin
 - Optionally parses `--provider` (openai|anthropic|google)
 - Compresses using `llmtrim_core::compress()`
-- Writes compressed request JSON to stdout
-- Optionally forwards to provider API and prints response
+- Writes compressed request JSON to stdout only
+- Forwarding to the provider is the separate `send` command
 
 ### Serve Command
 
@@ -330,7 +333,7 @@ llmtrim wrap <agent> [-- <agent_args>...]
 ```
 Source: `crates/llmtrim-cli/src/wrap.rs`
 
-Supported agents: `claude`, `aider`, `goose`, `mcp-cli` (and any other binary)
+Supported agents: `claude`, `codex`, `cursor`, `aider`, `copilot`, `gemini` (and any other binary on PATH)
 
 Behavior:
 - Checks daemon is running, starts if needed
@@ -371,16 +374,16 @@ pub fn route(req: &Request, provider: &dyn Provider) -> &'static str
 ```rust
 pub struct CompressResult {
     pub request_json: String,        // Compressed request body
+    pub plan: Vec<PlanEntry>,        // Rehydration plan entries
     pub provider: ProviderKind,      // Detected provider
-    pub model: String,               // Target model
+    pub model: Option<String>,       // Target model (None when undetected)
+    pub tokenizer_label: String,     // Tokenizer used for counting
+    pub tokenizer_exact: bool,       // Exact or estimated tokenizer
     pub input_tokens_before: Tokens, // Token count before compression
     pub input_tokens_after: Tokens,  // Token count after compression
     pub frozen_input_tokens: Tokens, // Frozen prefix tokens (cache)
     pub output_shaped: bool,         // Output shaping was applied
-    pub tokenizer_label: String,     // Tokenizer used for counting
-    pub tokenizer_exact: bool,       // Exact or estimated tokenizer
-    pub stages: Vec<String>,         // Names of stages that applied
-    pub report: Vec<StageReport>,    // Per-stage details
+    pub stages: Vec<StageReport>,    // Per-stage details and timing
 }
 ```
 

@@ -53,15 +53,15 @@ All endpoints served under the Setup UI route and protected by session password 
 | Endpoint (inferred from `api.js`) | Method | Description |
 |---|---|---|
 | `/api/status` | GET | Gateway status, channel health, feature health, version info |
-| `/api/restart-gateway` | POST | Restart the OpenClaw gateway |
+| `/api/gateway/restart` | POST | Restart the OpenClaw gateway |
 | `/api/restart-status` | GET | Check gateway restart progress |
-| `/api/dismiss-restart-status` | POST | Clear restart notification |
+| `/api/restart-status/dismiss` | POST | Clear restart notification |
 
 ### Environment Variables
 | Endpoint | Method | Description |
 |---|---|---|
-| `/api/envars` | GET | List environment variables |
-| `/api/envars` | POST | Save environment variables to `/data/.env` |
+| `/api/env` | GET | List environment variables |
+| `/api/env` | PUT | Save environment variables to `/data/.env` |
 
 ### Channel Pairings
 | Endpoint | Method | Description |
@@ -76,7 +76,7 @@ All endpoints served under the Setup UI route and protected by session password 
 | `/api/google/accounts` | GET | List connected Google accounts |
 | `/api/google/status` | GET | Google OAuth integration status |
 | `/api/google/credentials` | GET/POST | Google OAuth client credentials |
-| `/api/google/apis/check` | GET | Check enabled Google APIs |
+| `/api/google/check` | GET | Check enabled Google APIs |
 | `/api/google/accounts/save` | POST | Save Google account config |
 | `/api/google/disconnect` | POST | Disconnect Google account |
 | `/api/gmail/config` | GET/POST | Gmail watch configuration |
@@ -87,8 +87,8 @@ All endpoints served under the Setup UI route and protected by session password 
 ### Agent Management
 | Endpoint | Method | Description |
 |---|---|---|
-| `/api/agents/sessions` | GET | List agent sessions |
-| `/api/agents/send` | POST | Send a message to an agent session |
+| `/api/agent/sessions` | GET | List agent sessions |
+| `/api/agent/message` | POST | Send a message to an agent session |
 | `/api/agents` | CRUD | Agent lifecycle (create, read, update, delete) |
 
 ### Usage & Sessions
@@ -96,7 +96,7 @@ All endpoints served under the Setup UI route and protected by session password 
 |---|---|---|
 | `/api/usage/summary?days=N` | GET | Token/cost summary |
 | `/api/usage/sessions?limit=N` | GET | Session list |
-| `/api/usage/session/:id` | GET | Session detail |
+| `/api/usage/sessions/:id` | GET | Session detail |
 | `/api/usage/session/:id/timeseries` | GET | Session time-series data |
 
 ### Doctor
@@ -107,23 +107,23 @@ All endpoints served under the Setup UI route and protected by session password 
 | `/api/doctor/runs` | GET | List doctor runs |
 | `/api/doctor/runs/:id` | GET | Single doctor run detail |
 | `/api/doctor/runs/:id/cards` | GET | Doctor fix cards for a run |
-| `/api/doctor/cards/:id/status` | PATCH | Update card status |
-| `/api/doctor/cards/:id/fix` | POST | Send a fix prompt |
+| `/api/doctor/cards/:id/status` | POST | Update card status |
+| `/api/doctor/findings/:id/fix` | POST | Send a fix prompt |
 | `/api/doctor/import` | POST | Import raw doctor output |
 
 ### Webhooks
 | Endpoint | Method | Description |
 |---|---|---|
 | `/api/webhooks` | GET | List webhooks |
-| `/api/webhooks/:id` | GET | Webhook detail |
+| `/api/webhooks/:name` | GET | Webhook detail |
 | `/api/webhooks` | POST | Create webhook |
-| `/api/webhooks/:id` | DELETE | Delete webhook |
-| `/api/webhooks/:id/requests` | GET | Request history |
-| `/api/webhooks/:id/requests/:rid` | GET | Single request detail |
-| `/api/webhooks/:id/oauth-callback` | POST | Create OAuth callback |
-| `/api/webhooks/:id/oauth-callback` | GET | Get OAuth callback |
-| `/api/webhooks/:id/oauth-callback/rotate` | POST | Rotate OAuth callback token |
-| `/api/webhooks/:id/oauth-callback` | DELETE | Delete OAuth callback |
+| `/api/webhooks/:name` | DELETE | Delete webhook |
+| `/api/webhooks/:name/requests` | GET | Request history |
+| `/api/webhooks/:name/requests/:rid` | GET | Single request detail |
+| `/api/webhooks/:name/oauth-callback` | POST | Create OAuth callback |
+| `/api/webhooks/:name/oauth-callback` | GET | Get OAuth callback |
+| `/api/webhooks/:name/oauth-callback/rotate` | POST | Rotate OAuth callback token |
+| `/api/webhooks/:name/oauth-callback` | DELETE | Delete OAuth callback |
 
 ### Cron Jobs
 | Endpoint | Method | Description |
@@ -158,18 +158,18 @@ All endpoints served under the Setup UI route and protected by session password 
 | Endpoint | Method | Description |
 |---|---|---|
 | `/api/sync-cron` | GET/PUT | Git sync cron schedule |
-| `/api/version` | GET | AlphaClaw version info |
-| `/api/version/release-notes` | GET | Fetch release notes |
-| `/api/version/update` | POST | Apply update |
+| `/api/alphaclaw/version` | GET | AlphaClaw version info |
+| `/api/alphaclaw/release-notes` | GET | Fetch release notes |
+| `/api/alphaclaw/update` | POST | Apply update |
 
 ### Feature Flags
 | Endpoint | Method | Description |
 |---|---|---|
-| `/api/features/openai-compat` | PUT | Enable/disable `/v1` proxy |
-| `/api/dashboard-url` | GET | OpenClaw dashboard URL |
+| `/api/alphaclaw/config/features/openai-compat-api` | PUT | Enable/disable `/v1` proxy |
+| `/api/gateway/dashboard` | GET | OpenClaw dashboard URL |
 | `/api/onboard/status` | GET | Onboarding progress |
-| `/api/onboard/run` | POST | Execute onboarding setup |
-| `/api/onboard/verify-github` | POST | Verify GitHub repo access |
+| `/api/onboard` | POST | Execute onboarding setup |
+| `/api/onboard/github/verify` | POST | Verify GitHub repo access |
 
 ### Nodes
 | Endpoint | Method | Description |
@@ -182,8 +182,8 @@ All endpoints served under the Setup UI route and protected by session password 
 | `/api/nodes/:id/browser-status` | GET | Browser attach status |
 | `/api/nodes/exec-config` | GET/PUT | Execution configuration |
 | `/api/nodes/exec-approvals` | GET | Pending exec approvals |
-| `/api/nodes/exec-allowlist` | POST | Add allowlist pattern |
-| `/api/nodes/exec-allowlist/:id` | DELETE | Remove allowlist pattern |
+| `/api/nodes/exec-approvals/allowlist` | POST | Add allowlist pattern |
+| `/api/nodes/exec-approvals/allowlist/:id` | DELETE | Remove allowlist pattern |
 
 ### Auth
 | Endpoint | Method | Description |

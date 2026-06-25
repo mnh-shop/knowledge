@@ -142,7 +142,7 @@ Generates a Claude Code MCP client config:
   "mcpServers": {
     "llmtrim": {
       "command": "llmtrim",
-      "args": ["mcp", "run"],
+      "args": ["mcp"],
       // additional transport config
     }
   }

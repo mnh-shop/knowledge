@@ -107,7 +107,7 @@ type serverState struct {
 ### Tool Registration
 
 #### Per-Agent Mode (`registerBridgeTools()`)
-- Wraps each MCP tool in a `BridgeTool` with MCP prefix (e.g. `server_name--tool_name`)
+- Wraps each MCP tool in a `BridgeTool` with MCP prefix (e.g. `server_name__tool_name`)
 - Applies allow/deny filtering upfront -- non-allowed tools never reach the registry
 - Registers in `tools.Registry` for LLM consumption
 - Configurable `ToolHints` (global prompt hint, per-tool hints)
@@ -120,7 +120,7 @@ type serverState struct {
 
 `BridgeTool` implements `tools.Tool`:
 - `Name()` -- Returns prefixed name
-- `Description()` -- Returns MCP tool description (truncated to `mcpToolDescMaxLen = 200`)
+- `Description()` -- Returns MCP tool description (truncated to 200 characters)
 - `Parameters()` -- JSON Schema from MCP tool input schema
 - `Execute(ctx, args)` -- Calls MCP server via `mcpgo.ToolCallRequest`, returns result
 
@@ -169,7 +169,7 @@ type PoolConfig struct {
 
 ```go
 type GrantChecker interface {
-    CheckAccess(ctx context.Context, agentID, serverID uuid.UUID) (bool, error)
+    IsAllowed(ctx context.Context, agentID, serverID uuid.UUID) (bool, error)
 }
 ```
 
@@ -195,7 +195,7 @@ func NewBridgeServer(reg *tools.Registry, version string, msgBus *bus.MessageBus
 
 ### BridgeToolNames
 
-The following GoClaw built-in tools are exposed as MCP tools (24 tools):
+The following GoClaw built-in tools are exposed as MCP tools (22 tools):
 
 | Tool | Tool |
 |------|------|
@@ -262,6 +262,7 @@ type MCPServerConfig struct {
     URL         string
     Headers     map[string]string
     TimeoutSec  int
+    ToolPrefix  string              // Namespace prefix for tools from this server
     Settings    json.RawMessage     // OAuth, tool_hints, require_user_credentials
 }
 ```
@@ -281,10 +282,10 @@ type ToolHints struct {
 
 - `cmd/gateway_http_wiring.go` -- HTTP handler wiring including MCP handler and MCP pool
 - `cmd/gateway_http_handlers.go` -- `wireHTTP()` creates `*httpapi.MCPHandler` with pool evictor and OAuth provider
-- `internal/http/mcp.go` -- MCP REST API handler (CRUD for servers, grants, OAuth, tools)
-- `internal/http/mcp_oauth.go` -- MCP OAuth token endpoints
+- `internal/http/mcp.go` -- MCP REST API handler (server CRUD, per-agent grant management, OAuth, tools)
+- `internal/http/mcp_oauth.go` -- `/v1/mcp/oauth/*` OAuth flow endpoints (start, callback, token revoke)
 - `internal/http/mcp_tools.go` -- MCP tool access listing
-- `internal/http/mcp_grants.go` -- MCP grant (agent permission) CRUD
+- `internal/http/mcp_grants.go` -- Per-agent grant CRUD with tool allow/deny lists
 - `internal/http/mcp_export.go` / `mcp_import.go` -- MCP server export/import
 - `internal/http/mcp_user_credentials.go` -- User credential management
 - `internal/http/chat_completions.go` -- Chat completions endpoint that routes to agents

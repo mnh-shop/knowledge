@@ -31,3 +31,7 @@ AlphaClaw manages agents indirectly by writing configuration consumed by the Ope
 - No ACP handshake or capability negotiation
 - No inter-agent routing or discovery
 - No agent-communication middleware or handlers
+
+## Partial ACP Reference in Codebase
+
+The constant `acpRuntime: 'acp_runtime'` exists at `lib/server/doctor/constants.js:19`. However, no ACP protocol implementation, handler, or integration was found anywhere else in the codebase -- this constant is not referenced by any other module and appears to be a forward-looking placeholder or naming convention rather than an active ACP feature.

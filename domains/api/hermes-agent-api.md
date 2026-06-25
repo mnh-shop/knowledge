@@ -28,7 +28,7 @@ All endpoints are served by `gateway/platforms/api_server.py` (class `APIServerA
 
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
-| `GET` | `/health` | No | Simple health check; returns `{"status": "ok"}` |
+| `GET` | `/health` | No | Simple health check; returns `{"status":"ok","platform":"hermes-agent","version":"<version>"}` |
 | `GET` | `/health/detailed` | No | Rich status: gateway state, connected platforms, PID, uptime |
 | `GET` | `/v1/health` | No | OpenAI-compatible health check alias |
 | `GET` | `/v1/models` | Yes | List available models (advertises the configured profile name or `hermes-agent`) |
@@ -44,54 +44,93 @@ All endpoints are served by `gateway/platforms/api_server.py` (class `APIServerA
   "platform": "hermes-agent",
   "model": "hermes-agent",
   "auth": { "type": "bearer", "required": true },
+  "runtime": {
+    "mode": "server_agent",
+    "tool_execution": "server",
+    "split_runtime": false,
+    "description": "The API server creates a server-side Hermes AIAgent; tools execute on the API-server host unless a future explicit split-runtime mode is enabled."
+  },
   "features": {
     "chat_completions": true,
+    "chat_completions_streaming": true,
     "responses_api": true,
+    "responses_streaming": true,
     "run_submission": true,
     "run_status": true,
     "run_events_sse": true,
     "run_stop": true,
-    "run_approval": true,
-    "session_crud": true,
-    "session_fork": true,
+    "run_approval_response": true,
+    "tool_progress_events": true,
+    "approval_events": true,
+    "session_resources": true,
     "session_chat": true,
-    "session_chat_stream": true,
-    "jobs_crud": true,
-    "skills_discovery": true,
-    "toolsets_discovery": true
+    "session_chat_streaming": true,
+    "session_fork": true,
+    "admin_config_rw": false,
+    "jobs_admin": false,
+    "memory_write_api": false,
+    "skills_api": true,
+    "audio_api": false,
+    "realtime_voice": false,
+    "session_continuity_header": "X-Hermes-Session-Id",
+    "session_key_header": "X-Hermes-Session-Key",
+    "cors": false
   },
   "endpoints": {
-    "skills": "/v1/skills",
-    "toolsets": "/v1/toolsets",
-    "sessions": "/api/sessions",
-    "jobs": "/api/jobs"
-  },
-  "session_key_header": "X-Hermes-Session-Key"
+    "health": { "method": "GET", "path": "/health" },
+    "health_detailed": { "method": "GET", "path": "/health/detailed" },
+    "models": { "method": "GET", "path": "/v1/models" },
+    "chat_completions": { "method": "POST", "path": "/v1/chat/completions" },
+    "responses": { "method": "POST", "path": "/v1/responses" },
+    "runs": { "method": "POST", "path": "/v1/runs" },
+    "run_status": { "method": "GET", "path": "/v1/runs/{run_id}" },
+    "run_events": { "method": "GET", "path": "/v1/runs/{run_id}/events" },
+    "run_approval": { "method": "POST", "path": "/v1/runs/{run_id}/approval" },
+    "run_stop": { "method": "POST", "path": "/v1/runs/{run_id}/stop" },
+    "skills": { "method": "GET", "path": "/v1/skills" },
+    "toolsets": { "method": "GET", "path": "/v1/toolsets" },
+    "sessions": { "method": "GET", "path": "/api/sessions" },
+    "session_create": { "method": "POST", "path": "/api/sessions" },
+    "session": { "method": "GET", "path": "/api/sessions/{session_id}" },
+    "session_update": { "method": "PATCH", "path": "/api/sessions/{session_id}" },
+    "session_delete": { "method": "DELETE", "path": "/api/sessions/{session_id}" },
+    "session_messages": { "method": "GET", "path": "/api/sessions/{session_id}/messages" },
+    "session_fork": { "method": "POST", "path": "/api/sessions/{session_id}/fork" },
+    "session_chat": { "method": "POST", "path": "/api/sessions/{session_id}/chat" },
+    "session_chat_stream": { "method": "POST", "path": "/api/sessions/{session_id}/chat/stream" }
+  }
 }
 ```
 
 **`GET /v1/skills` response:**
 
 ```json
-[
-  { "name": "github-pr-workflow", "description": "...", "category": "development" },
-  { "name": "web-research", "description": "...", "category": "research" }
-]
+{
+  "object": "list",
+  "data": [
+    { "name": "github-pr-workflow", "description": "...", "category": "development" },
+    { "name": "web-research", "description": "...", "category": "research" }
+  ]
+}
 ```
 
 **`GET /v1/toolsets` response:**
 
 ```json
-[
-  {
-    "name": "core",
-    "label": "Core Tools",
-    "description": "Essential file and terminal tools",
-    "enabled": true,
-    "configured": true,
-    "tools": ["read_file", "write_file", "terminal", "web_search"]
-  }
-]
+{
+  "object": "list",
+  "platform": "api_server",
+  "data": [
+    {
+      "name": "core",
+      "label": "Core Tools",
+      "description": "Essential file and terminal tools",
+      "enabled": true,
+      "configured": true,
+      "tools": ["read_file", "write_file", "terminal", "web_search"]
+    }
+  ]
+}
 ```
 
 ### 1.2 Chat Completions API
@@ -524,7 +563,7 @@ A lightweight reverse proxy for upstream API credentials (e.g., Nous Portal, xAI
 | Method | Path | Description |
 |--------|------|-------------|
 | `GET` | `/health` | Health check |
-| `*` | `/{tail:.*}` | Proxy upstream — passes all paths/methods to the configured upstream adapter |
+| `*` | `/v1/{tail:.*}` | Proxy upstream — passes all paths/methods to the configured upstream adapter |
 
 **Catch-all proxy behavior:** strips hop-by-hop headers, adds bearer auth from the upstream credential store, streams request/response body bidirectionally.
 
@@ -552,8 +591,9 @@ A lightweight reverse proxy for upstream API credentials (e.g., Nous Portal, xAI
   "source": "api_server",
   "model": "hermes-agent",
   "title": "Mobile chat",
-  "created_at": 1710000000,
-  "updated_at": 1710000100,
+  "started_at": 1710000000,
+  "ended_at": null,
+  "last_active": 1710000100,
   "end_reason": null,
   "message_count": 5,
   "input_tokens": 250,
@@ -583,22 +623,32 @@ A lightweight reverse proxy for upstream API credentials (e.g., Nous Portal, xAI
 
 All boolean flags in `/v1/capabilities.features`:
 
-| Feature | Description |
-|---------|-------------|
-| `chat_completions` | OpenAI Chat Completions endpoint |
-| `responses_api` | OpenAI Responses API endpoint |
-| `run_submission` | Runs API submission |
-| `run_status` | Run status polling |
-| `run_events_sse` | Run event SSE stream |
-| `run_stop` | Run cancellation |
-| `run_approval` | Run approval resolution |
-| `session_crud` | Session CRUD endpoints |
-| `session_fork` | Session fork/branch |
-| `session_chat` | Session synchronous chat |
-| `session_chat_stream` | Session SSE chat |
-| `jobs_crud` | Jobs API endpoints |
-| `skills_discovery` | Skills listing |
-| `toolsets_discovery` | Toolsets listing |
+| Feature | Type | Description |
+|---------|------|-------------|
+| `chat_completions` | bool | OpenAI Chat Completions endpoint |
+| `chat_completions_streaming` | bool | SSE streaming for Chat Completions |
+| `responses_api` | bool | OpenAI Responses API endpoint |
+| `responses_streaming` | bool | SSE streaming for Responses API |
+| `run_submission` | bool | Runs API submission |
+| `run_status` | bool | Run status polling |
+| `run_events_sse` | bool | Run event SSE stream |
+| `run_stop` | bool | Run cancellation |
+| `run_approval_response` | bool | Run approval resolution |
+| `tool_progress_events` | bool | Tool lifecycle SSE events |
+| `approval_events` | bool | Approval-related SSE events |
+| `session_resources` | bool | Session CRUD endpoints |
+| `session_chat` | bool | Session synchronous chat |
+| `session_chat_streaming` | bool | Session SSE chat |
+| `session_fork` | bool | Session fork/branch |
+| `admin_config_rw` | bool | Admin configuration (read/write) |
+| `jobs_admin` | bool | Jobs API endpoints |
+| `memory_write_api` | bool | Memory provider write API |
+| `skills_api` | bool | Skills listing |
+| `audio_api` | bool | Audio/whisper API |
+| `realtime_voice` | bool | Realtime voice API |
+| `session_continuity_header` | string | Header name for session continuity (`X-Hermes-Session-Id`) |
+| `session_key_header` | string | Header name for stable memory scope (`X-Hermes-Session-Key`) |
+| `cors` | bool | CORS is configured |
 
 ---
 

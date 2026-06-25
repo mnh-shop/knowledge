@@ -1,6 +1,6 @@
 ---
 name: goclaw-acp
-description: "GoClaw ACP agent communication protocol — subagent orchestration, agent teams, handoff"
+description: "GoClaw ACP agent communication protocol — external agent subprocess orchestration via JSON-RPC"
 tags: [acp, ai-llm, cli, documentation, mcp, orchestration, security]
 ---
 # GoClaw ACP (Agent Communication Protocol) Implementation
@@ -285,7 +285,7 @@ type ToolBridge struct {
     workspace      string                    // Sandboxed workspace path
     terminals      sync.Map                  // Active terminals
     denyPatterns   []*regexp.Regexp          // Shell deny patterns
-    permMode       string                    // "approve_all", "deny_all", "approve_reads"
+    permMode       string                    // "approve-all", "deny-all", "approve-reads"
     nextTermID     atomic.Int64
     maxOutputBytes int                       // 1MB default
 }
@@ -338,9 +338,9 @@ Only binaries in this allowlist can be spawned as terminals through the bridge.
 
 | Mode | Behavior |
 |------|----------|
-| `approve_all` | All tool requests auto-approved |
-| `deny_all` | All tool requests denied |
-| `approve_reads` | Read operations approved, write/terminal denied |
+| `approve-all` | All tool requests auto-approved |
+| `deny-all` | All tool requests denied |
+| `approve-reads` | Read operations approved, write/terminal denied |
 
 ---
 

@@ -74,7 +74,7 @@ type ServiceOptions struct {
 
 ## Handler Registration
 
-The APIServer registers handlers via gorilla/mux routers. Each domain has a `register*Handlers` method. 26 registration functions total.
+The APIServer registers handlers via gorilla/mux routers. Each domain has a `register*Handlers` method. 25 registration functions total.
 
 ### Full list of registered handler groups:
 
@@ -99,7 +99,7 @@ The APIServer registers handlers via gorilla/mux routers. Each domain has a `reg
 | Plugins | `register_plugins.go` | compat |
 | Pods | `register_pods.go` | libpod |
 | Quadlets | `register_quadlets.go` | libpod |
-| Secrets | `register_secret.go` | compat + libpod |
+| Secrets | `register_secrets.go` | compat + libpod |
 | Swagger | `register_swagger.go` | -- |
 | Swarm | `register_swarm.go` | compat (no-op) |
 | System | `register_system.go` | compat + libpod |
@@ -220,8 +220,8 @@ Systemd unit files in `contrib/systemd/system/`:
 ## Quadlet (systemd-native containers)
 
 Quadlet allows running containers as systemd services using `.container`, `.pod`, `.volume`, and `.network` unit files:
-- `pkg/quadlet/` -- Quadlet parser and converter
-- `cmd/podman/quadlet/` -- CLI for managing Quadlet files (list, print, rm)
+- `pkg/systemd/quadlet/` -- Quadlet parser and converter
+- `cmd/podman/quadlet/` -- CLI for managing Quadlet files (list, print, rm), including `quadlet.go` (main entry) and `install.go` (unit install/uninstall)
 - Converts container descriptions to systemd service files dynamically
 
 ## Swagger API Documentation
@@ -236,7 +236,7 @@ Quadlet allows running containers as systemd services using `.container`, `.pod`
 
 - `/Users/admin1/Documents/knowledge/raw/podman/podman.xml` -- full repomix source
 - `pkg/api/server/server.go` -- APIServer struct and main server loop
-- `pkg/api/server/register_*.go` -- handler registration (26 files)
+- `pkg/api/server/register_*.go` -- handler registration (25 files)
 - `pkg/api/server/handler_api.go` -- API wrapper middleware
 - `pkg/api/server/handler_logging.go` -- logging middleware
 - `pkg/api/server/handler_panic.go` -- panic recovery middleware

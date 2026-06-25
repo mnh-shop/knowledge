@@ -1,4 +1,4 @@
 repo_slug=n8n
 source_dir=/Users/admin1/Documents/knowledge/sources/n8n/
 codegraph_command=codegraph init
-generated_at=2026-06-24 14:23:34
+generated_at=2026-06-25 13:50:46

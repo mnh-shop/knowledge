@@ -26,7 +26,7 @@ Wraps a single MCP tool definition:
 - Constructor accepts `(session, server_name, tool_def, tool_timeout=30)`.
 - `name` read from `tool_def.name`, `description` from `tool_def.description`, `inputSchema` is translated into nanobot's parameter schema via `_normalize_schema_for_openai()`.
 - `execute(**kwargs)` calls `session.call_tool(tool_def.name, arguments=kwargs)` with `asyncio.wait_for(timeout=tool_timeout)`.
-- On transient errors (`_is_transient`), retries with a fresh session once.
+- On transient errors (`_is_transient`), retries once using the same session with a 1-second backoff.
 - On timeout, surfaces a `CancelledError` from the SDK's anyio cancel scopes.
 - Implements `session.list_tools()` under the hood during server connection to discover tool definitions.
 
@@ -114,5 +114,5 @@ Nanobot includes an SDK-based MCP client in `nanobot/sdk/`:
 | `nanobot/sdk/runtime.py` | SDK MCP runtime |
 | `tests/agent/test_mcp_connection.py` | MCP connection tests |
 | `tests/agent/test_mcp_transient_retry.py` | Transient error retry tests |
-| `tests/agent/test_mcp_tool.py` | MCP tool execution tests |
-| `tests/agent/tools/test_mcp_probe.py` | MCP probe tests |
+| `tests/tools/test_mcp_tool.py` | MCP tool execution tests |
+| `tests/tools/test_mcp_probe.py` | MCP probe tests |

@@ -31,12 +31,16 @@ The event parser processes Claude Code stream-json events including subagent met
 - Session IDs linked to subagent context
 
 **Transcript: `messaging/transcript.py`**
+
+The file defines multiple segment types including `TextSegment` (line 58) and `SubagentSegment` (line 93):
+
 ```python
 class SubagentSegment(Segment):
     """Represents a subagent invocation in conversation history."""
+    description: str = ""
+    tool_calls: list[ToolCallSegment] = []
+    tools_used: dict[str, int] = {}
     current_tool: ToolCallSegment | None = None
-    _subagent_stack: list[str] = []
-    _subagent_segments: list[SubagentSegment] = []
 ```
 
 The transcript buffer tracks:

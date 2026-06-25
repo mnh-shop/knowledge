@@ -92,15 +92,15 @@ Every agent gets a W3C Decentralized Identifier (DID). Identity is opt-in per ag
 
 ### Key Hierarchy (3-Tier)
 
-1. **Platform DID** -- The control plane itself (issuer DID for VCs)
-2. **Node DID** -- Per registered agent (derived from master seed + BIP32)
-3. **Function DID** -- Per reasoner/skill (derived from node DID)
+1. **Issuer DID** -- The control plane itself (issuer DID for VCs)
+2. **Agent-level DID** -- Per registered agent (derived from master seed + BIP32)
+3. **Per-reasoner / per-skill DIDs** -- Per reasoner/skill (derived from agent-level DID)
 
 ### Key Generation
 
 - Algorithm: Ed25519 + BIP32 derivation
 - Keystore encryption: AES-256-GCM
-- Master seed: `AGENTFIELD_AUTHORIZATION_MASTER_SEED` (must be stable across restarts)
+- Master seed: generated randomly at init via `crypto/rand.Read` in `did_service.go:59` (not configurable via environment variable)
 
 ### DID Registration
 
