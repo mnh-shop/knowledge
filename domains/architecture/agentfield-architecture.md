@@ -2,6 +2,7 @@
 name: agentfield-architecture
 tags: [agentfield, ai-llm, architecture, cli, control-plane, docker, golang, harness, identity, orchestration, plugin-sdk, quadlet, security, storage, systemd, virtualization]
 description: "AgentField architecture: AI control plane with micro-VM sandboxing, identity management, and pipeline orchestration"
+source: sources/agentfield/
 ---
 
 # AgentField: AI Control Plane Architecture

@@ -2,6 +2,7 @@
 name: buildah-architecture
 tags: [architecture, buildah, cli, container, daemonless, docker, git, golang, image-builder, oci, podman, storage]
 description: Buildah Architecture
+source: sources/buildah/
 ---
 
 # Buildah Architecture

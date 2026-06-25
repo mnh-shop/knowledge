@@ -10,7 +10,7 @@ tags: [ai-llm, cli, git, plugin-sdk]
   - debugging
   - automation
   - workflows
-source: /Users/admin1/Documents/knowledge/sources/abvx-agent-skills/README.md
+source: sources/abvx-agent-skills/
 visibility: public
 license: MIT
 category: tools

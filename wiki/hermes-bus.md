@@ -2,6 +2,7 @@
 name: hermes-bus
 tags: [cli, developer-tools, event-bus, messaging, monitoring, plugin-sdk, project-tag]
 description: "Unix Socket IPC daemon that routes JSON messages between endpoints in the Hermes ecosystem"
+source: sources/hermes-bus/
 ---
 
 # Hermes Bus -- Message Transport Layer

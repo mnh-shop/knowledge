@@ -2,6 +2,7 @@
 name: sablier-deployment
 tags: [acp, ai-llm, container, deployment, docker, event-bus, git, golang, lifecycle, monitoring, plugin-sdk, podman, quadlet, reverse-proxy, sablier, scale-to-zero, systemd, webhook]
 description: Sablier Deployment Guide
+source: sources/sablier/
 ---
 
 # Sablier Deployment Guide

@@ -1,6 +1,7 @@
 ---
 name: buildah-mcp
 description: "Buildah MCP implementation analysis — no MCP server found, container build tooling only"
+source: sources/buildah/
 tags: [cli, container, documentation, mcp]
 ---
 

@@ -2,6 +2,7 @@
 name: sec-af-architecture
 tags: [adversarial, ai-llm, architecture, auditor, cli, orchestration, python, sec-af, security]
 description: Architecture of SEC-AF — AI-native security auditor extending AgentField multi-reasoner for adversarial security analysis
+source: sources/sec-af/
 ---
 
 # SEC-AF Architecture Documentation

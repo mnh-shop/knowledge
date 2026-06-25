@@ -2,6 +2,7 @@
 name: hermzner
 tags: [ai-llm, ansible, bootc, container, dashboard, deployment-automation, docker, hermzner, hetzner, infrastructure-as-code, podman, quadlet, security, systemd, terraform, vps, wiki]
 description: "Hermzner — Hardened Hermes on Hetzner"
+source: sources/hermzner/
 ---
 
 # Hermzner — Hardened Hermes on Hetzner

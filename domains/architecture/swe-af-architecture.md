@@ -2,6 +2,7 @@
 name: swe-af-architecture
 tags: [ai-llm, architecture, cli, docker, engineering-factory, git, monitoring, multi-agent, optimization, orchestration, python, security, swe, swe-af]
 description: Architecture of SWE-AF — autonomous software engineering factory transforming a single API call into coordinated specialized agents
+source: sources/swe-af/
 ---
 
 # SWE-AF Architecture Documentation

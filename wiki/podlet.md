@@ -2,6 +2,7 @@
 name: podlet
 tags: [cli, container, conversion, docker, nix, podlet, podman, quadlet, quadlet-generator, rust, security, systemd, wiki]
 description: "Podlet"
+source: sources/podlet/
 ---
 
 # Podlet

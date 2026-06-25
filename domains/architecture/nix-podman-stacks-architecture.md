@@ -3,6 +3,7 @@ name: nix-podman-stacks-architecture
 type: architecture
 tags: [architecture, automation, cli, container, dashboard, declarative, docker, git, home-manager, infrastructure-as-code, monitoring, nix, nix-podman-stacks, podman, quadlet, self-hosted-stacks, storage, systemd, virtualization]
 description: "Architecture: nix-podman-stacks"
+source: sources/nix-podman-stacks/
 ---
 
 # Architecture: nix-podman-stacks

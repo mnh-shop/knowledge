@@ -1,6 +1,7 @@
 ---
 name: free-claude-code-acp
 description: "ACP agent communication protocol implementation in free-claude-code"
+source: sources/free-claude-code/
 tags: [acp, ai-llm, cli, documentation, messaging]
 ---
 # free-claude-code ACP Implementation

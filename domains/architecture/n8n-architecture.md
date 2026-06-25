@@ -2,6 +2,7 @@
 name: n8n-architecture
 tags: [architecture, automation, cli, container, event-bus, fair-code, integration, low-code, mcp, n8n, orchestration, storage, typescript, vue, webhook, workflow-automation]
 description: n8n — Architecture
+source: sources/n8n/
 ---
 
 # n8n — Architecture

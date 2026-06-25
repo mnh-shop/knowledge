@@ -2,6 +2,7 @@
 name: mission-control
 tags: [ai-llm, cli, container, dashboard, docker, mcp, mission-control, monitoring, nextjs, orchestration, plugin-sdk, quadlet, react, security, systemd, typescript, webhook, wiki]
 description: Mission Control — AI Agent Orchestration Dashboard
+source: sources/mission-control/
 ---
 
 # Mission Control — AI Agent Orchestration Dashboard

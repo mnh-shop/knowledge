@@ -1,6 +1,7 @@
 ---
 name: nanobot-mcp
 description: "Nanobot MCP server — tool registration, resource model, agent capability exposure"
+source: sources/nanobot/
 tags: [ai-llm, cli, documentation, mcp]
 ---
 # Nanobot MCP Implementation

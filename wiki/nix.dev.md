@@ -2,6 +2,7 @@
 name: nix.dev
 tags: [developer-tools, documentation, git, nix]
 description: "Official documentation for getting things done with Nix"
+source: sources/nix.dev/
 ---
 
 # nix.dev

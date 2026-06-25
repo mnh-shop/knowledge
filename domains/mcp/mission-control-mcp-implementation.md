@@ -1,6 +1,7 @@
 ---
 name: mission-control-mcp
 description: "Mission Control MCP hub server — 49 tools across system, developer workflow, and service management"
+source: sources/mission-control/
 tags: [ai-llm, cli, dashboard, documentation, mcp, monitoring, plugin-sdk, security]
 ---
 

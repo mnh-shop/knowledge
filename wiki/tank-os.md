@@ -2,6 +2,7 @@
 name: tank-os
 tags: [bootc, cli, container, container-os, dashboard, fedora, git, image-based, immutable-os, mcp, podman, quadlet, systemd, tank-os, virtualization, wiki]
 description: Tank OS — Fedora Bootc Image for OpenClaw
+source: sources/tank-os/
 ---
 
 # Tank OS — Fedora Bootc Image for OpenClaw

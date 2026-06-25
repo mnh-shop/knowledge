@@ -1,6 +1,7 @@
 ---
 name: gogs-deployment
 description: Gogs Deployment
+source: sources/gogs/
 tags: [ai-llm, container, deployment, docker, git, gogs, golang, podman, quadlet, self-hosted, ssh, storage, systemd, version-control, webhook]
 ---
 

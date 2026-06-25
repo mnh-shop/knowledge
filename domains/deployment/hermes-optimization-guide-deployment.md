@@ -1,6 +1,7 @@
 ---
 name: hermes-optimization-guide-deployment
 description: "Deployment patterns and infrastructure templates from the Hermes Optimization Guide: systemd units, Docker Compose observability stack, Caddy reverse proxy, VPS bootstrap script, cron schedules, and reference architectures"
+source: sources/hermes-optimization-guide/
 tags: [cli, dashboard, deployment, desktop-app, developer-tools, docker, mcp, messaging, monitoring, multi-platform, optimization, plugin-sdk, security, storage, systemd, webhook]
 ---
 

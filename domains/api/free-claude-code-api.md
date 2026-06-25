@@ -1,6 +1,7 @@
 ---
 name: free-claude-code-api
 description: "REST API endpoints and usage for free-claude-code"
+source: sources/free-claude-code/
 tags: [cli, documentation, messaging, rest-api]
 ---
 # free-claude-code API

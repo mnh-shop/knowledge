@@ -2,6 +2,7 @@
 name: buildah
 tags: [ai-llm, buildah, container, daemonless, docker, git, golang, image-builder, oci, podman, quadlet, storage, systemd, wiki]
 description: Buildah — OCI Image Builder
+source: sources/buildah/
 ---
 
 # Buildah — OCI Image Builder

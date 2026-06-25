@@ -2,6 +2,7 @@
 name: llmtrim-architecture
 tags: [ai-llm, architecture, cli, container, dashboard, llmtrim, mcp, optimization, quadlet, rust, systemd]
 description: "Deep architecture of llmtrim: 10-stage compression pipeline, proxy internals, quality gating, and polyglot bindings"
+source: sources/llmtrim/
 ---
 
 # llmtrim Architecture

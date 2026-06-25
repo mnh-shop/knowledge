@@ -1,6 +1,7 @@
 ---
 name: goclaw-mcp
 description: "GoClaw MCP client/server implementation — bridge tools, connection pool, OAuth"
+source: sources/goclaw/
 tags: [ai-llm, cli, documentation, mcp, security, storage]
 ---
 # GoClaw MCP Implementation

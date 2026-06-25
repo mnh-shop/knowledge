@@ -1,6 +1,7 @@
 ---
 name: gogs-architecture
 description: Gogs Architecture — Self-Hosted Git Service
+source: sources/gogs/
 tags: [architecture, git, gogs, golang, self-hosted, ssh, storage, version-control]
 ---
 

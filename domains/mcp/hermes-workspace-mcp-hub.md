@@ -2,6 +2,7 @@
 name: hermes-workspace-mcp-hub
 tags: [agent-gateway, ai-llm, hermes, mcp, messaging, multi-platform, typescript]
 description: "Hermes Workspace MCP Hub: centralized MCP server management for Hermes workspace agents"
+source: sources/hermes-workspace/
 ---
 
 # Hermes Workspace — MCP Hub

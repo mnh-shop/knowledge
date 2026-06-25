@@ -3,6 +3,7 @@ title: Obsidian Skills
 parent: project-based-wiki
 published: true
 description: Agent skills for use with Obsidian - a collection of specialized skills following the Agent Skills specification
+source: sources/obsidian-skills/
 ---
 
 # Obsidian Skills

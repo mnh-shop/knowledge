@@ -1,6 +1,7 @@
 ---
 name: Materia
 description: A GitOps tool for managing services and applications deployed as Podman Quadlets, handling full component lifecycle including install, update, and removal
+source: sources/materia/
 tags: [container, git, podman, quadlet, security, systemd]
   - gitops
   - podman

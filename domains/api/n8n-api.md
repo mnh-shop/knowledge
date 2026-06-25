@@ -2,6 +2,7 @@
 name: n8n-api
 tags: [api, cli, event-bus, fair-code, integration, low-code, n8n, orchestration, rest-api, security, typescript, vue, webhook, workflow-automation]
 description: n8n — API Architecture
+source: sources/n8n/
 ---
 
 # n8n — API Architecture

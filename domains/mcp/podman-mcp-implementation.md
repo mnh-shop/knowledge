@@ -2,7 +2,7 @@
 title: "Podman REST API Implementation"
 tags: [REST-API, cli, container, containers, docker, golang, gorilla-mux, mcp, monitoring, podman, quadlet, systemd]
 description: "Analysis of Podman's REST API v2 server implementation (not MCP protocol)"
-source: "knowledge/raw/podman/podman.xml"
+source: sources/podman/
 date: 2026-06-24
 ---
 

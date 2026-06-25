@@ -1,6 +1,7 @@
 ---
 name: llmtrim-mcp
 description: "llmtrim MCP proxy server — request compression, tool calling, SSE streaming"
+source: sources/llmtrim/
 tags: [ai-llm, cli, documentation, mcp]
 ---
 # llmtrim MCP Implementation

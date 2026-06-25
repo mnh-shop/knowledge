@@ -1,6 +1,7 @@
 ---
 name: free-claude-code-mcp
 description: "MCP server implementation in free-claude-code tools, resources, and configuration"
+source: sources/free-claude-code/
 tags: [cli, documentation, mcp, rest-api]
 ---
 

@@ -1,6 +1,7 @@
 ---
 name: alphaclaw-acp
 description: "AlphaClaw ACP (Agent Communication Protocol) analysis — no ACP found, related multi-agent features"
+source: sources/alphaclaw/
 tags: [acp, ai-llm, documentation, mcp]
 ---
 # AlphaClaw ACP (Agent Communication Protocol) Implementation

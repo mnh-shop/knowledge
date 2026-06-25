@@ -1,6 +1,7 @@
 ---
 title: n8n-Skills
 description: Claude Code skills for building flawless n8n workflows using the n8n-mcp MCP server
+source: sources/n8n-skills/
 date: 2026-06-25
 type: skills
 status: active

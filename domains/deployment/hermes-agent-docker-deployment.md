@@ -2,6 +2,7 @@
 name: hermes-agent-docker-deployment
 tags: [ai-llm, container, container-deployment, deployment, docker, hermes-agent-docker, packaging, podman]
 description: Hermes Agent Docker deployment guide for the minimal Docker image packaging
+source: sources/hermes-agent-docker/
 ---
 
 # Hermes Agent Docker — Deployment

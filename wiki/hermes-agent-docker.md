@@ -2,6 +2,7 @@
 name: hermes-agent-docker
 tags: [ai-llm, cli, container, container-deployment, docker, hermes-agent-docker, packaging, wiki]
 description: "Wiki entry for Hermes Agent Docker: minimal Docker image for Hermes Agent with configurable version pinning (MIT)"
+source: sources/hermes-agent-docker/
 ---
 
 # Hermes Agent Docker — Minimal Docker Image Packaging

@@ -1,6 +1,7 @@
 ---
 name: nanobot-api
 description: "Nanobot OpenAI-compatible REST API — chat completions, agent sessions, tool execution"
+source: sources/nanobot/
 tags: [agent-profile, ai-llm, cli, documentation, rest-api]
 ---
 # Nanobot REST API (OpenAI-Compatible)

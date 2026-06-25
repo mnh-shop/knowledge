@@ -2,7 +2,7 @@
 title: Oh My Hermes (OMH)
 description: Multi-agent orchestration skills for Hermes Agent with consensus planning, requirements interviewing, and verified execution
 tags: [ai-llm, consensus, hermes-agent, multi-agent, orchestration, planning, plugin, plugin-sdk, research]
-source: sources/oh-my-hermes
+source: sources/oh-my-hermes/
 ---
 
 # Oh My Hermes (OMH)

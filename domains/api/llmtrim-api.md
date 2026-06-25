@@ -1,6 +1,7 @@
 ---
 name: llmtrim-api
 description: "llmtrim API surfaces — stdin/pipe, MCP proxy, and SSE-based streaming callback"
+source: sources/llmtrim/
 tags: [ai-llm, cli, documentation, mcp, monitoring, optimization, rest-api]
 ---
 # llmtrim API Documentation

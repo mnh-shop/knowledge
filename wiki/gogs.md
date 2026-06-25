@@ -1,6 +1,7 @@
 ---
 name: gogs
 description: Gogs — Self-Hosted Git Service
+source: sources/gogs/
 tags: [ai-llm, docker, git, gogs, golang, quadlet, self-hosted, ssh, storage, systemd, version-control, webhook, wiki]
 ---
 

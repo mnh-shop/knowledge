@@ -1,6 +1,7 @@
 ---
 name: n8n-workflows
 description: "Community-driven collection of 4,343 n8n automation workflows with 365+ integrations, providing a searchable catalog of workflow JSON definitions across 188 categories"
+source: sources/n8n-workflows/
 tags: [ai-agents, ai-llm, api-catalog, automation, devops, docker, git, integration-patterns, messaging, n8n, storage, webhook, workflows]
 ---
 

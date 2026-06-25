@@ -1,6 +1,7 @@
 ---
 name: hermes-plugins-architecture
 description: "Plugin system architecture for 34 evey-* plugins extending hermes-agent"
+source: sources/hermes-plugins/
 tags: [ai-llm, architecture, dashboard, developer-tools, docker, event-bus, git, messaging, multi-platform, orchestration, plugin-sdk, security, skills-platform, storage]
 ---
 

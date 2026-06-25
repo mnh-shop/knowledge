@@ -1,6 +1,7 @@
 ---
 name: goclaw-api
 description: "GoClaw REST API — agent/tool management, webhook provisioning, SSE streaming"
+source: sources/goclaw/
 tags: [ai-llm, cli, documentation, mcp, orchestration, plugin-sdk, rest-api, security, webhook]
 ---
 # GoClaw REST API

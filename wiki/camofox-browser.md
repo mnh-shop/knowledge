@@ -8,7 +8,7 @@ tags: [cli, docker, mcp, plugin-sdk]
 aliases:
   - camofox-browser
   - Camofox Browser
-source: git+https://github.com/jo-inc/camofox-browser.git
+source: sources/camofox-browser/
 license: MIT
 org: Jo Inc
 version: 1.11.2

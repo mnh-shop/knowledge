@@ -2,6 +2,7 @@
 name: agentfield-mcp-implementation
 tags: [agentfield, ai-llm, cli, mcp, model-context-protocol, monitoring, plugin-sdk, removed-feature]
 description: "AgentField MCP (Model Context Protocol) implementation: historical support, removal, and remaining artifacts"
+source: sources/agentfield/
 ---
 
 # AgentField MCP Integration

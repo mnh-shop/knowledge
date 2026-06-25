@@ -2,6 +2,7 @@
 name: hermes-workspace-deployment
 tags: [agent-gateway, ai-llm, cli, container, dashboard, deployment, docker, hermes, mcp, messaging, multi-platform, nix, quadlet, security, systemd, typescript]
 description: Hermes Workspace deployment guide with system requirements and runtime configuration
+source: sources/hermes-workspace/
 ---
 
 # Hermes Workspace Deployment

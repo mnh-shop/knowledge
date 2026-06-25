@@ -8,6 +8,7 @@ tags: [ai-llm, cli, dashboard, git, plugin-sdk, rest-api]
   - agent
 created: 2026-06-24
 description: Complete REST API documentation for the Hermes Agent gateway, covering the OpenAI-compatible Chat/Responses APIs, custom Runs API, Sessions/Jobs control plane, skills/toolsets discovery, health probes, and the Dashboard auth API.
+source: sources/hermes-agent/
 ---
 
 # Hermes Agent REST API

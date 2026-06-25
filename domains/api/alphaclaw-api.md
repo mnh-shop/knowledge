@@ -1,6 +1,7 @@
 ---
 name: alphaclaw-api
 description: "AlphaClaw REST API — gateway management, agent configuration, MCP and channel setup"
+source: sources/alphaclaw/
 tags: [acp, ai-llm, cli, documentation, git, mcp, rest-api, security, webhook]
 ---
 # AlphaClaw API

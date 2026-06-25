@@ -2,6 +2,7 @@
 name: hermes-agent-deployment
 tags: [acp, agent-gateway, ai-llm, ansible, cli, container, dashboard, deployment, docker, git, hermes, mcp, messaging, monitoring, multi-platform, nix, podman, quadlet, security, storage, systemd, terraform, typescript]
 description: Hermes Agent deployment and operations guide for the multi-platform personal AI agent
+source: sources/hermes-agent/
 ---
 
 # Hermes Agent Deployment Guide

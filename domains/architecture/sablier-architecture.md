@@ -2,6 +2,7 @@
 name: sablier-architecture
 tags: [acp, ai-llm, architecture, cli, container, docker, git, golang, lifecycle, monitoring, plugin-sdk, podman, quadlet, reverse-proxy, sablier, scale-to-zero, systemd, webhook]
 description: Sablier Architecture
+source: sources/sablier/
 ---
 
 # Sablier Architecture

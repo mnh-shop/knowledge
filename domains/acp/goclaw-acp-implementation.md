@@ -1,6 +1,7 @@
 ---
 name: goclaw-acp
 description: "GoClaw ACP agent communication protocol — external agent subprocess orchestration via JSON-RPC"
+source: sources/goclaw/
 tags: [acp, ai-llm, cli, documentation, mcp, orchestration, security]
 ---
 # GoClaw ACP (Agent Communication Protocol) Implementation

@@ -2,6 +2,7 @@
 name: clawpier-architecture
 tags: [agent-manager, ai-llm, architecture, clawpier, container, desktop, desktop-app, docker, gui, monitoring, plugin-sdk, rust, security, tauri]
 description: "ClawPier Architecture — Tauri Desktop Agent Manager"
+source: sources/clawpier/
 ---
 # ClawPier Architecture — Tauri Desktop Agent Manager
 

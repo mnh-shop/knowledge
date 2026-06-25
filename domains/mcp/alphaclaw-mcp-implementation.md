@@ -1,6 +1,7 @@
 ---
 name: alphaclaw-mcp
 description: "AlphaClaw MCP configuration manager — writes mcp.servers blocks into openclaw.json"
+source: sources/alphaclaw/
 tags: [documentation, mcp]
 ---
 # AlphaClaw MCP Implementation

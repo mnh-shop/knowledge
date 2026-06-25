@@ -1,6 +1,7 @@
 ---
 name: nanobot-acp
 description: "Nanobot agent communication and subagent system — worker agents, task decomposition"
+source: sources/nanobot/
 tags: [acp, agent-profile, ai-llm, documentation, event-bus, plugin-sdk]
 ---
 # Nanobot Agent Communication & Subagent System
