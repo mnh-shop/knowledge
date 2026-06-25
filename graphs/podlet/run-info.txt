@@ -1,0 +1,4 @@
+repo_slug=podlet
+source_dir=/Users/admin1/Documents/knowledge/sources/podlet/
+codegraph_command=codegraph init
+generated_at=2026-06-24 16:35:24

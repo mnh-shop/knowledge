@@ -1,0 +1,22 @@
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Claude local config
+.claude/
+
+# Codegraph databases (regeneratable)
+.codegraph/
+codegraph.db
+
+# Node / Python build artifacts
+node_modules/
+__pycache__/
+*.pyc
+
+# External source clones (full repos cloned for analysis - 6.7GB)
+sources/
+
+# Large generated binaries
+*.log
+*.tmp

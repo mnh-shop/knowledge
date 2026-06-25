@@ -1,0 +1,4 @@
+repo_slug=openclaw
+source_dir=/Users/admin1/Documents/knowledge/sources/openclaw/
+codegraph_command=codegraph init
+generated_at=2026-06-24 14:31:25

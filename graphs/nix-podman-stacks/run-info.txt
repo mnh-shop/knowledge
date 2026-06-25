@@ -1,0 +1,4 @@
+repo_slug=nix-podman-stacks
+source_dir=/Users/admin1/Documents/knowledge/sources/nix-podman-stacks/
+codegraph_command=codegraph init
+generated_at=2026-06-24 16:35:23

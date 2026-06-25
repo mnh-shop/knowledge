@@ -1,0 +1,2972 @@
+<repomix><file_summary>This file is a merged representation of the entire codebase, combined into a single document by Repomix.
+The content has been processed where comments have been removed, empty lines have been removed, line numbers have been added, content has been formatted for parsing in xml style, content has been compressed (code blocks are separated by ⋮---- delimiter), security check has been disabled.<purpose>This file contains a packed representation of the entire repository&apos;s contents.
+It is designed to be easily consumable by AI systems for analysis, code review,
+or other automated processes.</purpose><file_format>The content is organized as follows:
+1. This summary section
+2. Repository information
+3. Directory structure
+4. Repository files (if enabled)
+5. Repository files, each consisting of:
+  - File path as an attribute
+  - Full contents of the file</file_format><usage_guidelines>- This file should be treated as read-only. Any changes should be made to the
+  original repository files, not this packed version.
+- When processing this file, use the file path to distinguish
+  between different files in the repository.
+- Be aware that this file may contain sensitive information. Handle it with
+  the same level of security as you would the original repository.
+- Pay special attention to the Repository Description. These contain important context and guidelines specific to this project.</usage_guidelines><notes>- Some files may have been excluded based on .gitignore rules and Repomix&apos;s configuration
+- Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
+- Files matching patterns in .gitignore are excluded
+- Files matching default ignore patterns are excluded
+- Code comments have been removed from supported file types
+- Empty lines have been removed from all files
+- Line numbers have been added to the beginning of each line
+- Content has been formatted for parsing in xml style
+- Content has been compressed - code blocks are separated by ⋮---- delimiter
+- Security check has been disabled - content may contain sensitive information
+- Files are sorted by Git change count (files with more changes are at the bottom)</notes></file_summary><user_provided_header>Repository: hermzner | Generated from knowledge/sources | Generated: 2026-06-24 15:39:31</user_provided_header><directory_structure>ansible/
+  inventory/
+    group_vars/
+      all.yml
+    localhost.yml
+  playbooks/
+    site.yml
+    verify.yml
+  roles/
+    backup/
+      tasks/
+        main.yml
+      templates/
+        hermes-backup.sh.j2
+    hermes/
+      handlers/
+        main.yml
+      tasks/
+        main.yml
+      templates/
+        compose.yaml.j2
+        hermes.container.j2
+    mnemosyne_build/
+      tasks/
+        main.yml
+      templates/
+        Dockerfile.mnemosyne.j2
+    mnemosyne_runtime/
+      tasks/
+        main.yml
+    podman/
+      tasks/
+        main.yml
+    security/
+      files/
+        revert-sshd-hardening.sh
+      handlers/
+        main.yml
+      tasks/
+        main.yml
+    tailscale/
+      tasks/
+        main.yml
+docs/
+  EMERGENCY-SSH-RECOVERY.md
+  rescue-restore-ssh.sh
+scripts/
+  repo_check.sh
+  restore.sh
+terraform/
+  main.tf
+  outputs.tf
+  terraform.tfvars.example
+  variables.tf
+.gitignore
+AGENTS.md
+ansible.cfg
+COVENANT.md
+deploy.sh
+hermzner_logo_256.png
+LICENSE
+README.md
+SECURITY.md
+teardown.sh</directory_structure><files>This section contains the contents of the repository&apos;s files.<file path="ansible/inventory/localhost.yml">all:
+  hosts:
+    localhost:
+      ansible_connection: local</file><file path="ansible/roles/mnemosyne_build/tasks/main.yml">---
+- name: Ensure mnemosyne build directory exists
+  file:
+    path: &quot;{{ hermes_home }}/hermes-mnemosyne&quot;
+    state: directory
+    owner: &quot;{{ hermes_user }}&quot;
+    group: &quot;{{ hermes_user }}&quot;
+    mode: &quot;0700&quot;
+- name: Deploy Mnemosyne Dockerfile
+  template:
+    src: Dockerfile.mnemosyne.j2
+    dest: &quot;{{ hermes_home }}/hermes-mnemosyne/Dockerfile.mnemosyne&quot;
+    owner: &quot;{{ hermes_user }}&quot;
+    group: &quot;{{ hermes_user }}&quot;
+    mode: &quot;0600&quot;
+- name: Build Mnemosyne container image
+  become: true
+  become_user: &quot;{{ hermes_user }}&quot;
+  command:
+    cmd: podman build -t localhost/hermes-mnemosyne:latest -f Dockerfile.mnemosyne .
+    chdir: &quot;{{ hermes_home }}/hermes-mnemosyne&quot;
+  changed_when: true</file><file path="ansible/roles/mnemosyne_build/templates/Dockerfile.mnemosyne.j2">FROM {{ hermes_image_ref }}
+USER root
+RUN apt-get update &amp;&amp; apt-get install -y --no-install-recommends python3-pip &amp;&amp; \
+    rm -rf /var/lib/apt/lists/* &amp;&amp; \
+    sed -i &apos;s/include-system-site-packages = false/include-system-site-packages = true/&apos; /opt/hermes/.venv/pyvenv.cfg &amp;&amp; \
+    python3 -m pip install --no-cache-dir --break-system-packages &quot;mnemosyne-memory[all]&quot; &amp;&amp; \
+    python3 -m mnemosyne.install</file><file path="ansible/roles/mnemosyne_runtime/tasks/main.yml">---
+- name: Get hermes UID for rootless podman
+  command: &quot;id -u {{ hermes_user }}&quot;
+  register: hermes_uid
+  changed_when: false
+- name: Wait for hermes container to be healthy
+  wait_for:
+    port: 8642
+    host: 127.0.0.1
+    delay: 2
+    timeout: 30
+- name: Snapshot config.yaml before mnemosyne.install
+  become: true
+  become_user: &quot;{{ hermes_user }}&quot;
+  command:
+    cmd: podman exec hermes sha256sum /opt/data/config.yaml
+  environment:
+    XDG_RUNTIME_DIR: &quot;/run/user/{{ hermes_uid.stdout }}&quot;
+  register: config_before
+  changed_when: false
+- name: Run mnemosyne.install inside hermes container
+  become: true
+  become_user: &quot;{{ hermes_user }}&quot;
+  command:
+    cmd: podman exec hermes python3 -m mnemosyne.install
+  environment:
+    XDG_RUNTIME_DIR: &quot;/run/user/{{ hermes_uid.stdout }}&quot;
+  changed_when: false
+- name: Snapshot config.yaml after mnemosyne.install
+  become: true
+  become_user: &quot;{{ hermes_user }}&quot;
+  command:
+    cmd: podman exec hermes sha256sum /opt/data/config.yaml
+  environment:
+    XDG_RUNTIME_DIR: &quot;/run/user/{{ hermes_uid.stdout }}&quot;
+  register: config_after
+  changed_when: false
+- name: Restart hermes service to load mnemosyne plugin
+  become: true
+  become_user: &quot;{{ hermes_user }}&quot;
+  systemd_service:
+    scope: user
+    name: hermes
+    state: restarted
+  environment:
+    XDG_RUNTIME_DIR: &quot;/run/user/{{ hermes_uid.stdout }}&quot;
+  when: config_before.stdout != config_after.stdout</file><file path="ansible/roles/security/files/revert-sshd-hardening.sh">set -euo pipefail
+fix_sshd_config() {
+  local config=&quot;$1&quot;
+  local backup=&quot;${config}.bak.$(date +%s)&quot;
+  echo &quot;[*] Backing up $config...&quot;
+  cp &quot;$config&quot; &quot;$backup&quot;
+  echo &quot;[*] Removing Allow/Deny directives...&quot;
+  sed -i &apos;/^AllowUsers/d; /^DenyUsers/d; /^AllowGroups/d; /^DenyGroups/d&apos; &quot;$config&quot;
+  echo &quot;[*] Setting safe defaults...&quot;
+  grep -q &quot;^PasswordAuthentication&quot; &quot;$config&quot; \
+    &amp;&amp; sed -i &apos;s/^PasswordAuthentication.*/PasswordAuthentication no/&apos; &quot;$config&quot; \
+    || echo &quot;PasswordAuthentication no&quot; &gt;&gt; &quot;$config&quot;
+  grep -q &quot;^PermitRootLogin&quot; &quot;$config&quot; \
+    &amp;&amp; sed -i &apos;s/^PermitRootLogin.*/PermitRootLogin prohibit-password/&apos; &quot;$config&quot; \
+    || echo &quot;PermitRootLogin prohibit-password&quot; &gt;&gt; &quot;$config&quot;
+  echo &quot;[*] Validating sshd config...&quot;
+  if ! sshd -t -f &quot;$config&quot;; then
+    echo &quot;[!] Config invalid, restoring backup...&quot;
+    cp &quot;$backup&quot; &quot;$config&quot;
+    return 1
+  fi
+  echo &quot;$backup&quot;
+}
+if [ &quot;${BASH_SOURCE[0]}&quot; = &quot;$0&quot; ]; then
+  BACKUP=$(fix_sshd_config &quot;/etc/ssh/sshd_config&quot;)
+  echo &quot;[*] Restarting sshd...&quot;
+  if systemctl restart sshd; then
+    echo &quot;[✓] SSH hardening reverted successfully&quot;
+  else
+    echo &quot;[!] sshd restart failed, restoring backup...&quot;
+    cp &quot;$BACKUP&quot; &quot;/etc/ssh/sshd_config&quot;
+    exit 1
+  fi
+fi</file><file path="docs/EMERGENCY-SSH-RECOVERY.md"># Emergency SSH Recovery (Hetzner Rescue)
+
+## When to use
+- Locked out due to sshd_config (e.g., `AllowUsers` blocking root, broken config)
+- Tailscale not working
+- SSH access broken
+
+---
+
+## Step 1 — Enable Rescue System
+
+1. Go to [Hetzner Cloud Console](https://console.hetzner.cloud)
+2. Select the server
+3. Click **Rescue** → **Enable Rescue**
+4. Select **linux64** rescue image
+5. Copy the **temporary root password** shown
+6. Click **Enable** and then **Reboot**
+
+---
+
+## Step 2 — SSH into Rescue
+
+```bash
+ssh root@&lt;server-ip&gt;
+```
+
+Paste the temporary root password when prompted.
+
+---
+
+## Step 3 — Run Recovery Script
+
+### Option A — Direct from GitHub (recommended)
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/scicco/hermzner/main/docs/rescue-restore-ssh.sh | bash
+```
+
+### Option B — Paste manually
+
+If the server has no internet access, copy the script from `docs/rescue-restore-ssh.sh` in the repo and paste it manually.
+
+---
+
+## Step 4 — Reboot
+
+```bash
+reboot
+```
+
+---
+
+## Step 5 — Re-deploy (optional)
+
+After recovery, re-run the deploy to re-apply correct configuration:
+
+```bash
+./deploy.sh
+```
+
+---
+
+## Alternative Recovery Methods
+
+| Method | When |
+|--------|------|
+| **Local script** — `ssh root@&lt;tailscale-ip&gt;` then `/root/revert-sshd-hardening.sh` | Tailscale still works |
+| **Hetzner Console** — VNC web console at `console.hetzner.cloud` | No SSH at all, no rescue needed |
+| **Rescue System + script** (this document) | All else fails |
+
+---
+
+## Prevention
+
+Recovery should rarely be needed. This system is designed with:
+
+- **Tailscale SSH** as primary access (bypasses sshd_config)
+- **UFW deny** on public SSH when `public_ssh_policy: disabled_after_tailscale`
+- **Canary check** before hardening (verifies Tailscale is reachable first)
+- **Recovery script** installed at `/root/revert-sshd-hardening.sh` (if SSH still works)</file><file path="docs/rescue-restore-ssh.sh">set -euo pipefail
+echo &quot;[*] Starting Hetzner rescue recovery...&quot;
+detect_root() {
+  ROOT_DEV=$(lsblk -pnlo NAME,FSTYPE,MOUNTPOINT | awk &apos;$2 ~ /ext4|xfs/ &amp;&amp; $3 == &quot;&quot; {print $1; exit}&apos;)
+  if [ -z &quot;${ROOT_DEV:-}&quot; ]; then
+    echo &quot;[!] Auto-detect failed, trying fallback...&quot;
+    ROOT_DEV=$(findmnt -n -o SOURCE / 2&gt;/dev/null || true)
+  fi
+  if [ -z &quot;${ROOT_DEV:-}&quot; ]; then
+    echo &quot;[!] Could not auto-detect root partition&quot;
+    echo &quot;[!] Available disks:&quot;
+    lsblk
+    exit 1
+  fi
+  echo &quot;[*] Using root device: $ROOT_DEV&quot;
+}
+mount_root() {
+  echo &quot;[*] Mounting filesystem...&quot;
+  mkdir -p /mnt/recovery
+  mount &quot;$ROOT_DEV&quot; /mnt/recovery
+}
+bind_mounts() {
+  echo &quot;[*] Preparing chroot...&quot;
+  mount --bind /dev /mnt/recovery/dev
+  mount --bind /proc /mnt/recovery/proc
+  mount --bind /sys /mnt/recovery/sys
+}
+fix_sshd() {
+  echo &quot;[*] Fixing SSH configuration inside chroot...&quot;
+  chroot /mnt/recovery /bin/bash &lt;&lt; &apos;CHROOT_EOF&apos;
+set -e
+if [ -f /root/revert-sshd-hardening.sh ]; then
+  source /root/revert-sshd-hardening.sh
+  if ! BACKUP=$(fix_sshd_config &quot;/etc/ssh/sshd_config&quot;); then
+    echo &quot;[!] Failed to fix sshd config&quot;
+    exit 1
+  fi
+else
+  SSHD_CONFIG=&quot;/etc/ssh/sshd_config&quot;
+  BACKUP=&quot;${SSHD_CONFIG}.bak.$(date +%s)&quot;
+  cp &quot;$SSHD_CONFIG&quot; &quot;$BACKUP&quot;
+  sed -i &apos;/^AllowUsers/d; /^DenyUsers/d; /^AllowGroups/d; /^DenyGroups/d&apos; &quot;$SSHD_CONFIG&quot;
+  grep -q &quot;^PasswordAuthentication&quot; &quot;$SSHD_CONFIG&quot; \
+    &amp;&amp; sed -i &apos;s/^PasswordAuthentication.*/PasswordAuthentication no/&apos; &quot;$SSHD_CONFIG&quot; \
+    || echo &quot;PasswordAuthentication no&quot; &gt;&gt; &quot;$SSHD_CONFIG&quot;
+  grep -q &quot;^PermitRootLogin&quot; &quot;$SSHD_CONFIG&quot; \
+    &amp;&amp; sed -i &apos;s/^PermitRootLogin.*/PermitRootLogin prohibit-password/&apos; &quot;$SSHD_CONFIG&quot; \
+    || echo &quot;PermitRootLogin prohibit-password&quot; &gt;&gt; &quot;$SSHD_CONFIG&quot;
+  if ! sshd -t -f &quot;$SSHD_CONFIG&quot;; then
+    cp &quot;$BACKUP&quot; &quot;$SSHD_CONFIG&quot;
+    echo &quot;[!] sshd config invalid, restored backup&quot;
+    exit 1
+  fi
+fi
+echo &quot;[*] Ensuring SSH service will start on boot (best-effort)...&quot;
+systemctl enable ssh 2&gt;/dev/null || systemctl enable sshd 2&gt;/dev/null || true
+echo &quot;[✓] SSH config repaired.&quot;
+CHROOT_EOF
+}
+cleanup() {
+  echo &quot;[*] Cleaning up mounts...&quot;
+  umount /mnt/recovery/dev 2&gt;/dev/null || true
+  umount /mnt/recovery/proc 2&gt;/dev/null || true
+  umount /mnt/recovery/sys 2&gt;/dev/null || true
+  umount /mnt/recovery 2&gt;/dev/null || true
+}
+detect_root
+mount_root
+bind_mounts
+fix_sshd
+cleanup
+echo &quot;[✓] Recovery complete. Reboot the server: reboot&quot;</file><file path="scripts/restore.sh">set -euo pipefail
+SCRIPT_DIR=&quot;$(cd &quot;$(dirname &quot;${BASH_SOURCE[0]}&quot;)/..&quot; &amp;&amp; pwd)&quot;
+cd &quot;$SCRIPT_DIR&quot;
+RED=&apos;\033[0;31m&apos;
+GREEN=&apos;\033[0;32m&apos;
+YELLOW=&apos;\033[1;33m&apos;
+NC=&apos;\033[0m&apos;
+info()  { echo -e &quot;${GREEN}[INFO]${NC} $1&quot;; }
+warn()  { echo -e &quot;${YELLOW}[WARN]${NC} $1&quot;; }
+error() { echo -e &quot;${RED}[ERROR]${NC} $1&quot;; exit 1; }
+usage() {
+  echo &quot;Usage: $0 &lt;backup_file&gt; [--tailscale-ip &lt;ip&gt;] [--age-key &lt;path&gt;]&quot;
+  echo &quot;&quot;
+  echo &quot;Restore a Hermes backup archive to a deployed server.&quot;
+  echo &quot;&quot;
+  echo &quot;Arguments:&quot;
+  echo &quot;  &lt;backup_file&gt;         Path to backup archive (.tar.gz or .tar.gz.age)&quot;
+  echo &quot;  --tailscale-ip &lt;ip&gt;   Tailscale IP of server (auto-detected if omitted)&quot;
+  echo &quot;  --age-key &lt;path&gt;      Age private key (required if backup is encrypted)&quot;
+  exit 1
+}
+# --- Phase 0: Parse arguments ---
+BACKUP_FILE=&quot;&quot;
+TAILSCALE_IP=&quot;&quot;
+AGE_KEY=&quot;&quot;
+while [ $# -gt 0 ]; do
+  case &quot;$1&quot; in
+    --tailscale-ip)
+      TAILSCALE_IP=&quot;$2&quot;
+      shift 2
+      ;;
+    --age-key)
+      AGE_KEY=&quot;$2&quot;
+      shift 2
+      ;;
+    -*)
+      usage
+      ;;
+    *)
+      [ -z &quot;$BACKUP_FILE&quot; ] || usage
+      BACKUP_FILE=&quot;$1&quot;
+      shift
+      ;;
+  esac
+done
+info &quot;Checking prerequisites...&quot;
+[ -n &quot;$BACKUP_FILE&quot; ] || usage
+[ -f &quot;$BACKUP_FILE&quot; ] || error &quot;Backup file not found: $BACKUP_FILE&quot;
+SSH_KEY=&quot;${PRIVATE_SSH_KEY:-$HOME/.ssh/id_ed25519}&quot;
+[ -f &quot;$SSH_KEY&quot; ] || error &quot;SSH key not found at $SSH_KEY&quot;
+IS_ENCRYPTED=false
+if [[ &quot;$BACKUP_FILE&quot; == *.age ]]; then
+  IS_ENCRYPTED=true
+  [ -n &quot;$AGE_KEY&quot; ] || error &quot;Backup is encrypted. Provide --age-key &lt;path&gt; to decrypt.&quot;
+  [ -f &quot;$AGE_KEY&quot; ] || error &quot;Age key not found: $AGE_KEY&quot;
+  command -v age &gt;/dev/null 2&gt;&amp;1 || error &quot;age is not installed locally&quot;
+fi
+if [ -z &quot;$TAILSCALE_IP&quot; ]; then
+  info &quot;Auto-detecting Tailscale IP...&quot;
+  SERVER_IP=$(terraform -chdir=terraform output -raw server_ipv4 2&gt;/dev/null || echo &quot;&quot;)
+  if [ -n &quot;$SERVER_IP&quot; ]; then
+    TAILSCALE_IP=$(ssh -o ConnectTimeout=5 -o StrictHostKeyChecking=accept-new \
+      root@&quot;${SERVER_IP}&quot; tailscale ip -4 2&gt;/dev/null || echo &quot;&quot;)
+  fi
+  [ -n &quot;$TAILSCALE_IP&quot; ] || error &quot;Cannot auto-detect Tailscale IP. Provide --tailscale-ip &lt;ip&gt;&quot;
+  info &quot;Detected Tailscale IP: ${TAILSCALE_IP}&quot;
+fi
+info &quot;Verifying SSH access to ${TAILSCALE_IP}...&quot;
+ssh -o ConnectTimeout=5 -o StrictHostKeyChecking=accept-new root@&quot;${TAILSCALE_IP}&quot; id &gt;/dev/null 2&gt;&amp;1 \
+  || error &quot;Cannot SSH to root@${TAILSCALE_IP}&quot;
+DECRYPTED_BACKUP=&quot;$BACKUP_FILE&quot;
+if $IS_ENCRYPTED; then
+  info &quot;Decrypting backup with age...&quot;
+  DECRYPTED_BACKUP=&quot;${BACKUP_FILE%.age}&quot;
+  age -d -i &quot;$AGE_KEY&quot; -o &quot;$DECRYPTED_BACKUP&quot; &quot;$BACKUP_FILE&quot; || error &quot;age decryption failed&quot;
+  info &quot;Decrypted to: ${DECRYPTED_BACKUP}&quot;
+fi
+info &quot;Copying backup to server...&quot;
+REMOTE_FILE=&quot;/home/hermes/hermes-restore.tar.gz&quot;
+scp -o ConnectTimeout=5 -o StrictHostKeyChecking=accept-new \
+  &quot;$DECRYPTED_BACKUP&quot; root@&quot;${TAILSCALE_IP}&quot;:&quot;${REMOTE_FILE}&quot; \
+  || error &quot;SCP failed&quot;
+info &quot;Stopping Hermes runtime (if running)...&quot;
+ssh root@&quot;${TAILSCALE_IP}&quot; &apos;
+  sudo -u hermes XDG_RUNTIME_DIR=/run/user/$(id -u hermes) systemctl --user stop hermes.service 2&gt;/dev/null || true
+  podman stop hermes 2&gt;/dev/null || true
+&apos; || true
+info &quot;Extracting backup...&quot;
+ssh root@&quot;${TAILSCALE_IP}&quot; &quot;
+  sudo -u hermes tar xzf \&quot;${REMOTE_FILE}\&quot; -C /home/hermes/ &amp;&amp; \
+  rm -f \&quot;${REMOTE_FILE}\&quot;
+&quot; || error &quot;Extraction failed&quot;
+info &quot;Fixing permissions...&quot;
+ssh root@&quot;${TAILSCALE_IP}&quot; &apos;
+  chown -R hermes:hermes /home/hermes/.hermes &amp;&amp; \
+  chmod 0700 /home/hermes/.hermes &amp;&amp; \
+  [ -f /home/hermes/.hermes/.env ] &amp;&amp; chmod 0600 /home/hermes/.hermes/.env || true
+&apos; || error &quot;Permission fix failed&quot;
+ssh root@&quot;${TAILSCALE_IP}&quot; &apos;[ -f /home/hermes/.hermes/.env ]&apos; 2&gt;/dev/null \
+  || warn &quot;No .env found in backup — run interactive setup to generate one&quot;
+info &quot;Starting Hermes runtime...&quot;
+ssh root@&quot;${TAILSCALE_IP}&quot; &apos;
+  sudo -u hermes XDG_RUNTIME_DIR=/run/user/$(id -u hermes) systemctl --user daemon-reload &amp;&amp; \
+  sudo -u hermes XDG_RUNTIME_DIR=/run/user/$(id -u hermes) systemctl --user start hermes.service
+&apos; || error &quot;Failed to start runtime&quot;
+sleep 3
+if [ -f ansible/inventory/hosts.yml ]; then
+  info &quot;Running verification playbook...&quot;
+  ansible-playbook ansible/playbooks/verify.yml || warn &quot;Verify playbook reported errors — check output above&quot;
+else
+  info &quot;Recreating inventory for verification...&quot;
+  mkdir -p ansible/inventory
+  cat &gt; ansible/inventory/hosts.yml &lt;&lt;EOF
+all:
+  hosts:
+    hermes:
+      ansible_host: ${TAILSCALE_IP}
+      ansible_user: root
+      ansible_ssh_private_key_file: ${SSH_KEY}
+EOF
+  ansible-playbook ansible/playbooks/verify.yml || warn &quot;Verify playbook reported errors — check output above&quot;
+fi
+echo &quot;&quot;
+info &quot;Restore complete!&quot;
+echo &quot;&quot;
+printf &quot;  %-20s %s\n&quot; &quot;Backup:&quot; &quot;$(basename &quot;$BACKUP_FILE&quot;)&quot;
+printf &quot;  %-20s %s\n&quot; &quot;Server:&quot; &quot;root@${TAILSCALE_IP}&quot;
+printf &quot;  %-20s %s\n&quot; &quot;Health:&quot; &quot;curl http://127.0.0.1:8642/health (via SSH tunnel)&quot;
+echo &quot;&quot;
+if $IS_ENCRYPTED; then
+  rm -f &quot;$DECRYPTED_BACKUP&quot;
+fi</file><file path="terraform/outputs.tf">output &quot;server_ipv4&quot; {
+  description = &quot;Public IPv4 of the provisioned server&quot;
+  value       = hcloud_server.hermes.ipv4_address
+}
+
+output &quot;server_name&quot; {
+  description = &quot;Server hostname&quot;
+  value       = hcloud_server.hermes.name
+}</file><file path="terraform/variables.tf">variable &quot;hcloud_token&quot; {
+  description = &quot;Hetzner Cloud API token&quot;
+  type        = string
+  sensitive   = true
+}
+
+variable &quot;server_type&quot; {
+  description = &quot;Hetzner server type&quot;
+  type        = string
+  default     = &quot;cx23&quot;
+}
+
+variable &quot;location&quot; {
+  description = &quot;Hetzner location&quot;
+  type        = string
+  default     = &quot;fsn1&quot;
+}
+
+variable &quot;os_type&quot; {
+  description = &quot;OS image to use&quot;
+  type        = string
+  default     = &quot;ubuntu-24.04&quot;
+}
+
+variable &quot;server_name&quot; {
+  description = &quot;Server hostname&quot;
+  type        = string
+  default     = &quot;hermes&quot;
+}
+
+variable &quot;ssh_public_key&quot; {
+  description = &quot;Public SSH key for initial access&quot;
+  type        = string
+}
+
+variable &quot;cloud_firewall_enabled&quot; {
+  description = &quot;Create Hetzner Cloud Firewall allowing SSH only from deployer IP&quot;
+  type        = bool
+  default     = false
+}
+
+variable &quot;deployer_ip&quot; {
+  description = &quot;Deployer IP for cloud firewall SSH rule (required if cloud_firewall_enabled)&quot;
+  type        = string
+  default     = &quot;&quot;
+}</file><file path="COVENANT.md"># Secure Provisioning Principles for Hermes Agent on Podman
+
+## Purpose
+
+This document defines the security principles that an automation agent **MUST**, **SHOULD**, and **MUST NOT** follow when provisioning a server, installing Podman, and deploying Hermes Agent through a Docker Compose-compatible workflow.
+
+Hermes Agent is a powerful automation service that may store API keys, sessions, memories, skills, configuration, and other sensitive data in its persistent data directory. The official Hermes container documentation states that user data, API keys, sessions, skills, and memories are stored in the host-mounted `/opt/data` directory.
+
+Because Hermes Agent can automate actions, use credentials, and expose gateway/API functionality, the deployment must be treated as a security-sensitive service rather than a simple stateless container.
+
+---
+
+## 1. Rootless-First Execution
+
+### Principle
+
+The agent **MUST** install and configure Podman for rootless execution and **MUST NOT** run Hermes Agent as root unless there is a documented and approved exception.
+
+### Requirements
+
+- Create a dedicated Unix user, for example `hermes`.
+- Configure subordinate UID/GID ranges for rootless Podman.
+- Run all Hermes containers as the dedicated user.
+- Avoid using the host root account for routine container lifecycle operations.
+
+Rootless Podman requires subordinate UID and GID mappings in `/etc/subuid` and `/etc/subgid`.
+
+### Example
+
+```bash
+useradd -m -s /bin/bash hermes
+usermod --add-subuids 200000-265535 --add-subgids 200000-265535 hermes
+```
+
+The automation agent should validate that rootless Podman works before deploying Hermes.
+
+---
+
+## 2. Least-Privilege Container Runtime
+
+### Principle
+
+The Hermes container **MUST** be launched with the minimum privileges required to operate.
+
+### Requirements
+
+The agent **MUST NOT** use:
+
+```bash
+--privileged
+--pid=host
+--ipc=host
+--net=host
+-v /:/host
+-v /var/run/docker.sock:/var/run/docker.sock
+```
+
+Privileged containers disable important isolation mechanisms and may expose host process tables, network interfaces, IPC resources, and host filesystems to the container.
+
+### Required Runtime Controls
+
+The agent **SHOULD** apply:
+
+```bash
+--cap-drop=ALL
+--security-opt=no-new-privileges
+```
+
+`no-new-privileges` prevents container processes from gaining additional privileges.
+
+---
+
+## 3. No Public Exposure by Default
+
+### Principle
+
+Hermes Agent network services **MUST NOT** be exposed directly to the public Internet by default.
+
+### Requirements
+
+- Bind Hermes API ports to localhost unless explicitly configured otherwise.
+- Use VPN, SSH tunneling, a private network, or a reverse proxy with strong authentication for remote access.
+- Apply firewall rules before starting the service.
+- Do not publish dashboard or API ports broadly.
+
+### Preferred Binding
+
+```yaml
+ports:
+  - &quot;127.0.0.1:8642:8642&quot;
+```
+
+### Avoid
+
+```yaml
+ports:
+  - &quot;8642:8642&quot;
+```
+
+unless the deployment has explicit firewalling, authentication, and monitoring controls.
+
+---
+
+## 4. Strong API Authentication
+
+### Principle
+
+If the Hermes API server is enabled, the automation agent **MUST** configure strong authentication.
+
+### Requirements
+
+- Generate a high-entropy API key.
+- Do not use default, short, predictable, or hardcoded API keys.
+- Store secrets in a protected environment file.
+- Set restrictive file permissions on secret files.
+- Avoid logging secrets.
+
+### Example
+
+```bash
+install -d -m 700 -o hermes -g hermes /home/hermes/.hermes
+openssl rand -hex 32 &gt; /home/hermes/.hermes/api_server_key
+chmod 600 /home/hermes/.hermes/api_server_key
+chown hermes:hermes /home/hermes/.hermes/api_server_key
+```
+
+---
+
+## 5. Restrictive CORS Configuration
+
+### Principle
+
+The automation agent **MUST NOT** configure permissive CORS unless explicitly required and approved.
+
+### Requirements
+
+- Avoid `API_SERVER_CORS_ORIGINS=*`.
+- Restrict CORS to known trusted origins.
+- Disable browser-facing access if not required.
+
+### Preferred
+
+```yaml
+environment:
+  API_SERVER_CORS_ORIGINS: &quot;https://trusted.example.org&quot;
+```
+
+### Avoid
+
+```yaml
+environment:
+  API_SERVER_CORS_ORIGINS: &quot;*&quot;
+```
+
+---
+
+## 6. Persistent Data Protection
+
+### Principle
+
+The Hermes persistent data directory is sensitive and **MUST** be protected as a secrets-bearing directory.
+
+### Requirements
+
+- Use a dedicated host directory for Hermes data.
+- Set permissions to `0700`.
+- Ensure ownership belongs only to the dedicated Hermes user.
+- Do not mount broad host paths.
+- Do not mount SSH keys, cloud credentials, home directories, source repositories, or container engine sockets unless explicitly required and approved.
+
+Hermes stores configuration, API keys, sessions, skills, memories, and other user data in a host-mounted directory at `/opt/data`.
+
+### Example
+
+```bash
+install -d -m 700 -o hermes -g hermes /home/hermes/.hermes
+```
+
+### Compose Mount
+
+```yaml
+volumes:
+  - /home/hermes/.hermes:/opt/data:Z
+```
+
+On SELinux-enabled hosts, use `:Z` for a private container label when the volume is not shared between containers.
+
+---
+
+## 7. Mandatory Linux Security Controls
+
+### Principle
+
+The automation agent **MUST** preserve Linux container confinement controls.
+
+### Requirements
+
+The agent **MUST NOT** disable:
+
+```bash
+--security-opt label=disable
+--security-opt seccomp=unconfined
+--security-opt apparmor=unconfined
+```
+
+### Required
+
+- Keep seccomp enabled.
+- Keep SELinux labels enabled where SELinux is available.
+- Keep AppArmor enabled where AppArmor is available.
+- Use private SELinux volume labeling with `:Z` where appropriate.
+
+---
+
+## 8. Read-Only Runtime Filesystem Where Possible
+
+### Principle
+
+The Hermes container filesystem **SHOULD** be read-only during normal operation.
+
+### Requirements
+
+- Use a read-only root filesystem where possible.
+- Provide writable storage only for `/opt/data`.
+- Use `tmpfs` for temporary runtime paths.
+- Avoid broad writable mounts.
+
+### Example Podman Runtime Options
+
+```bash
+--read-only
+--read-only-tmpfs=true
+--tmpfs /tmp:rw,noexec,nosuid,nodev,size=512m
+```
+
+If Hermes setup requires temporary write access, the automation agent may run a one-time setup phase with relaxed settings, then switch back to a hardened runtime profile.
+
+---
+
+## 9. Resource Limits and Abuse Resistance
+
+### Principle
+
+The automation agent **SHOULD** apply resource limits to reduce denial-of-service risk.
+
+### Requirements
+
+Set reasonable limits for:
+
+- memory
+- CPU
+- process count
+- restart behavior
+- log size, where supported
+
+### Example
+
+```bash
+--memory=2g
+--cpus=2
+--pids-limit=512
+--restart=unless-stopped
+```
+
+The exact values should be configurable according to host size and expected workload.
+
+---
+
+## 10. Trusted Image and Supply Chain Hygiene
+
+### Principle
+
+The automation agent **MUST** pull Hermes images from trusted sources and **SHOULD** pin image versions or digests.
+
+### Requirements
+
+- Avoid unreviewed third-party images.
+- Prefer pinned tags or digests.
+- Record the deployed image reference.
+- Support controlled upgrades.
+- Allow image scanning where available.
+- Do not automatically run arbitrary latest images in sensitive environments.
+
+### Preferred
+
+```yaml
+image: docker.io/nousresearch/hermes-agent:&lt;pinned-version&gt;
+```
+
+or:
+
+```yaml
+image: docker.io/nousresearch/hermes-agent@sha256:&lt;digest&gt;
+```
+
+### Avoid for production
+
+```yaml
+image: docker.io/nousresearch/hermes-agent:latest
+```
+
+unless the deployment explicitly accepts automatic behavior changes.
+
+---
+
+## 11. Controlled Skills, Tools, and Extensions
+
+### Principle
+
+The automation agent **MUST** assume Hermes skills, tools, and extensions can expand the attack surface.
+
+### Requirements
+
+- Install only trusted skills or extensions.
+- Do not enable arbitrary shell, browser, or host automation capabilities without explicit approval.
+- Keep a list of enabled skills.
+- Disable unused integrations.
+- Review third-party extensions before installation.
+
+---
+
+## 12. Secret Handling and Rotation
+
+### Principle
+
+Secrets **MUST** be handled as high-value credentials.
+
+### Requirements
+
+- Never print secrets in logs.
+- Never commit secrets to Git.
+- Store secrets in protected files or secret management systems.
+- Use `0600` permissions for environment files.
+- Rotate API keys and tokens if exposure is suspected.
+- Separate setup-time credentials from runtime credentials where possible.
+
+### Example
+
+```bash
+touch /home/hermes/.hermes/.env
+chmod 600 /home/hermes/.hermes/.env
+chown hermes:hermes /home/hermes/.hermes/.env
+```
+
+---
+
+## 13. Firewall and Network Policy Before Service Start
+
+### Principle
+
+The automation agent **MUST** configure network restrictions before starting Hermes.
+
+### Requirements
+
+- Default deny inbound traffic where possible.
+- Permit only SSH administration and explicitly approved service ports.
+- Bind Hermes API to `127.0.0.1` by default.
+- If reverse proxying, expose only the proxy to the network.
+- Do not expose the Hermes dashboard unless explicitly requested.
+
+---
+
+## 14. Dashboard Disabled by Default
+
+### Principle
+
+The Hermes dashboard **MUST** be disabled by default unless specifically requested.
+
+### Requirements
+
+- Do not set `HERMES_DASHBOARD=1` by default.
+- If enabled, bind it to localhost.
+- Protect it behind authentication or VPN.
+- Do not expose port `9119` publicly.
+
+---
+
+## 15. Idempotent and Auditable Automation
+
+### Principle
+
+The provisioning agent **MUST** be idempotent, auditable, and safe to re-run.
+
+### Requirements
+
+The agent should:
+
+- Check whether users, directories, packages, services, and containers already exist.
+- Avoid overwriting existing secrets.
+- Record generated configuration.
+- Log actions without leaking credentials.
+- Produce a final deployment summary.
+- Validate that the running container matches the intended security profile.
+
+### Required Validation Commands
+
+```bash
+podman inspect hermes
+podman ps
+podman logs hermes
+```
+
+---
+
+## 16. Compose Compatibility with Podman
+
+### Principle
+
+If Docker Compose syntax is used, the automation agent **MUST** ensure that the resulting deployment is executed through Podman-compatible tooling and preserves the same hardening semantics.
+
+### Requirements
+
+- Prefer `podman compose` or a tested Podman-compatible Compose implementation.
+- Validate that security options are actually applied.
+- Do not assume all Docker Compose options behave identically under Podman.
+- Generate a deployment verification report after startup.
+
+The agent must inspect the running container after deployment rather than assuming the Compose file was interpreted as intended.
+
+---
+
+## 17. Secure Default Compose Profile
+
+### Principle
+
+The generated Compose file **MUST** default to a secure local-only deployment.
+
+### Example Hardened Compose File
+
+```yaml
+services:
+  hermes:
+    image: docker.io/nousresearch/hermes-agent:latest
+    container_name: hermes
+    restart: unless-stopped
+
+    command: [&quot;gateway&quot;, &quot;run&quot;]
+
+    userns_mode: &quot;keep-id&quot;
+
+    cap_drop:
+      - ALL
+
+    security_opt:
+      - no-new-privileges
+
+    read_only: true
+
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,nodev,size=512m
+
+    pids_limit: 512
+    mem_limit: 2g
+    cpus: 2
+
+    ports:
+      - &quot;127.0.0.1:8642:8642&quot;
+
+    environment:
+      API_SERVER_ENABLED: &quot;true&quot;
+      API_SERVER_HOST: &quot;0.0.0.0&quot;
+      API_SERVER_CORS_ORIGINS: &quot;https://trusted.example.org&quot;
+
+    env_file:
+      - /home/hermes/.hermes/.env
+
+    volumes:
+      - /home/hermes/.hermes:/opt/data:Z
+```
+
+The API server is bound to `0.0.0.0` inside the container so the process can listen within the container namespace, while the host port mapping restricts access to `127.0.0.1`.
+
+---
+
+## 18. One-Time Setup Mode Must Be Separated from Runtime Mode
+
+### Principle
+
+Initial Hermes setup and normal Hermes runtime **SHOULD** be treated as separate phases.
+
+### Requirements
+
+During setup, the agent may run:
+
+```bash
+podman run -it --rm \
+  -v /home/hermes/.hermes:/opt/data:Z \
+  docker.io/nousresearch/hermes-agent:latest \
+  setup
+```
+
+After setup, the agent must deploy the hardened long-running service.
+
+---
+
+## 19. Post-Deployment Security Verification
+
+### Principle
+
+The automation agent **MUST** verify the final deployment.
+
+### Required Checks
+
+The agent must verify that:
+
+- Hermes is running rootless.
+- The container is not privileged.
+- Host networking is not enabled.
+- Host PID namespace is not enabled.
+- Host IPC namespace is not enabled.
+- Capabilities are dropped.
+- `no-new-privileges` is enabled.
+- The API port is bound to localhost unless explicitly overridden.
+- The persistent data directory is owned by the Hermes user.
+- Secret files are not world-readable.
+- Dashboard is disabled unless explicitly requested.
+- No broad host directories are mounted.
+
+### Example
+
+```bash
+podman inspect hermes
+podman port hermes
+podman top hermes user huser
+```
+
+---
+
+## 20. Failure Policy
+
+### Principle
+
+The automation agent **MUST fail closed**.
+
+### Requirements
+
+The agent must stop provisioning and report an error if:
+
+- Podman rootless setup fails.
+- Required subordinate UID/GID mappings are missing.
+- The data directory permissions are unsafe.
+- The API key is missing or weak.
+- The requested configuration exposes Hermes publicly without explicit approval.
+- Security options are unsupported or ignored.
+- The container starts with privileged mode.
+- The deployment requires mounting sensitive host paths without explicit approval.
+
+---
+
+## Final Security Baseline
+
+A deployment is considered acceptable only if it satisfies the following baseline:
+
+- Podman runs rootless under a dedicated user.
+- Hermes is not privileged.
+- No host namespaces are shared.
+- All Linux capabilities are dropped by default.
+- `no-new-privileges` is enabled.
+- SELinux/AppArmor/seccomp are not disabled.
+- Persistent data is stored in a dedicated `0700` directory.
+- API access is localhost-only by default.
+- A strong API key is generated and protected.
+- CORS is restricted.
+- Dashboard is disabled by default.
+- Skills and extensions are trusted and minimal.
+- Final runtime configuration is verified with `podman inspect`.
+
+The provisioning agent must prioritize containment, least privilege, explicit exposure, auditable configuration, and safe failure over convenience.
+
+---
+
+## Source Links
+
+- Hermes Agent Docker documentation: https://hermes-agent.nousresearch.com/docs/user-guide/docker/
+- Podman rootless tutorial: https://github.com/containers/podman/blob/main/docs/tutorials/rootless_tutorial.md
+- Podman run documentation: https://docs.podman.io/en/latest/markdown/podman-run.1.html
+- Podman security options documentation: https://docs.podman.io/en/v4.6.0/markdown/options/security-opt.html
+- Red Hat documentation on privileged containers and host exposure: https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/9/html/building_running_and_managing_containers/assembly_running-special-container-images
+- QNAP Hermes Agent security and risk considerations: https://www.qnap.com/en/how-to/tutorial/article/how-to-deploy-and-configure-hermes-agent-on-qnap-nas-with-container-station</file><file path="LICENSE">MIT License
+
+Copyright (c) 2026 scicco
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the &quot;Software&quot;), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.</file><file path="teardown.sh">set -euo pipefail
+SCRIPT_DIR=&quot;$(cd &quot;$(dirname &quot;${BASH_SOURCE[0]}&quot;)&quot; &amp;&amp; pwd)&quot;
+cd &quot;$SCRIPT_DIR&quot;
+echo &quot;[INFO] Destroying Terraform resources...&quot;
+terraform -chdir=terraform destroy -auto-approve
+echo &quot;[INFO] Cleaning up inventory...&quot;
+rm -f ansible/inventory/hosts.yml
+echo &quot;[INFO] Teardown complete.&quot;</file><file path="ansible/roles/backup/tasks/main.yml">---
+- name: Fail if backup encryption is enabled but no recipient is set
+  assert:
+    that:
+      - backup_age_recipient | length &gt; 0
+    fail_msg: &quot;backup_age_recipient must be set when backup_encryption_enabled=true&quot;
+  when: backup_encryption_enabled | bool
+- name: Ensure backup directory exists
+  file:
+    path: &quot;{{ hermes_backup_dir }}&quot;
+    state: directory
+    owner: &quot;{{ hermes_user }}&quot;
+    group: &quot;{{ hermes_user }}&quot;
+    mode: &quot;0700&quot;
+- name: Install age for encryption
+  apt:
+    name: age
+    state: present
+    update_cache: yes
+  when: backup_encryption_enabled | bool
+- name: Deploy backup script
+  template:
+    src: hermes-backup.sh.j2
+    dest: &quot;{{ backup_script_path }}&quot;
+    owner: &quot;{{ hermes_user }}&quot;
+    group: &quot;{{ hermes_user }}&quot;
+    mode: &quot;0700&quot;
+- name: Schedule daily backup cron
+  cron:
+    name: hermes backup
+    user: &quot;{{ hermes_user }}&quot;
+    hour: &quot;2&quot;
+    minute: &quot;0&quot;
+    job: &quot;{{ backup_script_path }}&quot;
+    cron_file: hermes-backup</file><file path="scripts/repo_check.sh">set -u
+set -o pipefail
+REPO_DIR=&quot;${1:-.}&quot;
+cd &quot;$REPO_DIR&quot; || {
+  echo &quot;ERROR: cannot cd into $REPO_DIR&quot;
+  exit 1
+}
+if [ ! -d &quot;.git&quot; ] &amp;&amp; [ ! -d &quot;ansible&quot; ] &amp;&amp; [ ! -d &quot;terraform&quot; ]; then
+  echo &quot;WARNING: this does not look like the hermzner repo root.&quot;
+  echo &quot;Current directory: $(pwd)&quot;
+fi
+REPORT=&quot;hermzner-local-check-report.txt&quot;
+: &gt; &quot;$REPORT&quot;
+section() {
+  local title=&quot;$1&quot;
+  {
+    echo
+    echo &quot;================================================================================&quot;
+    echo &quot;$title&quot;
+    echo &quot;================================================================================&quot;
+  } | tee -a &quot;$REPORT&quot;
+}
+run_check() {
+  local title=&quot;$1&quot;
+  shift
+  section &quot;$title&quot;
+  echo &quot;+ $*&quot; | tee -a &quot;$REPORT&quot;
+  &quot;$@&quot; 2&gt;&amp;1 | tee -a &quot;$REPORT&quot;
+  local status=&quot;${PIPESTATUS[0]}&quot;
+  echo | tee -a &quot;$REPORT&quot;
+  echo &quot;Exit status: $status&quot; | tee -a &quot;$REPORT&quot;
+  return 0
+}
+run_grep() {
+  local title=&quot;$1&quot;
+  local pattern=&quot;$2&quot;
+  shift 2
+  section &quot;$title&quot;
+  echo &quot;+ grep -RInE &apos;$pattern&apos; $*&quot; | tee -a &quot;$REPORT&quot;
+  grep -RInE &quot;$pattern&quot; &quot;$@&quot; 2&gt;/dev/null | tee -a &quot;$REPORT&quot;
+  local status=&quot;${PIPESTATUS[0]}&quot;
+  if [ &quot;$status&quot; -eq 1 ]; then
+    echo &quot;(no matches)&quot; | tee -a &quot;$REPORT&quot;
+  else
+    echo &quot;grep exit status: $status&quot; | tee -a &quot;$REPORT&quot;
+  fi
+  return 0
+}
+run_grep_fixed() {
+  local title=&quot;$1&quot;
+  local pattern=&quot;$2&quot;
+  shift 2
+  section &quot;$title&quot;
+  echo &quot;+ grep -RIn &apos;$pattern&apos; $*&quot; | tee -a &quot;$REPORT&quot;
+  grep -RIn &quot;$pattern&quot; &quot;$@&quot; 2&gt;/dev/null | tee -a &quot;$REPORT&quot;
+  local status=&quot;${PIPESTATUS[0]}&quot;
+  if [ &quot;$status&quot; -eq 1 ]; then
+    echo &quot;(no matches)&quot; | tee -a &quot;$REPORT&quot;
+  else
+    echo &quot;grep exit status: $status&quot; | tee -a &quot;$REPORT&quot;
+  fi
+  return 0
+}
+echo &quot;Hermzner local repository checks&quot;
+echo &quot;Repository: $(pwd)&quot;
+echo &quot;Report: $REPORT&quot;
+echo
+section &quot;0. Git status and current commit&quot;
+{
+  echo &quot;+ git status --short&quot;
+  git status --short 2&gt;/dev/null || true
+  echo
+  echo &quot;+ git rev-parse --short HEAD&quot;
+  git rev-parse --short HEAD 2&gt;/dev/null || true
+  echo
+  echo &quot;+ git remote -v&quot;
+  git remote -v 2&gt;/dev/null || true
+} | tee -a &quot;$REPORT&quot;
+run_check \
+  &quot;1. File tree&quot; \
+  find . -maxdepth 5 -type f -not -path &quot;./.git/*&quot; -print
+run_grep \
+  &quot;2. Potential secret leakage scan&quot; \
+  &quot;(tskey-|HCLOUD_TOKEN|TF_VAR_hcloud_token|hcloud_token|API_SERVER_KEY|BEGIN OPENSSH|BEGIN RSA|BEGIN EC PRIVATE|BEGIN PRIVATE KEY|password|passwd|token|secret|api[_-]?key)&quot; \
+  . \
+  --exclude-dir=.git \
+  --exclude-dir=.terraform \
+  --exclude=&quot;*.md&quot; \
+  --exclude=&quot;*.lock.hcl&quot; \
+  --exclude=&quot;hermzner-local-check-report.txt&quot; \
+  --exclude=&quot;repo_check.sh&quot;
+run_grep_fixed \
+  &quot;3. Tailscale auth key and no_log usage&quot; \
+  &quot;tailscale_auth_key\|no_log&quot; \
+  ansible
+run_grep \
+  &quot;4. Image pinning enforcement&quot; \
+  &quot;hermes_image_ref|ALLOW_UNPINNED_IMAGE|@sha256|allow_unpinned_image&quot; \
+  ansible README.md SECURITY.md AGENTS.md COVENANT.md 2&gt;/dev/null
+run_grep \
+  &quot;5. Port exposure check: 8642, 9119, 0.0.0.0, 127.0.0.1&quot; \
+  &quot;8642|9119|0\.0\.0\.0|127\.0\.0\.1&quot; \
+  ansible terraform README.md SECURITY.md AGENTS.md COVENANT.md 2&gt;/dev/null
+run_grep \
+  &quot;6. Dangerous container flags or mounts&quot; \
+  &quot;privileged|network[=:]host|--net=host|pid[=:]host|--pid=host|ipc[=:]host|--ipc=host|/var/run/docker\.sock|/:\s*/|source=/,|type=bind,source=/&quot; \
+  ansible terraform README.md SECURITY.md AGENTS.md COVENANT.md 2&gt;/dev/null
+run_grep \
+  &quot;7. Quadlet path and hermes.container references&quot; \
+  &quot;containers/systemd|hermes\.container|systemctl --user|loginctl enable-linger|enable-linger&quot; \
+  ansible README.md SECURITY.md AGENTS.md COVENANT.md 2&gt;/dev/null
+run_grep \
+  &quot;8. Verification logic references&quot; \
+  &quot;podman inspect|podman port|podman top|curl|/health|no-new-privileges|CapDrop|cap_drop|Privileged|Userns|userns&quot; \
+  ansible/playbooks ansible/roles 2&gt;/dev/null
+run_grep \
+  &quot;9. Environment file and API key handling&quot; \
+  &quot;API_SERVER_KEY|\.env|0600|openssl rand|no_log|creates:|stat:&quot; \
+  ansible README.md SECURITY.md AGENTS.md COVENANT.md 2&gt;/dev/null
+run_grep \
+  &quot;10. Backup handling and encryption&quot; \
+  &quot;backup_encryption_enabled|backup_age_recipient|age |age-|tar|backups|0600|0700|retention&quot; \
+  ansible README.md SECURITY.md AGENTS.md COVENANT.md 2&gt;/dev/null
+run_grep \
+  &quot;11. Firewall and SSH exposure checks&quot; \
+  &quot;ufw|firewall|tailscale0|22/tcp|sshd|PasswordAuthentication|PermitRootLogin|public_ssh_policy|fail2ban&quot; \
+  ansible terraform README.md SECURITY.md AGENTS.md COVENANT.md 2&gt;/dev/null
+section &quot;12. Terraform state tracking check&quot;
+echo &quot;+ git ls-files | grep tfstate&quot; | tee -a &quot;$REPORT&quot;
+git ls-files | grep tfstate | tee -a &quot;$REPORT&quot;
+if git ls-files | grep -q tfstate; then
+  echo &quot;❌ ERROR: tfstate files are tracked in git!&quot; | tee -a &quot;$REPORT&quot;
+else
+  echo &quot;✅ OK: no tfstate files tracked&quot; | tee -a &quot;$REPORT&quot;
+fi
+run_grep \
+  &quot;13. Podman rootless setup checks&quot; \
+  &quot;subuid|subgid|fuse-overlayfs|podman info|rootless|keep-id|linger|hermes&quot; \
+  ansible README.md SECURITY.md AGENTS.md COVENANT.md 2&gt;/dev/null
+run_grep \
+  &quot;14. Runtime backend branching checks&quot; \
+  &quot;hermes_runtime_backend|quadlet|compose|podman-compose|compose.yaml|hermes.container&quot; \
+  ansible README.md SECURITY.md AGENTS.md COVENANT.md 2&gt;/dev/null
+section &quot;15. Basic shell syntax check&quot;
+SHELL_FILES=&quot;$(find . -maxdepth 4 -type f \( -name &quot;*.sh&quot; -o -path &quot;./deploy.sh&quot; -o -path &quot;./teardown.sh&quot; \) -not -path &quot;./.git/*&quot; 2&gt;/dev/null)&quot;
+if [ -z &quot;$SHELL_FILES&quot; ]; then
+  echo &quot;No shell files found.&quot; | tee -a &quot;$REPORT&quot;
+else
+  for f in $SHELL_FILES; do
+    echo &quot;+ bash -n $f&quot; | tee -a &quot;$REPORT&quot;
+    if bash -n &quot;$f&quot; 2&gt;&amp;1 | tee -a &quot;$REPORT&quot;; then
+      echo &quot;OK: $f&quot; | tee -a &quot;$REPORT&quot;
+    else
+      echo &quot;FAIL: $f&quot; | tee -a &quot;$REPORT&quot;
+    fi
+    echo | tee -a &quot;$REPORT&quot;
+  done
+fi
+section &quot;16. YAML parse check if Python + PyYAML are available&quot;
+if command -v python3 &gt;/dev/null 2&gt;&amp;1; then
+  python3 - &lt;&lt;&apos;PY&apos; 2&gt;&amp;1 | tee -a &quot;$REPORT&quot;
+import pathlib
+import sys
+try:
+    import yaml
+except Exception as e:
+    print(&quot;PyYAML not available; skipping YAML parse check.&quot;)
+    sys.exit(0)
+paths = []
+for root in [&quot;ansible&quot;]:
+    p = pathlib.Path(root)
+    if p.exists():
+        paths.extend(list(p.rglob(&quot;*.yml&quot;)))
+        paths.extend(list(p.rglob(&quot;*.yaml&quot;)))
+if not paths:
+    print(&quot;No YAML files found.&quot;)
+    sys.exit(0)
+failed = False
+for path in sorted(paths):
+    try:
+        with path.open(&quot;r&quot;, encoding=&quot;utf-8&quot;) as f:
+            list(yaml.safe_load_all(f))
+        print(f&quot;OK: {path}&quot;)
+    except Exception as e:
+        failed = True
+        print(f&quot;FAIL: {path}: {e}&quot;)
+if failed:
+    sys.exit(1)
+PY
+else
+  echo &quot;python3 not available; skipping YAML parse check.&quot; | tee -a &quot;$REPORT&quot;
+fi
+section &quot;17. Optional Ansible syntax check&quot;
+if command -v ansible-playbook &gt;/dev/null 2&gt;&amp;1; then
+  if [ -f &quot;ansible/playbooks/site.yml&quot; ]; then
+    echo &quot;+ ansible-playbook --syntax-check ansible/playbooks/site.yml&quot; | tee -a &quot;$REPORT&quot;
+    ansible-playbook --syntax-check ansible/playbooks/site.yml 2&gt;&amp;1 | tee -a &quot;$REPORT&quot; || true
+  fi
+  if [ -f &quot;ansible/playbooks/verify.yml&quot; ]; then
+    echo &quot;+ ansible-playbook --syntax-check ansible/playbooks/verify.yml&quot; | tee -a &quot;$REPORT&quot;
+    ansible-playbook --syntax-check ansible/playbooks/verify.yml 2&gt;&amp;1 | tee -a &quot;$REPORT&quot; || true
+  fi
+else
+  echo &quot;ansible-playbook not available; skipping Ansible syntax check.&quot; | tee -a &quot;$REPORT&quot;
+fi
+section &quot;18. Optional Terraform formatting and validation&quot;
+if command -v terraform &gt;/dev/null 2&gt;&amp;1 &amp;&amp; [ -d &quot;terraform&quot; ]; then
+  echo &quot;+ terraform -chdir=terraform fmt -check -recursive&quot; | tee -a &quot;$REPORT&quot;
+  terraform -chdir=terraform fmt -check -recursive 2&gt;&amp;1 | tee -a &quot;$REPORT&quot; || true
+  echo | tee -a &quot;$REPORT&quot;
+  echo &quot;Terraform validate requires initialized providers. Running only if .terraform exists.&quot; | tee -a &quot;$REPORT&quot;
+  if [ -d &quot;terraform/.terraform&quot; ]; then
+    echo &quot;+ terraform -chdir=terraform validate&quot; | tee -a &quot;$REPORT&quot;
+    terraform -chdir=terraform validate 2&gt;&amp;1 | tee -a &quot;$REPORT&quot; || true
+  else
+    echo &quot;terraform/.terraform not found; skipping terraform validate.&quot; | tee -a &quot;$REPORT&quot;
+  fi
+else
+  echo &quot;terraform not available or terraform/ missing; skipping Terraform checks.&quot; | tee -a &quot;$REPORT&quot;
+fi
+section &quot;19. Summary and manual review hints&quot;
+cat &lt;&lt;&apos;EOF&apos; | tee -a &quot;$REPORT&quot;
+Review the report for:
+[Critical]
+- Any real token/secret/key material committed.
+- Any use of --privileged, host networking, host PID/IPC, or Docker socket mounts.
+- Any host port binding to 0.0.0.0 for Hermes service ports.
+- Any Tailscale auth task missing no_log: true.
+- Any non-digest Hermes image when allow_unpinned_image is false.
+- Any wildcard CORS setting.
+[Important]
+- Quadlet files should be under /home/hermes/.config/containers/systemd/.
+- /home/hermes/.hermes should be 0700.
+- /home/hermes/.hermes/.env should be 0600.
+- API_SERVER_KEY should be generated once and never overwritten.
+- verify.yml should fail closed.
+- backup encryption should require backup_age_recipient when enabled.
+- README should not claim encrypted backups if encryption is optional.
+[Expected benign matches]
+- Documentation may mention dangerous flags as examples of what NOT to do.
+- API_SERVER_HOST=0.0.0.0 is acceptable inside the container if host port binding is 127.0.0.1.
+- Variable names containing token/secret are acceptable if no real values are present.
+EOF
+echo
+echo &quot;Done. Full report written to: $REPORT&quot;</file><file path="terraform/terraform.tfvars.example"># hcloud_token is passed via TF_VAR_hcloud_token environment variable
+ssh_public_key   = &quot;ssh-ed25519 AAAAC3... your-key-comment&quot;
+# Optional overrides:
+# server_type          = &quot;cx23&quot;
+# location             = &quot;fsn1&quot;
+# server_name          = &quot;hermes&quot;
+# cloud_firewall_enabled = true
+# deployer_ip          = &quot;203.0.113.1&quot;</file><file path="ansible/inventory/group_vars/all.yml">---
+hermes_user: hermes
+hermes_home: /home/hermes
+hermes_image_ref: &apos;&apos;
+# Feature toggles
+hermes_dashboard_enabled: false
+hermes_runtime_backend: quadlet
+hermes_mnemosyne_enabled: false
+hermes_start_runtime: false
+backup_encryption_enabled: false
+sshd_hardening_enabled: true
+security_fail2ban_enabled: true
+security_disable_unused_services: true
+security_harden_shared_memory: true
+# Resource limits
+hermes_memory_limit: 2g
+hermes_cpu_limit: 2
+hermes_pids_limit: 512
+# Networking
+public_ssh_policy: restricted
+hermes_bind_mode: localhost
+# Storage
+podman_volume_label_suffix: &apos;&apos;
+hermes_data_dir: &apos;{{ hermes_home }}/.hermes&apos;
+hermes_backup_dir: &apos;{{ hermes_home }}/backups&apos;
+hermes_compose_file: &apos;{{ hermes_data_dir }}/compose.yaml&apos;
+hermes_quadlet_dir: &apos;{{ hermes_home }}/.config/containers/systemd&apos;
+hermes_quadlet_file: &apos;{{ hermes_quadlet_dir }}/hermes.container&apos;
+backup_retention_days: 30
+backup_age_recipient: &apos;&apos;
+backup_script_path: &apos;{{ hermes_home }}/.hermes-backup.sh&apos;
+hermes_healthcheck_enabled: true
+hermes_healthcheck_url: &apos;http://127.0.0.1:8642/health&apos;
+api_server_cors_origins: &apos;&apos;</file><file path="ansible/roles/hermes/handlers/main.yml">---
+- name: reload systemd user
+  become: true
+  become_user: &quot;{{ hermes_user }}&quot;
+  command:
+    cmd: systemctl --user daemon-reload
+  environment:
+    XDG_RUNTIME_DIR: &quot;/run/user/{{ hermes_uid.stdout }}&quot;</file><file path="ansible/roles/podman/tasks/main.yml">---
+- name: Add home:lfv Podman GPG key
+  apt_key:
+    url: https://download.opensuse.org/repositories/home:/lfv/xUbuntu_24.04/Release.key
+    state: present
+- name: Add home:lfv Podman repository
+  apt_repository:
+    repo: &quot;deb https://download.opensuse.org/repositories/home:/lfv/xUbuntu_24.04/ /&quot;
+    state: present
+    update_cache: false
+- name: Pin Podman to home:lfv repository
+  copy:
+    content: |
+      Package: podman
+      Pin: origin download.opensuse.org
+      Pin-Priority: 1001
+    dest: /etc/apt/preferences.d/podman-lfv
+    mode: &quot;0644&quot;
+- name: Install podman and dependencies
+  apt:
+    name:
+      - podman
+      - fuse-overlayfs
+      - crun
+      - passt
+    state: latest
+    update_cache: true
+- name: Install podman-compose (compose mode only)
+  apt:
+    name: podman-compose
+    state: present
+  when: hermes_runtime_backend == &quot;compose&quot;
+- name: Create hermes user
+  user:
+    name: &quot;{{ hermes_user }}&quot;
+    state: present
+    create_home: true
+    shell: /bin/bash
+- name: Configure subordinate UID ranges
+  lineinfile:
+    path: /etc/subuid
+    regexp: &quot;^{{ hermes_user }}:&quot;
+    line: &quot;{{ hermes_user }}:100000:65536&quot;
+    create: true
+    mode: &quot;0644&quot;
+- name: Configure subordinate GID ranges
+  lineinfile:
+    path: /etc/subgid
+    regexp: &quot;^{{ hermes_user }}:&quot;
+    line: &quot;{{ hermes_user }}:100000:65536&quot;
+    create: true
+    mode: &quot;0644&quot;
+- name: Enable linger for hermes user
+  command:
+    cmd: loginctl enable-linger {{ hermes_user }}
+  changed_when: false
+- name: Ensure containers config directory exists
+  file:
+    path: &quot;{{ hermes_home }}/.config/containers&quot;
+    state: directory
+    owner: &quot;{{ hermes_user }}&quot;
+    group: &quot;{{ hermes_user }}&quot;
+    mode: &quot;0700&quot;
+- name: Configure runc as default runtime
+  copy:
+    content: |
+      [engine]
+      runtime = &quot;/usr/bin/runc&quot;
+    dest: &quot;{{ hermes_home }}/.config/containers/containers.conf&quot;
+    owner: &quot;{{ hermes_user }}&quot;
+    group: &quot;{{ hermes_user }}&quot;
+    mode: &quot;0644&quot;
+- name: Validate rootless podman
+  command:
+    cmd: sudo -u {{ hermes_user }} podman info
+    chdir: &quot;{{ hermes_home }}&quot;
+  register: podman_info
+  changed_when: false
+- name: Fail if rootless podman is not working
+  assert:
+    that:
+      - podman_info.rc == 0
+    fail_msg: &quot;Rootless podman validation failed for user {{ hermes_user }}&quot;</file><file path="ansible/roles/security/handlers/main.yml">---
+- name: restart sshd
+  service:
+    name: ssh
+    state: restarted
+- name: restart fail2ban
+  service:
+    name: fail2ban
+    state: restarted</file><file path="ansible/roles/tailscale/tasks/main.yml">---
+- name: Add Tailscale apt GPG key
+  apt_key:
+    url: https://pkgs.tailscale.com/stable/ubuntu/noble.noarmor.gpg
+    state: present
+- name: Add Tailscale apt repository
+  apt_repository:
+    repo: &quot;deb https://pkgs.tailscale.com/stable/ubuntu noble main&quot;
+    state: present
+    update_cache: true
+- name: Pin Tailscale package
+  copy:
+    content: |
+      Package: tailscale
+      Pin: origin pkgs.tailscale.com
+      Pin-Priority: 1001
+    dest: /etc/apt/preferences.d/tailscale
+    mode: &quot;0644&quot;
+- name: Install tailscale
+  apt:
+    name: tailscale
+    state: present
+- name: Authenticate and start tailscale
+  command:
+    argv:
+      - tailscale
+      - up
+      - --ssh
+      - --auth-key
+      - &quot;{{ tailscale_auth_key }}&quot;
+  no_log: true
+  changed_when: false
+- name: Wait for tailscale to be ready
+  command:
+    cmd: tailscale status --json
+  register: tailscale_status
+  changed_when: false
+  retries: 10
+  delay: 2
+  until: tailscale_status.rc == 0
+- name: Register tailscale DNS name
+  set_fact:
+    tailscale_dns: &quot;{{ (tailscale_status.stdout | from_json).Self.DNSName | regex_replace(&apos;\\.$&apos;, &apos;&apos;) }}&quot;
+  when: tailscale_status.stdout | length &gt; 0</file><file path="terraform/main.tf">terraform {
+  required_providers {
+    hcloud = {
+      source  = &quot;hetznercloud/hcloud&quot;
+      version = &quot;~&gt; 1.49&quot;
+    }
+  }
+}
+
+provider &quot;hcloud&quot; {
+  token = var.hcloud_token
+}
+
+resource &quot;hcloud_ssh_key&quot; &quot;deployer&quot; {
+  name       = &quot;${var.server_name}-deployer&quot;
+  public_key = var.ssh_public_key
+}
+
+resource &quot;hcloud_firewall&quot; &quot;provisioning&quot; {
+  count = var.cloud_firewall_enabled ? 1 : 0
+  name  = &quot;${var.server_name}-provisioning&quot;
+
+  rule {
+    direction = &quot;in&quot;
+    protocol  = &quot;tcp&quot;
+    port      = &quot;22&quot;
+    source_ips = var.deployer_ip != &quot;&quot; ? [&quot;${var.deployer_ip}/32&quot;] : []
+  }
+}
+
+resource &quot;hcloud_server&quot; &quot;hermes&quot; {
+  name        = var.server_name
+  server_type = var.server_type
+  location    = var.location
+  image       = var.os_type
+  ssh_keys    = [hcloud_ssh_key.deployer.id]
+
+  lifecycle {
+    precondition {
+      condition     = !var.cloud_firewall_enabled || var.deployer_ip != &quot;&quot;
+      error_message = &quot;deployer_ip must be set when cloud_firewall_enabled is true&quot;
+    }
+  }
+}
+
+resource &quot;hcloud_firewall_attachment&quot; &quot;hermes&quot; {
+  count       = var.cloud_firewall_enabled ? 1 : 0
+  firewall_id = hcloud_firewall.provisioning[0].id
+  server_ids  = [hcloud_server.hermes.id]
+}</file><file path="ansible.cfg">[defaults]
+roles_path = ansible/roles/
+inventory = ansible/inventory</file><file path="ansible/roles/backup/templates/hermes-backup.sh.j2">#!/bin/bash
+set -euo pipefail
+
+BACKUP_DIR=&quot;{{ hermes_backup_dir }}&quot;
+DATA_DIR=&quot;{{ hermes_data_dir }}&quot;
+RETENTION_DAYS={{ backup_retention_days }}
+TIMESTAMP=$(date +%Y%m%d-%H%M%S)
+ARCHIVE=&quot;${BACKUP_DIR}/hermes-backup-${TIMESTAMP}.tar.gz&quot;
+ENCRYPTED=&quot;${ARCHIVE}.age&quot;
+AGE_RECIPIENT=&quot;{{ backup_age_recipient }}&quot;
+
+if [ &quot;${BACKUP_DIR}&quot; = &quot;/&quot; ] || [ -z &quot;${BACKUP_DIR}&quot; ]; then
+  echo &quot;ERROR: BACKUP_DIR is invalid&quot; &gt;&amp;2
+  exit 1
+fi
+
+[ -d &quot;${DATA_DIR}&quot; ] || { echo &quot;ERROR: DATA_DIR does not exist&quot; &gt;&amp;2; exit 1; }
+
+mkdir -p &quot;${BACKUP_DIR}&quot;
+
+tar czf &quot;${ARCHIVE}&quot; -C &quot;$(dirname &quot;${DATA_DIR}&quot;)&quot; &quot;$(basename &quot;${DATA_DIR}&quot;)&quot;
+
+{% if backup_encryption_enabled %}
+if ! command -v age &gt;/dev/null 2&gt;&amp;1; then
+  echo &quot;ERROR: backup encryption enabled but age is not installed&quot; &gt;&amp;2
+  rm -f &quot;${ARCHIVE}&quot;
+  exit 1
+fi
+
+if [ -z &quot;${AGE_RECIPIENT}&quot; ]; then
+  echo &quot;ERROR: backup encryption enabled but AGE_RECIPIENT is empty&quot; &gt;&amp;2
+  rm -f &quot;${ARCHIVE}&quot;
+  exit 1
+fi
+
+if ! age -r &quot;${AGE_RECIPIENT}&quot; -o &quot;${ENCRYPTED}&quot; &quot;${ARCHIVE}&quot;; then
+  echo &quot;ERROR: age encryption failed&quot; &gt;&amp;2
+  rm -f &quot;${ARCHIVE}&quot; &quot;${ENCRYPTED}&quot;
+  exit 1
+fi
+chmod 0600 &quot;${ENCRYPTED}&quot;
+rm -f &quot;${ARCHIVE}&quot;
+echo &quot;Encrypted backup: ${ENCRYPTED}&quot;
+{% else %}
+chmod 0600 &quot;${ARCHIVE}&quot;
+echo &quot;Backup: ${ARCHIVE}&quot;
+{% endif %}
+
+find &quot;${BACKUP_DIR}&quot; -name &quot;hermes-backup-*&quot; -type f -mtime +&quot;${RETENTION_DAYS}&quot; -delete</file><file path="ansible/roles/hermes/templates/compose.yaml.j2">services:
+  hermes:
+    image: &quot;{{ &apos;localhost/hermes-mnemosyne:latest&apos; if hermes_mnemosyne_enabled else hermes_image_ref }}&quot;
+    container_name: hermes
+    restart: unless-stopped
+    command: [&quot;gateway&quot;, &quot;run&quot;]
+    userns_mode: &quot;keep-id&quot;
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges
+      - seccomp=default
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,nodev,size=512m
+      - /run:rw,noexec,nosuid,nodev,size=64m
+    pids_limit: &quot;{{ hermes_pids_limit }}&quot;
+    mem_limit: &quot;{{ hermes_memory_limit }}&quot;
+    cpus: &quot;{{ hermes_cpu_limit }}&quot;
+    ports:
+      - &quot;127.0.0.1:8642:8642&quot;
+      - &quot;127.0.0.1:9119:9119&quot;
+    environment:
+      API_SERVER_ENABLED: &quot;true&quot;
+      API_SERVER_HOST: &quot;0.0.0.0&quot;
+      API_SERVER_CORS_ORIGINS: &quot;{{ api_server_cors_origins }}&quot;
+      HERMES_DASHBOARD: &quot;{{ &apos;1&apos; if hermes_dashboard_enabled else &apos;0&apos; }}&quot;
+      {% if hermes_mnemosyne_enabled %}
+      MNEMOSYNE_DATA_DIR: &quot;/opt/data/mnemosyne&quot;
+      {% endif %}
+    env_file:
+      - &quot;{{ hermes_data_dir }}/.env&quot;
+    volumes:
+      - &quot;{{ hermes_data_dir }}:/opt/data{{ podman_volume_label_suffix }}&quot;</file><file path="ansible/roles/hermes/templates/hermes.container.j2">[Unit]
+Description=Hermes Agent Container
+After=network-online.target
+Wants=network-online.target
+
+[Container]
+Image={{ hermes_image_ref if not hermes_mnemosyne_enabled else &apos;localhost/hermes-mnemosyne:latest&apos; }}
+ContainerName=hermes
+Exec=gateway run
+{% if hermes_dashboard_enabled %}
+Environment=HERMES_DASHBOARD=1
+{% endif %}
+Environment=API_SERVER_ENABLED=true
+Environment=API_SERVER_HOST=0.0.0.0
+Environment=API_SERVER_CORS_ORIGINS={{ api_server_cors_origins | quote }}
+{% if hermes_mnemosyne_enabled %}
+Environment=MNEMOSYNE_DATA_DIR=/opt/data/mnemosyne
+{% endif %}
+EnvironmentFile={{ hermes_data_dir }}/.env
+Volume={{ hermes_data_dir }}:/opt/data{{ podman_volume_label_suffix }}
+PublishPort=127.0.0.1:8642:8642
+{% if hermes_dashboard_enabled %}
+PublishPort=127.0.0.1:9119:9119
+{% endif %}
+ReadOnly=true
+DropCapability=ALL
+UserNS=keep-id
+User=1000
+NoNewPrivileges=true
+Tmpfs=/tmp:rw,noexec,nosuid,nodev,size=512m
+Tmpfs=/run:rw,noexec,nosuid,nodev,size=64m
+Tmpfs=/.local:rw,noexec,nosuid,nodev,size=64m
+PidsLimit={{ hermes_pids_limit }}
+Memory={{ hermes_memory_limit }}
+
+[Install]
+WantedBy=default.target
+
+[Service]
+Restart=on-failure
+RestartSec=10
+CPUQuota={{ (hermes_cpu_limit | float * 100) | int }}%</file><file path="ansible/playbooks/site.yml">---
+- name: Provision Hermes server
+  hosts: hermes
+  gather_facts: true
+  become: true
+  pre_tasks:
+    - name: Fail if hermes_image_ref is not set
+      assert:
+        that:
+          - hermes_image_ref is defined
+          - hermes_image_ref | length &gt; 0
+        fail_msg: &quot;hermes_image_ref must be set to a full image reference (e.g., repo@sha256:...)&quot;
+    - name: Fail on unpinned image unless explicitly allowed
+      assert:
+        that:
+          - allow_unpinned_image | default(false) | bool or &apos;@sha256:&apos; in hermes_image_ref
+        fail_msg: &quot;hermes_image_ref must use a digest pin (@sha256:...) unless allow_unpinned_image=true&quot;
+    - name: Fail on permissive CORS
+      assert:
+        that:
+          - api_server_cors_origins != &quot;*&quot;
+          - &quot;&apos;example&apos; not in api_server_cors_origins&quot;
+        fail_msg: &quot;api_server_cors_origins must not be wildcard or contain placeholder values&quot;
+    - name: Validate hermes_runtime_backend
+      assert:
+        that:
+          - hermes_runtime_backend in [&apos;quadlet&apos;, &apos;compose&apos;]
+        fail_msg: &quot;hermes_runtime_backend must be &apos;quadlet&apos; or &apos;compose&apos;&quot;
+    - name: Validate public_ssh_policy
+      assert:
+        that:
+          - public_ssh_policy in [&apos;restricted&apos;, &apos;disabled_after_tailscale&apos;, &apos;open_key_only&apos;]
+        fail_msg: &quot;public_ssh_policy must be one of: restricted, disabled_after_tailscale, open_key_only&quot;
+    - name: Validate hermes_bind_mode
+      assert:
+        that:
+          - hermes_bind_mode == &apos;localhost&apos;
+        fail_msg: &quot;hermes_bind_mode must be &apos;localhost&apos;&quot;
+    - name: Validate podman_volume_label_suffix
+      assert:
+        that:
+          - podman_volume_label_suffix in [&apos;&apos;, &apos;:Z&apos;]
+        fail_msg: &quot;podman_volume_label_suffix must be &apos;&apos; or &apos;:Z&apos;&quot;
+    - name: Fail if backup encryption is enabled but no recipient is set
+      assert:
+        that:
+          - backup_age_recipient | length &gt; 0
+        fail_msg: &quot;backup_age_recipient must be set when backup_encryption_enabled=true&quot;
+      when: backup_encryption_enabled | bool
+    - name: Fail if restricted mode without deployer_ip
+      assert:
+        that:
+          - deployer_ip is defined
+          - deployer_ip | length &gt; 0
+        fail_msg: &quot;deployer_ip is required when public_ssh_policy=restricted&quot;
+      when: public_ssh_policy == &quot;restricted&quot;
+  roles:
+    - role: podman
+    - role: tailscale
+    - role: security
+    - role: mnemosyne_build
+    - role: hermes
+    - role: mnemosyne_runtime
+    - role: backup</file><file path="ansible/playbooks/verify.yml">---
+- name: Verify Hermes deployment security
+  hosts: hermes
+  gather_facts: false
+  become: true
+  tasks:
+    - name: Check if container is running
+      command: podman inspect hermes
+      become: true
+      become_user: &quot;{{ hermes_user }}&quot;
+      register: inspect
+      changed_when: false
+      failed_when: false
+    - name: Skip container checks if not running
+      debug:
+        msg: &quot;Container not running — skipping container security checks&quot;
+      when: inspect.rc != 0
+    - block:
+        - name: Container must not be privileged
+          assert:
+            that:
+              - not (inspect.stdout | from_json | first).HostConfig.Privileged
+            fail_msg: &quot;Container is running in privileged mode&quot;
+        - name: User namespace must be active
+          assert:
+            that:
+              - (inspect.stdout | from_json | first).HostConfig.UsernsMode | length &gt; 0
+            fail_msg: &quot;User namespace is not active&quot;
+        - name: Capabilities must be restricted
+          assert:
+            that:
+              - (inspect.stdout | from_json | first).HostConfig.CapDrop | length &gt; 0
+            fail_msg: &quot;No capabilities are dropped&quot;
+        - name: no-new-privileges must be enabled
+          assert:
+            that:
+              - (inspect.stdout | from_json | first).HostConfig.SecurityOpt | select(&apos;search&apos;, &apos;no-new-privileges&apos;) | list | length &gt; 0
+            fail_msg: &quot;no-new-privileges is not enabled&quot;
+        - name: seccomp must not be disabled
+          assert:
+            that:
+              - (inspect.stdout | from_json | first).HostConfig.SecurityOpt | select(&apos;search&apos;, &apos;seccomp=unconfined&apos;) | list | length == 0
+            fail_msg: &quot;seccomp is disabled (seccomp=unconfined)&quot;
+        - name: AppArmor must not be disabled
+          assert:
+            that:
+              - (inspect.stdout | from_json | first).HostConfig.SecurityOpt | select(&apos;search&apos;, &apos;apparmor=unconfined&apos;) | list | length == 0
+            fail_msg: &quot;AppArmor is disabled (apparmor=unconfined)&quot;
+        - name: Check port binding
+          command: podman port hermes
+          become: true
+          become_user: &quot;{{ hermes_user }}&quot;
+          register: port_info
+          changed_when: false
+        - name: All ports must be bound to localhost
+          assert:
+            that:
+              - port_info.stdout_lines | map(&apos;regex_search&apos;, &apos;127\\.0\\.0\\.1&apos;) | list | length == port_info.stdout_lines | length
+            fail_msg: &quot;Not all ports are bound to 127.0.0.1&quot;
+        - name: Check running user
+          command: podman top hermes user huser
+          become: true
+          become_user: &quot;{{ hermes_user }}&quot;
+          register: top_info
+          changed_when: false
+        - name: Must not run as root
+          assert:
+            that:
+              - &quot;&apos;root&apos; not in top_info.stdout&quot;
+            fail_msg: &quot;Container processes are running as root&quot;
+      when: inspect.rc == 0
+    - name: Check data directory permissions
+      stat:
+        path: &quot;{{ hermes_data_dir }}&quot;
+      register: data_dir_stat
+    - name: Data directory must be 0700
+      assert:
+        that:
+          - data_dir_stat.stat.mode == &apos;0700&apos;
+        fail_msg: &quot;{{ hermes_data_dir }} permissions are not 0700&quot;
+    - name: Check .env file permissions
+      stat:
+        path: &quot;{{ hermes_data_dir }}/.env&quot;
+      register: env_stat
+    - name: .env must be 0600
+      assert:
+        that:
+          - env_stat.stat.mode == &apos;0600&apos;
+        fail_msg: &quot;.env file permissions are not 0600&quot;
+    - name: Check container health
+      command: curl -sf &quot;{{ hermes_healthcheck_url }}&quot;
+      register: health
+      changed_when: false
+      failed_when: false
+      when: hermes_healthcheck_enabled | bool and inspect.rc == 0
+    - name: Health endpoint must respond
+      assert:
+        that:
+          - health.rc == 0
+        fail_msg: &quot;Health endpoint is not responding at {{ hermes_healthcheck_url }}&quot;
+      when: hermes_healthcheck_enabled | bool and inspect.rc == 0</file><file path="SECURITY.md"># Security Model
+
+This document describes the security architecture, threat model, and design rationale for the Hermzner provisioning pipeline. It is intended to prevent incorrect assumptions when reviewing the system without full context.
+
+---
+
+## Security Architecture
+
+```
+Deployer Machine                  Hetzner VPS (Ubuntu 24.04)
+┌─────────────────────┐             ┌──────────────────────────────────┐
+│  Terraform          │  SSH + API  │  UFW (default deny)              │
+│  Ansible            │ ──────────► │    │                             │
+│  deploy.sh          │             │    ├─ tailscale0: SSH (22)       │
+│  HCLOUD_TOKEN  env  │             │    └─ (optional) deployer IP: 22 │
+│  TAILSCALE_KEY  env │             │                                  │
+└─────────────────────┘             │  Podman (rootless, hermes user)  │
+                                    │    └─ hermes.container           │
+  Tailscale                         │       ├─ 127.0.0.1:8642 (API)    │
+  ┌────────────┐                    │       ├─ 127.0.0.1:9119 (dash)   │
+  │ SSH tunnel │ ◄─── tailnet ───   │       ├─ read-only rootfs        │
+  └────────────┘                    │       ├─ cap_drop: ALL           │
+                                    │       └─ no-new-privileges       │
+                                    │                                  │
+                                    │  /home/hermes/.hermes/           │
+                                    │    ├─ .env (0600)                │
+                                    │    └─ data (0700)                │
+                                    └──────────────────────────────────┘
+```
+
+---
+
+## Trust Boundary
+
+The primary trust boundary of this system is **Tailscale identity**, not SSH.
+
+- SSH is treated as a transport layer
+- Access control is identity-based (Tailscale)
+- Services are not exposed publicly
+
+Implications:
+
+- Misconfigured SSH does not imply compromise
+- Network surface is minimal
+- Identity defines access
+
+---
+
+## Core Principles
+
+- Minimize exposed surface
+- Prefer identity-based access
+- Avoid fragile configuration (e.g. AllowUsers)
+- Fail safely and predictably
+- Guarantee recoverability
+
+---
+
+## Key Design Decisions
+
+### Quadlet as primary runtime
+
+- Native systemd integration
+- No Docker dependency
+- Deterministic lifecycle
+
+---
+
+### Host key verification enabled
+
+- known_hosts populated via ssh-keyscan
+- No disabling of host key checking
+
+---
+
+### Secrets never logged
+
+- Ansible `no_log: true`
+- Covers Tailscale key and API key
+
+---
+
+### Localhost-only exposure
+
+All services bind to:
+
+```
+127.0.0.1
+```
+
+No direct network exposure.
+
+---
+
+### Image digest pinning enforced
+
+- Requires `@sha256:` digest
+- Floating tags rejected
+- Override only via env variable
+
+---
+
+### Verification is fail-closed
+
+Deployment fails if any check fails:
+
+- No privileged containers
+- Capabilities dropped
+- no-new-privileges
+- localhost binding
+- strict permissions
+
+---
+
+## Access Control Model
+
+Primary access:
+
+```
+ssh root@&lt;tailscale-ip&gt;
+```
+
+Public SSH is configurable:
+
+- disabled_after_tailscale
+- restricted
+- open_key_only
+
+---
+
+## SSH Hardening Philosophy
+
+- Minimal
+- Optional
+- Never breaks access
+
+Settings:
+
+- PasswordAuthentication no
+- PermitRootLogin prohibit-password
+- ChallengeResponseAuthentication no
+- MaxAuthTries 3
+- MaxSessions 5
+
+---
+
+## Network Security
+
+- UFW default deny
+- SSH via tailscale0 or restricted IP
+- No public service ports
+
+---
+
+## Container Security
+
+- Rootless Podman
+- No capabilities
+- Read-only filesystem
+- no-new-privileges
+- Resource limits
+
+---
+
+## Secrets Handling
+
+- Generated securely
+- Stored with 0600
+- Not logged
+
+---
+
+## Backup Security
+
+- Stored locally
+- 0600 permissions
+- Optional encryption (age)
+
+---
+
+## Recovery Model
+
+Recovery paths:
+
+1. Tailscale SSH
+2. Local recovery script
+3. Hetzner Rescue system
+4. Hetzner console
+
+Guarantees:
+
+- sshd config validated
+- rollback on failure
+- no permanent lockout
+
+---
+
+## Threat Model
+
+### In Scope
+
+- Container compromise
+- Supply chain attacks
+- Network exposure
+- SSH brute force
+
+### Out of Scope
+
+- Deployer compromise
+- Tailscale compromise
+- Kernel 0-days
+- Physical attacks
+
+---
+
+## Defense in Depth
+
+- UFW
+- Fail2Ban (optional)
+- sysctl hardening
+- disabled services
+
+---
+
+## Known Gaps
+
+- No Terraform remote state
+- No automatic image updates
+- SSH hardening optional
+- Env token visibility during deploy
+
+---
+
+## Final Note
+
+Security is achieved through reduced exposure and guaranteed recovery, not complexity.</file><file path="ansible/roles/hermes/tasks/main.yml">---
+- name: Ensure quadlet directory exists (quadlet mode)
+  file:
+    path: &quot;{{ hermes_quadlet_dir }}&quot;
+    state: directory
+    owner: &quot;{{ hermes_user }}&quot;
+    group: &quot;{{ hermes_user }}&quot;
+    mode: &quot;0700&quot;
+  when: hermes_runtime_backend == &quot;quadlet&quot;
+- name: Ensure hermes data directory exists
+  file:
+    path: &quot;{{ hermes_data_dir }}&quot;
+    state: directory
+    owner: &quot;{{ hermes_user }}&quot;
+    group: &quot;{{ hermes_user }}&quot;
+    mode: &quot;0700&quot;
+- name: Generate API key if not present
+  shell:
+    cmd: |
+      touch {{ hermes_data_dir | quote }}/.env
+      if ! grep -q &apos;^API_SERVER_KEY=&apos; {{ hermes_data_dir | quote }}/.env 2&gt;/dev/null; then
+        API_KEY=$(openssl rand -hex 32)
+        printf &apos;\nAPI_SERVER_KEY=%s\n&apos; &quot;${API_KEY}&quot; &gt;&gt; {{ hermes_data_dir | quote }}/.env
+      fi
+  no_log: true
+- name: Set .env permissions
+  file:
+    path: &quot;{{ hermes_data_dir }}/.env&quot;
+    owner: &quot;{{ hermes_user }}&quot;
+    group: &quot;{{ hermes_user }}&quot;
+    mode: &quot;0600&quot;
+- name: Deploy Quadlet container unit
+  template:
+    src: hermes.container.j2
+    dest: &quot;{{ hermes_quadlet_file }}&quot;
+    owner: &quot;{{ hermes_user }}&quot;
+    group: &quot;{{ hermes_user }}&quot;
+    mode: &quot;0600&quot;
+  when: hermes_runtime_backend == &quot;quadlet&quot;
+  notify: reload systemd user
+- name: Deploy Compose file
+  template:
+    src: compose.yaml.j2
+    dest: &quot;{{ hermes_compose_file }}&quot;
+    owner: &quot;{{ hermes_user }}&quot;
+    group: &quot;{{ hermes_user }}&quot;
+    mode: &quot;0600&quot;
+  when: hermes_runtime_backend == &quot;compose&quot;
+- name: Get hermes UID
+  command: &quot;id -u {{ hermes_user }}&quot;
+  register: hermes_uid
+  changed_when: false
+- name: Start runtime (quadlet mode)
+  become: true
+  become_user: &quot;{{ hermes_user }}&quot;
+  systemd_service:
+    scope: user
+    name: hermes
+    state: started
+    enabled: true
+    daemon_reload: true
+  environment:
+    XDG_RUNTIME_DIR: &quot;/run/user/{{ hermes_uid.stdout }}&quot;
+  when:
+    - hermes_runtime_backend == &quot;quadlet&quot;
+    - hermes_start_runtime | bool
+- name: Start runtime (compose mode)
+  become: true
+  become_user: &quot;{{ hermes_user }}&quot;
+  command:
+    cmd: podman-compose -f {{ hermes_compose_file }} up -d
+  when:
+    - hermes_runtime_backend == &quot;compose&quot;
+    - hermes_start_runtime | bool
+- name: Print next steps
+  debug:
+    msg: &gt;
+      Hermes prepared at {{ hermes_data_dir }}.
+      {% if hermes_start_runtime %}
+      Container started.
+      {% else %}
+      Run interactive setup: podman run -it --rm -v {{ hermes_data_dir }}:/opt/data{{ podman_volume_label_suffix }} {{ hermes_image_ref }} setup
+      Then start:
+      {% if hermes_runtime_backend == &apos;quadlet&apos; %}
+       sudo -u {{ hermes_user }} XDG_RUNTIME_DIR=/run/user/$(id -u {{ hermes_user }}) systemctl --user enable --now hermes.service
+      {% else %}
+      podman-compose -f {{ hermes_compose_file }} up -d
+      {% endif %}
+      {% endif %}</file><file path="ansible/roles/security/tasks/main.yml">---
+- name: Install system packages
+  apt:
+    name:
+      - ufw
+      - unattended-upgrades
+    state: present
+- name: Enable unattended-upgrades
+  copy:
+    content: |
+      APT::Periodic::Update-Package-Lists &quot;1&quot;;
+      APT::Periodic::Download-Upgradeable-Packages &quot;1&quot;;
+      APT::Periodic::AutocleanInterval &quot;7&quot;;
+      APT::Periodic::Unattended-Upgrade &quot;1&quot;;
+    dest: /etc/apt/apt.conf.d/20auto-upgrades
+    mode: &quot;0644&quot;
+- name: Set UFW defaults
+  ufw:
+    direction: &quot;{{ item.dir }}&quot;
+    policy: &quot;{{ item.policy }}&quot;
+  loop:
+    - { dir: incoming, policy: deny }
+    - { dir: outgoing, policy: allow }
+- name: Configure SSH firewall (disabled_after_tailscale)
+  block:
+    - name: Allow SSH on tailscale interface
+      ufw:
+        rule: allow
+        direction: in
+        interface: tailscale0
+        port: &quot;22&quot;
+        proto: tcp
+    - name: Deny SSH from everywhere else
+      ufw:
+        rule: deny
+        port: &quot;22&quot;
+        proto: tcp
+  when: public_ssh_policy == &quot;disabled_after_tailscale&quot;
+- name: Fail if restricted mode but no deployer_ip
+  fail:
+    msg: &quot;deployer_ip is required when public_ssh_policy=restricted&quot;
+  when:
+    - public_ssh_policy == &quot;restricted&quot;
+    - deployer_ip is not defined or deployer_ip | length == 0
+- name: Configure SSH firewall (restricted)
+  block:
+    - name: Allow SSH from deployer IP
+      ufw:
+        rule: allow
+        port: &quot;22&quot;
+        proto: tcp
+        from_ip: &quot;{{ deployer_ip }}&quot;
+  when:
+    - public_ssh_policy == &quot;restricted&quot;
+    - deployer_ip is defined
+    - deployer_ip | length &gt; 0
+- name: Configure SSH firewall (open_key_only)
+  block:
+    - name: Allow SSH from anywhere
+      ufw:
+        rule: allow
+        port: &quot;22&quot;
+        proto: tcp
+  when: public_ssh_policy == &quot;open_key_only&quot;
+- name: Enable UFW
+  ufw:
+    state: enabled
+- name: Verify tailscale is online before hardening SSH
+  command: tailscale status --json
+  register: ts_json
+  failed_when: &gt;
+    (ts_json.stdout is not defined) or
+    ((ts_json.stdout | from_json).Self.Online is not defined) or
+    (not (ts_json.stdout | from_json).Self.Online)
+  changed_when: false
+  when: sshd_hardening_enabled | bool
+- name: Configure sshd hardening
+  block:
+    - name: Validate current sshd config before changes
+      command: sshd -t
+      changed_when: false
+    - name: Disable password authentication
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: &quot;^#?PasswordAuthentication&quot;
+        line: &quot;PasswordAuthentication no&quot;
+      notify: restart sshd
+    - name: Disable root password login
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: &quot;^#?PermitRootLogin&quot;
+        line: &quot;PermitRootLogin prohibit-password&quot;
+      notify: restart sshd
+    - name: Disable challenge-response auth
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: &quot;^#?ChallengeResponseAuthentication&quot;
+        line: &quot;ChallengeResponseAuthentication no&quot;
+      notify: restart sshd
+    - name: Set SSH MaxAuthTries
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: &quot;^#?MaxAuthTries&quot;
+        line: &quot;MaxAuthTries 3&quot;
+      notify: restart sshd
+    - name: Set SSH MaxSessions
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: &quot;^#?MaxSessions&quot;
+        line: &quot;MaxSessions 5&quot;
+      notify: restart sshd
+    - name: Validate sshd config after changes
+      command: sshd -t
+      changed_when: false
+      notify: restart sshd
+  when: sshd_hardening_enabled | bool
+- name: Install SSH recovery script
+  copy:
+    src: revert-sshd-hardening.sh
+    dest: /root/revert-sshd-hardening.sh
+    mode: &quot;0700&quot;
+- name: Set hermes user umask
+  lineinfile:
+    path: &quot;{{ hermes_home }}/.bashrc&quot;
+    line: &quot;umask 077&quot;
+    regexp: &quot;^umask &quot;
+    create: true
+    owner: &quot;{{ hermes_user }}&quot;
+    mode: &quot;0644&quot;
+- name: Set system-wide umask
+  copy:
+    content: &quot;umask 077\n&quot;
+    dest: /etc/profile.d/umask.sh
+    mode: &quot;0644&quot;
+- name: Harden sysctl
+  sysctl:
+    name: &quot;{{ item.key }}&quot;
+    value: &quot;{{ item.value }}&quot;
+    state: present
+    reload: true
+  loop:
+    - { key: net.ipv4.ip_forward, value: &quot;0&quot; }
+    - { key: net.ipv4.conf.all.accept_source_route, value: &quot;0&quot; }
+    - { key: kernel.kptr_restrict, value: &quot;2&quot; }
+    - { key: kernel.dmesg_restrict, value: &quot;1&quot; }
+    - { key: net.ipv4.conf.all.rp_filter, value: &quot;1&quot; }
+    - { key: net.ipv4.conf.default.rp_filter, value: &quot;1&quot; }
+    - { key: net.ipv4.icmp_echo_ignore_broadcasts, value: &quot;1&quot; }
+    - { key: net.ipv4.tcp_syncookies, value: &quot;1&quot; }
+    - { key: net.ipv4.conf.all.log_martians, value: &quot;1&quot; }
+    - { key: net.ipv4.conf.default.log_martians, value: &quot;1&quot; }
+    - { key: net.ipv6.conf.all.accept_source_route, value: &quot;0&quot; }
+    - { key: net.ipv6.conf.default.accept_source_route, value: &quot;0&quot; }
+    - { key: net.ipv6.conf.all.accept_redirects, value: &quot;0&quot; }
+    - { key: net.ipv6.conf.default.accept_redirects, value: &quot;0&quot; }
+    - { key: net.ipv6.conf.all.accept_ra, value: &quot;0&quot; }
+    - { key: net.ipv6.conf.default.accept_ra, value: &quot;0&quot; }
+- name: Install fail2ban
+  apt:
+    name: fail2ban
+    state: present
+  when: security_fail2ban_enabled | bool
+- name: Create fail2ban jail.local
+  copy:
+    content: |
+      [DEFAULT]
+      bantime = 3600
+      findtime = 600
+      maxretry = 3
+      ignoreip = 127.0.0.1/8 ::1
+      [sshd]
+      enabled = true
+      port = ssh
+      logpath = %(sshd_log)s
+      maxretry = 3
+    dest: /etc/fail2ban/jail.local
+    mode: &quot;0644&quot;
+  notify: restart fail2ban
+  when: security_fail2ban_enabled | bool
+- name: Enable and start fail2ban
+  systemd:
+    name: fail2ban
+    state: started
+    enabled: true
+  when: security_fail2ban_enabled | bool
+- name: Disable unused network services
+  systemd:
+    name: &quot;{{ item }}&quot;
+    state: stopped
+    enabled: false
+    masked: true
+  failed_when: false
+  loop:
+    - avahi-daemon
+    - cups
+    - ModemManager
+    - multipathd
+    - udisks2
+  when: security_disable_unused_services | bool
+- name: Secure /dev/shm mount options
+  mount:
+    path: /dev/shm
+    src: tmpfs
+    fstype: tmpfs
+    opts: &quot;defaults,noexec,nosuid,nodev&quot;
+    state: mounted
+  when: security_harden_shared_memory | bool</file><file path=".gitignore"># Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+!terraform.tfvars.example
+terraform/.terraform.lock.hcl
+
+# Generated Ansible inventory
+ansible/inventory/hosts.yml
+
+# Local OS/editor files
+.DS_Store
+*.swp
+*.swo
+*~
+
+# env files
+.env
+.env.*
+
+# Local reports/logs
+hermzner-local-check-report.txt
+*.log
+context.txt
+repo_check.txt
+
+utils/
+scratches/
+.opencode
+docs/superpowers/
+
+backups</file><file path="deploy.sh">set -euo pipefail
+SCRIPT_DIR=&quot;$(cd &quot;$(dirname &quot;${BASH_SOURCE[0]}&quot;)&quot; &amp;&amp; pwd)&quot;
+cd &quot;$SCRIPT_DIR&quot;
+RED=&apos;\033[0;31m&apos;
+GREEN=&apos;\033[0;32m&apos;
+YELLOW=&apos;\033[1;33m&apos;
+NC=&apos;\033[0m&apos;
+info()  { echo -e &quot;${GREEN}[INFO]${NC} $1&quot;; }
+warn()  { echo -e &quot;${YELLOW}[WARN]${NC} $1&quot;; }
+error() { echo -e &quot;${RED}[ERROR]${NC} $1&quot;; exit 1; }
+info &quot;Checking prerequisites...&quot;
+command -v terraform &gt;/dev/null 2&gt;&amp;1 || error &quot;terraform is not installed&quot;
+command -v ansible-playbook &gt;/dev/null 2&gt;&amp;1 || error &quot;ansible-playbook is not installed&quot;
+SSH_KEY=&quot;${PRIVATE_SSH_KEY:-$HOME/.ssh/id_ed25519}&quot;
+[ -n &quot;${HCLOUD_TOKEN:-}&quot; ]       || error &quot;HCLOUD_TOKEN is not set&quot;
+[ -n &quot;${TAILSCALE_AUTH_KEY:-}&quot; ] || error &quot;TAILSCALE_AUTH_KEY is not set&quot;
+[ -f &quot;$SSH_KEY&quot; ] || error &quot;SSH key not found at $SSH_KEY&quot;
+ALLOW_UNPINNED=&quot;${ALLOW_UNPINNED_IMAGE:-false}&quot;
+DEPLOYER_IP=$(curl -sf --max-time 5 https://ifconfig.me 2&gt;/dev/null || curl -sf --max-time 5 https://icanhazip.com 2&gt;/dev/null || echo &quot;&quot;)
+if [ -z &quot;$DEPLOYER_IP&quot; ]; then
+  warn &quot;Could not detect deployer IP. UFW restricted mode will not add a source-IP allow rule.&quot;
+  warn &quot;SSH via Tailscale will still work.&quot;
+fi
+info &quot;Applying Terraform...&quot;
+export TF_VAR_hcloud_token=&quot;${HCLOUD_TOKEN}&quot;
+terraform -chdir=terraform init -upgrade
+STALE_KEY_NAME=&quot;${TF_VAR_server_name:-hermes}-deployer&quot;
+STALE_KEY_ID=$(curl -sf -H &quot;Authorization: Bearer ${HCLOUD_TOKEN}&quot; \
+  &quot;https://api.hetzner.cloud/v1/ssh_keys?name=${STALE_KEY_NAME}&quot; 2&gt;/dev/null | \
+  python3 -c &quot;import sys,json; d=json.load(sys.stdin); print(d[&apos;ssh_keys&apos;][0][&apos;id&apos;]) if d.get(&apos;ssh_keys&apos;) else None&quot; 2&gt;/dev/null || echo &quot;&quot;)
+if [ -n &quot;$STALE_KEY_ID&quot; ]; then
+  info &quot;Importing existing SSH key (ID: ${STALE_KEY_ID}) into Terraform state...&quot;
+  terraform -chdir=terraform import hcloud_ssh_key.deployer &quot;$STALE_KEY_ID&quot; 2&gt;/dev/null || true
+fi
+terraform -chdir=terraform apply -auto-approve
+SERVER_IP=$(terraform -chdir=terraform output -raw server_ipv4)
+info &quot;Server IP: ${SERVER_IP}&quot;
+mkdir -p ansible/inventory
+cat &gt; ansible/inventory/hosts.yml &lt;&lt;EOF
+all:
+  hosts:
+    hermes:
+      ansible_host: ${SERVER_IP}
+      ansible_user: root
+      ansible_ssh_private_key_file: ${SSH_KEY}
+EOF
+info &quot;Inventory written to ansible/inventory/hosts.yml&quot;
+info &quot;Waiting for SSH...&quot;
+mkdir -p ~/.ssh
+RETRIES=10
+DELAY=5
+for i in $(seq 1 $RETRIES); do
+  ssh-keygen -R &quot;${SERVER_IP}&quot; 2&gt;/dev/null || true
+  ssh-keyscan -H &quot;${SERVER_IP}&quot; 2&gt;/dev/null &gt;&gt; ~/.ssh/known_hosts
+  if ssh -o ConnectTimeout=5 root@&quot;${SERVER_IP}&quot; id &gt;/dev/null 2&gt;&amp;1; then
+    info &quot;SSH ready (attempt ${i})&quot;
+    break
+  fi
+  if [ &quot;$i&quot; -eq &quot;$RETRIES&quot; ]; then
+    error &quot;SSH not ready after ${RETRIES} attempts&quot;
+  fi
+  warn &quot;SSH not ready, retrying in ${DELAY}s (attempt ${i}/${RETRIES})...&quot;
+  sleep &quot;$DELAY&quot;
+  DELAY=$((DELAY * 2))
+  [ &quot;$DELAY&quot; -gt 60 ] &amp;&amp; DELAY=60
+done
+sort -u -o ~/.ssh/known_hosts ~/.ssh/known_hosts 2&gt;/dev/null || true
+info &quot;Running Ansible site playbook...&quot;
+ansible-playbook ansible/playbooks/site.yml \
+  --extra-vars &quot;tailscale_auth_key=${TAILSCALE_AUTH_KEY} allow_unpinned_image=${ALLOW_UNPINNED} deployer_ip=${DEPLOYER_IP:-}&quot;
+TAILSCALE_IP=$(ssh -o ConnectTimeout=5 root@&quot;${SERVER_IP}&quot; tailscale ip -4 2&gt;/dev/null || echo &quot;&quot;)
+if [ -z &quot;$TAILSCALE_IP&quot; ]; then
+  TAILSCALE_IP=&quot;(unknown)&quot;
+  warn &quot;Could not determine Tailscale IP. The server may still be authenticating.&quot;
+fi
+TAILSCALE_DNS=$(ssh -o ConnectTimeout=5 root@&quot;${SERVER_IP}&quot; &quot;tailscale status --json 2&gt;/dev/null | python3 -c &apos;import json,sys; d=json.load(sys.stdin); print(d.get(\&quot;Self\&quot;,{}).get(\&quot;DNSName\&quot;,\&quot;\&quot;).rstrip(\&quot;.\&quot;))&apos;&quot; || echo &quot;&quot;)
+if [ -z &quot;$TAILSCALE_DNS&quot; ]; then
+  TAILSCALE_DNS=&quot;(unknown)&quot;
+fi
+HERMES_IMAGE=$(sed -n &quot;s/^hermes_image_ref:[[:space:]]*&apos;\(.*\)&apos;/\1/p&quot; ansible/inventory/group_vars/all.yml 2&gt;/dev/null)
+if grep -q &apos;^hermes_mnemosyne_enabled:[[:space:]]*true&apos; ansible/inventory/group_vars/all.yml 2&gt;/dev/null; then
+  HERMES_IMAGE=&quot;localhost/hermes-mnemosyne:latest&quot;
+fi
+if grep -q &apos;^hermes_start_runtime:[[:space:]]*true&apos; ansible/inventory/group_vars/all.yml 2&gt;/dev/null; then
+  info &quot;Running verification playbook...&quot;
+  ansible-playbook ansible/playbooks/verify.yml
+  if grep -q &apos;^hermes_mnemosyne_enabled:[[:space:]]*true&apos; ansible/inventory/group_vars/all.yml 2&gt;/dev/null; then
+    echo &quot;&quot;
+    echo &quot;  -------- Mnemosyne Memory --------&quot;
+    echo &quot;  Plugin installed automatically by Ansible.&quot;
+    echo &quot;  To select &apos;mnemosyne&apos; as the active memory provider:&quot;
+    echo &quot;    ssh hermes@${TAILSCALE_IP}&quot;
+    echo &quot;    podman exec -it hermes /opt/hermes/.venv/bin/hermes memory setup&quot;
+    echo &quot;    # Select &apos;mnemosyne&apos; from the provider list&quot;
+  fi
+else
+  warn &quot;Hermes prepared but not started.&quot;
+  echo &quot;&quot;
+  echo &quot;  1. SSH in:        ssh root@${TAILSCALE_IP}&quot;
+  echo &quot;  2. Interactive:    cd /tmp &amp;&amp; sudo -u hermes podman run -it --rm -v /home/hermes/.hermes:/opt/data ${HERMES_IMAGE:-&lt;image&gt;} setup&quot;
+  echo &quot;  3. Start runtime:  sudo -u hermes XDG_RUNTIME_DIR=/run/user/\$(id -u hermes) systemctl --user start hermes.service&quot;
+  if grep -q &apos;^hermes_mnemosyne_enabled:[[:space:]]*true&apos; ansible/inventory/group_vars/all.yml 2&gt;/dev/null; then
+    echo &quot;  4. Install plugin: sudo -u hermes XDG_RUNTIME_DIR=/run/user/\$(id -u hermes) podman exec hermes python3 -m mnemosyne.install&quot;
+    echo &quot;  5. Load plugin:   sudo -u hermes XDG_RUNTIME_DIR=/run/user/\$(id -u hermes) systemctl --user restart hermes.service&quot;
+    echo &quot;  6. Select memory:  cd /tmp &amp;&amp; sudo -u hermes XDG_RUNTIME_DIR=/run/user/\$(id -u hermes) podman exec -it hermes /opt/hermes/.venv/bin/hermes memory setup&quot;
+    echo &quot;  7. Verify:         ansible-playbook ansible/playbooks/verify.yml&quot;
+  else
+    echo &quot;  4. Verify:         ansible-playbook ansible/playbooks/verify.yml&quot;
+  fi
+fi
+unset TF_VAR_hcloud_token
+info &quot;Deployment complete!&quot;
+echo &quot;&quot;
+printf &quot;  %-18s %s\n&quot; &quot;Server IP:&quot; &quot;${SERVER_IP}&quot;
+printf &quot;  %-18s %s\n&quot; &quot;Tailscale IP:&quot; &quot;${TAILSCALE_IP}&quot;
+printf &quot;  %-18s %s\n&quot; &quot;Tailscale DNS:&quot; &quot;${TAILSCALE_DNS}&quot;
+SSH_POLICY=$(grep &apos;^public_ssh_policy:[[:space:]]*&apos; ansible/inventory/group_vars/all.yml 2&gt;/dev/null | sed &apos;s/.*:[[:space:]]*//&apos;)
+if [ &quot;$SSH_POLICY&quot; = &quot;disabled_after_tailscale&quot; ]; then
+  printf &quot;  %-18s %s\n&quot; &quot;SSH (pub):&quot; &quot;(disabled — use Tailscale SSH only)&quot;
+else
+  printf &quot;  %-18s %s\n&quot; &quot;SSH (pub):&quot; &quot;ssh root@${SERVER_IP}&quot;
+fi
+printf &quot;  %-18s %s\n&quot; &quot;SSH (ts-root):&quot; &quot;ssh root@${TAILSCALE_IP}&quot;
+if [ &quot;${TAILSCALE_DNS}&quot; != &quot;(unknown)&quot; ]; then
+  printf &quot;  %-18s %s\n&quot; &quot;SSH (ts-root DNS):&quot; &quot;ssh root@${TAILSCALE_DNS}&quot;
+fi
+printf &quot;  %-18s %s\n&quot; &quot;SSH (ts-user):&quot; &quot;ssh hermes@${TAILSCALE_IP}&quot;
+if [ &quot;${TAILSCALE_DNS}&quot; != &quot;(unknown)&quot; ]; then
+  printf &quot;  %-18s %s\n&quot; &quot;SSH (ts-user DNS):&quot; &quot;ssh hermes@${TAILSCALE_DNS}&quot;
+fi
+echo &quot;&quot;
+echo &quot;  -------- Access (via SSH tunnel) --------&quot;
+echo &quot;  Dashboard:  ssh -L 9119:127.0.0.1:9119 hermes@${TAILSCALE_IP}  → http://127.0.0.1:9119&quot;
+echo &quot;  API:        ssh -L 8642:127.0.0.1:8642 hermes@${TAILSCALE_IP}  → http://127.0.0.1:8642&quot;
+echo &quot;&quot;
+echo &quot;  -------- SSH Hardening --------&quot;
+echo &quot;  sshd_config hardening is DISABLED by default.&quot;
+echo &quot;  To enable: set sshd_hardening_enabled: true in ansible/inventory/group_vars/all.yml&quot;
+echo &quot;  Then run ./deploy.sh again — Ansible applies the changes idempotently.&quot;
+echo &quot;  This disables password auth and limits auth attempts/sessions.&quot;
+echo &quot;  Without it, SSH security relies on network controls (UFW + Tailscale).&quot;
+if grep -q &apos;^hermes_mnemosyne_enabled:[[:space:]]*true&apos; ansible/inventory/group_vars/all.yml 2&gt;/dev/null; then
+  echo &quot;&quot;
+  echo &quot;  -------- Mnemosyne Memory --------&quot;
+  echo &quot;  Custom image built with mnemosyne-memory[all].&quot;
+  echo &quot;  Plugin installed automatically (mnemosyne_runtime role).&quot;
+  if ! grep -q &apos;^hermes_start_runtime:[[:space:]]*true&apos; ansible/inventory/group_vars/all.yml 2&gt;/dev/null; then
+    echo &quot;  Remember to run:&quot;
+    echo &quot;    podman exec hermes python3 -m mnemosyne.install&quot;
+    echo &quot;    systemctl --user restart hermes.service&quot;
+  fi
+  echo &quot;  To select &apos;mnemosyne&apos; as the active provider:&quot;
+  echo &quot;    ssh hermes@${TAILSCALE_IP}&quot;
+  echo &quot;    podman exec -it hermes /opt/hermes/.venv/bin/hermes memory setup&quot;
+fi</file><file path="AGENTS.md"># Hermzner — Hermes Agent Provisioning
+
+## Project Overview
+
+Provision a hardened Hetzner VPS (Ubuntu 24.04) with rootless Podman and deploy Hermes Agent behind Tailscale. Terraform creates the VPS, Ansible configures it, a `deploy.sh` orchestrates both.
+
+**Security baseline:** This project implements all 20 principles from [`COVENANT.md`](./COVENANT.md). Every role and template is designed to satisfy specific principles.
+
+## Repository Layout
+
+```
+terraform/         → Hetzner VPS (main.tf, variables.tf, outputs.tf)
+ansible/           → 7 roles + 2 playbooks + inventory/group_vars
+  inventory/       → hosts.yml + group_vars/
+  roles/
+    podman/        → Rootless Podman, hermes user, subuid/subgid, linger
+    tailscale/     → apt install, auth key, SSH enabled, IP registration
+    security/      → UFW, sysctl hardening, unattended-upgrades, SSH policy, umask 077, fail2ban, disable unused services, /dev/shm hardening
+    mnemosyne_build/ → Build custom container image with mnemosyne-memory[all]
+    hermes/        → Quadlet (default) + Compose (fallback) templates, secrets
+    mnemosyne_runtime/ → Runtime mnemosyne.install + service restart
+    backup/        → daily local backups, optionally age-encrypted, 30-day retention
+  playbooks/
+    site.yml       → Preflight assertions → roles
+    verify.yml     → 11 security invariants, fail-closed
+deploy.sh          → Terraform → SSH readiness loop → Ansible → verify
+teardown.sh        → terraform destroy + cleanup
+scripts/
+  restore.sh       → Restore from backup archive (plain or age-encrypted)
+  repo_check.sh    → Local security and consistency checks
+```
+
+## Key Architecture Decisions
+
+| Decision          | Choice                                                   | Rationale                                                                                                               |
+| ----------------- | -------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| Runtime backend   | Quadlet (default), Compose (fallback)                    | Quadlet gives cleaner systemd lifecycle; Compose for environments without systemd user sessions                         |
+| Container runtime | Rootless Podman                                          | Principle 1 — dedicated `hermes` user, subuid/subgid, never root                                                        |
+| Network access    | Tailscale SSH + tunnel                                   | No public port exposure; ports bound to `127.0.0.1`                                                                     |
+| Ansible host      | Public IPv4 (initial)                                    | Ansible runs before Tailscale exists — connects via Hetzner-assigned IPv4, not Tailscale IP                             |
+| Image pinning     | Digest required, fail-closed                             | Principle 10 — `hermes_image_ref` must contain `@sha256:`; override via `ALLOW_UNPINNED_IMAGE` env var (not group_vars) |
+| Dashboard         | Disabled by default                                      | Principle 14 — `hermes_dashboard_enabled: false`, user opts in                                                          |
+| Secret storage    | `/home/hermes/.hermes/.env` at `0600`                    | Principle 12 — generated via `openssl rand -hex 32`, never overwritten                                                  |
+| Backup encryption | age (opt-in)                                             | Principle 6 — `backup_encryption_enabled` + `backup_age_recipient` (public key from deployer, not generated on-server)  |
+| Token handling    | `TF_VAR_hcloud_token` env var                            | No `.tfvars` file on disk; Terraform reads from environment                                                             |
+| SSH hardening     | Opt-in via `sshd_hardening_enabled`                      | Default `false` — Ubuntu cloud images ship secure defaults                                                              |
+| fail2ban          | Enabled by default (`security_fail2ban_enabled`)         | Bans SSH IPs after 3 failed attempts within 10 minutes                                                                  |
+| Unused services   | Disabled by default (`security_disable_unused_services`) | Stops + masks avahi-daemon, cups, ModemManager, multipathd, udisks2                                                     |
+| Shared memory     | Hardened by default (`security_harden_shared_memory`)    | `/dev/shm` mounted with `noexec,nosuid,nodev`                                                                           |
+| Memory backend    | Mnemosyne (opt-in via `hermes_mnemosyne_enabled`)        | SQLite-vec memory, custom Docker image built from pinned base, data in existing volume mount                           |
+
+## Preflight Assertions (fail-closed)
+
+Before any role executes, `site.yml` validates:
+
+- `hermes_image_ref` is set and digest-pinned (unless `ALLOW_UNPINNED_IMAGE` env var is set)
+- `api_server_cors_origins` is not `&quot;*&quot;`
+- `hermes_runtime_backend` is `quadlet` or `compose`
+- `public_ssh_policy` is `restricted`, `disabled_after_tailscale`, or `open_key_only`
+- `podman_volume_label_suffix` is `&quot;&quot;` or `&quot;:Z&quot;`
+- `hermes_bind_mode` is `localhost`
+- `backup_age_recipient` is set if `backup_encryption_enabled=true`
+
+## Security Verification (`verify.yml`)
+
+After deployment, 11 checks must all pass:
+
+1. Container not privileged
+2. User namespace active
+3. All capabilities dropped
+4. `no-new-privileges` enabled
+5. seccomp not disabled
+6. AppArmor not disabled
+7. Ports bound to `127.0.0.1`
+8. Container runs as `hermes` user
+9. Data dir `0700`
+10. `.env` `0600`
+11. Health endpoint responding
+
+## Workflow
+
+```bash
+cp terraform/terraform.tfvars.example terraform/terraform.tfvars
+# Edit: set ssh_public_key, overrides
+# Edit: set hermes_image_ref in ansible/inventory/group_vars/all.yml
+
+HCLOUD_TOKEN=xxx TAILSCALE_AUTH_KEY=tskey-auth-xxx ./deploy.sh
+
+## SSH as Root (VPS Operations)
+
+When SSHed as root, all `hermes` user commands need:
+
+```bash
+cd /tmp &amp;&amp; sudo -u hermes XDG_RUNTIME_DIR=/run/user/$(id -u hermes) &lt;command&gt;
+```
+
+- `cd /tmp` — sudo inherits cwd; hermes can&apos;t chdir to /root
+- `XDG_RUNTIME_DIR` — required for rootless podman/systemd
+- `sudo -u hermes` — run as the hermes user
+
+When SSHed directly as `hermes@&lt;host&gt;`, `podman exec` works without `cd /tmp`, `sudo`, or `XDG_RUNTIME_DIR` — the user session sets these automatically.
+
+Quadlet services use transient/generated units — use `start`/`restart`/`stop`, NOT `enable --now`:
+
+```bash
+sudo -u hermes XDG_RUNTIME_DIR=/run/user/$(id -u hermes) systemctl --user restart hermes.service
+```
+
+Hermes binary lives in a venv at `/opt/hermes/.venv/bin/hermes` — use full path in `podman exec`.
+
+# Post-deploy (if hermes_start_runtime: false):
+ssh hermes@&lt;tailscale-ip&gt;
+podman run -it --rm -v /home/hermes/.hermes:/opt/data &lt;image&gt; setup
+systemctl --user enable --now hermes.service
+
+# Post-deploy (if mnemosyne enabled, runtime started — install is automated by mnemosyne_runtime role):
+ssh hermes@&lt;tailscale-ip&gt;
+podman exec -it hermes /opt/hermes/.venv/bin/hermes memory setup
+
+# Post-deploy (if mnemosyne enabled, runtime NOT started — manual steps):
+ssh root@&lt;tailscale-ip&gt;
+sudo -u hermes XDG_RUNTIME_DIR=/run/user/$(id -u hermes) podman exec hermes python3 -m mnemosyne.install
+sudo -u hermes XDG_RUNTIME_DIR=/run/user/$(id -u hermes) systemctl --user restart hermes.service
+ssh hermes@&lt;tailscale-ip&gt;
+podman exec -it hermes /opt/hermes/.venv/bin/hermes memory setup
+
+# Teardown:
+./teardown.sh
+
+# Restore from backup:
+./scripts/restore.sh /path/to/hermes-backup-20260521-020000.tar.gz
+# Encrypted: ./scripts/restore.sh &lt;file&gt;.tar.gz.age --age-key ~/.age/key.txt
+```
+
+## Conventions
+
+- **No hardcoded secrets** — `.env` generated at `0600`, `no_log: true` on sensitive tasks
+- **Idempotent** — all roles check-before-act, secrets never overwritten
+- **Image pinning required** — supply chain protection via digest enforcement
+- **Explicit SSH key path** — override via `PRIVATE_SSH_KEY` env var, defaults to `~/.ssh/id_ed25519`
+- **Host key verification** — `ssh-keyscan` saves to `known_hosts`; Ansible `host_key_checking` kept enabled
+- **Token handling** — `TF_VAR_hcloud_token` env var; no `.tfvars` file on disk
+- **Image pinning override** — `ALLOW_UNPINNED_IMAGE` env var (not `inventory/group_vars/all.yml`)
+- **Custom image build** — `hermes_mnemosyne_enabled` triggers the `mnemosyne_build` role (`podman build` from a Jinja2 Dockerfile); resulting image is `localhost/hermes-mnemosyne:latest`</file><file path="README.md">![Hermzner logo](hermzner_logo_256.png)
+
+# Hermzner
+
+Provision a hardened Hermes Agent on Hetzner with rootless Podman and Tailscale.
+
+## Prerequisites
+
+- [Terraform](https://developer.hashicorp.com/terraform/install) &gt;= 1.5
+- [Ansible](https://docs.ansible.com/ansible/latest/installation_guide/) &gt;= 2.15
+- [Hetzner Cloud API token](https://docs.hetzner.com/cloud/api/getting-started/generating-api-token)
+- [Tailscale pre-auth key](https://tailscale.com/kb/1085/auth-keys) (reusable or ephemeral)
+
+## Quick Start
+
+```bash
+# 1. Copy and edit Terraform variables
+cp terraform/terraform.tfvars.example terraform/terraform.tfvars
+vim terraform/terraform.tfvars
+
+# 2. Copy and override Ansible defaults
+vim ansible/inventory/group_vars/all.yml
+# Required: set hermes_image_ref to a pinned digest
+#   Resolve the latest digest:
+#     curl -s &quot;https://hub.docker.com/v2/repositories/nousresearch/hermes-agent/tags/main&quot; | jq -r &apos;.images[] | select(.architecture == &quot;amd64&quot; and .os == &quot;linux&quot;) | .digest&apos;
+#   Then set: hermes_image_ref: &apos;docker.io/nousresearch/hermes-agent@sha256:&lt;digest&gt;&apos;
+
+# 3. Deploy
+HCLOUD_TOKEN=your_token TAILSCALE_AUTH_KEY=tskey-auth-... ./deploy.sh
+```
+
+## Deploy Flow
+
+`deploy.sh` runs Terraform (provisions VPS) then Ansible (configures it). Ansible connects via the server&apos;s **public IPv4** — Tailscale isn&apos;t available until the Tailscale role runs. Running `terraform plan` shows the diff between Terraform state and real infrastructure; this is normal behavior, not an error. `apply` reconciles them.
+
+## Smoke Test Deployment
+
+Use this procedure for a first disposable test deployment. The goal is to validate Terraform, Ansible, Tailscale access, rootless Podman, and the Hermes runtime wiring before using a pinned production image.
+
+&gt; **Important:** Run this only against a disposable Hetzner VPS. The smoke test may use `ALLOW_UNPINNED_IMAGE=true` for convenience. Do not use this override for production.
+
+### 1. Prepare local variables
+
+Create and edit the Terraform variables file:
+
+```bash
+cp terraform/terraform.tfvars.example terraform/terraform.tfvars
+vim terraform/terraform.tfvars
+```
+
+## What Gets Deployed
+
+| Component         | Detail                                                                      |
+| ----------------- | --------------------------------------------------------------------------- |
+| VPS               | Hetzner cx23, Ubuntu 24.04                                                  |
+| Container Runtime | Rootless Podman (Quadlet default, Compose fallback)                         |
+| Network           | Tailscale SSH + subnet access                                               |
+| Service           | Hermes Agent (gateway, API, optional dashboard)                             |
+| Mnemosyne Memory  | SQLite-vec memory backend (optional, toggle via `hermes_mnemosyne_enabled`) |
+| Backups           | Daily local backups to /home/hermes/backups/; optionally encrypted with age |
+
+## Security Controls
+
+- Rootless container, all capabilities dropped, no-new-privileges
+- All ports bound to 127.0.0.1 (access via Tailscale SSH tunnel)
+- UFW default deny, only tailscale0 allowed
+- Read-only root filesystem, tmpfs for /tmp and /run
+- API key auto-generated, .env at 0600
+- Image digest pinning required (fail-closed if missing)
+
+See [`SECURITY.md`](./SECURITY.md) for the full security model, threat model, and design rationale.
+
+## Post-Deployment
+
+```bash
+# Access dashboard via SSH tunnel
+ssh -L 9119:127.0.0.1:9119 hermes@&lt;tailscale-ip&gt;
+
+# Open http://127.0.0.1:9119 in browser
+```
+
+## Mnemosyne Memory Backend (Optional)
+
+Mnemosyne provides persistent memory (SQLite-vec) for the Hermes Agent, enabling long-term recall across conversations.
+
+### Enable
+
+```yaml
+# ansible/inventory/group_vars/all.yml
+hermes_mnemosyne_enabled: true
+```
+
+### What Happens
+
+When enabled, two dedicated Ansible roles handle the integration:
+
+- **`mnemosyne_build`** — builds a custom container image extending the pinned Hermes base with `mnemosyne-memory[all]`, tags it as `localhost/hermes-mnemosyne:latest`
+- **`mnemosyne_runtime`** — runs after the container starts: waits for the health endpoint, runs `mnemosyne.install` inside the container (plugin symlink + config.yaml update), and restarts the service only if changes were made
+
+The Quadlet/Compose template uses the custom image and sets `MNEMOSYNE_DATA_DIR=/opt/data/mnemosyne` for SQLite persistence.
+
+### Post-Deploy Setup (one-time, after `hermes_start_runtime: true`)
+
+The runtime install is automated by Ansible. The only manual step is selecting `mnemosyne` as the active memory provider:
+
+```bash
+ssh hermes@&lt;tailscale-ip&gt;
+podman exec -it hermes /opt/hermes/.venv/bin/hermes memory setup
+# Select &apos;mnemosyne&apos; from the provider list
+```
+
+Verify with `/opt/hermes/.venv/bin/hermes memory status` (inside container) — should show `Provider: mnemosyne`.
+
+### Manual Setup (if `hermes_start_runtime: false`)
+
+```bash
+ssh root@&lt;tailscale-ip&gt;
+sudo -u hermes XDG_RUNTIME_DIR=/run/user/$(id -u hermes) podman exec hermes python3 -m mnemosyne.install
+sudo -u hermes XDG_RUNTIME_DIR=/run/user/$(id -u hermes) systemctl --user restart hermes.service
+ssh hermes@&lt;tailscale-ip&gt;
+podman exec -it hermes /opt/hermes/.venv/bin/hermes memory setup
+```
+
+Memory data lives at `/home/hermes/.hermes/mnemosyne/` and is included in daily backups.
+
+## Backup &amp; Restore
+
+**Daily backups** run via cron at 2am (user `hermes`). They archive `/home/hermes/.hermes/` (data + auto-generated `.env`) to `/home/hermes/backups/` with 30-day retention. When Mnemosyne is enabled, memory data at `/home/hermes/.hermes/mnemosyne/` is included automatically.
+
+```bash
+# Backup file format (plain):
+/home/hermes/backups/hermes-backup-20260521-020000.tar.gz
+
+# Backup file format (encrypted):
+/home/hermes/backups/hermes-backup-20260521-020000.tar.gz.age
+```
+
+Enable encryption by setting `backup_encryption_enabled: true` and `backup_age_recipient` (your age public key) in `group_vars/all.yml`.
+
+**Restore** from any backup archive to a running server:
+
+```bash
+# Plain backup:
+./scripts/restore.sh /path/to/hermes-backup-20260521-020000.tar.gz
+
+# Encrypted backup (requires age private key):
+./scripts/restore.sh /path/to/hermes-backup-20260521-020000.tar.gz.age --age-key ~/.age/key.txt
+```
+
+The script auto-detects the Tailscale IP (falls back to `--tailscale-ip` if Terraform state is missing), copies the archive, stops the runtime, extracts, fixes permissions, restarts, and runs `verify.yml`.
+
+## Directory Structure
+
+```
+terraform/       # Hetzner VPS provisioning
+ansible/         # Server configuration (5 roles)
+  inventory/
+    group_vars/        # Ansible group variables (all.yml)
+deploy.sh        # One-command deploy (auto-generates hosts.yml)
+teardown.sh      # Destroy everything
+```
+
+## Development Tools
+
+### repo_check.sh
+
+`scripts/repo_check.sh` runs local security and consistency checks against the repo. It scans for:
+
+- Secret leakage (API keys, tokens in committed files)
+- Dangerous container flags (`--privileged`, host networking, etc.)
+- Image pinning and port binding enforcement
+- Shell / YAML / Ansible syntax errors
+- Optional Terraform validation
+
+```bash
+./scripts/repo_check.sh
+```
+
+Output is written to `hermzner-local-check-report.txt` (gitignored).
+
+## Customization
+
+See `ansible/inventory/group_vars/all.yml` for all configurable options, including feature toggles (`hermes_dashboard_enabled`, `hermes_mnemosyne_enabled`, `hermes_start_runtime`), resource limits, backup settings, and security policies.</file></files></repomix>

@@ -1,0 +1,3402 @@
+<repomix><file_summary>This file is a merged representation of the entire codebase, combined into a single document by Repomix.
+The content has been processed where comments have been removed, empty lines have been removed, line numbers have been added, content has been formatted for parsing in xml style, content has been compressed (code blocks are separated by ⋮---- delimiter), security check has been disabled.<purpose>This file contains a packed representation of the entire repository&apos;s contents.
+It is designed to be easily consumable by AI systems for analysis, code review,
+or other automated processes.</purpose><file_format>The content is organized as follows:
+1. This summary section
+2. Repository information
+3. Directory structure
+4. Repository files (if enabled)
+5. Repository files, each consisting of:
+  - File path as an attribute
+  - Full contents of the file</file_format><usage_guidelines>- This file should be treated as read-only. Any changes should be made to the
+  original repository files, not this packed version.
+- When processing this file, use the file path to distinguish
+  between different files in the repository.
+- Be aware that this file may contain sensitive information. Handle it with
+  the same level of security as you would the original repository.
+- Pay special attention to the Repository Description. These contain important context and guidelines specific to this project.</usage_guidelines><notes>- Some files may have been excluded based on .gitignore rules and Repomix&apos;s configuration
+- Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
+- Files matching patterns in .gitignore are excluded
+- Files matching default ignore patterns are excluded
+- Code comments have been removed from supported file types
+- Empty lines have been removed from all files
+- Line numbers have been added to the beginning of each line
+- Content has been formatted for parsing in xml style
+- Content has been compressed - code blocks are separated by ⋮---- delimiter
+- Security check has been disabled - content may contain sensitive information
+- Files are sorted by Git change count (files with more changes are at the bottom)</notes></file_summary><user_provided_header>Repository: af-deep-research | Generated from knowledge/sources | Generated: 2026-06-24 14:39:43</user_provided_header><directory_structure>.codegraph/
+  .gitignore
+assets/
+  archi.png
+  process.png
+  workflow-execution.png
+packages/
+  mcp/
+    .gitkeep
+  .gitkeep
+reasoners/
+  __init__.py
+  dynamic_infrastructure.py
+  dynamic_models.py
+  example_reasoner.py
+  meta_reasoners.py
+  research_orchestrator.py
+  research_package.py
+  universal_reasoners.py
+skills/
+  search/
+    __init__.py
+    base.py
+    firecrawl.py
+    jina.py
+    registry.py
+    serper.py
+    tavily.py
+  __init__.py
+  example_skill.py
+  jina_search.py
+tests/
+  test_agent.py
+.dockerignore
+.env.example
+.gitignore
+CODEOWNERS
+doc_generation_pipeline.py
+docker-compose.yml
+Dockerfile
+LICENSE
+main.py
+pyproject.toml
+railway.json
+README.md
+temporal_context.py
+utils.py</directory_structure><files>This section contains the contents of the repository&apos;s files.<file path=".codegraph/.gitignore"># CodeGraph data files — local to each machine, not for committing.
+# Ignore everything in .codegraph/ except this file itself, so transient
+# files (the database, daemon.pid, sockets, logs) never show up in git.
+*
+!.gitignore</file><file path="packages/mcp/.gitkeep"></file><file path="packages/.gitkeep"># This file ensures the packages directory is created
+# Downloaded Brain packages will be stored here</file><file path="reasoners/__init__.py">__all__ = [</file><file path="reasoners/dynamic_infrastructure.py">def create_prompt_reasoners(app)
+⋮----
+@app.reasoner()
+    async def create_default_prompt_templates() -&gt; PromptList
+⋮----
+templates = await app.ai(
+⋮----
+selection = await app.ai(
+⋮----
+def create_strategy_reasoners(app)
+⋮----
+@app.reasoner()
+    async def create_default_reasoning_strategies() -&gt; StrategyList
+⋮----
+strategies = await app.ai(
+⋮----
+strategy_options = []
+⋮----
+performance = performance_data.get(name, 0.5)
+⋮----
+def create_learning_reasoners(app)
+⋮----
+avg_confidence = (
+⋮----
+metrics = await app.ai(
+⋮----
+insight = await app.ai(
+⋮----
+decision = await app.ai(
+⋮----
+def create_search_reasoners(app)
+⋮----
+strategy = await app.ai(
+⋮----
+current_year = datetime.now().year
+⋮----
+queries = await app.ai(
+⋮----
+query_list = [q.strip() for q in queries.split(&quot;\n&quot;) if q.strip()]
+⋮----
+def create_workflow_reasoners(app)
+⋮----
+workflow = await app.ai(
+⋮----
+context_data = context.model_dump(mode=&apos;json&apos;)
+⋮----
+memory_state = MemoryState(
+⋮----
+memory_data = memory_state.model_dump(mode=&apos;json&apos;)  # Ensure enums are serialized to strings
+⋮----
+async def get_research_context(app) -&gt; Optional[ResearchContext]
+⋮----
+&quot;&quot;&quot;Get current research context from Brain memory&quot;&quot;&quot;
+context_data = await app.memory.get(&quot;research_context&quot;)
+⋮----
+async def update_research_context(app, updates: Dict[str, Any]) -&gt; None
+⋮----
+current_context = await get_research_context(app)
+⋮----
+context_dict = current_context.model_dump(mode=&apos;json&apos;)
+⋮----
+async def get_memory_state(app) -&gt; Optional[MemoryState]
+⋮----
+state_data = await app.memory.get(&quot;memory_state&quot;)
+⋮----
+async def update_memory_state(app, updates: Dict[str, Any]) -&gt; None
+⋮----
+current_state = await get_memory_state(app)
+⋮----
+state_dict = current_state.model_dump(mode=&apos;json&apos;)
+⋮----
+async def store_learning_insights(app, insights: List[LearningInsight]) -&gt; None
+⋮----
+insight_data = [insight.model_dump(mode=&apos;json&apos;) for insight in insights]
+⋮----
+async def get_learning_insights(app) -&gt; List[LearningInsight]
+⋮----
+insight_data = await app.memory.global_scope.get(&quot;learning_insights&quot;, default=[])
+⋮----
+async def get_strategy_performance(app, strategy_name: str) -&gt; List[float]
+⋮----
+&quot;&quot;&quot;Get strategy performance history from Brain memory&quot;&quot;&quot;
+⋮----
+result = await app.memory.get(f&quot;strategy_performance_{strategy_name}&quot;, default=[])
+⋮----
+def setup_memory_event_handlers(app)
+⋮----
+coordination_config = {
+⋮----
+system_prompt = template.system_prompt
+user_prompt = template.user_prompt
+⋮----
+system_prompt = system_prompt.replace(f&quot;{{{var}}}&quot;, value)
+user_prompt = user_prompt.replace(f&quot;{{{var}}}&quot;, value)
+⋮----
+confidence_expected=0.8,  # Default confidence for simplified model
+⋮----
+&quot;&quot;&quot;Update workflow execution status based on completed step (simplified for smaller AI models)&quot;&quot;&quot;
+# Simplified progress calculation
+progress_percent = min(current_status.progress_percent + 20, 100)  # Simple increment
+⋮----
+# Update status with simplified fields
+new_status = ExecutionStatus(
+⋮----
+def get_average_performance(performance_scores: List[float]) -&gt; float
+⋮----
+recent_scores = performance_scores[-10:]
+⋮----
+async def cleanup_expired_memory(app) -&gt; None
+⋮----
+def create_workflow_id() -&gt; str
+⋮----
+def create_session_id() -&gt; str
+⋮----
+&quot;&quot;&quot;Create a unique session identifier&quot;&quot;&quot;
+⋮----
+# ============================================================================
+# Infrastructure Initialization Function
+⋮----
+def initialize_dynamic_infrastructure(app)
+⋮----
+&quot;&quot;&quot;Initialize all dynamic reasoning infrastructure with the app instance&quot;&quot;&quot;
+⋮----
+prompt_reasoners = create_prompt_reasoners(app)
+strategy_reasoners = create_strategy_reasoners(app)
+learning_reasoners = create_learning_reasoners(app)
+search_reasoners = create_search_reasoners(app)
+workflow_reasoners = create_workflow_reasoners(app)</file><file path="reasoners/dynamic_models.py">class ReasoningType(str, Enum)
+⋮----
+ANALYTICAL = &quot;analytical&quot;
+CREATIVE = &quot;creative&quot;
+LOGICAL = &quot;logical&quot;
+COMPARATIVE = &quot;comparative&quot;
+CAUSAL = &quot;causal&quot;
+PREDICTIVE = &quot;predictive&quot;
+SYNTHESIS = &quot;synthesis&quot;
+⋮----
+class ContextType(str, Enum)
+⋮----
+FACTUAL = &quot;factual&quot;
+OPINION = &quot;opinion&quot;
+TECHNICAL = &quot;technical&quot;
+ACADEMIC = &quot;academic&quot;
+NEWS = &quot;news&quot;
+SOCIAL = &quot;social&quot;
+⋮----
+class ConfidenceLevel(str, Enum)
+⋮----
+LOW = &quot;low&quot;
+MEDIUM = &quot;medium&quot;
+HIGH = &quot;high&quot;
+⋮----
+class AdaptationTrigger(str, Enum)
+⋮----
+QUALITY_THRESHOLD = &quot;quality_threshold&quot;
+TIME_CONSTRAINT = &quot;time_constraint&quot;
+CONTEXT_SHIFT = &quot;context_shift&quot;
+FEEDBACK_SIGNAL = &quot;feedback_signal&quot;
+⋮----
+class ReasoningStrategy(BaseModel)
+⋮----
+name: str = Field(description=&quot;Strategy name&quot;)
+type: ReasoningType = Field(description=&quot;Type of reasoning&quot;)
+description: str = Field(description=&quot;What this strategy does&quot;)
+confidence_threshold: float = Field(description=&quot;Minimum confidence needed&quot;, ge=0.0, le=1.0)
+⋮----
+class PromptTemplate(BaseModel)
+⋮----
+template_id: str = Field(description=&quot;Unique template identifier&quot;)
+system_prompt: str = Field(description=&quot;System prompt template&quot;)
+user_prompt: str = Field(description=&quot;User prompt template&quot;)
+reasoning_type: ReasoningType = Field(description=&quot;Associated reasoning type&quot;)
+⋮----
+class ResearchContext(BaseModel)
+⋮----
+query: str = Field(description=&quot;Original research query&quot;)
+context_type: ContextType = Field(description=&quot;Type of research context&quot;)
+complexity: str = Field(description=&quot;simple, moderate, or complex&quot;)
+time_available: int = Field(description=&quot;Available time in minutes&quot;)
+quality_target: str = Field(description=&quot;high, medium, or low quality target&quot;)
+current_findings: int = Field(description=&quot;Number of findings so far&quot;)
+confidence_level: ConfidenceLevel = Field(description=&quot;Current confidence&quot;)
+⋮----
+class DynamicPrompt(BaseModel)
+⋮----
+system_prompt: str = Field(description=&quot;Final system prompt&quot;)
+user_prompt: str = Field(description=&quot;Final user prompt&quot;)
+template_used: str = Field(description=&quot;Template ID used&quot;)
+variables_filled: Dict[str, str] = Field(description=&quot;Variables and their values&quot;)
+reasoning_type: ReasoningType = Field(description=&quot;Reasoning type applied&quot;)
+confidence_expected: float = Field(description=&quot;Expected confidence&quot;, ge=0.0, le=1.0)
+⋮----
+class MemoryState(BaseModel)
+⋮----
+workflow_id: str = Field(description=&quot;Workflow identifier&quot;)
+session_id: str = Field(description=&quot;Session identifier&quot;)
+current_strategy: str = Field(description=&quot;Current reasoning strategy&quot;)
+findings_count: int = Field(description=&quot;Number of findings&quot;)
+quality_score: float = Field(description=&quot;Current quality score&quot;, ge=0.0, le=1.0)
+time_elapsed: int = Field(description=&quot;Time elapsed in minutes&quot;)
+last_updated: str = Field(description=&quot;Last update timestamp&quot;)
+⋮----
+class ContextMemory(BaseModel)
+⋮----
+key: str = Field(description=&quot;Memory key&quot;)
+value: Any = Field(description=&quot;Memory value&quot;)
+scope: str = Field(description=&quot;Memory scope: workflow, session, actor, global&quot;)
+expires_at: Optional[str] = Field(description=&quot;Expiration timestamp&quot;)
+metadata: Dict[str, Any] = Field(default_factory=dict, description=&quot;Additional metadata&quot;)
+⋮----
+class LearningInsight(BaseModel)
+⋮----
+insight: str = Field(description=&quot;The key insight learned&quot;)
+context: str = Field(description=&quot;When this insight applies&quot;)
+impact: str = Field(description=&quot;high, medium, or low impact&quot;)
+confidence: ConfidenceLevel = Field(description=&quot;Confidence in insight&quot;)
+evidence: str = Field(description=&quot;Supporting evidence&quot;)
+actionable_change: str = Field(description=&quot;What should change&quot;)
+⋮----
+class AdaptationDecision(BaseModel)
+⋮----
+trigger: AdaptationTrigger = Field(description=&quot;What triggered adaptation&quot;)
+current_strategy: str = Field(description=&quot;Current strategy name&quot;)
+new_strategy: str = Field(description=&quot;New strategy to use&quot;)
+reason: str = Field(description=&quot;Why adaptation is needed&quot;)
+expected_improvement: str = Field(description=&quot;Expected improvement&quot;)
+confidence: ConfidenceLevel = Field(description=&quot;Confidence in decision&quot;)
+⋮----
+class QualityMetrics(BaseModel)
+⋮----
+overall_quality: str = Field(description=&quot;excellent, good, fair, or poor&quot;)
+confidence_score: float = Field(description=&quot;Numeric confidence&quot;, ge=0.0, le=1.0)
+improvement_needed: str = Field(description=&quot;What needs improvement&quot;)
+⋮----
+class SearchResult(BaseModel)
+⋮----
+title: str = Field(description=&quot;Result title&quot;)
+url: str = Field(description=&quot;Result URL&quot;)
+content: str = Field(description=&quot;Result content&quot;)
+relevance: str = Field(description=&quot;high, medium, or low relevance&quot;)
+source_type: str = Field(description=&quot;Type of source&quot;)
+⋮----
+class JinaSearchResponse(BaseModel)
+⋮----
+results: List[SearchResult] = Field(description=&quot;Search results&quot;)
+total_results: int = Field(description=&quot;Total number of results&quot;)
+query_used: str = Field(description=&quot;Query that was used&quot;)
+⋮----
+class SearchStrategy(BaseModel)
+⋮----
+strategy_name: str = Field(description=&quot;Strategy name&quot;)
+query_patterns: List[str] = Field(description=&quot;Query patterns to use&quot;)
+max_results: int = Field(description=&quot;Maximum results per query&quot;)
+⋮----
+class WorkflowStep(BaseModel)
+⋮----
+step_id: str = Field(description=&quot;Step identifier&quot;)
+name: str = Field(description=&quot;Step name&quot;)
+description: str = Field(description=&quot;What this step does&quot;)
+reasoning_strategy: str = Field(description=&quot;Strategy to use&quot;)
+⋮----
+class DynamicWorkflow(BaseModel)
+⋮----
+query: str = Field(description=&quot;Research query&quot;)
+steps: List[WorkflowStep] = Field(description=&quot;Workflow steps&quot;)
+estimated_time: int = Field(description=&quot;Total estimated time in minutes&quot;)
+⋮----
+class ExecutionStatus(BaseModel)
+⋮----
+current_step: str = Field(description=&quot;Current step ID&quot;)
+progress_percent: int = Field(description=&quot;Progress percentage&quot;, ge=0, le=100)
+quality_score: float = Field(description=&quot;Current quality&quot;, ge=0.0, le=1.0)
+⋮----
+class MemoryEvent(BaseModel)
+⋮----
+event_id: str = Field(description=&quot;Event identifier&quot;)
+event_type: str = Field(description=&quot;Type of event&quot;)
+memory_key: str = Field(description=&quot;Memory key that changed&quot;)
+action: str = Field(description=&quot;set, delete, or update&quot;)
+data: Any = Field(description=&quot;New data value&quot;)
+scope: str = Field(description=&quot;Memory scope&quot;)
+timestamp: str = Field(description=&quot;Event timestamp&quot;)
+agent_id: str = Field(description=&quot;Agent that triggered event&quot;)
+⋮----
+class CoordinationSignal(BaseModel)
+⋮----
+signal_type: str = Field(description=&quot;Type of coordination signal&quot;)
+from_agent: str = Field(description=&quot;Sending agent&quot;)
+to_agents: List[str] = Field(description=&quot;Target agents&quot;)
+message: str = Field(description=&quot;Coordination message&quot;)
+data: Dict[str, Any] = Field(description=&quot;Signal data&quot;)
+priority: str = Field(description=&quot;high, medium, or low priority&quot;)
+timestamp: str = Field(description=&quot;Signal timestamp&quot;)
+⋮----
+class DynamicConfig(BaseModel)
+⋮----
+max_strategies: int = Field(default=5, description=&quot;Maximum strategies to consider&quot;)
+adaptation_threshold: float = Field(default=0.7, description=&quot;Quality threshold for adaptation&quot;)
+memory_retention_hours: int = Field(default=24, description=&quot;How long to keep memory&quot;)
+parallel_limit: int = Field(default=3, description=&quot;Maximum parallel operations&quot;)
+quality_target: float = Field(default=0.8, description=&quot;Target quality score&quot;)
+time_budget_minutes: int = Field(default=30, description=&quot;Total time budget&quot;)
+⋮----
+class StrategySelection(BaseModel)
+⋮----
+selected_strategy: str = Field(description=&quot;Selected strategy name&quot;)
+reasoning_type: ReasoningType = Field(description=&quot;Type of reasoning&quot;)
+confidence: ConfidenceLevel = Field(description=&quot;Confidence in selection&quot;)
+alternatives: List[str] = Field(description=&quot;Alternative strategies considered&quot;)
+selection_reason: str = Field(description=&quot;Why this strategy was selected&quot;)
+⋮----
+class SimpleResponse(BaseModel)
+⋮----
+success: bool = Field(description=&quot;Operation success&quot;)
+message: str = Field(description=&quot;Response message&quot;)
+data: Optional[Dict[str, Any]] = Field(description=&quot;Optional response data&quot;)
+⋮----
+class StrategyList(BaseModel)
+⋮----
+strategies: List[ReasoningStrategy] = Field(description=&quot;Available strategies&quot;)
+⋮----
+class PromptList(BaseModel)
+⋮----
+templates: List[PromptTemplate] = Field(description=&quot;Available templates&quot;)
+⋮----
+class InsightList(BaseModel)
+⋮----
+insights: List[LearningInsight] = Field(description=&quot;Learning insights&quot;)
+⋮----
+class MetricsList(BaseModel)
+⋮----
+metrics: List[QualityMetrics] = Field(description=&quot;Quality assessments&quot;)
+⋮----
+class QueryAnalysis(BaseModel)
+⋮----
+analysis: str = Field(description=&quot;Detailed query analysis&quot;)
+key_concepts: List[str] = Field(description=&quot;Key concepts identified&quot;)
+context_type: str = Field(description=&quot;Type of research context&quot;)
+complexity: str = Field(description=&quot;Complexity level&quot;)
+research_intent: str = Field(description=&quot;Research intent (comprehensive, focused, etc.)&quot;)
+estimated_scope: str = Field(description=&quot;Estimated scope (broad, narrow)&quot;)
+confidence: float = Field(description=&quot;Confidence score&quot;, ge=0.0, le=1.0)
+⋮----
+class DomainStrategy(BaseModel)
+⋮----
+strategy_name: str = Field(description=&quot;Name of the strategy&quot;)
+⋮----
+class ResearchResults(BaseModel)
+⋮----
+success: bool = Field(description=&quot;Whether research was successful&quot;)
+strategy_used: str = Field(description=&quot;Strategy that was used&quot;)
+queries_executed: List[str] = Field(description=&quot;Queries that were executed&quot;)
+raw_results: int = Field(description=&quot;Number of raw results found&quot;)
+final_results: int = Field(description=&quot;Number of final filtered results&quot;)
+search_results: List[Dict[str, Any]] = Field(description=&quot;Search results data&quot;)
+analysis: str = Field(description=&quot;Analysis of the search results&quot;)
+quality_score: float = Field(description=&quot;Quality score&quot;, ge=0.0, le=1.0)
+execution_time: str = Field(description=&quot;Execution time estimate&quot;)
+error: Optional[str] = Field(default=None, description=&quot;Error message if failed&quot;)
+⋮----
+class SynthesisData(BaseModel)
+⋮----
+synthesis_response: str = Field(description=&quot;Synthesized research response&quot;)
+key_insights: List[str] = Field(description=&quot;Key insights from synthesis&quot;)
+reasoning_type: str = Field(description=&quot;Type of reasoning used&quot;)
+sources_used: int = Field(description=&quot;Number of sources used&quot;)
+source_urls: List[str] = Field(description=&quot;URLs of sources used&quot;)
+confidence_level: float = Field(description=&quot;Confidence level as float&quot;, ge=0.0, le=1.0)
+synthesis_quality: str = Field(description=&quot;Quality of synthesis&quot;)
+limitations: str = Field(description=&quot;Limitations of the synthesis&quot;)
+⋮----
+class ValidationData(BaseModel)
+⋮----
+validation_status: str = Field(description=&quot;Validation status (valid, needs_revision, invalid)&quot;)
+accuracy_score: int = Field(description=&quot;Accuracy score as percentage&quot;, ge=0, le=100)
+validation_report: str = Field(description=&quot;Detailed validation report&quot;)
+sources_checked: int = Field(description=&quot;Number of sources checked&quot;)
+consistency_level: str = Field(description=&quot;Consistency level (high, medium, low)&quot;)
+recommendations: List[str] = Field(description=&quot;Validation recommendations&quot;)
+confidence: float = Field(description=&quot;Confidence in validation&quot;, ge=0.0, le=1.0)
+error: Optional[str] = Field(default=None, description=&quot;Error message if validation failed&quot;)
+⋮----
+class ExecutionSummary(BaseModel)
+⋮----
+strategy_selected: Optional[str] = Field(default=None, description=&quot;Selected strategy name&quot;)
+strategy_confidence: Optional[str] = Field(default=None, description=&quot;Strategy confidence level&quot;)
+sources_found: int = Field(default=0, description=&quot;Number of sources found&quot;)
+quality_achieved: str = Field(default=&quot;poor&quot;, description=&quot;Quality achieved&quot;)
+confidence_score: float = Field(default=0.0, description=&quot;Confidence score&quot;, ge=0.0, le=1.0)
+adaptation_recommended: bool = Field(default=False, description=&quot;Whether adaptation was recommended&quot;)
+execution_success: bool = Field(default=False, description=&quot;Whether execution was successful&quot;)
+⋮----
+class SynthesisDataNested(BaseModel)
+⋮----
+synthesis_response: str = Field(description=&quot;Synthesis response text&quot;)
+key_findings: List[str] = Field(default_factory=list, description=&quot;Key findings&quot;)
+confidence_level: str = Field(default=&quot;medium&quot;, description=&quot;Confidence level&quot;)
+sources_used: int = Field(default=0, description=&quot;Number of sources used&quot;)
+⋮----
+class SearchResultsNested(BaseModel)
+⋮----
+search_results: List[Dict[str, Any]] = Field(default_factory=list, description=&quot;List of search results&quot;)
+total_results: int = Field(default=0, description=&quot;Total number of results&quot;)
+query_used: str = Field(default=&quot;&quot;, description=&quot;Query that was used&quot;)
+⋮----
+class ResearchResultsData(BaseModel)
+⋮----
+query_analysis: Dict[str, Any] = Field(description=&quot;Query analysis data&quot;)
+domain_strategy: Dict[str, Any] = Field(description=&quot;Domain strategy data&quot;)
+search_results: SearchResultsNested = Field(description=&quot;Search results data&quot;)
+quality_metrics: Dict[str, Any] = Field(description=&quot;Quality metrics data&quot;)
+synthesis: SynthesisDataNested = Field(description=&quot;Synthesis data&quot;)
+validation: Optional[Dict[str, Any]] = Field(description=&quot;Validation data&quot;)
+⋮----
+class OrchestrationResult(BaseModel)
+⋮----
+workflow_id: Optional[str] = Field(default=None, description=&quot;Workflow identifier&quot;)
+session_id: Optional[str] = Field(default=None, description=&quot;Session identifier&quot;)
+query: Optional[str] = Field(default=None, description=&quot;Original query&quot;)
+context_type: Optional[str] = Field(default=None, description=&quot;Context type&quot;)
+execution_summary: Optional[ExecutionSummary] = Field(default=None, description=&quot;Execution summary&quot;)
+research_results: Optional[ResearchResultsData] = Field(default=None, description=&quot;Research results&quot;)
+learning_insights: Optional[Dict[str, Any]] = Field(default=None, description=&quot;Learning insights&quot;)
+metadata: Optional[Dict[str, Any]] = Field(default=None, description=&quot;Metadata&quot;)
+findings: Optional[str] = Field(default=None, description=&quot;Fallback findings field&quot;)
+⋮----
+def __init__(self, **data)</file><file path="reasoners/example_reasoner.py">logger = logging.getLogger(__name__)
+⋮----
+class SentimentResult(BaseModel)
+⋮----
+sentiment: str
+confidence: float
+reasoning: str
+⋮----
+class AnalysisResult(BaseModel)
+⋮----
+category: str
+summary: str
+⋮----
+key_points: list[str]
+⋮----
+async def example_reasoning_task(query: str, context: Optional[Dict[str, Any]] = None) -&gt; Dict[str, Any]
+⋮----
+# Example reasoning logic (replace with your implementation)
+⋮----
+keywords = [word.lower() for word in query.split() if len(word) &gt; 3]
+confidence = min(len(keywords) * 0.2, 1.0)
+⋮----
+context_boost = 0.0
+⋮----
+context_boost = 0.1
+⋮----
+final_confidence = min(confidence + context_boost, 1.0)
+⋮----
+async def sentiment_analyzer(text: str) -&gt; Dict[str, Any]
+⋮----
+positive_words = [&quot;good&quot;, &quot;great&quot;, &quot;excellent&quot;, &quot;amazing&quot;, &quot;wonderful&quot;, &quot;love&quot;, &quot;fantastic&quot;]
+negative_words = [&quot;bad&quot;, &quot;terrible&quot;, &quot;awful&quot;, &quot;horrible&quot;, &quot;worst&quot;, &quot;hate&quot;, &quot;disappointing&quot;]
+⋮----
+words = text.lower().split()
+positive_count = sum(1 for word in words if word in positive_words)
+negative_count = sum(1 for word in words if word in negative_words)
+⋮----
+sentiment = &quot;positive&quot;
+score = min(positive_count / len(words) * 2, 1.0)
+⋮----
+sentiment = &quot;negative&quot;
+score = min(negative_count / len(words) * 2, 1.0)
+⋮----
+sentiment = &quot;neutral&quot;
+score = 0.5
+⋮----
+async def content_classifier(content: str, categories: list[str]) -&gt; Dict[str, Any]
+⋮----
+content_lower = content.lower()
+scores = {}
+⋮----
+category_keywords = category.lower().split()
+score = sum(1 for keyword in category_keywords if keyword in content_lower)
+⋮----
+best_category = max(scores, key=scores.get) if scores else &quot;unknown&quot;
+⋮----
+async def question_answerer(question: str, context: str) -&gt; Dict[str, Any]
+⋮----
+question_words = set(question.lower().split())
+context_words = set(context.lower().split())
+⋮----
+overlap = len(question_words.intersection(context_words))
+relevance = overlap / len(question_words) if question_words else 0
+⋮----
+answer = f&quot;Based on the context, the answer relates to the overlapping concepts: {&apos;, &apos;.join(question_words.intersection(context_words))}&quot;
+⋮----
+answer = &quot;The context doesn&apos;t seem to contain relevant information for this question.&quot;</file><file path="reasoners/meta_reasoners.py">def create_meta_reasoners(app)
+⋮----
+# Robust enum conversion with validation
+⋮----
+context_type_enum = ContextType(context_type.lower())
+⋮----
+context_type_enum = ContextType.FACTUAL
+⋮----
+context_type_enum = context_type
+⋮----
+insights = await get_learning_insights(app)
+⋮----
+insight_summary = &quot;\n&quot;.join([f&quot;- {insight.insight}&quot; for insight in insights[-5:]])
+⋮----
+insights = []
+insight_summary = &quot;No insights available&quot;
+⋮----
+strategy_names = [&quot;analytical&quot;, &quot;creative&quot;, &quot;comparative&quot;, &quot;causal&quot;, &quot;synthesis&quot;]
+performance_data = {}
+⋮----
+scores = await get_strategy_performance(app, strategy)
+⋮----
+performance_data[strategy] = 0.5  # Default performance score
+⋮----
+strategy_selection = await app.ai(
+⋮----
+# Store the decision in memory for coordination with error handling
+⋮----
+# Return a fallback strategy selection
+⋮----
+# ============================================================================
+# Adaptive Reasoning Strategist - Dynamic strategy selection and configuration
+⋮----
+&quot;&quot;&quot;
+        Dynamically adapts reasoning strategies based on real-time performance
+        and changing context. Monitors research progress and triggers adaptations.
+You are the Adaptive Reasoning Strategist, responsible for dynamic strategy
+            adaptation during research execution. You monitor research progress in real-time and
+            decide when and how to adapt strategies for optimal performance.
+            Your decisions are based on:
+            - Current research quality and progress
+            - Time constraints and efficiency
+            - Learning insights from similar contexts
+            - Strategy performance patterns
+            - Resource utilization and bottlenecks
+            Make adaptive decisions that maximize research effectiveness.&quot;&quot;&quot;,
+user=f&quot;&quot;&quot;Analyze current research progress and decide on strategy adaptation:
+schema=AdaptationDecision
+⋮----
+# If adaptation is recommended, update memory state
+⋮----
+# Dynamic Prompt Constructor - Context-aware prompt building and evolution
+⋮----
+&quot;&quot;&quot;
+        Constructs context-aware prompts that evolve based on research progress
+        and domain-specific requirements. Builds prompts optimized for specific reasoning types.
+You are the Dynamic Prompt Constructor, an expert in creating context-aware
+            prompts that maximize AI reasoning effectiveness. You build prompts that evolve based on
+            research progress, domain requirements, and learned patterns.
+            Your prompts should:
+            - Be tailored to the specific reasoning type and context
+            - Incorporate domain knowledge and previous findings
+            - Use effective prompt engineering techniques
+            - Adapt based on learning insights from previous research
+            - Guide AI toward high-quality, relevant responses
+            Create prompts that unlock the full potential of AI reasoning.&quot;&quot;&quot;,
+user=f&quot;&quot;&quot;Construct an optimized prompt for this research context:
+schema=DynamicPrompt
+⋮----
+# Context-Aware Scheduler - Intelligent execution flow management
+⋮----
+&quot;&quot;&quot;
+        Manages intelligent execution flow with context-aware scheduling.
+        Optimizes resource allocation and parallel execution based on constraints.
+You are the Context-Aware Scheduler, responsible for intelligent execution
+            flow management. You optimize resource allocation, manage parallel execution, and
+            ensure efficient workflow progression based on real-time constraints and priorities.
+            Your scheduling decisions consider:
+            - Resource availability and constraints
+            - Task dependencies and parallel opportunities
+            - Priority requirements and deadlines
+            - Current system state and progress
+            - Quality checkpoints and validation needs
+            Create execution plans that maximize efficiency while maintaining quality.&quot;&quot;&quot;,
+user=f&quot;&quot;&quot;Create an optimized execution schedule for this workflow:
+schema=ExecutionStatus
+⋮----
+# Update memory state with execution status
+⋮----
+existing_insights = await get_learning_insights(app)
+⋮----
+learning_insight = await app.ai(
+⋮----
+updated_insights = existing_insights + [learning_insight]
+⋮----
+current_scores = await get_strategy_performance(app, strategy_used)</file><file path="reasoners/research_orchestrator.py">def create_research_orchestrator(app)
+⋮----
+meta_reasoners = create_meta_reasoners(app)
+⋮----
+workflow_id = f&quot;research_{uuid.uuid4().hex[:8]}&quot;
+session_id = f&quot;session_{uuid.uuid4().hex[:8]}&quot;
+⋮----
+# Robust enum conversion with validation at the start
+⋮----
+context_type_enum = ContextType(context_type.lower())
+⋮----
+context_type_enum = ContextType.FACTUAL
+⋮----
+context_type_enum = context_type
+⋮----
+research_context = ResearchContext(
+⋮----
+# Initialize research memory
+⋮----
+memory_state = await initialize_research_memory(
+⋮----
+# ========================================================================
+# DHE Phase 1: Complexity Analysis and Dynamic Path Selection
+⋮----
+# Analyze query complexity to determine execution path
+complexity_analysis = await app.ai(
+⋮----
+complexity_data = json.loads(complexity_analysis)
+actual_complexity = complexity_data.get(&quot;complexity_level&quot;, complexity)
+execution_strategy = complexity_data.get(&quot;execution_strategy&quot;, &quot;linear&quot;)
+estimated_reasoners = complexity_data.get(&quot;estimated_reasoners&quot;, 6)
+parallel_beneficial = complexity_data.get(&quot;parallel_beneficial&quot;, False)
+⋮----
+import json  # Ensure json is imported even in exception case
+⋮----
+complexity_data = {
+actual_complexity = complexity
+execution_strategy = &quot;linear&quot;
+estimated_reasoners = 6
+parallel_beneficial = False
+⋮----
+# Update research context with complexity insights
+⋮----
+# DHE Phase 2: Dynamic Execution Path Selection
+⋮----
+# Initialize iteration tracking for quality-driven loops
+iteration_count = 0
+quality_history = []
+strategy_performance = {}
+⋮----
+# Initialize adaptation_decision with default values
+adaptation_decision = AdaptationDecision(
+⋮----
+# Determine if we should use parallel execution for complex queries
+⋮----
+# Generate sub-queries for parallel execution
+sub_query_generation = await app.ai(
+⋮----
+sub_queries = json.loads(sub_query_generation)
+⋮----
+# Execute parallel research orchestrator
+parallel_result = await app.call(
+⋮----
+# Return parallel result with DHE metadata
+⋮----
+# Continue with enhanced linear execution for simple/moderate or fallback
+⋮----
+# Phase 2: Meta-Strategy Selection
+⋮----
+# Use meta-reasoning controller to select optimal strategy
+⋮----
+# Convert enum to string for API serialization
+context_type_str = context_type_enum.value
+⋮----
+# Wrap app.call with StrategySelection schema
+⋮----
+raw_strategy = await app.call(
+strategy_selection = StrategySelection(**raw_strategy)
+⋮----
+# Create fallback strategy selection
+strategy_selection = StrategySelection(
+⋮----
+# Phase 3: Query Analysis and Domain Strategy
+⋮----
+# Parallel execution of query analysis and domain strategy
+query_analysis_task = app.call(
+⋮----
+# Wait for query analysis to complete before domain strategy
+⋮----
+raw_query_analysis = await query_analysis_task
+query_analysis = QueryAnalysis(**raw_query_analysis)
+⋮----
+# Create domain strategy based on analysis
+⋮----
+raw_domain_strategy = await app.call(
+⋮----
+query_analysis=query_analysis.dict(),  # Convert Pydantic object to dict
+⋮----
+domain_strategy = DomainStrategy(**raw_domain_strategy)
+⋮----
+# Phase 4: Research Execution
+⋮----
+# Execute research using the domain strategy
+⋮----
+raw_research_results = await app.call(
+⋮----
+search_strategy=domain_strategy.dict(),  # Convert Pydantic object to dict
+⋮----
+research_results = ResearchResults(**raw_research_results)
+⋮----
+# Update memory with findings
+⋮----
+&quot;time_elapsed&quot;: 10,  # Approximate time for phases 1-3
+⋮----
+# Phase 5: Quality Control and Adaptation
+⋮----
+# Assess research quality
+⋮----
+raw_quality_metrics = await app.call(
+⋮----
+research_results=research_results.dict(),  # Convert Pydantic object to dict
+⋮----
+quality_metrics = QualityMetrics(**raw_quality_metrics)
+⋮----
+# Store quality metrics for tracking
+⋮----
+# DHE Phase 3: Quality-Driven Recursive Loop Implementation
+⋮----
+# Check if quality meets threshold and if we should iterate
+should_iterate = (
+⋮----
+# Get adaptive strategy for improvement
+⋮----
+raw_adaptation_decision = await app.call(
+adaptation_decision = AdaptationDecision(**raw_adaptation_decision)
+⋮----
+# Update strategy performance tracking
+⋮----
+# Create new domain strategy with adaptive insights
+⋮----
+enhanced_query_analysis = await app.ai(
+⋮----
+# Update query analysis with enhanced version
+⋮----
+# Create improved domain strategy
+raw_improved_strategy = await app.call(
+improved_domain_strategy = DomainStrategy(
+⋮----
+# Re-execute research with improved strategy
+raw_improved_results = await app.call(
+⋮----
+max_results=25,  # Slightly more results for improvement
+⋮----
+improved_research_results = ResearchResults(
+⋮----
+# Re-assess quality with improved results
+raw_improved_quality = await app.call(
+improved_quality_metrics = QualityMetrics(
+⋮----
+# Update results if improvement achieved
+⋮----
+research_results = improved_research_results
+quality_metrics = improved_quality_metrics
+domain_strategy = improved_domain_strategy
+⋮----
+# Store successful strategy performance
+⋮----
+# Update memory with iteration progress
+⋮----
+# Final adaptation decision for metadata
+⋮----
+# Phase 6: Synthesis and Validation
+⋮----
+# Determine reasoning type for synthesis
+reasoning_type = ReasoningType.SYNTHESIS
+⋮----
+reasoning_type = ReasoningType.COMPARATIVE
+⋮----
+reasoning_type = ReasoningType.CAUSAL
+⋮----
+reasoning_type = ReasoningType.PREDICTIVE
+⋮----
+# Synthesize results
+⋮----
+raw_synthesis_data = await app.call(
+⋮----
+quality_metrics=quality_metrics.dict(),  # Convert Pydantic object to dict
+⋮----
+synthesis_data = SynthesisData(**raw_synthesis_data)
+⋮----
+# Validate synthesis if high quality target
+validation_data = None
+⋮----
+raw_validation_data = await app.call(
+⋮----
+synthesis_data=synthesis_data.dict(),  # Convert Pydantic object to dict
+⋮----
+validation_data = ValidationData(**raw_validation_data)
+⋮----
+# DHE Phase 4: Meta-Learning and Strategy Performance Feedback
+⋮----
+# Store strategy performance for future learning
+final_strategy = strategy_selection.selected_strategy
+⋮----
+final_strategy = adaptation_decision.new_strategy
+⋮----
+# Store performance data for meta-learning
+⋮----
+# Enhanced session results with DHE metadata
+session_results = {
+⋮----
+# Generate enhanced learning insights with DHE context
+⋮----
+raw_learning_insight = await app.call(
+learning_insight = LearningInsight(**raw_learning_insight)
+⋮----
+# Create fallback learning insight
+learning_insight = LearningInsight(
+⋮----
+# Store learning insights for future strategy selection
+⋮----
+# Phase 8: Final Results Compilation
+⋮----
+# Update final memory state
+⋮----
+&quot;time_elapsed&quot;: min(time_budget, 25),  # Estimate total time
+⋮----
+# Compile comprehensive results
+orchestration_result = {
+⋮----
+# Return error result
+error_result = {
+⋮----
+&quot;context_type&quot;: &quot;factual&quot;,  # Default context type for error cases
+⋮----
+# ============================================================================
+# Parallel Research Orchestrator - For complex multi-faceted queries
+⋮----
+&quot;&quot;&quot;
+        Orchestrates parallel research execution for complex queries with multiple facets.
+        Coordinates multiple research workflows and synthesizes results.
+You are synthesizing results from parallel research workflows.
+                    Combine the individual syntheses into a comprehensive response that addresses
+                    the main research query while integrating insights from all sub-queries.&quot;&quot;&quot;,
+user=f&quot;&quot;&quot;Synthesize these parallel research results into a comprehensive response:
+⋮----
+parallel_result = {
+⋮----
+monitoring_data = {
+⋮----
+memory_state = await get_memory_state(app)
+⋮----
+adjustment = {
+⋮----
+# Wait for next monitoring cycle</file><file path="reasoners/research_package.py"></file><file path="reasoners/universal_reasoners.py">def create_universal_reasoners(app)
+⋮----
+# Robust enum conversion with validation
+⋮----
+context_type_enum = ContextType(context_type.lower())
+context_str = context_type_enum.value
+⋮----
+context_type_enum = ContextType.FACTUAL
+⋮----
+context_type_enum = context_type
+⋮----
+analysis = await app.ai(
+⋮----
+concepts = await app.ai(
+⋮----
+result = {
+⋮----
+# Ensure context_str is defined in exception case with proper enum handling
+⋮----
+context_str = context_type
+⋮----
+context_str = context_type.value
+⋮----
+context_str = str(context_type)
+⋮----
+query = query_analysis.get(&quot;query&quot;, &quot;&quot;)
+analysis = query_analysis.get(&quot;analysis&quot;, &quot;&quot;)
+key_concepts = query_analysis.get(&quot;key_concepts&quot;, [])
+⋮----
+strategy = await app.ai(
+⋮----
+# Return a basic fallback strategy
+⋮----
+all_results = []
+search_queries = search_strategy.query_patterns[:3]  # Limit to 3 queries
+⋮----
+if len(search_queries) &gt; 1:  # Simplified: always process sequentially for smaller AI models
+# Execute searches in parallel
+⋮----
+search_tasks = [search_jina_ai(query) for query in search_queries]
+search_responses = await asyncio.gather(*search_tasks, return_exceptions=True)
+⋮----
+# Type check to ensure response is JinaSearchResponse
+⋮----
+# Cast to JinaSearchResponse to satisfy type checker
+search_response = cast(JinaSearchResponse, response)
+⋮----
+# Execute searches sequentially
+⋮----
+response = await search_jina_ai(query)
+⋮----
+# Respect max_results limit
+⋮----
+# Filter and rank results based on quality
+filtered_results = []
+⋮----
+# Simplified quality filtering for smaller AI models
+if len(result.content) &gt; 100:  # Basic content length filter
+⋮----
+# Analyze the gathered information
+⋮----
+content_summary = &quot;\n\n&quot;.join([
+⋮----
+success = True
+final_count = len(filtered_results)
+⋮----
+analysis = &quot;No relevant results found with current search strategy.&quot;
+success = False
+final_count = 0
+⋮----
+results_count = research_results.get(&quot;final_results&quot;, 0)
+success = research_results.get(&quot;success&quot;, False)
+analysis = research_results.get(&quot;analysis&quot;, &quot;&quot;)
+search_results = research_results.get(&quot;search_results&quot;, [])
+⋮----
+unique_domains = set()
+⋮----
+domain = urlparse(result.get(&quot;url&quot;, &quot;&quot;)).netloc
+⋮----
+source_diversity = len(unique_domains)
+⋮----
+# Assess quality using AI
+quality_assessment = await app.ai(
+⋮----
+# Return basic quality metrics
+⋮----
+# ============================================================================
+# Synthesis Reasoner - Synthesizes research findings into coherent responses
+⋮----
+&quot;&quot;&quot;
+        Synthesizes research findings into coherent, comprehensive responses.
+        Combines information from multiple sources with appropriate reasoning.
+You are a research synthesis expert. Create comprehensive, well-structured
+                responses that effectively combine information from multiple sources.
+                Reasoning Approach: {reasoning_guidance}
+                Your synthesis should:
+                - Directly address the original research question
+                - Integrate findings from multiple sources
+                - Provide clear, actionable insights
+                - Acknowledge limitations and uncertainties
+                - Be well-structured and easy to understand&quot;&quot;&quot;,
+user=f&quot;&quot;&quot;Synthesize research findings for this query:
+⋮----
+# Generate key insights
+insights = await app.ai(
+⋮----
+# Research Validation Reasoner - Validates research against sources
+⋮----
+&quot;&quot;&quot;
+        Validates research synthesis against original sources.
+        Checks for accuracy, consistency, and proper attribution.
+You are a research validation expert. Verify that research synthesis
+                accurately represents the source material and identify any potential issues.
+                Check for:
+                - Accuracy of claims against sources
+                - Proper representation of source content
+                - Consistency between synthesis and evidence
+                - Potential misinterpretations or overstatements
+                - Missing important information from sources&quot;&quot;&quot;,
+user=f&quot;&quot;&quot;Validate this research synthesis against the original sources:
+⋮----
+# Extract validation score
+validation_score = 85  # Default score
+⋮----
+score_match = re.search(r&apos;(\d+)(?:/100|\%)&apos;, validation)
+⋮----
+validation_score = int(score_match.group(1))</file><file path="skills/search/__init__.py">async def search(query: str) -&gt; SearchResponse
+⋮----
+provider = get_default_provider()
+⋮----
+async def search_with_provider(query: str, provider: str) -&gt; SearchResponse
+⋮----
+provider_instance = get_provider(provider)
+⋮----
+async def parallel_search(queries: List[str], provider: Optional[str] = None) -&gt; List[SearchResponse]
+⋮----
+&quot;&quot;&quot;
+    Execute multiple searches in parallel.
+    Args:
+        queries: List of search queries
+        provider: Optional specific provider to use
+    Returns:
+        List of SearchResponse objects
+    &quot;&quot;&quot;
+⋮----
+# Get provider
+⋮----
+provider_instance = get_default_provider()
+⋮----
+tasks = [provider_instance.search(query) for query in queries]
+results = await asyncio.gather(*tasks, return_exceptions=True)
+⋮----
+successful_results = []
+⋮----
+def extract_search_content(search_responses: List[SearchResponse], max_content_per_result: int = 1000) -&gt; str
+⋮----
+&quot;&quot;&quot;
+    Extract and combine content from search responses for AI analysis.
+    Args:
+        search_responses: List of SearchResponse objects
+        max_content_per_result: Maximum content length per result
+    Returns:
+        Combined content string for AI analysis
+    &quot;&quot;&quot;
+combined_content = &quot;&quot;
+⋮----
+title = result.title
+content = result.content
+url = result.url
+⋮----
+# Truncate content if too long
+⋮----
+content = content[:max_content_per_result] + &quot;...&quot;
+⋮----
+# Format for AI consumption
+result_text = f&quot;Title: {title}\nURL: {url}\nContent: {content}\n\n&quot;
+⋮----
+def generate_search_variations(base_query: str) -&gt; List[str]
+⋮----
+variations = [base_query]
+⋮----
+current_year = datetime.now().year
+⋮----
+def filter_results_by_relevance(results: List[SearchResult], min_content_length: int = 100) -&gt; List[SearchResult]
+⋮----
+filtered = []
+⋮----
+def deduplicate_results(results: List[SearchResult]) -&gt; List[SearchResult]
+⋮----
+seen_urls = set()
+deduplicated = []
+⋮----
+def rank_results_by_content_quality(results: List[SearchResult]) -&gt; List[SearchResult]
+⋮----
+def quality_score(result: SearchResult) -&gt; float
+⋮----
+score = 0.0
+⋮----
+content_length = len(result.content)
+⋮----
+days_old = (datetime.now() - result.published_time).days
+⋮----
+def search_sync(query: str) -&gt; SearchResponse
+⋮----
+loop = asyncio.get_event_loop()
+⋮----
+__all__ = [</file><file path="skills/search/base.py">class SearchResult(BaseModel)
+⋮----
+title: str = Field(description=&quot;Result title&quot;)
+url: str = Field(description=&quot;Result URL&quot;)
+content: str = Field(description=&quot;Result content/snippet&quot;)
+description: Optional[str] = Field(None, description=&quot;Result description&quot;)
+published_time: Optional[datetime] = Field(None, description=&quot;Publication time&quot;)
+⋮----
+class Config
+⋮----
+populate_by_name = True
+⋮----
+class SearchResponse(BaseModel)
+⋮----
+results: List[SearchResult] = Field(default_factory=list, description=&quot;Search results&quot;)
+total_results: int = Field(0, description=&quot;Total number of results&quot;)
+query_used: str = Field(&quot;&quot;, description=&quot;Query that was executed&quot;)
+provider: str = Field(&quot;&quot;, description=&quot;Provider that executed the search&quot;)
+⋮----
+class SearchProvider(ABC)
+⋮----
+@property
+@abstractmethod
+    def name(self) -&gt; str
+⋮----
+@property
+@abstractmethod
+    def api_key_env_var(self) -&gt; str
+⋮----
+def get_api_key(self) -&gt; Optional[str]
+⋮----
+def is_available(self) -&gt; bool
+⋮----
+api_key = self.get_api_key()
+⋮----
+@abstractmethod
+    async def search(self, query: str) -&gt; SearchResponse
+⋮----
+def __repr__(self) -&gt; str</file><file path="skills/search/firecrawl.py">class FirecrawlSearchProvider(SearchProvider)
+⋮----
+@property
+    def name(self) -&gt; str
+⋮----
+@property
+    def api_key_env_var(self) -&gt; str
+⋮----
+async def search(self, query: str) -&gt; SearchResponse
+⋮----
+api_key = self.get_api_key()
+⋮----
+url = &quot;https://api.firecrawl.dev/v1/search&quot;
+headers = {
+payload = {
+⋮----
+data = await response.json()
+⋮----
+results = []
+⋮----
+content = item.get(&quot;markdown&quot;) or item.get(&quot;description&quot;) or item.get(&quot;snippet&quot;, &quot;&quot;)
+⋮----
+# Parse date if available
+published_time = None
+⋮----
+published_time = datetime.fromisoformat(</file><file path="skills/search/jina.py">class JinaSearchProvider(SearchProvider)
+⋮----
+@property
+    def name(self) -&gt; str
+⋮----
+@property
+    def api_key_env_var(self) -&gt; str
+⋮----
+async def search(self, query: str) -&gt; SearchResponse
+⋮----
+api_key = self.get_api_key()
+⋮----
+url = &quot;https://s.jina.ai/&quot;
+headers = {
+params = {&quot;q&quot;: query}
+⋮----
+data = await response.json()
+⋮----
+results = []
+⋮----
+published_time = None
+⋮----
+published_time = datetime.fromisoformat(</file><file path="skills/search/registry.py">DEFAULT_PROVIDER_PRIORITY = [&quot;jina&quot;, &quot;tavily&quot;, &quot;firecrawl&quot;, &quot;serper&quot;]
+⋮----
+PROVIDER_CLASSES: Dict[str, Type[SearchProvider]] = {
+⋮----
+def get_all_providers() -&gt; Dict[str, SearchProvider]
+⋮----
+def get_available_providers() -&gt; List[SearchProvider]
+⋮----
+available = []
+⋮----
+provider = PROVIDER_CLASSES[name]()
+⋮----
+def get_provider(name: str) -&gt; Optional[SearchProvider]
+⋮----
+def get_default_provider() -&gt; Optional[SearchProvider]
+⋮----
+preferred = os.getenv(&quot;SEARCH_PROVIDER&quot;, &quot;&quot;).lower().strip()
+⋮----
+provider = get_provider(preferred)
+⋮----
+# If preferred provider isn&apos;t available, log a warning and fall through
+⋮----
+available = get_available_providers()
+⋮----
+def list_provider_status() -&gt; Dict[str, bool]
+⋮----
+def register_provider(name: str, provider_class: Type[SearchProvider]) -&gt; None</file><file path="skills/search/serper.py">class SerperSearchProvider(SearchProvider)
+⋮----
+@property
+    def name(self) -&gt; str
+⋮----
+@property
+    def api_key_env_var(self) -&gt; str
+⋮----
+async def search(self, query: str) -&gt; SearchResponse
+⋮----
+api_key = self.get_api_key()
+⋮----
+url = f&quot;https://google.serper.dev/{self.search_type}&quot;
+headers = {
+payload = {
+⋮----
+data = await response.json()
+⋮----
+results = []
+⋮----
+items = data.get(&quot;news&quot;, [])
+⋮----
+items = data.get(&quot;images&quot;, [])
+⋮----
+items = data.get(&quot;organic&quot;, [])
+⋮----
+url_field = item.get(&quot;link&quot;) or item.get(&quot;imageUrl&quot;, &quot;&quot;)
+⋮----
+# Content varies by type
+content = item.get(&quot;snippet&quot;, &quot;&quot;)
+⋮----
+content = item.get(&quot;snippet&quot;) or item.get(&quot;description&quot;, &quot;&quot;)
+⋮----
+content = item.get(&quot;title&quot;, &quot;&quot;)</file><file path="skills/search/tavily.py">class TavilySearchProvider(SearchProvider)
+⋮----
+def __init__(self, search_depth: Literal[&quot;basic&quot;, &quot;advanced&quot;] = &quot;basic&quot;)
+⋮----
+@property
+    def name(self) -&gt; str
+⋮----
+@property
+    def api_key_env_var(self) -&gt; str
+⋮----
+async def search(self, query: str) -&gt; SearchResponse
+⋮----
+api_key = self.get_api_key()
+⋮----
+url = &quot;https://api.tavily.com/search&quot;
+headers = {
+payload = {
+⋮----
+data = await response.json()
+⋮----
+results = []
+⋮----
+published_time = None
+⋮----
+published_time = datetime.fromisoformat(</file><file path="skills/__init__.py">__all__ = [</file><file path="skills/example_skill.py">logger = logging.getLogger(__name__)
+⋮----
+def example_utility(data: Dict[str, Any], operation: str = &quot;format&quot;) -&gt; Dict[str, Any]
+⋮----
+formatted_data = {}
+⋮----
+valid_keys = [&quot;name&quot;, &quot;email&quot;, &quot;age&quot;]
+missing_keys = [key for key in valid_keys if key not in data]
+extra_keys = [key for key in data.keys() if key not in valid_keys]
+⋮----
+def helper_function(text: str, options: Optional[Dict[str, Any]] = None) -&gt; Dict[str, Any]
+⋮----
+options = {}
+⋮----
+results = {
+⋮----
+# Convert to lowercase
+⋮----
+# Remove special characters
+⋮----
+# Calculate statistics
+⋮----
+def json_processor(json_data: str, schema: Optional[Dict[str, Any]] = None) -&gt; Dict[str, Any]
+⋮----
+&quot;&quot;&quot;
+    DEPRECATED: Example JSON processing skill using old approach.
+    For new projects, define this in main.py using @app.skill() decorator.
+    Modern approach:
+    @app.skill(tags=[&quot;data&quot;, &quot;json&quot;])
+    def parse_json(json_string: str, validate_schema: bool = False) -&gt; dict:
+        try:
+            data = json.loads(json_string)
+            result = {
+                &quot;success&quot;: True,
+                &quot;data&quot;: data,
+                &quot;type&quot;: type(data).__name__,
+                &quot;size&quot;: len(str(data))
+            }
+            if isinstance(data, dict):
+                result[&quot;keys&quot;] = list(data.keys())
+                result[&quot;key_count&quot;] = len(data)
+            elif isinstance(data, list):
+                result[&quot;item_count&quot;] = len(data)
+                if data:
+                    result[&quot;first_item_type&quot;] = type(data[0]).__name__
+            return result
+        except json.JSONDecodeError as e:
+            return {
+                &quot;success&quot;: False,
+                &quot;error&quot;: f&quot;Invalid JSON: {str(e)}&quot;,
+                &quot;position&quot;: e.pos if hasattr(e, &apos;pos&apos;) else None
+            }
+    Args:
+        json_data (str): JSON string to process
+        schema (Optional[Dict[str, Any]]): Expected schema for validation
+    Returns:
+        Dict[str, Any]: Processing results
+    DEPRECATED: Simple timestamp generation.
+    Modern approach:
+    @app.skill(tags=[&quot;utility&quot;, &quot;time&quot;])
+    def get_timestamp() -&gt; dict:
+        return {
+            &quot;timestamp&quot;: time.strftime(&quot;%Y-%m-%d %H:%M:%S&quot;),
+            &quot;unix_time&quot;: int(time.time()),
+            &quot;iso_format&quot;: time.strftime(&quot;%Y-%m-%dT%H:%M:%SZ&quot;)
+        }
+    DEPRECATED: Text analysis utility.
+    Modern approach:
+    @app.skill(tags=[&quot;text&quot;, &quot;analysis&quot;])
+    def analyze_text(text: str) -&gt; dict:
+        words = text.split()
+        sentences = text.split(&apos;.&apos;)
+        return {
+            &quot;character_count&quot;: len(text),
+            &quot;word_count&quot;: len(words),
+            &quot;sentence_count&quot;: len([s for s in sentences if s.strip()]),
+            &quot;average_word_length&quot;: sum(len(word) for word in words) / len(words) if words else 0,
+            &quot;longest_word&quot;: max(words, key=len) if words else &quot;&quot;,
+            &quot;shortest_word&quot;: min(words, key=len) if words else &quot;&quot;
+        }
+    &quot;&quot;&quot;
+⋮----
+words = text.split()
+sentences = text.split(&apos;.&apos;)
+⋮----
+def url_validator(url: str) -&gt; Dict[str, Any]
+⋮----
+url_pattern = re.compile(
+⋮----
+r&apos;^https?://&apos;  # http:// or https://
+r&apos;(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+[A-Z]{2,6}\.?|&apos;  # domain...
+r&apos;localhost|&apos;  # localhost...
+r&apos;\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})&apos;  # ...or ip
+r&apos;(?::\d+)?&apos;  # optional port
+⋮----
+is_valid = bool(url_pattern.match(url))</file><file path="skills/jina_search.py">class SearchResult(BaseModel)
+⋮----
+title: str = Field(description=&quot;Result title&quot;)
+url: str = Field(description=&quot;Result URL&quot;)
+content: str = Field(description=&quot;Result content&quot;)
+description: Optional[str] = Field(None, description=&quot;Result description&quot;)
+published_time: Optional[datetime] = Field(None, alias=&quot;publishedTime&quot;, description=&quot;Publication time&quot;)
+⋮----
+class Config
+⋮----
+populate_by_name = True
+⋮----
+class JinaSearchResponse(BaseModel)
+⋮----
+results: List[SearchResult] = Field(default_factory=list, alias=&quot;data&quot;, description=&quot;Search results&quot;)
+total_results: int = Field(0, description=&quot;Total number of results&quot;)
+query_used: str = Field(&quot;&quot;, description=&quot;Query that was executed&quot;)
+⋮----
+def __init__(self, **data)
+⋮----
+async def search_jina_ai(query: str) -&gt; JinaSearchResponse
+⋮----
+api_key = os.getenv(&quot;JINA_API_KEY&quot;)
+⋮----
+url = &quot;https://s.jina.ai/&quot;
+headers = {
+params = {&quot;q&quot;: query}
+⋮----
+data = await response.json()
+⋮----
+transformed_data = {
+⋮----
+async def parallel_search(queries: List[str]) -&gt; List[JinaSearchResponse]
+⋮----
+tasks = [search_jina_ai(query) for query in queries]
+⋮----
+results = await asyncio.gather(*tasks, return_exceptions=True)
+⋮----
+successful_results = []
+⋮----
+# Add empty result for failed searches
+⋮----
+def extract_search_content(search_responses: List[JinaSearchResponse], max_content_per_result: int = 1000) -&gt; str
+⋮----
+&quot;&quot;&quot;
+    Extract and combine content from search responses for AI analysis.
+    Args:
+        search_responses: List of JinaSearchResponse objects
+        max_content_per_result: Maximum content length per result
+    Returns:
+        Combined content string for AI analysis
+    &quot;&quot;&quot;
+combined_content = &quot;&quot;
+⋮----
+title = result.title
+content = result.content
+url = result.url
+⋮----
+# Truncate content if too long
+⋮----
+content = content[:max_content_per_result] + &quot;...&quot;
+⋮----
+# Format for AI consumption
+result_text = f&quot;Title: {title}\nURL: {url}\nContent: {content}\n\n&quot;
+⋮----
+def generate_search_variations(base_query: str) -&gt; List[str]
+⋮----
+variations = [base_query]
+⋮----
+current_year = datetime.now().year
+⋮----
+def search_jina_sync(query: str) -&gt; JinaSearchResponse
+⋮----
+loop = asyncio.get_event_loop()
+⋮----
+def filter_results_by_relevance(results: List[SearchResult], min_content_length: int = 100) -&gt; List[SearchResult]
+⋮----
+filtered = []
+⋮----
+def deduplicate_results(results: List[SearchResult]) -&gt; List[SearchResult]
+⋮----
+seen_urls = set()
+deduplicated = []
+⋮----
+def rank_results_by_content_quality(results: List[SearchResult]) -&gt; List[SearchResult]
+⋮----
+def quality_score(result: SearchResult) -&gt; float
+⋮----
+score = 0.0
+⋮----
+content_length = len(result.content)
+⋮----
+days_old = (datetime.now() - result.published_time).days</file><file path="tests/test_agent.py">@pytest.fixture
+def mock_agent()
+⋮----
+agent = deepresearchagentAgent()
+⋮----
+@pytest.mark.asyncio
+async def test_example_reasoner_success(mock_agent)
+⋮----
+input_data = ExampleReasonerInput(message=&quot;hello world&quot;)
+⋮----
+result = await mock_agent.example_reasoner(mock_agent.context, input_data)
+⋮----
+@pytest.mark.asyncio
+async def test_example_skill_success(mock_agent)
+⋮----
+input_data = ExampleSkillInput(data={&quot;key&quot;: &quot;test_value&quot;})
+⋮----
+result = await mock_agent.example_skill(mock_agent.context, input_data)
+⋮----
+@pytest.mark.asyncio
+async def test_example_skill_no_key(mock_agent)
+⋮----
+input_data = ExampleSkillInput(data={&quot;another_key&quot;: &quot;some_value&quot;})</file><file path=".dockerignore"># Git
+.git
+.gitignore
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+dist/
+*.egg-info/
+*.egg
+.venv/
+venv/
+.env
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# Tests
+.pytest_cache/
+.coverage
+htmlcov/
+tests/
+
+# Docs and misc
+*.md
+!README.md
+*.json
+plan.md
+LICENSE
+
+# Local databases
+*.db
+*.db-shm
+*.db-wal
+*.bolt
+*.log
+
+# Docker
+Dockerfile
+docker-compose*.yml
+.dockerignore</file><file path=".gitignore"># AF Deep Research - .gitignore
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+cover/
+
+# Virtual environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Local configuration
+local_config.yaml
+.env.local
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.bak
+
+# Logs
+*.log
+
+# Research output files (generated during execution)
+*_research.json
+research_*.json
+initial_research.json
+enhanced_research.json
+
+# Local databases
+*.db
+*.db-shm
+*.db-wal
+*.bolt</file><file path="CODEOWNERS"># Default reviewers for all PRs
+* @AbirAbbas @Agent-Field/eng</file><file path="doc_generation_pipeline.py">def create_content_hash(content: str) -&gt; str
+⋮----
+async def run_in_batches(tasks: List, batch_size: int)
+⋮----
+results = []
+⋮----
+batch = tasks[i : i + batch_size]
+batch_results = await asyncio.gather(*batch, return_exceptions=True)
+⋮----
+def _note(_: str) -&gt; None
+⋮----
+class Article(BaseModel)
+⋮----
+id: int
+title: str
+url: str
+content: str
+content_hash: str
+⋮----
+class ArticleEvidence(BaseModel)
+⋮----
+article_id: int
+relevance_summary: str
+facts: List[str]
+quotes: List[str]
+⋮----
+class Entity(BaseModel)
+⋮----
+name: str
+type: str
+summary: str
+⋮----
+class Relationship(BaseModel)
+⋮----
+source_entity: str
+target_entity: str
+description: str
+relationship_type: str
+⋮----
+class InquiryProbe(BaseModel)
+⋮----
+question: str
+rationale: str
+suggested_method: str
+⋮----
+class UniversalResearchPackage(BaseModel)
+⋮----
+query: str
+core_thesis: str
+key_discoveries: List[str]
+confidence_assessment: str
+entities: List[Entity]
+relationships: List[Relationship]
+observed_causal_chains: List[str]
+hypothesized_implications: List[str]
+next_inquiry_probes: List[InquiryProbe]
+source_articles: List[Article]
+article_evidence: List[ArticleEvidence]
+⋮----
+class DocumentResponse(BaseModel)
+⋮----
+mode: str
+version: str
+research_package: dict
+metadata: dict
+⋮----
+class SourceNote(BaseModel)
+⋮----
+citation_id: int
+⋮----
+domain: str
+⋮----
+class DocumentSection(BaseModel)
+⋮----
+class FinalDocument(BaseModel)
+⋮----
+document_title: str
+executive_summary: str
+sections: List[DocumentSection]
+source_notes: List[SourceNote]
+disclaimers: List[str]
+⋮----
+class FactForAdjudication(BaseModel)
+⋮----
+fact_id: str
+⋮----
+source_type: str
+source_reliability_score: float
+⋮----
+class AIAssessment(BaseModel)
+⋮----
+is_allowed: bool = Field(
+is_verified: bool = Field(
+disagreement_score: float = Field(
+⋮----
+class AIAssessmentList(BaseModel)
+⋮----
+assessments: List[AIAssessment]
+⋮----
+class AdjudicatedFact(BaseModel)
+⋮----
+source_id: int
+source_title: str
+source_url: str
+source_domain: str
+is_quote: bool
+is_verified: bool
+disagreement_score: float
+⋮----
+class SectionDirective(BaseModel)
+⋮----
+section_id: int
+section_title: str
+writing_instructions: str
+evidence_to_use: List[str]
+⋮----
+class EditorialPlan(BaseModel)
+⋮----
+plan: List[SectionDirective]
+⋮----
+class FinalAssemblyInput(BaseModel)
+⋮----
+class DisclaimerList(BaseModel)
+⋮----
+class SectionResult(BaseModel)
+⋮----
+markdown_content: str
+⋮----
+class EvidenceDigest(BaseModel)
+⋮----
+digest_id: str
+⋮----
+class Theme(BaseModel)
+⋮----
+theme_title: str
+planning_directive: str
+⋮----
+class ThematicBlueprint(BaseModel)
+⋮----
+themes: List[Theme]
+⋮----
+depth_instructions = {
+⋮----
+research_digest = f&quot;&quot;&quot;
+⋮----
+inquiry_context = &quot;&quot;
+⋮----
+inquiry_context = f&quot;&quot;&quot;
+⋮----
+prompt = f&quot;&quot;&quot;
+evidence_digests = [
+⋮----
+thematic_blueprint = await plan_document_themes(
+⋮----
+planner_tasks = [
+theme_plans: List[EditorialPlan] = await run_in_batches(
+⋮----
+master_plan_directives: List[SectionDirective] = []
+section_counter = 1
+⋮----
+editorial_plan = EditorialPlan(
+# Fallback: ensure at least one section exists
+⋮----
+fallback_evidence_ids = [f.fact_id for f in adjudicated_facts[:6]]
+⋮----
+fact_lookup = {f.fact_id: f for f in adjudicated_facts}
+source_article_map = {a.id: a for a in pkg.source_articles}
+all_source_ids_to_be_used = set(
+unique_sources_by_url: Dict[str, Article] = {}
+⋮----
+article = source_article_map[source_id]
+⋮----
+final_cited_articles = sorted(unique_sources_by_url.values(), key=lambda a: a.id)
+url_to_citation_id_map = {
+citation_map: Dict[int, int] = {}
+⋮----
+writer_tasks = []
+⋮----
+relevant_facts = [
+task = write_document_section(
+⋮----
+section_results: List[SectionResult] = await run_in_batches(
+results_by_id: Dict[int, SectionResult] = {r.section_id: r for r in section_results}
+⋮----
+missing_count = len(editorial_plan.plan) - len(section_results)
+⋮----
+highest_disagreement = max(
+⋮----
+final_sections: List[DocumentSection] = []
+⋮----
+result = results_by_id.get(d.section_id)
+⋮----
+content = result.markdown_content
+⋮----
+content = f&quot;Note: This section (&apos;{d.section_title}&apos;) could not be generated due to an upstream error. A placeholder is inserted to maintain structure.&quot;
+⋮----
+source_notes: List[SourceNote] = []
+⋮----
+final_document = FinalDocument(
+⋮----
+execution_time = time.time() - start_time</file><file path="Dockerfile"># Deep Research Agent
+# Runs the VC Intelligence research agent on Agent Field
+
+FROM python:3.10-slim
+
+# Set environment variables
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1
+
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update &amp;&amp; apt-get install -y --no-install-recommends \
+    curl \
+    &amp;&amp; rm -rf /var/lib/apt/lists/*
+
+# Copy dependency files first for better caching
+COPY pyproject.toml README.md ./
+
+# Install Python dependencies
+RUN pip install --upgrade pip &amp;&amp; \
+    pip install -e .
+
+# Copy application code
+COPY . .
+
+# Create non-root user
+RUN useradd -m -s /bin/bash appuser &amp;&amp; \
+    chown -R appuser:appuser /app
+USER appuser
+
+# Default port (can be overridden via PORT env var)
+EXPOSE 8001
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
+    CMD curl -f http://localhost:${PORT:-8001}/health || exit 1
+
+# Run the agent
+CMD [&quot;python&quot;, &quot;main.py&quot;]</file><file path="railway.json">{
+  &quot;$schema&quot;: &quot;https://railway.com/railway.schema.json&quot;,
+  &quot;build&quot;: {
+    &quot;builder&quot;: &quot;DOCKERFILE&quot;,
+    &quot;dockerfilePath&quot;: &quot;Dockerfile&quot;
+  },
+  &quot;deploy&quot;: {
+    &quot;healthcheckPath&quot;: &quot;/health&quot;,
+    &quot;healthcheckTimeout&quot;: 30,
+    &quot;restartPolicyType&quot;: &quot;ON_FAILURE&quot;,
+    &quot;restartPolicyMaxRetries&quot;: 3
+  }
+}</file><file path="temporal_context.py">def get_temporal_context(context_type: str = &quot;standard&quot;) -&gt; str
+⋮----
+now = datetime.datetime.now()
+current_date = now.strftime(&quot;%B %d, %Y&quot;)
+current_year = now.year
+prev_year = current_year - 1
+⋮----
+contexts = {
+⋮----
+def get_current_date_simple() -&gt; str
+⋮----
+def get_current_year() -&gt; int
+⋮----
+current_year = get_current_year()
+⋮----
+enhanced = []
+temporal_indicators = [f&quot;{current_year}&quot;, &quot;recent&quot;, &quot;latest&quot;]</file><file path="utils.py">logger = logging.getLogger(__name__)
+⋮----
+class SearchResult(BaseModel)
+⋮----
+title: str
+url: str
+content: str
+description: Optional[str] = None
+published_time: Optional[datetime] = None
+relevance: float = 0.0
+⋮----
+class JinaSearchResponse(BaseModel)
+⋮----
+results: List[SearchResult] = []
+total_results: int = 0
+query_used: str = &quot;&quot;
+⋮----
+async def search_jina_ai(query: str) -&gt; JinaSearchResponse
+⋮----
+&quot;&quot;&quot;Search using Jina AI and return structured results.&quot;&quot;&quot;
+⋮----
+api_key = os.getenv(&quot;JINA_API_KEY&quot;)
+⋮----
+url = &quot;https://s.jina.ai/&quot;
+headers = {&quot;Authorization&quot;: f&quot;Bearer {api_key}&quot;, &quot;Accept&quot;: &quot;application/json&quot;}
+⋮----
+data = await response.json()
+results = []
+⋮----
+relevance=0.8,  # Default relevance score</file><file path=".env.example"># AF Deep Research - Environment Configuration
+# ================================================
+# Copy this file to .env and fill in your API keys:
+#   cp .env.example .env
+#
+# Then run:
+#   docker-compose up
+
+# ===================
+# Required API Keys
+# ===================
+
+# OpenRouter API Key (for LLM inference)
+# Get yours at: https://openrouter.ai/keys
+OPENROUTER_API_KEY=sk-or-your-openrouter-api-key-here
+
+# ===================
+# Web Search API Keys
+# ===================
+# Configure at least ONE of the following search providers.
+# The system will auto-detect which one is available.
+
+# Jina AI (recommended - free tier available)
+# Get yours at: https://jina.ai/
+JINA_API_KEY=jina_your-jina-api-key-here
+
+# Tavily (AI-native search, 1000 free/month)
+# Get yours at: https://tavily.com/
+# TAVILY_API_KEY=tvly-your-tavily-api-key-here
+
+# Firecrawl (search + scraping, 500 free credits)
+# Get yours at: https://firecrawl.dev/
+# FIRECRAWL_API_KEY=fc-your-firecrawl-api-key-here
+
+# Serper (Google SERP, 2500 free/month)
+# Get yours at: https://serper.dev/
+# SERPER_API_KEY=your-serper-api-key-here
+
+# ===================
+# Optional Settings
+# ===================
+
+# Force a specific search provider (auto-detect if not set)
+# Options: jina, tavily, firecrawl, serper
+# SEARCH_PROVIDER=jina
+
+# ===================
+# LLM Model Configuration
+# ===================
+# Default LLM model to use (via OpenRouter)
+# Format: openrouter/&lt;provider&gt;/&lt;model-name&gt;
+# See all models: https://openrouter.ai/models
+#
+# RECOMMENDED MODELS (all verified to work with complex JSON output):
+#
+# --- Best Value (Default) ---
+# openrouter/deepseek/deepseek-chat-v3.1      # $0.15/$0.75 per 1M tokens - excellent reasoning, 128K context
+# openrouter/deepseek/deepseek-v3.2           # Latest DeepSeek, similar pricing
+#
+# --- Premium (Highest Quality) ---
+# openrouter/anthropic/claude-sonnet-4        # $3/$15 per 1M tokens - excellent for complex analysis
+# openrouter/anthropic/claude-opus-4          # $15/$75 per 1M tokens - best reasoning capability
+#
+# --- Budget-Friendly ---
+# openrouter/google/gemini-2.5-flash          # $0.30/$2.50 per 1M tokens - fast, 1M context
+# openrouter/google/gemini-2.5-flash-lite     # Even cheaper, optimized for speed
+#
+# --- Open Source ---
+# openrouter/qwen/qwen2.5-72b-instruct        # Excellent JSON/structured output
+# openrouter/qwen/qwen3-235b-a22b             # Latest Qwen, very capable
+# openrouter/meta-llama/llama-3.3-70b-instruct # Good general purpose
+# openrouter/meta-llama/llama-3.1-405b-instruct # Largest open model
+#
+DEFAULT_MODEL=openrouter/deepseek/deepseek-chat-v3.1
+
+# LLM temperature (0.0-1.0, lower = more deterministic)
+TEMPERATURE=0.6
+
+# ===================
+# Local Ollama Configuration (Optional)
+# ===================
+# To use a local Ollama deployment instead of OpenRouter:
+#   1. Set OLLAMA_BASE_URL to your Ollama server
+#   2. Change DEFAULT_MODEL to use ollama/&lt;model-name&gt; format
+#   3. OPENROUTER_API_KEY is not required when using Ollama
+#
+# IMPORTANT: When running via Docker, use host.docker.internal instead of localhost
+# to reach Ollama running on your host machine:
+#
+#   OLLAMA_BASE_URL=http://host.docker.internal:11434
+#   DEFAULT_MODEL=ollama/llama3.2
+#
+# For non-Docker (running main.py directly):
+#   OLLAMA_BASE_URL=http://localhost:11434
+#   DEFAULT_MODEL=ollama/llama3.2
+#
+# For remote Ollama server:
+#   OLLAMA_BASE_URL=http://your-ollama-server:11434
+#   DEFAULT_MODEL=ollama/llama3.1:70b
+#
+# Popular Ollama models:
+#   ollama/llama3.2           # 3B params, fast
+#   ollama/llama3.1:8b        # 8B params, good balance
+#   ollama/llama3.1:70b       # 70B params, high quality
+#   ollama/mistral            # 7B params, fast
+#   ollama/mixtral            # 8x7B MoE, powerful
+#   ollama/deepseek-r1:14b    # DeepSeek reasoning model
+#   ollama/qwen2.5:72b        # Qwen 2.5, excellent for structured output
+#
+# OLLAMA_BASE_URL=http://host.docker.internal:11434
+# DEFAULT_MODEL=ollama/llama3.2</file><file path="LICENSE">Apache License
+                           Version 2.0, January 2004
+                        http://www.apache.org/licenses/
+
+   TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
+
+   1. Definitions.
+
+      &quot;License&quot; shall mean the terms and conditions for use, reproduction,
+      and distribution as defined by Sections 1 through 9 of this document.
+
+      &quot;Licensor&quot; shall mean the copyright owner or entity authorized by
+      the copyright owner that is granting the License.
+
+      &quot;Legal Entity&quot; shall mean the union of the acting entity and all
+      other entities that control, are controlled by, or are under common
+      control with that entity. For the purposes of this definition,
+      &quot;control&quot; means (i) the power, direct or indirect, to cause the
+      direction or management of such entity, whether by contract or
+      otherwise, or (ii) ownership of fifty percent (50%) or more of the
+      outstanding shares, or (iii) beneficial ownership of such entity.
+
+      &quot;You&quot; (or &quot;Your&quot;) shall mean an individual or Legal Entity
+      exercising permissions granted by this License.
+
+      &quot;Source&quot; form shall mean the preferred form for making modifications,
+      including but not limited to software source code, documentation
+      source, and configuration files.
+
+      &quot;Object&quot; form shall mean any form resulting from mechanical
+      transformation or translation of a Source form, including but
+      not limited to compiled object code, generated documentation,
+      and conversions to other media types.
+
+      &quot;Work&quot; shall mean the work of authorship, whether in Source or
+      Object form, made available under the License, as indicated by a
+      copyright notice that is included in or attached to the work
+      (an example is provided in the Appendix below).
+
+      &quot;Derivative Works&quot; shall mean any work, whether in Source or Object
+      form, that is based on (or derived from) the Work and for which the
+      editorial revisions, annotations, elaborations, or other modifications
+      represent, as a whole, an original work of authorship. For the purposes
+      of this License, Derivative Works shall not include works that remain
+      separable from, or merely link (or bind by name) to the interfaces of,
+      the Work and Derivative Works thereof.
+
+      &quot;Contribution&quot; shall mean any work of authorship, including
+      the original version of the Work and any modifications or additions
+      to that Work or Derivative Works thereof, that is intentionally
+      submitted to the Licensor for inclusion in the Work by the copyright owner
+      or by an individual or Legal Entity authorized to submit on behalf of
+      the copyright owner. For the purposes of this definition, &quot;submitted&quot;
+      means any form of electronic, verbal, or written communication sent
+      to the Licensor or its representatives, including but not limited to
+      communication on electronic mailing lists, source code control systems,
+      and issue tracking systems that are managed by, or on behalf of, the
+      Licensor for the purpose of discussing and improving the Work, but
+      excluding communication that is conspicuously marked or otherwise
+      designated in writing by the copyright owner as &quot;Not a Contribution.&quot;
+
+      &quot;Contributor&quot; shall mean Licensor and any individual or Legal Entity
+      on behalf of whom a Contribution has been received by Licensor and
+      subsequently incorporated within the Work.
+
+   2. Grant of Copyright License. Subject to the terms and conditions of
+      this License, each Contributor hereby grants to You a perpetual,
+      worldwide, non-exclusive, no-charge, royalty-free, irrevocable
+      copyright license to reproduce, prepare Derivative Works of,
+      publicly display, publicly perform, sublicense, and distribute the
+      Work and such Derivative Works in Source or Object form.
+
+   3. Grant of Patent License. Subject to the terms and conditions of
+      this License, each Contributor hereby grants to You a perpetual,
+      worldwide, non-exclusive, no-charge, royalty-free, irrevocable
+      (except as stated in this section) patent license to make, have made,
+      use, offer to sell, sell, import, and otherwise transfer the Work,
+      where such license applies only to those patent claims licensable
+      by such Contributor that are necessarily infringed by their
+      Contribution(s) alone or by combination of their Contribution(s)
+      with the Work to which such Contribution(s) was submitted. If You
+      institute patent litigation against any entity (including a
+      cross-claim or counterclaim in a lawsuit) alleging that the Work
+      or a Contribution incorporated within the Work constitutes direct
+      or contributory patent infringement, then any patent licenses
+      granted to You under this License for that Work shall terminate
+      as of the date such litigation is filed.
+
+   4. Redistribution. You may reproduce and distribute copies of the
+      Work or Derivative Works thereof in any medium, with or without
+      modifications, and in Source or Object form, provided that You
+      meet the following conditions:
+
+      (a) You must give any other recipients of the Work or
+          Derivative Works a copy of this License; and
+
+      (b) You must cause any modified files to carry prominent notices
+          stating that You changed the files; and
+
+      (c) You must retain, in the Source form of any Derivative Works
+          that You distribute, all copyright, patent, trademark, and
+          attribution notices from the Source form of the Work,
+          excluding those notices that do not pertain to any part of
+          the Derivative Works; and
+
+      (d) If the Work includes a &quot;NOTICE&quot; text file as part of its
+          distribution, then any Derivative Works that You distribute must
+          include a readable copy of the attribution notices contained
+          within such NOTICE file, excluding those notices that do not
+          pertain to any part of the Derivative Works, in at least one
+          of the following places: within a NOTICE text file distributed
+          as part of the Derivative Works; within the Source form or
+          documentation, if provided along with the Derivative Works; or,
+          within a display generated by the Derivative Works, if and
+          wherever such third-party notices normally appear. The contents
+          of the NOTICE file are for informational purposes only and
+          do not modify the License. You may add Your own attribution
+          notices within Derivative Works that You distribute, alongside
+          or as an addendum to the NOTICE text from the Work, provided
+          that such additional attribution notices cannot be construed
+          as modifying the License.
+
+      You may add Your own copyright statement to Your modifications and
+      may provide additional or different license terms and conditions
+      for use, reproduction, or distribution of Your modifications, or
+      for any such Derivative Works as a whole, provided Your use,
+      reproduction, and distribution of the Work otherwise complies with
+      the conditions stated in this License.
+
+   5. Submission of Contributions. Unless You explicitly state otherwise,
+      any Contribution intentionally submitted for inclusion in the Work
+      by You to the Licensor shall be under the terms and conditions of
+      this License, without any additional terms or conditions.
+      Notwithstanding the above, nothing herein shall supersede or modify
+      the terms of any separate license agreement you may have executed
+      with Licensor regarding such Contributions.
+
+   6. Trademarks. This License does not grant permission to use the trade
+      names, trademarks, service marks, or product names of the Licensor,
+      except as required for reasonable and customary use in describing the
+      origin of the Work and reproducing the content of the NOTICE file.
+
+   7. Disclaimer of Warranty. Unless required by applicable law or
+      agreed to in writing, Licensor provides the Work (and each
+      Contributor provides its Contributions) on an &quot;AS IS&quot; BASIS,
+      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+      implied, including, without limitation, any warranties or conditions
+      of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A
+      PARTICULAR PURPOSE. You are solely responsible for determining the
+      appropriateness of using or redistributing the Work and assume any
+      risks associated with Your exercise of permissions under this License.
+
+   8. Limitation of Liability. In no event and under no legal theory,
+      whether in tort (including negligence), contract, or otherwise,
+      unless required by applicable law (such as deliberate and grossly
+      negligent acts) or agreed to in writing, shall any Contributor be
+      liable to You for damages, including any direct, indirect, special,
+      incidental, or consequential damages of any character arising as a
+      result of this License or out of the use or inability to use the
+      Work (including but not limited to damages for loss of goodwill,
+      work stoppage, computer failure or malfunction, or any and all
+      other commercial damages or losses), even if such Contributor
+      has been advised of the possibility of such damages.
+
+   9. Accepting Warranty or Additional Liability. While redistributing
+      the Work or Derivative Works thereof, You may choose to offer,
+      and charge a fee for, acceptance of support, warranty, indemnity,
+      or other liability obligations and/or rights consistent with this
+      License. However, in accepting such obligations, You may act only
+      on Your own behalf and on Your sole responsibility, not on behalf
+      of any other Contributor, and only if You agree to indemnify,
+      defend, and hold each Contributor harmless for any liability
+      incurred by, or claims asserted against, such Contributor by reason
+      of your accepting any such warranty or additional liability.
+
+   END OF TERMS AND CONDITIONS
+
+   Copyright 2025 Agent Field
+
+   Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.</file><file path="pyproject.toml">[build-system]
+requires = [&quot;setuptools&gt;=61.0&quot;, &quot;wheel&quot;]
+build-backend = &quot;setuptools.build_meta&quot;
+
+[project]
+name = &quot;af-deep-research&quot;
+version = &quot;0.1.0&quot;
+description = &quot;AI-powered deep research agent with real-time streaming&quot;
+
+authors = [{ name = &quot;Agent Field&quot;, email = &quot;research@agentfield.ai&quot; }]
+readme = &quot;README.md&quot;
+license = { text = &quot;Apache-2.0&quot; }
+requires-python = &quot;&gt;=3.8&quot;
+classifiers = [
+    &quot;Development Status :: 3 - Alpha&quot;,
+    &quot;Intended Audience :: Developers&quot;,
+    &quot;License :: OSI Approved :: Apache Software License&quot;,
+    &quot;Programming Language :: Python :: 3&quot;,
+    &quot;Programming Language :: Python :: 3.8&quot;,
+    &quot;Programming Language :: Python :: 3.9&quot;,
+    &quot;Programming Language :: Python :: 3.10&quot;,
+    &quot;Programming Language :: Python :: 3.11&quot;,
+    &quot;Programming Language :: Python :: 3.12&quot;,
+]
+
+dependencies = [
+    &quot;agentfield&quot;,
+    &quot;pyyaml&gt;=6.0&quot;,
+    &quot;requests&gt;=2.28.0&quot;,
+    &quot;fastapi&quot;,
+    &quot;uvicorn&quot;,
+    &quot;requests&gt;=2.28&quot;,
+    &quot;pydantic&gt;=2.0&quot;,
+    &quot;litellm&quot;,
+    &quot;psutil&quot;,
+    &quot;PyYAML&gt;=6.0&quot;,
+    &quot;aiohttp&gt;=3.8&quot;,
+    &quot;websockets&quot;,
+    &quot;backoff&quot;,
+]
+
+[project.optional-dependencies]
+dev = [&quot;pytest&gt;=7.0.0&quot;, &quot;black&gt;=22.0.0&quot;, &quot;flake8&gt;=5.0.0&quot;, &quot;mypy&gt;=0.991&quot;]
+
+[project.urls]
+Homepage = &quot;https://github.com/Agent-Field/af-deep-research&quot;
+Repository = &quot;https://github.com/Agent-Field/af-deep-research.git&quot;
+Issues = &quot;https://github.com/Agent-Field/af-deep-research/issues&quot;
+
+[tool.setuptools.packages.find]
+where = [&quot;.&quot;]
+include = [&quot;agent*&quot;]
+
+[tool.black]
+line-length = 88
+target-version = [&apos;py38&apos;]
+
+[tool.mypy]
+python_version = &quot;3.8&quot;
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+
+[tool.pytest.ini_options]
+testpaths = [&quot;tests&quot;]
+python_files = [&quot;test_*.py&quot;]
+python_classes = [&quot;Test*&quot;]
+python_functions = [&quot;test_*&quot;]</file><file path="docker-compose.yml">services:
+  agentfield:
+    image: agentfield/control-plane:latest
+    container_name: agentfield-server
+    ports:
+      - &quot;8080:8080&quot;
+    environment:
+      - AGENTFIELD_HTTP_ADDR=0.0.0.0:8080
+      - AGENTFIELD_STORAGE_MODE=local
+    volumes:
+      - agentfield-data:/data
+    restart: unless-stopped
+  deep-research:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: deep-research-agent
+    environment:
+      - AGENTFIELD_SERVER=http://agentfield:8080
+      - PORT=8001
+      - AGENT_CALLBACK_URL=http://deep-research:8001
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+      - JINA_API_KEY=${JINA_API_KEY:-}
+      - TAVILY_API_KEY=${TAVILY_API_KEY:-}
+      - FIRECRAWL_API_KEY=${FIRECRAWL_API_KEY:-}
+      - SERPER_API_KEY=${SERPER_API_KEY:-}
+      - SEARCH_PROVIDER=${SEARCH_PROVIDER:-}
+      - DEFAULT_MODEL=${DEFAULT_MODEL:-openrouter/deepseek/deepseek-chat-v3.1}
+      - TEMPERATURE=${TEMPERATURE:-0.6}
+      - OLLAMA_BASE_URL=${OLLAMA_BASE_URL:-}
+    ports:
+      - &quot;8001:8001&quot;
+    depends_on:
+      - agentfield
+    healthcheck:
+      test: [&quot;CMD&quot;, &quot;curl&quot;, &quot;-f&quot;, &quot;http://localhost:8001/health&quot;]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    restart: unless-stopped
+volumes:
+  agentfield-data:</file><file path="main.py">AI_CALL_CONCURRENCY_LIMIT = 20
+MAX_ARTICLES_PER_TASK = 10
+NUM_SEARCH_TERMS_PER_TASK = 3
+⋮----
+MAX_BLUEPRINT_EXECUTION_LOOPS = int(os.getenv(&quot;MAX_BLUEPRINT_EXECUTION_LOOPS&quot;, &quot;3&quot;))
+ADJUDICATION_BATCH_SIZE = 50
+⋮----
+ENTITY_BATCH_SIZE = 10
+⋮----
+litellm_params = {&quot;drop_params&quot;: True}
+⋮----
+ollama_base_url = os.getenv(&quot;OLLAMA_BASE_URL&quot;)
+⋮----
+ai_config = AIConfig(
+⋮----
+app = Agent(
+⋮----
+async def search_web_for_content(query: str) -&gt; List[Dict]
+⋮----
+status = list_provider_status()
+available = [name for name, is_available in status.items() if is_available]
+⋮----
+response = await search(query)
+⋮----
+# Convert SearchResult objects to dicts matching expected format
+⋮----
+&quot;&quot;&quot;A wrapper for app.ai calls to allow dynamic model and API key overrides.&quot;&quot;&quot;
+dynamic_params = {}
+⋮----
+merged_kwargs = {**kwargs, **dynamic_params}
+⋮----
+def create_content_hash(content: str) -&gt; str
+⋮----
+async def run_in_batches(tasks: List, batch_size: int)
+⋮----
+results = []
+⋮----
+batch = tasks[i : i + batch_size]
+batch_results = await asyncio.gather(*batch, return_exceptions=True)
+⋮----
+def translate_control_knob_to_description(level: int) -&gt; str
+⋮----
+class QueryClassification(BaseModel)
+⋮----
+query_type: str = Field(
+core_subject: str = Field(
+key_question: str = Field(
+⋮----
+class EntityPair(BaseModel)
+⋮----
+entity1_name: str
+entity2_name: str
+similarity_reason: str
+⋮----
+class EntityPairList(BaseModel)
+⋮----
+pairs: List[EntityPair]
+⋮----
+class MergedEntity(BaseModel)
+⋮----
+name: str
+type: str
+summary: str
+⋮----
+class ResearchHypothesis(BaseModel)
+⋮----
+core_thesis: str = Field(
+supporting_strengths: List[str] = Field(
+counter_risks: List[str] = Field(
+key_unknowns: List[str] = Field(
+⋮----
+class Article(BaseModel)
+⋮----
+id: int
+title: str
+url: str
+content: str
+content_hash: str
+⋮----
+class ArticleEvidence(BaseModel)
+⋮----
+article_id: int
+relevance_summary: str
+facts: List[str]
+quotes: List[str]
+⋮----
+class Entity(BaseModel)
+⋮----
+type: str = Field(
+⋮----
+class Relationship(BaseModel)
+⋮----
+source_entity: str
+target_entity: str
+description: str
+relationship_type: str = Field(
+⋮----
+class InquiryProbe(BaseModel)
+⋮----
+question: str
+rationale: str
+suggested_method: str
+⋮----
+class UniversalResearchPackage(BaseModel)
+⋮----
+query: str
+core_thesis: str
+key_discoveries: List[str]
+confidence_assessment: str
+entities: List[Entity]
+relationships: List[Relationship]
+observed_causal_chains: List[str]
+hypothesized_implications: List[str]
+next_inquiry_probes: List[InquiryProbe]
+source_articles: List[Article]
+article_evidence: List[ArticleEvidence]
+⋮----
+class ResearchResponse(BaseModel)
+⋮----
+mode: str
+version: str
+research_package: dict
+metadata: dict
+⋮----
+ModeAwareResearchResponse = ResearchResponse
+ResearchBriefingResponse = ResearchResponse
+DocumentResponse = ResearchResponse
+⋮----
+class StreamOutput(BaseModel)
+⋮----
+stream_type: str
+synthesized_intel: Dict[str, Any]
+⋮----
+class AdaptiveInquiryProbes(BaseModel)
+⋮----
+probes: List[InquiryProbe]
+⋮----
+class ResearchQualityScore(BaseModel)
+⋮----
+confidence_score: float = Field(description=&quot;Research confidence from 0.0 to 1.0&quot;)
+evidence_adequacy: str = Field(
+critical_gaps_present: bool = Field(
+⋮----
+class ResearchGap(BaseModel)
+⋮----
+gap_description: str = Field(description=&quot;What specific knowledge is missing&quot;)
+gap_priority: str = Field(description=&quot;&apos;high&apos;, &apos;medium&apos;, or &apos;low&apos;&quot;)
+gap_type: str = Field(
+⋮----
+class GapFillingQuery(BaseModel)
+⋮----
+search_query: str = Field(description=&quot;Specific search query to address gaps&quot;)
+expected_insights: str = Field(description=&quot;What this query should reveal&quot;)
+query_priority: str = Field(description=&quot;&apos;high&apos;, &apos;medium&apos;, or &apos;low&apos;&quot;)
+⋮----
+class LoopDecision(BaseModel)
+⋮----
+should_continue: bool = Field(description=&quot;True if another research loop is needed&quot;)
+termination_reason: str = Field(description=&quot;Why stopping or continuing&quot;)
+focus_areas: str = Field(description=&quot;What to focus on in next iteration&quot;)
+⋮----
+prompt = f&quot;&quot;&quot;
+⋮----
+entities_text = &quot;\n&quot;.join(
+⋮----
+&quot;&quot;&quot;Consolidates entities using parallel processing.&quot;&quot;&quot;
+⋮----
+# Create batches for parallel processing
+⋮----
+entity_batches = [all_entities]
+⋮----
+entity_batches = batch_list(all_entities, ENTITY_BATCH_SIZE)
+⋮----
+# Step 1: Detect duplicates in all batches in parallel
+# Show sample entities being processed
+sample_entities = [e.name for e in all_entities[:3]]
+entities_preview = &quot;, &quot;.join(sample_entities)
+⋮----
+batch_tasks = [
+batch_results = await run_in_batches(batch_tasks, AI_CALL_CONCURRENCY_LIMIT)
+⋮----
+# Step 2: Collect all duplicate pairs
+all_duplicate_pairs = []
+⋮----
+entities_dict = {entity.name: entity for entity in all_entities}
+merge_tasks = []
+pairs_to_process = []
+⋮----
+entity1 = entities_dict[pair.entity1_name]
+entity2 = entities_dict[pair.entity2_name]
+⋮----
+merge_examples = []
+⋮----
+merge_results = await run_in_batches(merge_tasks, AI_CALL_CONCURRENCY_LIMIT)
+⋮----
+# Step 5: Apply merge results
+⋮----
+pair = pairs_to_process[i]
+merged_entity = Entity(
+⋮----
+# Update entities dict
+⋮----
+class EvidenceDeduplication(BaseModel)
+⋮----
+&quot;&quot;&quot;Result of evidence deduplication.&quot;&quot;&quot;
+⋮----
+is_duplicate: bool
+reason: str
+⋮----
+class RelationshipPair(BaseModel)
+⋮----
+&quot;&quot;&quot;Represents a potential duplicate relationship pair.&quot;&quot;&quot;
+⋮----
+relationship1_description: str
+relationship2_description: str
+⋮----
+class RelationshipPairList(BaseModel)
+⋮----
+&quot;&quot;&quot;List of potential duplicate relationship pairs.&quot;&quot;&quot;
+⋮----
+pairs: List[RelationshipPair]
+⋮----
+&quot;&quot;&quot;Detects potential duplicate relationships in a batch.&quot;&quot;&quot;
+rels_text = &quot;\n&quot;.join(
+⋮----
+class MergedRelationship(BaseModel)
+⋮----
+&quot;&quot;&quot;Result of merging two relationships.&quot;&quot;&quot;
+⋮----
+relationship_type: str
+⋮----
+&quot;&quot;&quot;Merges two specific relationships into one.&quot;&quot;&quot;
+⋮----
+def batch_list(items: List, batch_size: int) -&gt; List[List]
+⋮----
+&quot;&quot;&quot;Split a list into batches of specified size.&quot;&quot;&quot;
+⋮----
+&quot;&quot;&quot;Consolidates relationships using parallel processing.&quot;&quot;&quot;
+⋮----
+rel_batches = [all_relationships]
+⋮----
+rel_batches = batch_list(all_relationships, 15)
+⋮----
+# Get dynamic context from relationships being processed
+⋮----
+sample_entities = set()
+⋮----
+entities_context = &quot;, &quot;.join(list(sample_entities)[:3])
+⋮----
+# Step 2: Collect all duplicate pairs and create lookup
+⋮----
+rel_dict = {}
+⋮----
+key = (rel.source_entity, rel.target_entity, rel.description)
+⋮----
+rel1 = next(
+rel2 = next(
+⋮----
+merged_rel = Relationship(
+⋮----
+new_key = (
+⋮----
+old_key1 = (rel1.source_entity, rel1.target_entity, rel1.description)
+old_key2 = (rel2.source_entity, rel2.target_entity, rel2.description)
+⋮----
+unique_evidence = []
+seen_hashes = set()
+⋮----
+evidence_content = f&quot;{evidence.relevance_summary}{&apos;&apos;.join(evidence.facts[:3])}&quot;
+evidence_hash = create_content_hash(evidence_content)
+⋮----
+# Step 2: AI-based similarity checking for remaining evidence
+if len(unique_evidence) &lt;= 20:  # Only use AI for manageable sizes
+similarity_tasks = []
+pairs_to_check = []
+⋮----
+# Show what we&apos;re cross-referencing
+sample_sources = [
+sources_context = &quot;, &quot;.join(sample_sources)
+⋮----
+similarity_results = await run_in_batches(
+⋮----
+# Remove duplicates based on AI analysis
+indices_to_remove = set()
+⋮----
+indices_to_remove.add(j)  # Remove the second one
+⋮----
+unique_evidence = [
+⋮----
+&quot;&quot;&quot;Generates adaptive hypothesis based on query type and domain.&quot;&quot;&quot;
+⋮----
+# Create rich context from extracted network
+entities_xml = &quot;\n&quot;.join(
+⋮----
+relationships_xml = &quot;\n&quot;.join(
+⋮----
+discoveries_xml = &quot;\n&quot;.join(
+⋮----
+# Adaptive system prompts based on query type
+domain_frameworks = {
+⋮----
+framework = domain_frameworks.get(query_type, domain_frameworks[&quot;Entity_Analysis&quot;])
+⋮----
+schema=ResearchHypothesis,  # Reuse schema but make it domain-adaptive
+⋮----
+# ==============================================================================
+# ORCHESTRATOR &amp; PUBLIC API REASONERS
+⋮----
+&quot;&quot;&quot;Evaluates the completeness and quality of current research state.&quot;&quot;&quot;
+⋮----
+entity_count = len(entities)
+relationship_count = len(relationships)
+discovery_count = len(key_discoveries)
+⋮----
+key_entities = [f&quot;{e.name} ({e.type})&quot; for e in entities[:15]]
+entity_context = &quot;, &quot;.join(key_entities)
+⋮----
+key_relationships = [
+relationship_context = &quot; | &quot;.join(key_relationships)
+⋮----
+high_priority_gaps = [g for g in gaps if g.gap_priority == &quot;high&quot;]
+gap_descriptions = [g.gap_description for g in high_priority_gaps[:5]]
+entity_context = &quot;, &quot;.join(current_entities[:10])
+⋮----
+class QueryBatch(BaseModel)
+⋮----
+queries: List[GapFillingQuery]
+⋮----
+result = await ai_with_dynamic_params(
+⋮----
+&quot;&quot;&quot;Decides whether to continue with another research iteration.&quot;&quot;&quot;
+⋮----
+high_priority_gaps = [g for g in gaps_identified if g.gap_priority == &quot;high&quot;]
+total_gaps = len(gaps_identified)
+critical_gaps = len(high_priority_gaps)
+⋮----
+temporal_context = get_temporal_context(&quot;search&quot;)
+⋮----
+class SearchStream(BaseModel)
+⋮----
+stream_name: str
+search_queries: List[str]
+analysis_focus: str
+⋮----
+class AdaptiveSearchStreams(BaseModel)
+⋮----
+streams: List[SearchStream]
+⋮----
+focus_preview = (
+⋮----
+# Execute searches in parallel
+search_tasks = [search_web_for_content(query) for query in search_queries]
+search_results_lists = await asyncio.gather(*search_tasks)
+⋮----
+# Process and deduplicate articles
+unique_articles_map = {
+⋮----
+source_articles: List[Article] = []
+article_id_counter = start_article_id
+⋮----
+content = result.get(&quot;content&quot;, &quot;&quot;)
+⋮----
+temporal_context = get_temporal_context(&quot;evidence&quot;)
+⋮----
+class ComprehensiveEvidence(BaseModel)
+⋮----
+ai_output = await ai_with_dynamic_params(
+⋮----
+# Extract evidence from all articles in parallel
+extraction_tasks = [
+article_evidence_results = await run_in_batches(
+article_evidence: List[ArticleEvidence] = [
+⋮----
+# Show what we discovered in this comprehensive stream
+⋮----
+sample_insights = []
+⋮----
+insights_preview = &quot; | &quot;.join(sample_insights)
+⋮----
+# Return minimal synthesized intel (detailed synthesis happens later)
+⋮----
+start_time = time.time()
+⋮----
+# === INITIALIZATION ===
+classification = await classify_query_adaptive(query, model=model, api_key=api_key)
+⋮----
+# Initialize research state
+all_source_articles: List[Article] = []
+all_article_evidence: List[ArticleEvidence] = []
+current_entities: List[Entity] = []
+current_relationships: List[Relationship] = []
+current_discoveries: List[str] = []
+iteration_summaries: List[str] = []
+⋮----
+# === ITERATIVE RESEARCH LOOP ===
+iteration = 1
+quality_score = None
+⋮----
+iteration_start = time.time()
+⋮----
+# Determine search strategy for this iteration
+⋮----
+# Initial comprehensive search
+search_streams = await generate_adaptive_search_streams(
+# Show what research angles we&apos;re exploring
+⋮----
+stream_names = [
+streams_preview = &quot; and &quot;.join(stream_names)
+⋮----
+# Gap-targeted search for subsequent iterations
+gaps = await identify_knowledge_gaps_batch(
+⋮----
+gap_queries = await generate_targeted_search_queries(
+⋮----
+search_streams = [
+⋮----
+stream_results: List[StreamOutput] = []
+article_id_offset = len(all_source_articles)
+⋮----
+stream_result = await execute_intelligence_stream_comprehensive(
+⋮----
+iteration_articles = []
+iteration_evidence = []
+⋮----
+new_unique_articles = []
+existing_hashes = {a.content_hash for a in all_source_articles}
+⋮----
+sample_source = (
+⋮----
+# === NETWORK ANALYSIS ===
+iteration_entities = await extract_entities_from_evidence_comprehensive(
+⋮----
+iteration_relationships = await extract_relationships_comprehensive(
+⋮----
+# Track network growth
+entity_growth = len(iteration_entities) - len(current_entities)
+relationship_growth = len(iteration_relationships) - len(current_relationships)
+⋮----
+current_entities = iteration_entities
+current_relationships = iteration_relationships
+⋮----
+# === DISCOVERY SYNTHESIS ===
+iteration_discoveries = await synthesize_key_discoveries_meta(
+⋮----
+current_discoveries = iteration_discoveries
+⋮----
+# Record iteration summary
+iteration_time = time.time() - iteration_start
+⋮----
+hypothesis = await generate_adaptive_hypothesis(
+⋮----
+quality_score = await assess_research_completeness(
+⋮----
+remaining_gaps = await identify_knowledge_gaps_batch(
+⋮----
+loop_decision = await decide_iteration_continuation(
+⋮----
+# === FINAL PACKAGING ===
+final_hypothesis = await generate_adaptive_hypothesis(
+⋮----
+inquiry_probes = await generate_adaptive_inquiry_probes(
+⋮----
+final_package = UniversalResearchPackage(
+⋮----
+execution_time = time.time() - start_time
+⋮----
+package_data = previous_package[&quot;research_package&quot;]
+⋮----
+package_data = previous_package
+⋮----
+prev_pkg = UniversalResearchPackage(**package_data)
+⋮----
+# === CONTINUATION STRATEGY ===
+sub_classification = await classify_query_adaptive(
+⋮----
+# Initialize expanded research state from previous package
+all_source_articles = prev_pkg.source_articles[:]
+all_article_evidence = prev_pkg.article_evidence[:]
+current_entities = prev_pkg.entities[:]
+current_relationships = prev_pkg.relationships[:]
+current_discoveries = prev_pkg.key_discoveries[:]
+expansion_summaries: List[str] = []
+⋮----
+# === ITERATIVE EXPANSION LOOP ===
+⋮----
+# Initial expansion based on sub-query
+expansion_streams = await generate_adaptive_search_streams(
+⋮----
+# Gap-targeted expansion
+expansion_gaps = await identify_knowledge_gaps_batch(
+⋮----
+expansion_streams = [
+⋮----
+max_existing_id = max([a.id for a in all_source_articles], default=0)
+expansion_results: List[StreamOutput] = []
+⋮----
+# === COLLECT EXPANSION EVIDENCE ===
+new_articles = []
+new_evidence = []
+⋮----
+# Deduplicate against existing
+⋮----
+unique_new_articles = [
+⋮----
+# Show meaningful expansion progress
+⋮----
+# === NETWORK EXPANSION ===
+expanded_entities = await extract_entities_from_evidence_comprehensive(
+⋮----
+expanded_relationships = await extract_relationships_comprehensive(
+⋮----
+# Track expansion
+entity_expansion = len(expanded_entities) - len(current_entities)
+relationship_expansion = len(expanded_relationships) - len(
+⋮----
+current_entities = expanded_entities
+current_relationships = expanded_relationships
+⋮----
+# === DISCOVERY EXPANSION ===
+expanded_discoveries = await synthesize_key_discoveries_meta(
+⋮----
+# Merge discoveries from previous and new research
+current_discoveries = prev_pkg.key_discoveries + [
+⋮----
+# Record expansion summary
+⋮----
+# Show network growth in user terms
+⋮----
+expansion_quality = await assess_research_completeness(
+⋮----
+continuation_decision = await decide_iteration_continuation(
+⋮----
+enhanced_hypothesis = await generate_adaptive_hypothesis(
+⋮----
+enhanced_probes = await generate_adaptive_inquiry_probes(
+⋮----
+enhanced_package = UniversalResearchPackage(
+⋮----
+query=prev_pkg.query,  # Keep original query
+⋮----
+# Calculate growth metrics
+original_entities = len(prev_pkg.entities)
+original_relationships = len(prev_pkg.relationships)
+final_entity_growth = len(current_entities) - original_entities
+final_relationship_growth = len(current_relationships) - original_relationships
+⋮----
+entity_connections = {}
+⋮----
+isolated_entities = [
+⋮----
+high_importance_entities = [
+⋮----
+isolated_xml = &quot;\n&quot;.join(
+⋮----
+&quot;&quot;&quot;Adaptive query classification that determines optimal research approach for any domain.&quot;&quot;&quot;
+⋮----
+temporal_context = get_temporal_context(&quot;classification&quot;)
+⋮----
+# Process evidence in batches for comprehensive extraction
+batch_size = 8
+evidence_batches = [
+⋮----
+# Convert existing entities for context
+existing_entities_xml = &quot;&quot;
+⋮----
+existing_entities_xml = f&quot;&quot;&quot;
+⋮----
+evidence_xml = &quot;\n&quot;.join(
+⋮----
+# Process in batches with iterative discovery like meta version
+⋮----
+&quot;&quot;&quot;Iterative relationship discovery within a batch.&quot;&quot;&quot;
+⋮----
+entities_list = [
+⋮----
+]  # Manageable context
+⋮----
+all_relationships = []
+⋮----
+max_iterations = 4
+⋮----
+# Create context for this iteration
+⋮----
+already_found_summary = []
+⋮----
+already_found_summary = [
+⋮----
+for r in all_relationships[-10:]  # Show recent ones
+⋮----
+class IterativeRelationshipResult(BaseModel)
+⋮----
+has_more_relationships: bool
+confidence_in_completion: float
+iteration_notes: str
+⋮----
+new_relationships = result.relationships
+⋮----
+# Stopping conditions
+⋮----
+# Extract relationships from all batches in parallel
+relationship_extraction_tasks = [
+relationship_batch_results = await run_in_batches(
+⋮----
+all_relationships = [
+⋮----
+# Deduplicate relationships
+final_relationships = await process_relationship_consolidation_parallel(
+⋮----
+&quot;&quot;&quot;Meta-level discovery synthesis that adapts to any domain.&quot;&quot;&quot;
+⋮----
+temporal_context = get_temporal_context(&quot;synthesis&quot;)
+⋮----
+for e in entities[:25]  # Manageable context
+⋮----
+# Sample evidence for pattern detection
+evidence_summary = []
+⋮----
+key_facts = &quot; | &quot;.join(ev.facts[:3])
+⋮----
+sources: int = Field(
+⋮----
+class Evidence(BaseModel)
+⋮----
+&quot;&quot;&quot;A single piece of evidence supporting the main claim.&quot;&quot;&quot;
+⋮----
+finding: str = Field(
+sourceNote: str = Field(
+⋮----
+class NextProbe(BaseModel)
+⋮----
+&quot;&quot;&quot;A suggested next step for further research, containing both user-facing and full internal data.&quot;&quot;&quot;
+⋮----
+# User-facing short versions generated by the AI
+probe: str = Field(
+rationale: str = Field(
+timeEstimate: str = Field(
+isAutoOpened: bool = Field(
+⋮----
+# Full data from the original InquiryProbe for re-querying
+full_question: str = Field(
+full_rationale: str = Field(
+full_suggested_method: str = Field(
+⋮----
+# Define the parallelizable helper reasoners for briefing generation
+async def generate_claim(pkg: UniversalResearchPackage) -&gt; Any
+⋮----
+class Claim(BaseModel)
+⋮----
+claim: str
+impact: str
+⋮----
+nextProbes: List[NextProbe]
+⋮----
+id: str = Field(
+⋮----
+evidence: List[Evidence]
+⋮----
+metadata: BriefingMetadata
+isCompleted: bool = Field(
+⋮----
+briefing = ResearchBriefing(
+⋮----
+model : str, optional
+⋮----
+- research_package: Complete research data including:</file><file path="README.md">&lt;p align=&quot;center&quot;&gt;
+  &lt;h1 align=&quot;center&quot;&gt;AF Deep Research&lt;/h1&gt;
+  &lt;p align=&quot;center&quot;&gt;Autonomous research backend for AI applications.&lt;/p&gt;
+&lt;/p&gt;
+&lt;p align=&quot;center&quot;&gt;
+  &lt;a href=&quot;https://github.com/Agent-Field/af-deep-research/blob/main/LICENSE&quot;&gt;&lt;img src=&quot;https://img.shields.io/badge/license-Apache%202.0-blue.svg&quot; alt=&quot;License&quot;&gt;&lt;/a&gt;
+  &lt;a href=&quot;https://github.com/Agent-Field/agentfield&quot;&gt;&lt;img src=&quot;https://img.shields.io/badge/built%20on-AgentField-8A2BE2&quot; alt=&quot;Built on AgentField&quot;&gt;&lt;/a&gt;
+  &lt;a href=&quot;https://github.com/Agent-Field&quot;&gt;&lt;img src=&quot;https://img.shields.io/badge/More_from-Agent--Field-111827?logo=github&quot; alt=&quot;More from Agent-Field&quot;&gt;&lt;/a&gt;
+  &lt;a href=&quot;https://discord.com/invite/aBHaXMkpqh&quot;&gt;&lt;img src=&quot;https://img.shields.io/badge/Discord-Join-7289da&quot; alt=&quot;Discord&quot;&gt;&lt;/a&gt;
+&lt;/p&gt;
+&lt;p align=&quot;center&quot;&gt;&lt;b&gt;Early Preview&lt;/b&gt; · APIs may change. Feedback welcome.&lt;/p&gt;
+
+---
+
+A research API that questions itself. Submit a query. The system spawns parallel agents, evaluates what it found against quality thresholds, generates new sub-queries when gaps are detected, and runs another cycle. The architecture orchestrates ~10,000 logical agent invocations per research. This is an [AI backend](https://www.agentfield.ai/blog/posts/ai-backend), not a chat interface. Built on top of [agentfield](https://github.com/Agent-Field/agentfield) runtime for orchestrating the agents.
+
+## One-Call DX
+
+Trigger it with the `af` CLI (requires af ≥ 0.1.87) — it streams live progress and prints the result:
+
+```bash
+af call meta_deep_research.execute_deep_research --in &apos;{&quot;query&quot;: &quot;What companies are investing in AI chips?&quot;}&apos;
+```
+
+Prefer raw HTTP? Hit the API directly with curl:
+
+```bash
+curl -X POST http://localhost:8080/api/v1/execute/async/meta_deep_research.execute_deep_research \
+  -H &quot;Content-Type: application/json&quot; \
+  -d &apos;{&quot;input&quot;: {&quot;query&quot;: &quot;What companies are investing in AI chips?&quot;}}&apos;
+```
+
+Returns a structured research package — entities, relationships, evidence, and a full cited document:
+
+```jsonc
+{
+  &quot;entities&quot;: [
+    {&quot;name&quot;: &quot;NVIDIA&quot;, &quot;type&quot;: &quot;Company&quot;, &quot;summary&quot;: &quot;Dominant AI chip maker, 80%+ datacenter GPU share&quot;},
+    {&quot;name&quot;: &quot;Sequoia Capital&quot;, &quot;type&quot;: &quot;Investor&quot;, &quot;summary&quot;: &quot;Early NVIDIA investor, major AI fund&quot;},
+    {&quot;name&quot;: &quot;H100&quot;, &quot;type&quot;: &quot;Technology&quot;, &quot;summary&quot;: &quot;Flagship AI training GPU, $30k+ ASP&quot;}
+  ],
+  &quot;relationships&quot;: [
+    {&quot;source&quot;: &quot;AMD&quot;, &quot;target&quot;: &quot;NVIDIA&quot;, &quot;type&quot;: &quot;Competes_With&quot;},
+    {&quot;source&quot;: &quot;Sequoia Capital&quot;, &quot;target&quot;: &quot;NVIDIA&quot;, &quot;type&quot;: &quot;Invests_In&quot;},
+    {&quot;source&quot;: &quot;Microsoft&quot;, &quot;target&quot;: &quot;OpenAI&quot;, &quot;type&quot;: &quot;Partners_With&quot;}
+  ],
+  &quot;article_evidence&quot;: [{&quot;facts&quot;: [&quot;NVIDIA datacenter revenue reached $18.4B in Q4&quot;], &quot;quotes&quot;: [&quot;We are seeing unprecedented demand - Jensen Huang&quot;]}],
+  &quot;document&quot;: {&quot;sections&quot;: [&quot;...full hierarchical report with inline citations...&quot;]},
+  &quot;metadata&quot;: {&quot;iterations_completed&quot;: 3, &quot;total_entities&quot;: 47, &quot;total_relationships&quot;: 89, &quot;final_quality_score&quot;: 0.91}
+}
+```
+
+~10,000 agent invocations. Self-correcting research loops. One API call.
+
+## Quick start
+
+```bash
+git clone https://github.com/Agent-Field/af-deep-research.git &amp;&amp; cd af-deep-research
+cp .env.example .env          # Add OPENROUTER_API_KEY + at least one search provider key
+docker compose up --build
+```
+
+```bash
+curl -X POST http://localhost:8080/api/v1/execute/async/meta_deep_research.execute_deep_research \
+  -H &quot;Content-Type: application/json&quot; \
+  -d &apos;{&quot;input&quot;: {&quot;query&quot;: &quot;What companies are investing in AI chips?&quot;}}&apos;
+```
+
+Returns `execution_id`. Stream progress via SSE, fetch results when complete.
+
+&gt; Open [localhost:8080/ui](http://localhost:8080/ui) to watch the workflow live.
+
+### Run locally (without Docker)
+
+You can run AF Deep Research directly as a Python app without the AgentField control plane managing async dispatch. It will execute synchronously.
+
+**1. Create a virtual environment and install dependencies:**
+
+```bash
+python -m venv .venv &amp;&amp; source .venv/bin/activate
+pip install -e .
+```
+
+**2. Set a writable working directory:**
+
+By default, AF Deep Research writes workspace files to `/workspaces`, which requires root access. Override this with the `PR_AF_WORKDIR` environment variable:
+
+```bash
+export PR_AF_WORKDIR=/tmp/pr-af-workdir
+```
+
+**3. Configure your environment and start the agent:**
+
+```bash
+cp .env.example .env   # Add OPENROUTER_API_KEY + at least one search provider key
+python3 main.py
+```
+
+**4. Submit a query (in a separate terminal):**
+
+```bash
+curl -X POST http://localhost:8080/api/v1/execute/async/meta_deep_research.execute_deep_research \
+  -H &quot;Content-Type: application/json&quot; \
+  -d &apos;{&quot;input&quot;: {&quot;query&quot;: &quot;What companies are investing in AI chips?&quot;}}&apos;
+```
+
+## Output
+
+The API returns a research package with five components:
+
+| Component | Contents |
+|-----------|----------|
+| `entities` | Typed objects: Company, Investor, Founder, Technology, Market_Trend, Metric |
+| `relationships` | Edges: Competes_With, Invests_In, Partners_With, Founded_By, Acquires |
+| `article_evidence` | Facts and quotes with source article IDs |
+| `document` | Hierarchical sections with inline citations and bibliography |
+| `metadata` | iterations_completed, total_entities, total_relationships, final_quality_score |
+
+&lt;details&gt;
+&lt;summary&gt;&lt;b&gt;Entities&lt;/b&gt;&lt;/summary&gt;
+
+```json
+{
+  &quot;entities&quot;: [
+    {&quot;name&quot;: &quot;NVIDIA&quot;, &quot;type&quot;: &quot;Company&quot;, &quot;summary&quot;: &quot;Dominant AI chip maker, 80%+ datacenter GPU share&quot;},
+    {&quot;name&quot;: &quot;Jensen Huang&quot;, &quot;type&quot;: &quot;Founder&quot;, &quot;summary&quot;: &quot;CEO of NVIDIA since 1993&quot;},
+    {&quot;name&quot;: &quot;Sequoia Capital&quot;, &quot;type&quot;: &quot;Investor&quot;, &quot;summary&quot;: &quot;Early NVIDIA investor, major AI fund&quot;},
+    {&quot;name&quot;: &quot;H100&quot;, &quot;type&quot;: &quot;Technology&quot;, &quot;summary&quot;: &quot;Flagship AI training GPU, $30k+ ASP&quot;},
+    {&quot;name&quot;: &quot;AI Chip Market&quot;, &quot;type&quot;: &quot;Market_Trend&quot;, &quot;summary&quot;: &quot;Projected $300B by 2030&quot;}
+  ]
+}
+```
+
+&lt;/details&gt;
+
+&lt;details&gt;
+&lt;summary&gt;&lt;b&gt;Relationships&lt;/b&gt;&lt;/summary&gt;
+
+```json
+{
+  &quot;relationships&quot;: [
+    {&quot;source&quot;: &quot;AMD&quot;, &quot;target&quot;: &quot;NVIDIA&quot;, &quot;type&quot;: &quot;Competes_With&quot;, &quot;description&quot;: &quot;Direct competition in AI accelerators&quot;},
+    {&quot;source&quot;: &quot;Sequoia Capital&quot;, &quot;target&quot;: &quot;NVIDIA&quot;, &quot;type&quot;: &quot;Invests_In&quot;, &quot;description&quot;: &quot;Series A investor, 1993&quot;},
+    {&quot;source&quot;: &quot;NVIDIA&quot;, &quot;target&quot;: &quot;Mellanox&quot;, &quot;type&quot;: &quot;Acquires&quot;, &quot;description&quot;: &quot;$7B acquisition for networking&quot;},
+    {&quot;source&quot;: &quot;Microsoft&quot;, &quot;target&quot;: &quot;OpenAI&quot;, &quot;type&quot;: &quot;Partners_With&quot;, &quot;description&quot;: &quot;$10B strategic investment&quot;}
+  ]
+}
+```
+
+&lt;/details&gt;
+
+&lt;details&gt;
+&lt;summary&gt;&lt;b&gt;Evidence&lt;/b&gt;&lt;/summary&gt;
+
+```json
+{
+  &quot;article_evidence&quot;: [{
+    &quot;article_id&quot;: 1,
+    &quot;facts&quot;: [
+      &quot;NVIDIA datacenter revenue reached $18.4B in Q4&quot;,
+      &quot;H100 backlog extends into late 2025&quot;
+    ],
+    &quot;quotes&quot;: [&quot;We are seeing unprecedented demand - Jensen Huang&quot;]
+  }]
+}
+```
+
+&lt;/details&gt;
+
+&lt;details&gt;
+&lt;summary&gt;&lt;b&gt;Document&lt;/b&gt;&lt;/summary&gt;
+
+```json
+{
+  &quot;document_title&quot;: &quot;AI Chip Investment Landscape&quot;,
+  &quot;executive_summary&quot;: &quot;The AI chip market is experiencing...&quot;,
+  &quot;sections&quot;: [
+    {&quot;title&quot;: &quot;Market Dynamics&quot;, &quot;content&quot;: &quot;The accelerator market reached $45B [1]...&quot;},
+    {&quot;title&quot;: &quot;Competitive Landscape&quot;, &quot;content&quot;: &quot;NVIDIA maintains 80%+ share [2]...&quot;}
+  ],
+  &quot;source_notes&quot;: [
+    {&quot;citation_id&quot;: 1, &quot;title&quot;: &quot;AI Chip Report 2024&quot;, &quot;domain&quot;: &quot;reuters.com&quot;}
+  ]
+}
+```
+
+&lt;/details&gt;
+
+&lt;details&gt;
+&lt;summary&gt;&lt;b&gt;Metadata&lt;/b&gt;&lt;/summary&gt;
+
+```json
+{
+  &quot;metadata&quot;: {
+    &quot;iterations_completed&quot;: 3,
+    &quot;total_entities&quot;: 47,
+    &quot;total_relationships&quot;: 156,
+    &quot;total_sources&quot;: 89,
+    &quot;final_quality_score&quot;: 0.82
+  }
+}
+```
+
+&lt;/details&gt;
+
+## How it works
+
+&lt;p align=&quot;center&quot;&gt;
+  &lt;img src=&quot;assets/archi.png&quot; alt=&quot;AF Deep Research Architecture&quot; width=&quot;100%&quot;&gt;
+&lt;/p&gt;
+
+## What makes this different
+
+Traditional research: one query → retrieve → summarize → done.
+
+This system: **fan out → filter down → synthesize → find gaps → fan out again.**
+
+&lt;p align=&quot;center&quot;&gt;
+  &lt;img src=&quot;assets/process.png&quot; alt=&quot;Traditional vs AF Deep Research&quot; width=&quot;100%&quot;&gt;
+&lt;/p&gt;
+
+Multiple parallel streams explore different angles simultaneously. Each stream filters aggressively—only hyper-relevant evidence survives. Cross-stream synthesis finds patterns. Gap analysis identifies what&apos;s missing. New targeted streams spawn. The cycle repeats until quality threshold is met.
+
+| | Perplexity / ChatGPT | AF Deep Research |
+|---|---|---|
+| **Research process** | One-shot generation | Self-correcting loops that ask &quot;what am I missing?&quot; |
+| **Search coverage** | Single query | Multiple parallel streams, each exploring a different angle |
+| **What you get back** | Prose with inline links | Structured JSON: typed entities, mapped relationships, cited evidence |
+| **Context quality** | Everything retrieved goes to the LLM | Two-tier filtering so only hyper-relevant content reaches the model |
+| **Relationship discovery** | Mentioned if obvious | Multi-pass extraction: explicit → implied → indirect → emergent patterns |
+| **Scaling** | Fixed behavior | Width and depth scale with query complexity |
+| **Integration** | Copy-paste from chat | REST API, SSE streaming, webhook-ready |
+| **Deployment** | SaaS only | Self-host with local LLMs, air-gapped option |
+
+&gt; **From research to action:** [Contract-AF](https://github.com/Agent-Field/contract-af) uses the same recursive multi-agent pattern to analyze legal contracts — agents spawn agents at runtime based on what they discover.
+
+### Why it works
+
+- **Context pollution kills quality.** When you dump 50 web pages into an LLM, important facts get buried and the model hallucinates connections. We filter aggressively—hash dedup, semantic dedup, relevance scoring—so only the best evidence reaches synthesis.
+
+- **Width AND depth.** Traditional tools go broad OR deep. This system scales both: `research_scope` controls parallel streams, `research_focus` controls analysis depth. Simple queries get fewer streams; complex queries spawn more.
+
+- **Quality-driven, not count-driven.** The system doesn&apos;t run exactly 3 iterations. After each pass it asks: what entities are missing? what relationships are unclear? what claims lack evidence? If gaps exist and are addressable, it continues. If quality threshold is met, it stops.
+
+- **Cross-stream patterns.** The synthesis layer doesn&apos;t summarize streams separately—it finds connections between them. A market trend that explains a technical pivot. A team background that validates a GTM strategy.
+
+## API
+
+**Submit:** `POST /api/v1/execute/async/meta_deep_research.execute_deep_research`
+
+**Stream progress:** `GET /api/ui/v1/workflows/{execution_id}/notes/events` (SSE)
+
+**Fetch results:** `GET /api/v1/executions/{execution_id}`
+
+### Accessing response data
+
+```python
+response = fetch_results(execution_id)
+
+# Graph data
+entities = response[&quot;research_package&quot;][&quot;entities&quot;]
+relationships = response[&quot;research_package&quot;][&quot;relationships&quot;]
+
+# Evidence for audits
+evidence = response[&quot;research_package&quot;][&quot;article_evidence&quot;]
+
+# Document for rendering
+sections = response[&quot;research_package&quot;][&quot;document&quot;][&quot;sections&quot;]
+bibliography = response[&quot;research_package&quot;][&quot;document&quot;][&quot;source_notes&quot;]
+
+# Quality gates
+if response[&quot;metadata&quot;][&quot;final_quality_score&quot;] &lt; 0.7:
+    trigger_human_review()
+```
+
+## Parameters
+
+| Parameter | What it does |
+|-----------|--------------|
+| `research_focus` | Depth (1-5). Higher goes deeper. |
+| `research_scope` | Breadth (1-5). Higher casts wider net. |
+| `max_research_loops` | How many iterative cycles to run. |
+| `tension_lens` | `balanced`, `bull`, or `bear` perspective. |
+| `source_strictness` | `strict`, `mixed`, or `permissive` source filtering. |
+
+Set `tension_lens: &quot;bear&quot;` for risk-focused analysis. Set `source_strictness: &quot;strict&quot;` to filter to reputable sources only.
+
+## Examples
+
+**Investment research pipeline**
+```bash
+# Risk analysis for due diligence
+curl -X POST http://localhost:8080/api/v1/execute/async/meta_deep_research.execute_deep_research \
+  -H &quot;Content-Type: application/json&quot; \
+  -d &apos;{&quot;input&quot;: {&quot;query&quot;: &quot;Rivian competitive position and financial risks&quot;, &quot;tension_lens&quot;: &quot;bear&quot;}}&apos;
+
+# Response feeds into: risk scoring model, portfolio dashboard, analyst report generator
+```
+
+**Knowledge graph builder**
+```bash
+# Extract entities and relationships for graph database
+curl -X POST http://localhost:8080/api/v1/execute/async/meta_deep_research.execute_deep_research \
+  -H &quot;Content-Type: application/json&quot; \
+  -d &apos;{&quot;input&quot;: {&quot;query&quot;: &quot;AI chip supply chain: manufacturers, suppliers, customers&quot;}}&apos;
+
+# entities[] → Neo4j nodes
+# relationships[] → Neo4j edges
+# Now queryable: &quot;Show me all companies 2 hops from NVIDIA&quot;
+```
+
+**Competitive intelligence system**
+```bash
+# Track competitor moves across multiple dimensions
+curl -X POST http://localhost:8080/api/v1/execute/async/meta_deep_research.execute_deep_research \
+  -H &quot;Content-Type: application/json&quot; \
+  -d &apos;{&quot;input&quot;: {&quot;query&quot;: &quot;How is AMD positioning against NVIDIA in datacenter AI?&quot;, &quot;research_scope&quot;: 5}}&apos;
+
+# article_evidence[] → feed alerting system
+# document → auto-generate weekly competitor brief
+```
+
+**Compliance research**
+```bash
+# Audit-ready research with source tracking
+curl -X POST http://localhost:8080/api/v1/execute/async/meta_deep_research.execute_deep_research \
+  -H &quot;Content-Type: application/json&quot; \
+  -d &apos;{&quot;input&quot;: {&quot;query&quot;: &quot;ESG practices of major lithium mining companies&quot;, &quot;source_strictness&quot;: &quot;strict&quot;}}&apos;
+
+# Each fact links to source_notes[] with URL, title, domain
+# Audit trail shows exactly where each claim came from
+```
+
+## Local LLMs
+
+To keep everything on your network:
+
+```bash
+OLLAMA_BASE_URL=http://host.docker.internal:11434
+DEFAULT_MODEL=ollama/llama3.2
+```
+
+&gt; No telemetry. Your data stays on your infrastructure.
+
+&lt;details&gt;
+&lt;summary&gt;Model options&lt;/summary&gt;
+
+| Model | Cost |
+|-------|------|
+| `deepseek-chat-v3.1` | $0.15/0.75 per 1M tokens |
+| `claude-sonnet-4` | $3/$15 per 1M tokens |
+| `ollama/llama3.2` | Free (local) |
+| `ollama/qwen2.5:72b` | Free (local) |
+
+&lt;/details&gt;
+
+## The stack
+
+Runs on [AgentField](https://github.com/Agent-Field/agentfield), open-source infrastructure for production AI agents. Workflows run for 16+ minutes without timeout. Progress streams via SSE. Results persist. Audit trails are cryptographically signed for compliance.
+
+&lt;p align=&quot;center&quot;&gt;
+  &lt;a href=&quot;https://github.com/Agent-Field/agentfield&quot;&gt;&lt;img src=&quot;https://img.shields.io/badge/Powered%20by-AgentField-8A2BE2?style=for-the-badge&quot; alt=&quot;AgentField&quot;&gt;&lt;/a&gt;
+&lt;/p&gt;
+
+## Links
+
+- [Docs](https://agentfield.ai/docs)
+- [GitHub](https://github.com/Agent-Field/agentfield)
+- [Discord](https://discord.com/invite/aBHaXMkpqh)
+
+## Contribute
+
+This is an early preview. We&apos;re actively developing and want feedback. File issues, open PRs, or come chat in [Discord](https://discord.com/invite/aBHaXMkpqh).
+
+---
+
+### Also built on AgentField
+
+&gt; **[Contract-AF](https://github.com/Agent-Field/contract-af)** — Legal contract risk analyzer. Agents spawn agents at runtime. Adversarial review catches what solo LLMs miss.
+&gt;
+&gt; **[Reactive Atlas](https://github.com/Agent-Field/af-reactive-atlas-mongodb)** — Turn any MongoDB collection into an AI intelligence layer. Config-driven, zero application code.
+
+[All repos →](https://github.com/Agent-Field)
+
+&lt;p align=&quot;center&quot;&gt;
+  &lt;sub&gt;Built by &lt;a href=&quot;https://agentfield.ai&quot;&gt;AgentField&lt;/a&gt; · &lt;a href=&quot;https://github.com/Agent-Field/af-deep-research/blob/main/LICENSE&quot;&gt;Apache 2.0&lt;/a&gt; · &lt;a href=&quot;https://github.com/Agent-Field&quot;&gt;See what else we&apos;re building →&lt;/a&gt;&lt;/sub&gt;
+&lt;/p&gt;</file></files></repomix>

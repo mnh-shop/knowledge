@@ -1,0 +1,1230 @@
+<repomix><file_summary>This file is a merged representation of the entire codebase, combined into a single document by Repomix.
+The content has been processed where comments have been removed, empty lines have been removed, line numbers have been added, content has been formatted for parsing in xml style, content has been compressed (code blocks are separated by ⋮---- delimiter), security check has been disabled.<purpose>This file contains a packed representation of the entire repository&apos;s contents.
+It is designed to be easily consumable by AI systems for analysis, code review,
+or other automated processes.</purpose><file_format>The content is organized as follows:
+1. This summary section
+2. Repository information
+3. Directory structure
+4. Repository files (if enabled)
+5. Repository files, each consisting of:
+  - File path as an attribute
+  - Full contents of the file</file_format><usage_guidelines>- This file should be treated as read-only. Any changes should be made to the
+  original repository files, not this packed version.
+- When processing this file, use the file path to distinguish
+  between different files in the repository.
+- Be aware that this file may contain sensitive information. Handle it with
+  the same level of security as you would the original repository.
+- Pay special attention to the Repository Description. These contain important context and guidelines specific to this project.</usage_guidelines><notes>- Some files may have been excluded based on .gitignore rules and Repomix&apos;s configuration
+- Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
+- Files matching patterns in .gitignore are excluded
+- Files matching default ignore patterns are excluded
+- Code comments have been removed from supported file types
+- Empty lines have been removed from all files
+- Line numbers have been added to the beginning of each line
+- Content has been formatted for parsing in xml style
+- Content has been compressed - code blocks are separated by ⋮---- delimiter
+- Security check has been disabled - content may contain sensitive information
+- Files are sorted by Git change count (files with more changes are at the bottom)</notes></file_summary><user_provided_header>Repository: hermes-suite | Generated from knowledge/sources | Generated: 2026-06-24 18:52:44</user_provided_header><directory_structure>.codegraph/
+  .gitignore
+.github/
+  workflows/
+    build.yml
+.dockerignore
+.env.example
+.gitignore
+build.sh
+docker-compose.yaml
+Dockerfile
+down.sh
+LICENSE
+logs.sh
+README.md
+start.sh
+supervisord.conf
+up.sh
+versions.env</directory_structure><files>This section contains the contents of the repository&apos;s files.<file path=".codegraph/.gitignore"># CodeGraph data files — local to each machine, not for committing.
+# Ignore everything in .codegraph/ except this file itself, so transient
+# files (the database, daemon.pid, sockets, logs) never show up in git.
+*
+!.gitignore</file><file path=".dockerignore">*.pyc
+__pycache__
+.git
+.gitignore
+*.md
+.env.example
+build.sh
+up.sh
+down.sh
+logs.sh</file><file path="LICENSE">MIT License
+
+Copyright (c) 2026 Sunny Tsang
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the &quot;Software&quot;), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.</file><file path=".env.example"># =============================================================================
+# .env.example — Hermes Suite Configuration
+# Copy to .env and fill in your values. This file is for reference only;
+# the actual config lives in ~/.hermes/.env and ~/.hermes/config.yaml
+# which are mounted into the container.
+# =============================================================================
+
+# --- UID/GID for Podman user namespace mapping ---
+# Set these to match your WSL user to avoid permission issues.
+# Find with: id -u   and   id -g
+HERMES_UID=1000
+HERMES_GID=1000</file><file path=".gitignore"># =============================================================================
+# .gitignore — Hermes Suite
+# =============================================================================
+
+# Environment / secrets (API keys, tokens)
+.env
+.env.*
+!.env.example
+
+# Hermes data (mounted from host, never in repo)
+data/
+hermes/
+
+# Build artifacts
+*.tar
+*.tar.gz
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor files
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+
+# Python cache (shouldn&apos;t be here but just in case)
+__pycache__/
+*.pyc</file><file path="logs.sh">set -e
+SCRIPT_DIR=&quot;$(cd &quot;$(dirname &quot;$0&quot;)&quot; &amp;&amp; pwd)&quot;
+COMPOSE_FILE=&quot;${SCRIPT_DIR}/docker-compose.yaml&quot;
+if [ -f &quot;${SCRIPT_DIR}/versions.env&quot; ]; then
+    eval &quot;$(grep -E &apos;^(CONTAINER_RUNTIME|USE_SUDO)=&apos; &quot;${SCRIPT_DIR}/versions.env&quot;)&quot;
+fi
+CONTAINER_RUNTIME=&quot;${CONTAINER_RUNTIME:-auto}&quot;
+USE_SUDO=&quot;${USE_SUDO:-false}&quot;
+# --- Auto-detect ---
+if [ &quot;$CONTAINER_RUNTIME&quot; = &quot;auto&quot; ]; then
+    if command -v podman &amp;&gt;/dev/null; then
+        CONTAINER_RUNTIME=&quot;podman&quot;
+    elif command -v docker &amp;&gt;/dev/null; then
+        CONTAINER_RUNTIME=&quot;docker&quot;
+    else
+        echo &quot;ERROR: Neither podman nor docker found.&quot;
+        exit 1
+    fi
+fi
+SUDO_PREFIX=&quot;&quot;
+if [ &quot;$USE_SUDO&quot; = &quot;true&quot; ]; then
+    SUDO_PREFIX=&quot;sudo&quot;
+fi
+case &quot;$CONTAINER_RUNTIME&quot; in
+    podman)
+        export PATH=&quot;$HOME/.local/bin:$PATH&quot;
+        PODMAN_COMPOSE=&quot;$(command -v podman-compose)&quot;
+        $SUDO_PREFIX &quot;$PODMAN_COMPOSE&quot; -f &quot;${COMPOSE_FILE}&quot; logs -f
+        ;;
+    docker|docker-nolog)
+        $SUDO_PREFIX docker compose -f &quot;${COMPOSE_FILE}&quot; logs -f
+        ;;
+    *)
+        echo &quot;ERROR: Unknown CONTAINER_RUNTIME: $CONTAINER_RUNTIME&quot;
+        exit 1
+        ;;
+esac</file><file path="supervisord.conf">; =============================================================================
+; supervisord.conf — Process manager for Hermes Suite all-in-one container
+; Manages three services:
+;   1. hermes-gateway   (port 8642) — Agent gateway (CLI, Telegram, etc.)
+;   2. hermes-dashboard (port 9119) — Monitoring dashboard (built-in)
+;   3. hermes-webui     (port 8787) — Browser chat interface
+;
+; Each service runs as the &quot;hermes&quot; user via user=hermes.
+; When supervisord itself runs as root (Docker path), user=hermes drops
+; privileges for child processes. When supervisord runs as hermes (Podman
+; path), user=hermes is a harmless no-op (setuid to self).
+; =============================================================================
+
+[supervisord]
+nodaemon=true
+logfile=/var/log/supervisor/supervisord.log
+pidfile=/var/run/supervisor/supervisord.pid
+childlogdir=/var/log/supervisor
+logfile_maxbytes=10MB
+logfile_backups=3
+
+[supervisorctl]
+serverurl=unix:///var/run/supervisor/supervisor.sock
+
+[unix_http_server]
+file=/var/run/supervisor/supervisor.sock
+chmod=0700
+
+[rpcinterface:supervisor]
+supervisor.rpcinterface_factory=supervisor.rpcinterface:make_main_rpcinterface
+
+; ---------------------------------------------------------------------------
+; Service 1: Hermes Agent Gateway
+; The main agent process — handles CLI, Telegram, cron, webhook, etc.
+; ---------------------------------------------------------------------------
+[program:hermes-gateway]
+command=/opt/hermes/.venv/bin/hermes gateway run
+directory=/opt/hermes
+user=hermes
+autostart=true
+autorestart=true
+priority=10
+stdout_logfile=/dev/stdout
+stdout_logfile_maxbytes=0
+stderr_logfile=/dev/stderr
+stderr_logfile_maxbytes=0
+environment=HERMES_HOME=&quot;/opt/data&quot;,HERMES_DATA_DIR=&quot;/opt/data&quot;,HOME=&quot;/opt/data&quot;,PATH=&quot;/opt/hermes/.venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin&quot;
+
+; ---------------------------------------------------------------------------
+; Service 2: Hermes Dashboard
+; Built-in analytics/monitoring dashboard (part of hermes-agent)
+; ---------------------------------------------------------------------------
+[program:hermes-dashboard]
+command=/opt/hermes/.venv/bin/hermes dashboard --host 0.0.0.0 --port 9119 --insecure --no-open
+directory=/opt/hermes
+user=hermes
+autostart=true
+autorestart=true
+priority=20
+startsecs=5
+stdout_logfile=/dev/stdout
+stdout_logfile_maxbytes=0
+stderr_logfile=/dev/stderr
+stderr_logfile_maxbytes=0
+environment=HERMES_HOME=&quot;/opt/data&quot;,HERMES_DATA_DIR=&quot;/opt/data&quot;,HOME=&quot;/opt/data&quot;,PATH=&quot;/opt/hermes/.venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin&quot;
+
+; ---------------------------------------------------------------------------
+; Service 3: Hermes WebUI
+; Browser-based chat interface for interacting with the agent
+; ---------------------------------------------------------------------------
+[program:hermes-webui]
+command=/opt/hermes-webui/venv/bin/python /opt/hermes-webui/server.py
+directory=/opt/hermes-webui
+user=hermes
+autostart=true
+autorestart=true
+priority=30
+startsecs=5
+stdout_logfile=/dev/stdout
+stdout_logfile_maxbytes=0
+stderr_logfile=/dev/stderr
+stderr_logfile_maxbytes=0
+environment=HERMES_WEBUI_HOST=&quot;0.0.0.0&quot;,HERMES_WEBUI_PORT=&quot;8787&quot;,HERMES_WEBUI_STATE_DIR=&quot;/opt/data/webui&quot;,HERMES_WEBUI_DEFAULT_WORKSPACE=&quot;/workspace&quot;,HERMES_HOME=&quot;/opt/data&quot;,HOME=&quot;/opt/data&quot;,PATH=&quot;/opt/hermes-webui/venv/bin:/opt/hermes/.venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin&quot;</file><file path=".github/workflows/build.yml">name: Build and Push Multi-Arch Image
+on:
+  push:
+    tags:
+      - &apos;v*&apos;
+env:
+  REGISTRY: docker.io
+  IMAGE_NAME: ascensionoid/hermes-suite
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Parse version from tag
+        id: versions
+        run: |
+          TAG=&quot;${GITHUB_REF_NAME}&quot;
+          DOCKER_TAG=&quot;${TAG#v}&quot;
+          echo &quot;docker_tag=${DOCKER_TAG}&quot; &gt;&gt; &quot;$GITHUB_OUTPUT&quot;
+          AGENT_VER=&quot;${DOCKER_TAG%-*}&quot;
+          WEBUI_VER=&quot;${DOCKER_TAG##*-}&quot;
+          echo &quot;agent_version=v${AGENT_VER}&quot; &gt;&gt; &quot;$GITHUB_OUTPUT&quot;
+          echo &quot;webui_version=v${WEBUI_VER}&quot; &gt;&gt; &quot;$GITHUB_OUTPUT&quot;
+          echo &quot;Suite tag:     ${DOCKER_TAG}&quot;
+          echo &quot;Agent version: v${AGENT_VER}&quot;
+          echo &quot;WebUI version: v${WEBUI_VER}&quot;
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          build-args: |
+            AGENT_VERSION=${{ steps.versions.outputs.agent_version }}
+            HERMES_WEBUI_VERSION=${{ steps.versions.outputs.webui_version }}
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.versions.outputs.docker_tag }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max</file><file path="down.sh">set -e
+SCRIPT_DIR=&quot;$(cd &quot;$(dirname &quot;$0&quot;)&quot; &amp;&amp; pwd)&quot;
+COMPOSE_FILE=&quot;${SCRIPT_DIR}/docker-compose.yaml&quot;
+if [ -f &quot;${SCRIPT_DIR}/versions.env&quot; ]; then
+    eval &quot;$(grep -E &apos;^(AGENT_VERSION|WEBUI_VERSION|CONTAINER_RUNTIME|USE_SUDO)=&apos; &quot;${SCRIPT_DIR}/versions.env&quot;)&quot;
+fi
+CONTAINER_RUNTIME=&quot;${CONTAINER_RUNTIME:-auto}&quot;
+USE_SUDO=&quot;${USE_SUDO:-false}&quot;
+# --- Auto-detect ---
+if [ &quot;$CONTAINER_RUNTIME&quot; = &quot;auto&quot; ]; then
+    if command -v podman &amp;&gt;/dev/null; then
+        CONTAINER_RUNTIME=&quot;podman&quot;
+    elif command -v docker &amp;&gt;/dev/null; then
+        CONTAINER_RUNTIME=&quot;docker&quot;
+    else
+        echo &quot;ERROR: Neither podman nor docker found.&quot;
+        exit 1
+    fi
+fi
+SUDO_PREFIX=&quot;&quot;
+if [ &quot;$USE_SUDO&quot; = &quot;true&quot; ]; then
+    SUDO_PREFIX=&quot;sudo&quot;
+fi
+AGENT_VER_CLEAN=&quot;${AGENT_VERSION#v}&quot;
+WEBUI_VER_CLEAN=&quot;${WEBUI_VERSION#v}&quot;
+export HERMES_SUITE_IMAGE_TAG=&quot;${AGENT_VER_CLEAN}-${WEBUI_VER_CLEAN}&quot;
+if [ &quot;$USE_SUDO&quot; = &quot;true&quot; ]; then
+    COMPOSE_PREFIX=&quot;sudo env HERMES_SUITE_IMAGE_TAG=${HERMES_SUITE_IMAGE_TAG}&quot;
+else
+    COMPOSE_PREFIX=&quot;&quot;
+fi
+# --- Stop ---
+case &quot;$CONTAINER_RUNTIME&quot; in
+    podman)
+        export PATH=&quot;$HOME/.local/bin:$PATH&quot;
+        PODMAN_COMPOSE=&quot;$(command -v podman-compose)&quot;
+        $COMPOSE_PREFIX &quot;$PODMAN_COMPOSE&quot; -f &quot;${COMPOSE_FILE}&quot; down
+        ;;
+    docker|docker-nolog)
+        $COMPOSE_PREFIX docker compose -f &quot;${COMPOSE_FILE}&quot; down
+        ;;
+    *)
+        echo &quot;ERROR: Unknown CONTAINER_RUNTIME: $CONTAINER_RUNTIME&quot;
+        exit 1
+        ;;
+esac
+echo &quot;Hermes Suite stopped.&quot;</file><file path="up.sh">set -e
+SCRIPT_DIR=&quot;$(cd &quot;$(dirname &quot;$0&quot;)&quot; &amp;&amp; pwd)&quot;
+COMPOSE_FILE=&quot;${SCRIPT_DIR}/docker-compose.yaml&quot;
+if [ -f &quot;${SCRIPT_DIR}/versions.env&quot; ]; then
+    eval &quot;$(grep -E &apos;^(AGENT_VERSION|WEBUI_VERSION|CONTAINER_RUNTIME|USE_SUDO)=&apos; &quot;${SCRIPT_DIR}/versions.env&quot;)&quot;
+fi
+CONTAINER_RUNTIME=&quot;${CONTAINER_RUNTIME:-auto}&quot;
+USE_SUDO=&quot;${USE_SUDO:-false}&quot;
+# --- Auto-detect ---
+if [ &quot;$CONTAINER_RUNTIME&quot; = &quot;auto&quot; ]; then
+    if command -v podman &amp;&gt;/dev/null; then
+        CONTAINER_RUNTIME=&quot;podman&quot;
+    elif command -v docker &amp;&gt;/dev/null; then
+        CONTAINER_RUNTIME=&quot;docker&quot;
+    else
+        echo &quot;ERROR: Neither podman nor docker found.&quot;
+        exit 1
+    fi
+fi
+SUDO_PREFIX=&quot;&quot;
+if [ &quot;$USE_SUDO&quot; = &quot;true&quot; ]; then
+    SUDO_PREFIX=&quot;sudo&quot;
+fi
+AGENT_VER_CLEAN=&quot;${AGENT_VERSION#v}&quot;
+WEBUI_VER_CLEAN=&quot;${WEBUI_VERSION#v}&quot;
+export HERMES_SUITE_IMAGE_TAG=&quot;${AGENT_VER_CLEAN}-${WEBUI_VER_CLEAN}&quot;
+if [ &quot;$USE_SUDO&quot; = &quot;true&quot; ]; then
+    COMPOSE_PREFIX=&quot;sudo env HERMES_SUITE_IMAGE_TAG=${HERMES_SUITE_IMAGE_TAG}&quot;
+else
+    COMPOSE_PREFIX=&quot;&quot;
+fi
+# --- Create network and start ---
+case &quot;$CONTAINER_RUNTIME&quot; in
+    podman)
+        export PATH=&quot;$HOME/.local/bin:$PATH&quot;
+        PODMAN_COMPOSE=&quot;$(command -v podman-compose)&quot;
+        NET_NAME=$(grep -m1 &apos;external: true&apos; &quot;${COMPOSE_FILE}&quot; -B1 | head -1 | sed &apos;s/^[[:space:]]*//&apos; | sed &apos;s/:$//&apos;)
+        NET_IP=$(grep -m1 &quot;ipv4_address&quot; &quot;${COMPOSE_FILE}&quot; | sed &quot;s/.*: //&quot; | tr -d &quot;[:space:]&quot;)
+        NET_SUBNET=$(echo &quot;$NET_IP&quot; | cut -d. -f1-3).0/24
+        if ! $SUDO_PREFIX podman network exists &quot;$NET_NAME&quot; 2&gt;/dev/null; then
+            echo &quot;Creating network $NET_NAME ($NET_SUBNET)...&quot;
+            $SUDO_PREFIX podman network create --subnet &quot;$NET_SUBNET&quot; &quot;$NET_NAME&quot;
+            PODMAN_VER=$(podman version -f &apos;{{.Version}}&apos; 2&gt;/dev/null | cut -d. -f1)
+            if [ &quot;${PODMAN_VER:-4}&quot; -lt 4 ]; then
+                CNI_FILE=$(find /etc/cni/net.d/ ~/.config/cni/net.d/ -name &quot;${NET_NAME}.conflist&quot; 2&gt;/dev/null | head -1)
+                if [ -n &quot;$CNI_FILE&quot; ]; then
+                    $SUDO_PREFIX sed -i &apos;s/&quot;cniVersion&quot;: &quot;1.0.0&quot;/&quot;cniVersion&quot;: &quot;0.4.0&quot;/&apos; &quot;$CNI_FILE&quot;
+                fi
+            fi
+        fi
+        $COMPOSE_PREFIX &quot;$PODMAN_COMPOSE&quot; -f &quot;${COMPOSE_FILE}&quot; up -d
+        ;;
+    docker|docker-nolog)
+        NET_NAME=$(grep -m1 &apos;external: true&apos; &quot;${COMPOSE_FILE}&quot; -B1 | head -1 | sed &apos;s/^[[:space:]]*//&apos; | sed &apos;s/:$//&apos;)
+        NET_IP=$(grep -m1 &quot;ipv4_address&quot; &quot;${COMPOSE_FILE}&quot; | sed &quot;s/.*: //&quot; | tr -d &quot;[:space:]&quot;)
+        NET_SUBNET=$(echo &quot;$NET_IP&quot; | cut -d. -f1-3).0/24
+        if ! $SUDO_PREFIX docker network inspect &quot;$NET_NAME&quot; &amp;&gt;/dev/null; then
+            echo &quot;Creating network $NET_NAME ($NET_SUBNET)...&quot;
+            $SUDO_PREFIX docker network create --subnet &quot;$NET_SUBNET&quot; &quot;$NET_NAME&quot;
+        fi
+        $COMPOSE_PREFIX docker compose -f &quot;${COMPOSE_FILE}&quot; up -d
+        ;;
+    *)
+        echo &quot;ERROR: Unknown CONTAINER_RUNTIME: $CONTAINER_RUNTIME&quot;
+        exit 1
+        ;;
+esac
+echo &quot;&quot;
+echo &quot;Hermes Suite is running:&quot;
+echo &quot;  Gateway:    http://localhost:8642&quot;
+echo &quot;  WebUI:      http://localhost:8787&quot;
+echo &quot;  Dashboard:  http://localhost:9119&quot;
+echo &quot;&quot;
+echo &quot; Logs: ./logs.sh&quot;
+echo &quot; Stop: ./down.sh&quot;</file><file path="start.sh">set -e
+HERMES_HOME=&quot;${HERMES_HOME:-/opt/data}&quot;
+INSTALL_DIR=&quot;/opt/hermes&quot;
+is_docker() {
+    [ -f /.dockerenv ] &amp;&amp; return 0
+    grep -qaE &apos;/docker/|docker-|containerd&apos; /proc/1/cgroup 2&gt;/dev/null &amp;&amp; return 0
+    return 1
+}
+setup_hermes() {
+    source &quot;${INSTALL_DIR}/.venv/bin/activate&quot;
+    mkdir -p &quot;$HERMES_HOME&quot;/{cron,sessions,logs,hooks,memories,skills,skins,plans,workspace,home,webui,cache}
+    if [ ! -f &quot;$HERMES_HOME/.env&quot; ]; then
+        cp &quot;$INSTALL_DIR/.env.example&quot; &quot;$HERMES_HOME/.env&quot;
+        echo &quot;Created default .env — edit $HERMES_HOME/.env to add your API keys&quot;
+    fi
+    if [ ! -f &quot;$HERMES_HOME/config.yaml&quot; ]; then
+        cp &quot;$INSTALL_DIR/cli-config.yaml.example&quot; &quot;$HERMES_HOME/config.yaml&quot;
+        echo &quot;Created default config.yaml&quot;
+    fi
+    if [ -f &quot;$HERMES_HOME/config.yaml&quot; ]; then
+        chown hermes:hermes &quot;$HERMES_HOME/config.yaml&quot;
+        chmod 640 &quot;$HERMES_HOME/config.yaml&quot;
+    fi
+    if [ ! -f &quot;$HERMES_HOME/SOUL.md&quot; ]; then
+        cp &quot;$INSTALL_DIR/docker/SOUL.md&quot; &quot;$HERMES_HOME/SOUL.md&quot;
+    fi
+    if [ -d &quot;$INSTALL_DIR/skills&quot; ]; then
+        python3 &quot;$INSTALL_DIR/tools/skills_sync.py&quot; 2&gt;/dev/null || true
+    fi
+    for f in gateway.pid gateway.lock; do
+        if [ -f &quot;$HERMES_HOME/$f&quot; ]; then
+            echo &quot;Removing stale $f from previous container run&quot;
+            rm -f &quot;$HERMES_HOME/$f&quot;
+        fi
+    done
+    mkdir -p /var/log/supervisor /var/run/supervisor
+}
+print_banner() {
+    echo &quot;==========================================&quot;
+    echo &quot; Hermes Suite — All-in-One Container&quot;
+    echo &quot;==========================================&quot;
+    echo &quot; Gateway:    http://0.0.0.0:8642&quot;
+    echo &quot; Dashboard:  http://0.0.0.0:9119&quot;
+    echo &quot; WebUI:      http://0.0.0.0:8787&quot;
+    echo &quot;==========================================&quot;
+}
+if [ &quot;$(id -u)&quot; = &quot;0&quot; ]; then
+    if [ -n &quot;$HERMES_UID&quot; ] &amp;&amp; [ &quot;$HERMES_UID&quot; != &quot;$(id -u hermes)&quot; ]; then
+        echo &quot;Changing hermes UID to $HERMES_UID&quot;
+        usermod -u &quot;$HERMES_UID&quot; hermes
+    fi
+    if [ -n &quot;$HERMES_GID&quot; ] &amp;&amp; [ &quot;$HERMES_GID&quot; != &quot;$(id -g hermes)&quot; ]; then
+        echo &quot;Changing hermes GID to $HERMES_GID&quot;
+        groupmod -o -g &quot;$HERMES_GID&quot; hermes 2&gt;/dev/null || true
+    fi
+    actual_hermes_uid=$(id -u hermes)
+    if [ &quot;$(stat -c %u &quot;$HERMES_HOME&quot; 2&gt;/dev/null)&quot; != &quot;$actual_hermes_uid&quot; ]; then
+        echo &quot;$HERMES_HOME is not owned by $actual_hermes_uid, fixing&quot;
+        chown -R hermes:hermes &quot;$HERMES_HOME&quot; 2&gt;/dev/null || \
+            echo &quot;Warning: chown failed (rootless container?) — continuing anyway&quot;
+    fi
+    if is_docker; then
+        echo &quot;Detected Docker runtime — supervisord as root, services as hermes&quot;
+        setup_hermes
+        chown -R hermes:hermes &quot;$HERMES_HOME&quot; 2&gt;/dev/null || \
+            echo &quot;Warning: chown failed — continuing anyway&quot;
+        print_banner
+        exec &quot;$@&quot;
+    fi
+    echo &quot;Detected Podman runtime&quot;
+    echo &quot;Dropping root privileges&quot;
+    exec /command/s6-setuidgid hermes &quot;$0&quot; &quot;$@&quot;
+fi
+setup_hermes
+print_banner
+exec &quot;$@&quot;</file><file path="docker-compose.yaml">services:
+  hermes-suite:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: ascensionoid/hermes-suite:${HERMES_SUITE_IMAGE_TAG}
+    container_name: hermes-suite
+    networks:
+      agent_net:
+        ipv4_address: 10.99.0.11
+    ports:
+      - &quot;8642:8642&quot;
+      - &quot;8787:8787&quot;
+      - &quot;9119:9119&quot;
+    volumes:
+      - ~/.hermes:/opt/data:Z
+      - ~/workspace:/workspace:z
+      - /etc/localtime:/etc/localtime:ro
+    environment:
+      - NODE_ENV=production
+      - HERMES_HOME=/opt/data
+      - HERMES_DATA_DIR=/opt/data
+      - PATH=/opt/hermes/.venv/bin:/opt/hermes-webui/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 4G
+networks:
+  agent_net:
+    external: true</file><file path="versions.env"># =============================================================================
+# versions.env — Pinned component versions for this release
+# =============================================================================
+# This file declares the exact upstream versions bundled in this release.
+# CI/CD reads this file for automated builds. Edit before tagging a new release.
+#
+# Version tag format: {agent_date}-{webui_semver}
+# Example:            2026.4.30-0.50.266
+#
+# CONTAINER_RUNTIME controls which container runtime the helper scripts use.
+#   auto         — detect podman first, fall back to docker (default)
+#   podman       — always use podman / podman-compose
+#   docker       — always use docker / docker compose
+#   docker-nolog — always use docker / docker compose (logs to /dev/null)
+#
+# USE_SUDO controls whether commands are run with sudo.
+#   false — run commands directly (default, for rootless podman or docker group users)
+#   true  — prefix commands with sudo (for rootful podman/docker)
+#
+# ENABLE_WHATSAPP_BRIDGE controls whether the WhatsApp bridge is included in the image.
+#   false — remove WhatsApp bridge at build time (default, recommended)
+#   true  — keep WhatsApp bridge in the image
+#   Note: Requires WHATSAPP_ALLOWED_USERS to be configured before use.
+#   See https://github.com/NousResearch/hermes-agent/issues/15108
+# =============================================================================
+
+AGENT_VERSION=v2026.6.19
+WEBUI_VERSION=v0.51.625
+CONTAINER_RUNTIME=auto
+USE_SUDO=false
+ENABLE_WHATSAPP_BRIDGE=false</file><file path="build.sh">set -e
+BUILD_DIR=&quot;$(cd &quot;$(dirname &quot;$0&quot;)&quot; &amp;&amp; pwd)&quot;
+if [ -f &quot;${BUILD_DIR}/versions.env&quot; ]; then
+    eval &quot;$(grep -E &apos;^(AGENT_VERSION|WEBUI_VERSION|CONTAINER_RUNTIME|USE_SUDO|ENABLE_WHATSAPP_BRIDGE)=&apos; &quot;${BUILD_DIR}/versions.env&quot;)&quot;
+else
+    echo &quot;ERROR: versions.env not found in ${BUILD_DIR}&quot;
+    exit 1
+fi
+# --- Allow overrides via CLI args ---
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --agent)
+            AGENT_VERSION=&quot;$2&quot;; shift 2 ;;
+        --webui)
+            WEBUI_VERSION=&quot;$2&quot;; shift 2 ;;
+        --podman)
+            CONTAINER_RUNTIME=&quot;podman&quot;; shift ;;
+        --docker)
+            CONTAINER_RUNTIME=&quot;docker&quot;; shift ;;
+        --docker-nolog)
+            CONTAINER_RUNTIME=&quot;docker-nolog&quot;; shift ;;
+        --sudo)
+            USE_SUDO=&quot;true&quot;; shift ;;
+        --no-sudo)
+            USE_SUDO=&quot;false&quot;; shift ;;
+        --whatsapp)
+            ENABLE_WHATSAPP_BRIDGE=&quot;true&quot;; shift ;;
+        *)
+            echo &quot;Unknown option: $1&quot;; exit 1 ;;
+    esac
+done
+if [ &quot;$CONTAINER_RUNTIME&quot; = &quot;auto&quot; ]; then
+    if command -v podman &amp;&gt;/dev/null; then
+        CONTAINER_RUNTIME=&quot;podman&quot;
+    elif command -v docker &amp;&gt;/dev/null; then
+        CONTAINER_RUNTIME=&quot;docker&quot;
+    else
+        echo &quot;ERROR: Neither podman nor docker found. Install one or set CONTAINER_RUNTIME in versions.env.&quot;
+        exit 1
+    fi
+fi
+case &quot;$CONTAINER_RUNTIME&quot; in
+    podman)
+        BUILD_CMD=&quot;podman&quot;
+        BUILD_MODE=&quot;podman&quot;
+        ;;
+    docker)
+        BUILD_CMD=&quot;docker&quot;
+        BUILD_MODE=&quot;docker&quot;
+        ;;
+    docker-nolog)
+        BUILD_CMD=&quot;docker&quot;
+        BUILD_MODE=&quot;docker-nolog&quot;
+        ;;
+    *)
+        echo &quot;ERROR: Unknown CONTAINER_RUNTIME value: $CONTAINER_RUNTIME&quot;
+        echo &quot;Valid options: auto, podman, docker, docker-nolog&quot;
+        exit 1
+        ;;
+esac
+SUDO_PREFIX=&quot;&quot;
+if [ &quot;$USE_SUDO&quot; = &quot;true&quot; ]; then
+    SUDO_PREFIX=&quot;sudo&quot;
+fi
+AGENT_VER_CLEAN=&quot;${AGENT_VERSION#v}&quot;
+WEBUI_VER_CLEAN=&quot;${WEBUI_VERSION#v}&quot;
+IMAGE_TAG=&quot;ascensionoid/hermes-suite:${AGENT_VER_CLEAN}-${WEBUI_VER_CLEAN}&quot;
+if [ &quot;$BUILD_MODE&quot; = &quot;docker-nolog&quot; ]; then
+    sed -i \
+        -e &apos;s|stdout_logfile=/dev/stdout|stdout_logfile=/dev/null|&apos; \
+        -e &apos;s|stderr_logfile=/dev/stderr|stderr_logfile=/dev/null|&apos; \
+        &quot;${BUILD_DIR}/supervisord.conf&quot;
+    echo &quot;Docker nolog mode: child logs discarded&quot;
+fi
+echo &quot;==========================================&quot;
+echo &quot; Building Hermes Suite&quot;
+echo &quot;==========================================&quot;
+echo &quot; Agent version:  ${AGENT_VERSION}&quot;
+echo &quot; WebUI version:  ${WEBUI_VERSION}&quot;
+echo &quot; Image tag:      ${IMAGE_TAG}&quot;
+echo &quot; Runtime:        ${CONTAINER_RUNTIME}&quot;
+echo &quot; Sudo:           ${USE_SUDO}&quot;
+echo &quot; WhatsApp:       ${ENABLE_WHATSAPP_BRIDGE}&quot;
+echo &quot; Build context:  ${BUILD_DIR}&quot;
+echo &quot;==========================================&quot;
+if [ &quot;$BUILD_CMD&quot; = &quot;podman&quot; ]; then
+    $SUDO_PREFIX podman build \
+        --build-arg AGENT_VERSION=&quot;${AGENT_VERSION}&quot; \
+        --build-arg HERMES_WEBUI_VERSION=&quot;${WEBUI_VERSION}&quot; \
+        --build-arg ENABLE_WHATSAPP_BRIDGE=&quot;${ENABLE_WHATSAPP_BRIDGE}&quot; \
+        -t &quot;${IMAGE_TAG}&quot; \
+        --format docker \
+        &quot;${BUILD_DIR}&quot;
+else
+    $SUDO_PREFIX docker build \
+        --build-arg AGENT_VERSION=&quot;${AGENT_VERSION}&quot; \
+        --build-arg HERMES_WEBUI_VERSION=&quot;${WEBUI_VERSION}&quot; \
+        --build-arg ENABLE_WHATSAPP_BRIDGE=&quot;${ENABLE_WHATSAPP_BRIDGE}&quot; \
+        -t &quot;${IMAGE_TAG}&quot; \
+        &quot;${BUILD_DIR}&quot;
+fi
+if [ &quot;$BUILD_MODE&quot; = &quot;docker-nolog&quot; ]; then
+    git -C &quot;${BUILD_DIR}&quot; checkout -- supervisord.conf 2&gt;/dev/null || \
+        sed -i \
+            -e &apos;s|stdout_logfile=/dev/null|stdout_logfile=/dev/stdout|&apos; \
+            -e &apos;s|stderr_logfile=/dev/null|stderr_logfile=/dev/stderr|&apos; \
+            &quot;${BUILD_DIR}/supervisord.conf&quot;
+    echo &quot;Restored supervisord.conf to defaults&quot;
+fi
+echo &quot;&quot;
+echo &quot;==========================================&quot;
+echo &quot; Build complete: ${IMAGE_TAG}&quot;
+echo &quot;==========================================&quot;
+echo &quot;&quot;
+echo &quot; Run as a Service (Compose):&quot;
+echo &quot;   ./up.sh&quot;
+echo &quot;&quot;
+echo &quot; Run Manually (Interactive/Debug):&quot;
+if [ &quot;$BUILD_CMD&quot; = &quot;podman&quot; ]; then
+    echo &quot;   ${SUDO_PREFIX} podman run --rm -it \\&quot;
+else
+    echo &quot;   ${SUDO_PREFIX} docker run --rm -it \\&quot;
+fi
+echo &quot;     -v ~/.hermes:/opt/data:Z \\&quot;
+echo &quot;     -p 8642:8642 -p 8787:8787 -p 9119:9119 \\&quot;
+echo &quot;     ${IMAGE_TAG}&quot;</file><file path="Dockerfile"># =============================================================================
+# Hermes Suite — All-in-One Container Image
+# Combines: hermes-agent + hermes-webui + hermes-dashboard
+#
+# Solves Podman v3.4.4 UID/GID sharing limitation between multiple containers
+# by running all three services in a single container under one user.
+#
+# Services:
+#   hermes-gateway   — Agent gateway on port 8642 (CLI, Telegram, cron, tools)
+#   hermes-dashboard — Built-in monitoring dashboard on port 9119
+#   hermes-webui     — Browser chat interface on port 8787
+#
+# Build:  podman build -t hermes-suite:2026.6.19-0.51.625 .
+# Run:    podman-compose up -d
+# =============================================================================
+
+# ---------------------------------------------------------------------------
+# Stage 1: Use the official hermes-agent image as the base
+# This already contains: Python 3.13, Node.js, npm, Playwright, agent code,
+# the built-in web dashboard (hermes dashboard), the gateway, uv, and s6-overlay.
+# ---------------------------------------------------------------------------
+ARG AGENT_VERSION=v2026.6.19
+ARG ENABLE_WHATSAPP_BRIDGE=false
+FROM docker.io/nousresearch/hermes-agent:${AGENT_VERSION}
+
+USER root
+
+# ---------------------------------------------------------------------------
+# Stage 2: Install system dependencies needed by all services
+# ---------------------------------------------------------------------------
+RUN apt-get update &amp;&amp; apt-get install -y --no-install-recommends \
+        sudo \
+        git \
+        curl \
+        nano \
+        net-tools \
+        iputils-ping \
+        iproute2 \
+        openssh-client \
+        procps \
+        build-essential \
+    &amp;&amp; rm -rf /var/lib/apt/lists/*
+
+# Allow hermes user to use sudo without password
+RUN echo &quot;hermes ALL=(ALL) NOPASSWD:ALL&quot; &gt;&gt; /etc/sudoers
+
+# ---------------------------------------------------------------------------
+# Stage 3: Install Browser tool dependencies for agent
+# npm install + Playwright chromium (needed by browser toolset)
+# WhatsApp bridge is removed by default (ENABLE_WHATSAPP_BRIDGE=false).
+# Set --build-arg ENABLE_WHATSAPP_BRIDGE=true or use --whatsapp flag in
+# build.sh to include it.
+# ---------------------------------------------------------------------------
+RUN cd /opt/hermes &amp;&amp; \
+    npm install --prefer-offline --no-audit &amp;&amp; \
+    npx playwright install --with-deps chromium &amp;&amp; \
+    if [ &quot;$ENABLE_WHATSAPP_BRIDGE&quot; != &quot;true&quot; ]; then rm -rf /opt/hermes/scripts/whatsapp-bridge; fi &amp;&amp; \
+    rm -rf /var/lib/apt/lists/*
+
+# ---------------------------------------------------------------------------
+# Stage 4: Install supervisord via uv (not available in Debian Trixie apt)
+# We install it into a dedicated venv at /opt/supervisor.
+# ---------------------------------------------------------------------------
+RUN uv venv /opt/supervisor &amp;&amp; \
+    uv pip install --python /opt/supervisor/bin/python3 supervisor &amp;&amp; \
+    ln -sf /opt/supervisor/bin/supervisord /usr/local/bin/supervisord &amp;&amp; \
+    ln -sf /opt/supervisor/bin/supervisorctl /usr/local/bin/supervisorctl
+
+RUN mkdir -p /var/log/supervisor /var/run/supervisor &amp;&amp; \
+    chown -R hermes:hermes /var/log/supervisor /var/run/supervisor
+
+# ---------------------------------------------------------------------------
+# Stage 5: Install hermes-webui
+# The webui is a Python web server (server.py). We clone it from GitHub
+# and set up its own venv using uv (avoids python3-venv package requirement).
+# The webui needs the agent&apos;s Python deps to import agent modules.
+# We install with the same extras the base image bakes into /opt/hermes/.venv
+# (all, messaging, anthropic, bedrock, azure-identity, hindsight) so the
+# webui&apos;s in-process agent has working memory and provider backends (#16).
+#
+# PIN to a specific tag for reproducible builds — never use &apos;master&apos;.
+# ---------------------------------------------------------------------------
+ARG HERMES_WEBUI_VERSION=v0.51.625
+RUN cd /opt &amp;&amp; \
+    git clone --depth 1 --branch ${HERMES_WEBUI_VERSION} \
+        https://github.com/nesquena/hermes-webui.git hermes-webui &amp;&amp; \
+    uv venv /opt/hermes-webui/venv &amp;&amp; \
+    uv pip install --python /opt/hermes-webui/venv/bin/python3 --no-cache-dir -r /opt/hermes-webui/requirements.txt &amp;&amp; \
+    uv pip install --python /opt/hermes-webui/venv/bin/python3 --no-cache-dir -e &quot;/opt/hermes[all,messaging,anthropic,bedrock,azure-identity,hindsight]&quot; &amp;&amp; \
+    rm -rf /opt/hermes-webui/.git
+
+# Bake version tag into the webui
+RUN echo &quot;__version__ = &apos;${HERMES_WEBUI_VERSION}&apos;&quot; &gt; /opt/hermes-webui/api/_version.py
+
+# Ensure venv is owned by hermes so runtime lazy-dep auto-install works (#6).
+RUN chown -R hermes:hermes /opt/hermes-webui/venv
+
+# ---------------------------------------------------------------------------
+# Stage 6: Set up supervisord config and startup script
+# ---------------------------------------------------------------------------
+COPY supervisord.conf /etc/supervisor/supervisord.conf
+COPY start.sh /opt/hermes-suite/start.sh
+RUN chmod +x /opt/hermes-suite/start.sh
+
+# ---------------------------------------------------------------------------
+# Stage 7: Environment, labels, and runtime config
+# ---------------------------------------------------------------------------
+# Re-declare ARGs after FROM so they are available in LABEL
+ARG AGENT_VERSION=v2026.6.19
+ARG ENABLE_WHATSAPP_BRIDGE=false
+ARG HERMES_WEBUI_VERSION=v0.51.625
+
+LABEL org.opencontainers.image.title=&quot;Hermes Suite&quot; \
+      org.opencontainers.image.description=&quot;All-in-one: hermes-agent + hermes-webui + hermes-dashboard&quot; \
+      org.opencontainers.image.source=&quot;https://github.com/sunnysktsang/hermes-suite&quot; \
+      org.opencontainers.image.vendor=&quot;sunnysktsang&quot; \
+      hermes-suite.agent-version=&quot;${AGENT_VERSION}&quot; \
+      hermes-suite.webui-version=&quot;${HERMES_WEBUI_VERSION}&quot;
+
+ENV PATH=&quot;/opt/hermes/.venv/bin:/opt/hermes-webui/venv/bin:$PATH&quot;
+ENV HERMES_HOME=/opt/data
+ENV HERMES_DATA_DIR=/opt/data
+ENV PLAYWRIGHT_BROWSERS_PATH=/opt/hermes/.playwright
+
+# hermes-agent web dist (built into the base image)
+ENV HERMES_WEB_DIST=/opt/hermes/hermes_cli/web_dist
+
+# hermes-webui settings
+ENV HERMES_WEBUI_HOST=0.0.0.0
+ENV HERMES_WEBUI_PORT=8787
+ENV HERMES_WEBUI_STATE_DIR=/opt/data/webui
+ENV HERMES_WEBUI_DEFAULT_WORKSPACE=/workspace
+ENV HERMES_WEBUI_AGENT_DIR=/opt/hermes
+
+# Expose all service ports
+EXPOSE 8642 8787 9119
+
+# Workspace directory
+RUN mkdir -p /workspace
+
+WORKDIR /opt/hermes
+
+# Entrypoint: run start.sh which sets up config then launches supervisord
+ENTRYPOINT [&quot;/opt/hermes-suite/start.sh&quot;]
+CMD [&quot;supervisord&quot;, &quot;-c&quot;, &quot;/etc/supervisor/supervisord.conf&quot;, &quot;-n&quot;]</file><file path="README.md"># Hermes Suite — All-in-One Container Image
+![Docker Pulls](https://badgen.net/docker/pulls/ascensionoid/hermes-suite)
+
+Single Docker/Podman image combining three Hermes services:
+
+| Service | Port | Description |
+|---------|------|-------------|
+| hermes-gateway | 8642 | Agent gateway (CLI, Telegram, cron, tools) |
+| hermes-dashboard | 9119 | Monitoring/analytics dashboard (built-in) |
+| hermes-webui | 8787 | Browser-based chat interface |
+
+Pre-built multi-arch images available on [Docker Hub](https://hub.docker.com/r/ascensionoid/hermes-suite?ref=2).
+
+&gt; **🎉 Now with automatic runtime detection.** One image works on both Podman and Docker CE out of the box — no separate builds or flags needed. The container detects its runtime at startup and adjusts automatically. [Learn more](#changing-component-versions).
+
+🏗️ Official container images are maintained by Ascensionoid ([ascensionoid.com](https://ascensionoid.com)).
+
+## Why This Exists
+
+Podman v3.4.4 cannot share the same UID/GID between multiple containers easily.
+The standard multi-container setup (hermes-agent + hermes-webui + hermes-dashboard)
+requires each container to run as the same user to share the `~/.hermes` volume.
+Podman v3.4.4 has limitations with `userns_mode: keep-id` across multiple containers.
+
+This image solves that by running all three services in **one container** via supervisord.
+
+## Architecture
+
+```
++-------------------------------------------------+
+|             hermes-suite container              |
+|                                                 |
+|  +-- supervisord (PID 1) --------------------+  |
+|  |                                           |  |
+|  |  [hermes-gateway]   port 8642             |  |
+|  |    hermes gateway run                     |  |
+|  |                                           |  |
+|  |  [hermes-dashboard] port 9119             |  |
+|  |    hermes dashboard --host 0.0.0.0        |  |
+|  |                                           |  |
+|  |  [hermes-webui]     port 8787             |  |
+|  |    python server.py                       |  |
+|  |                                           |  |
+|  +-------------------------------------------+  |
+|                                                 |
+|  /opt/data  &lt;-- mounted from ~/.hermes          |
++-------------------------------------------------+
+```
+
+## Prerequisites
+
+- Podman v3.4.4+ or Docker
+- podman-compose (or docker-compose)
+- ~10GB disk space for the image
+- Network access during build (for git clone and pip install)
+- Works on both amd64 (x86_64) and arm64 (ARMv8) — tested on Jetson Orin NX
+
+## Version Management
+
+To ensure stability on edge devices (Jetson, ARM boards), it is highly recommended
+to use **pinned versions** rather than building from the `main` branch HEAD.
+
+### Using Pre-Built Images (Recommended)
+
+If you prefer not to build manually, use our pre-verified image tags from
+[Docker Hub](https://hub.docker.com/r/ascensionoid/hermes-suite):
+
+```bash
+podman pull ascensionoid/hermes-suite:2026.6.19-0.51.625
+```
+
+### Manual Build with Specific Versions
+
+If you need a specific combination, pass the versions as build arguments:
+
+```bash
+podman build \
+  --build-arg AGENT_VERSION=v2026.6.19 \
+  --build-arg HERMES_WEBUI_VERSION=v0.51.625 \
+  -t hermes-suite:2026.6.19-0.51.625 .
+```
+
+Or use the build helper (reads from `versions.env`):
+
+```bash
+# Podman or Docker (auto-detected at container startup)
+./build.sh
+
+# Build with Docker explicitly
+./build.sh --docker
+
+# Docker without logs (optional)
+./build.sh --docker-nolog
+
+# Override defaults:
+# ./build.sh --agent v2026.6.19 --webui v0.51.625
+```
+
+&gt; **Docker compatibility:** Docker CE is auto-detected at container startup via /proc/1/cgroup.
+&gt; The universal image works on both Podman and Docker out of the box.
+&gt; Use `--docker-nolog` only if you prefer no log output.
+&gt; Set CONTAINER_RUNTIME in versions.env to control which runtime helper scripts use.
+
+### Version Compatibility Table
+
+Every release is an explicitly tested pair of Agent + WebUI on both amd64 and arm64.
+
+| Suite Tag | Agent Version | WebUI Version | Tested |
+|-----------|---------------|---------------|--------|
+| `2026.6.19-0.51.625` | v2026.6.19 | v0.51.625 | amd64 + arm64 |
+
+&gt; **Full version history:** https://github.com/sunnysktsang/hermes-suite/releases
+
+### Version Tag Format
+
+Suite tags follow the pattern `{agent_date}-{webui_semver}`:
+- **Agent**: date-based version from `nousresearch/hermes-agent` (e.g. `v2026.6.19`)
+- **WebUI**: semantic version from `nesquena/hermes-webui` (e.g. `v0.51.625`)
+
+The pinned pair for each release is declared in `versions.env`.
+
+## Quick Start
+
+### 1. Clone this repo
+
+```bash
+git clone https://github.com/sunnysktsang/hermes-suite.git
+cd hermes-suite
+```
+
+### 2. Build the image
+
+```bash
+chmod +x *.sh
+./build.sh
+```
+
+Or manually with pinned versions:
+
+```bash
+podman build \
+  --build-arg AGENT_VERSION=v2026.6.19 \
+  --build-arg HERMES_WEBUI_VERSION=v0.51.625 \
+  -t ascensionoid/hermes-suite:2026.6.19-0.51.625 .
+```
+
+### 3. Create the network (if not already existing)
+
+```bash
+podman network create --subnet 10.99.0.0/24 agent_net
+```
+
+### 4. Start the container
+
+```bash
+./up.sh
+```
+
+Or manually:
+
+```bash
+podman-compose up -d
+```
+
+### 5. Configure
+
+Edit `~/.hermes/.env` to add your API keys, and `~/.hermes/config.yaml` for model settings.
+These files are shared from the host via the volume mount. On first run, defaults are
+created automatically from the hermes-agent examples.
+
+### 6. Access
+
+- Gateway:   http://localhost:8642
+- WebUI:     http://localhost:8787
+- Dashboard: http://localhost:9119
+
+## Configuration
+
+All configuration is stored in `~/.hermes/` on the host (mounted as `/opt/data` inside
+the container). On first start, the entrypoint script copies default `.env` and
+`config.yaml` from the hermes-agent examples if they don&apos;t already exist.
+
+```
+~/.hermes/
+  .env            — API keys (OPENAI_API_KEY, TELEGRAM_TOKEN, etc.)
+  config.yaml     — Model, toolsets, agent settings
+  SOUL.md         — Agent personality
+  skills/         — Custom skills
+  memories/       — Persistent memory
+  webui/          — WebUI state (sessions, workspace)
+```
+
+## Stopping
+
+```bash
+./down.sh
+```
+
+## Viewing Logs
+
+```bash
+./logs.sh
+```
+
+All service logs stream to stdout/stderr (visible via `podman logs`). Supervisord
+also writes to `/var/log/supervisor/` inside the container:
+
+```bash
+podman exec hermes-suite supervisorctl status
+```
+
+## Customization
+
+### Changing component versions
+
+Edit `versions.env` to change the pinned versions and runtime settings:
+
+```env
+AGENT_VERSION=v2026.6.19
+WEBUI_VERSION=v0.51.625
+
+# Runtime selector: auto (default), podman, docker, docker-nolog
+CONTAINER_RUNTIME=auto
+
+# Use sudo for commands (rootful mode): true, false
+USE_SUDO=false
+
+# Include WhatsApp bridge: true, false (default: false)
+ENABLE_WHATSAPP_BRIDGE=false
+```
+
+| Setting | Options | Default | Description |
+|---------|---------|---------|-------------|
+| `CONTAINER_RUNTIME` | `auto`, `podman`, `docker`, `docker-nolog` | `auto` | Which runtime helper scripts use. `auto` detects at script time. |
+| `USE_SUDO` | `true`, `false` | `false` | Run docker/podman commands with sudo (rootful mode) |
+| `ENABLE_WHATSAPP_BRIDGE` | `true`, `false` | `false` | Include WhatsApp bridge in the built image |
+
+Then rebuild:
+
+```bash
+./build.sh
+```
+
+Or override at build time:
+
+```bash
+./build.sh --agent v2026.4.16 --webui v0.50.244
+```
+
+### WhatsApp Bridge
+
+The WhatsApp bridge is **not included** in the image by default. This is intentional:
+
+- The bridge uses [Baileys](https://github.com/WhiskeySockets/Baileys) to emulate a WhatsApp Web session
+- Without proper configuration, **anyone who messages your number gets full agent access** (terminal, filesystem, browser)
+- See [upstream issue #15108](https://github.com/NousResearch/hermes-agent/issues/15108) for details
+
+To include the WhatsApp bridge at build time:
+
+```bash
+# Option 1: CLI flag
+./build.sh --whatsapp
+
+# Option 2: Set in versions.env
+ENABLE_WHATSAPP_BRIDGE=true
+./build.sh
+```
+
+&gt; **Warning:** If you enable the WhatsApp bridge, you **must** configure `WHATSAPP_ALLOWED_USERS`
+&gt; in `~/.hermes/.env` before starting the gateway. Without this setting, the bridge denies all
+&gt; incoming messages by default.
+
+### Changing the workspace path
+
+Edit the `volumes` section in `docker-compose.yaml`:
+
+```yaml
+volumes:
+  - ~/workspace:/workspace:z   # change ~/workspace to your project directory
+```
+
+## Migration from Multi-Container Setup
+
+If you are currently running the multi-container setup (hermes-agent + hermes-webui):
+
+1. Stop the existing containers.
+
+2. Build and start hermes-suite:
+   ```bash
+   cd hermes-suite
+   ./build.sh
+   ./up.sh
+   ```
+
+3. Your existing `~/.hermes/` data is reused automatically — no migration needed.
+
+## Troubleshooting
+
+### Permission errors on ~/.hermes
+
+**Rootless Podman:**
+
+The container runs as UID 10000, which maps to a host UID (e.g. 109999) per `/etc/subuid`.
+Fix ownership on the host:
+
+```bash
+sudo chown -R 109999:109999 ~/.hermes
+```
+
+**Rootful Podman or Docker:**
+
+Ownership is auto-corrected on startup. If issues persist:
+
+```bash
+sudo chown -R 10000:10000 ~/.hermes
+```
+
+### WebUI not loading
+
+Check that the webui venv was built correctly:
+
+```bash
+podman exec hermes-suite /opt/hermes-webui/venv/bin/python -c &quot;import yaml; print(&apos;OK&apos;)&quot;
+```
+
+### Services fail with &quot;EACCES making dispatchers&quot; (Docker only)
+
+This should not occur with the auto-detection feature (v2026.5.16-0.51.137+).
+The container detects Docker at startup and adjusts the privilege model automatically.
+Ensure you are using a recent image.
+
+If it still occurs, ensure `tty: true` is NOT set in docker-compose.yaml.
+
+### Dashboard returns connection error
+
+The dashboard needs the gateway running first. Check supervisord status:
+
+```bash
+podman exec hermes-suite supervisorctl status
+```
+
+### Build fails on git clone
+
+Ensure the build host has network access. The hermes-webui repo is cloned at build
+time. If your build environment has no internet, pre-clone the webui repo and adjust
+the Dockerfile to `COPY` it instead of `git clone`.
+
+### Build fails on `uv venv` or `pip not found`
+
+The Dockerfile uses `uv` (pre-installed in the hermes-agent base image) to create
+virtual environments and install packages. If you change the base image, ensure `uv`
+is available at `/usr/local/bin/uv`.
+
+## How It Works
+
+The Dockerfile performs these steps:
+
+1. **Base image** — Uses the official `nousresearch/hermes-agent` image which already
+   contains Python 3.13, Node.js, npm, Playwright, the agent code, and the built-in
+   dashboard.
+
+2. **System packages** — Installs sudo, git, nano, network tools, and other utilities.
+
+3. **Browser tools** — Installs Playwright Chromium for the browser toolset.
+
+4. **Supervisor** — Installs supervisord via pip into a dedicated venv at `/opt/supervisor`
+   (not available in Debian Trixie apt repos).
+
+5. **Hermes WebUI** — Clones from GitHub and installs into a separate venv at
+   `/opt/hermes-webui/venv`, along with the agent&apos;s Python dependencies so the WebUI
+   can import agent modules.
+
+6. **Entrypoint** — `start.sh` handles UID/GID remapping (for rootless Podman),
+   directory setup, and config bootstrapping before launching supervisord.
+
+## Files
+
+```
+hermes-suite/
+  Dockerfile           — Build definition (parameterized AGENT_VERSION + HERMES_WEBUI_VERSION)
+  versions.env         — Pinned component versions for current release
+  supervisord.conf     — Process manager config (3 services)
+  start.sh             — Container entrypoint (UID setup + launch)
+  docker-compose.yaml  — Podman/Docker Compose configuration
+  build.sh             — Build helper script (reads versions.env)
+  up.sh                — Start helper script
+  down.sh              — Stop helper script
+  logs.sh              — Log viewer helper script
+  .dockerignore        — Build context exclusions
+  .env.example         — Environment variable template
+  README.md            — This file
+```
+
+## Tested On
+
+| Platform | Arch | OS | Runtime | Status |
+|----------|------|----|---------|--------|
+| x86_64 (WSL2) | amd64 | Ubuntu 22.04 | Podman 3.4.4 | All 3 services running |
+| x86_64 (WSL2) | amd64 | Ubuntu 22.04 | Docker CE 29.4.2 | All 3 services running |
+| Jetson Orin NX 16GB | arm64 | Ubuntu 22.04 | Podman 3.4.4 | All 3 services running |
+
+The base image `nousresearch/hermes-agent` provides multi-architecture manifests (amd64 + arm64).
+Podman and Docker automatically pull the correct variant for your platform.
+No changes to the Dockerfile are needed — it builds identically on both architectures.
+
+## License
+
+This project is licensed under the MIT License. The individual components are licensed separately:
+- [hermes-agent](https://github.com/NousResearch/hermes-agent) — by Nous Research (MIT)
+- [hermes-webui](https://github.com/nesquena/hermes-webui) — by nesquena (MIT)
+
+Thanks to [nesquena](https://github.com/nesquena) for building hermes-webui and [referencing this project](https://github.com/nesquena/hermes-webui/blob/master/docs/docker.md) in the official Docker docs.
+
+---
+
+&gt; If this project helps you, consider giving it a ⭐ on [GitHub](https://github.com/sunnysktsang/hermes-suite) — it helps others find it and keeps the project maintained.
+&lt;img src=&quot;https://hits.sh/github.com/sunnysktsang/hermes-suite.svg&quot; width=&quot;0&quot; height=&quot;0&quot; style=&quot;display:none;&quot;&gt;</file></files></repomix>

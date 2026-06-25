@@ -1,0 +1,4 @@
+repo_slug=hermes-agent-docker
+source_dir=/Users/admin1/Documents/knowledge/sources/hermes-agent-docker/
+codegraph_command=codegraph init
+generated_at=2026-06-24 18:52:17

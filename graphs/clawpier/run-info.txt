@@ -1,0 +1,4 @@
+repo_slug=clawpier
+source_dir=/Users/admin1/Documents/knowledge/sources/clawpier/
+codegraph_command=codegraph init
+generated_at=2026-06-24 18:52:06

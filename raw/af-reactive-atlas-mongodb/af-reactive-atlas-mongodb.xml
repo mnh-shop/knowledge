@@ -1,0 +1,4052 @@
+<repomix><file_summary>This file is a merged representation of the entire codebase, combined into a single document by Repomix.
+The content has been processed where comments have been removed, empty lines have been removed, line numbers have been added, content has been formatted for parsing in xml style, content has been compressed (code blocks are separated by ⋮---- delimiter), security check has been disabled.<purpose>This file contains a packed representation of the entire repository&apos;s contents.
+It is designed to be easily consumable by AI systems for analysis, code review,
+or other automated processes.</purpose><file_format>The content is organized as follows:
+1. This summary section
+2. Repository information
+3. Directory structure
+4. Repository files (if enabled)
+5. Repository files, each consisting of:
+  - File path as an attribute
+  - Full contents of the file</file_format><usage_guidelines>- This file should be treated as read-only. Any changes should be made to the
+  original repository files, not this packed version.
+- When processing this file, use the file path to distinguish
+  between different files in the repository.
+- Be aware that this file may contain sensitive information. Handle it with
+  the same level of security as you would the original repository.
+- Pay special attention to the Repository Description. These contain important context and guidelines specific to this project.</usage_guidelines><notes>- Some files may have been excluded based on .gitignore rules and Repomix&apos;s configuration
+- Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
+- Files matching patterns in .gitignore are excluded
+- Files matching default ignore patterns are excluded
+- Code comments have been removed from supported file types
+- Empty lines have been removed from all files
+- Line numbers have been added to the beginning of each line
+- Content has been formatted for parsing in xml style
+- Content has been compressed - code blocks are separated by ⋮---- delimiter
+- Security check has been disabled - content may contain sensitive information
+- Files are sorted by Git change count (files with more changes are at the bottom)</notes></file_summary><user_provided_header>Repository: af-reactive-atlas-mongodb | Generated from knowledge/sources | Generated: 2026-06-24 14:39:44</user_provided_header><directory_structure>.codegraph/
+  .gitignore
+.sisyphus/
+  plans/
+    refactor-architecture.md
+domains/
+  ecommerce/
+    config.json
+    entities.json
+    policies.json
+    rules.json
+    scenarios.json
+  finance/
+    config.json
+    entities.json
+    policies.json
+    rules.json
+    scenarios.json
+reasoners/
+  __init__.py
+  intelligence.py
+  router.py
+  skills.py
+setup/
+  seed.py
+.dockerignore
+.env.example
+.gitignore
+architecture.png
+demo.py
+docker-compose.yml
+Dockerfile
+LICENSE
+main.py
+Makefile
+models.py
+railway.toml
+README.md
+requirements.txt</directory_structure><files>This section contains the contents of the repository&apos;s files.<file path=".codegraph/.gitignore"># CodeGraph data files — local to each machine, not for committing.
+# Ignore everything in .codegraph/ except this file itself, so transient
+# files (the database, daemon.pid, sockets, logs) never show up in git.
+*
+!.gitignore</file><file path=".sisyphus/plans/refactor-architecture.md"># Reactive Atlas — General-Purpose Architecture
+
+## Core Concept
+
+The agent reads a **domain configuration document** from MongoDB at processing time.
+The domain config tells the engine: what collection to watch, how to load context,
+what rules to evaluate, how to reason, when to cascade. All Python code is generic.
+
+## New File Structure
+
+```
+reactive-atlas/
+├── main.py                    # Agent entry point (reads DOMAIN env var)
+├── models.py                  # Generic Pydantic models (domain-agnostic)
+├── reasoners/
+│   ├── __init__.py
+│   ├── router.py              # AgentField router
+│   ├── skills.py              # Generic MongoDB skills
+│   └── intelligence.py        # Parameterized reasoner (reads config)
+├── domains/
+│   ├── finance/
+│   │   ├── config.json        # Domain config document (seeded to MongoDB)
+│   │   ├── entities.json      # 50 accounts
+│   │   ├── rules.json         # 20 compliance rules
+│   │   ├── policies.json      # 5 policies
+│   │   └── scenarios.json     # 5 demo scenarios + custom spec
+│   └── ecommerce/
+│       ├── config.json        # Domain config document
+│       ├── entities.json      # 40 customers + 30 products
+│       ├── rules.json         # 15 fraud rules
+│       ├── policies.json      # 5 policies
+│       └── scenarios.json     # 5 demo scenarios + custom spec
+├── setup/
+│   └── seed.py                # Generic seeder: reads from domains/{name}/
+├── demo.py                    # Generic demo: `python3 demo.py finance structuring`
+├── docker-compose.yml
+├── Dockerfile
+├── Makefile
+├── .env.example
+├── .gitignore
+├── LICENSE
+└── README.md
+```
+
+## Domain Config Schema (MongoDB document in `domain_config` collection)
+
+```json
+{
+  &quot;domain&quot;: &quot;finance&quot;,
+  &quot;display_name&quot;: &quot;Financial Transaction Intelligence&quot;,
+  &quot;description&quot;: &quot;AML compliance and financial crime detection&quot;,
+
+  &quot;document_collection&quot;: &quot;transactions&quot;,
+  &quot;document_id_field&quot;: &quot;transaction_id&quot;,
+
+  &quot;entity_collection&quot;: &quot;accounts&quot;,
+  &quot;entity_id_field&quot;: &quot;account_id&quot;,
+
+  &quot;rules_collection&quot;: &quot;compliance_rules&quot;,
+
+  &quot;context_loading&quot;: {
+    &quot;entity_lookup_field&quot;: &quot;account_id&quot;,
+    &quot;counterparty_field&quot;: &quot;counterparty_id&quot;,
+    &quot;history_collection&quot;: &quot;transactions&quot;,
+    &quot;history_match_fields&quot;: [&quot;account_id&quot;, &quot;counterparty_id&quot;],
+    &quot;history_limit&quot;: 50
+  },
+
+  &quot;enrichment_schema&quot;: {
+    &quot;risk_score&quot;: &quot;float 0.0-1.0 indicating overall risk&quot;,
+    &quot;risk_category&quot;: &quot;one of: low, medium, high, critical&quot;,
+    &quot;pattern_match&quot;: &quot;detected pattern name or &apos;none&apos;&quot;,
+    &quot;flags&quot;: &quot;list of applicable rule IDs from the rules collection&quot;,
+    &quot;summary&quot;: &quot;2-3 sentence executive summary&quot;
+  },
+
+  &quot;cascade_config&quot;: {
+    &quot;risk_threshold&quot;: 0.7,
+    &quot;update_entities&quot;: true,
+    &quot;reenrich_related&quot;: true,
+    &quot;counterparty_threshold&quot;: 0.8,
+    &quot;max_reenrich&quot;: 10
+  },
+
+  &quot;analysis_prompt&quot;: &quot;You are a financial crime analyst reviewing a banking transaction...&quot;,
+  &quot;policy_prompt&quot;: &quot;Evaluate this document against each policy using judgment, not literal string matching.&quot;
+}
+```
+
+## Generic Pydantic Models (models.py)
+
+```python
+from pydantic import BaseModel, Field
+from typing import List, Literal
+
+class DocumentIntelligence(BaseModel):
+    risk_score: float = Field(description=&quot;Risk score 0.0-1.0&quot;)
+    risk_category: Literal[&quot;low&quot;, &quot;medium&quot;, &quot;high&quot;, &quot;critical&quot;]
+    pattern_match: str = Field(description=&quot;Detected pattern name, or &apos;none&apos;&quot;)
+    flags: List[str] = Field(description=&quot;Applicable rule IDs from the domain rules&quot;)
+    summary: str = Field(description=&quot;2-3 sentence executive summary&quot;)
+
+class PolicyEvaluation(BaseModel):
+    policy_id: str
+    triggered: bool
+    action: str = Field(description=&quot;Action: enrich, escalate, investigate, flag, hold, none&quot;)
+    reasoning: str
+
+class PolicyEvaluationList(BaseModel):
+    evaluations: List[PolicyEvaluation]
+
+class CascadeResult(BaseModel):
+    documents_affected: int
+    entity_updates: List[str] = Field(description=&quot;Entity IDs whose risk profiles were updated&quot;)
+    documents_reenriched: int
+    summary: str
+```
+
+## Generic Skill Signatures (skills.py)
+
+All skills are domain-agnostic. They take collection names and field names as parameters.
+
+```python
+@router.skill()
+def load_domain_config(domain: str) -&gt; dict
+    # Reads from db[&quot;domain_config&quot;].find_one({&quot;domain&quot;: domain})
+
+@router.skill()
+def load_entity_context(entity_id: str, entity_collection: str, entity_id_field: str) -&gt; dict
+    # Reads from db[entity_collection].find_one({entity_id_field: entity_id})
+
+@router.skill()
+def find_related_documents(collection: str, match_field: str, match_value: str, limit: int = 50) -&gt; dict
+    # db[collection].find({match_field: match_value}).sort(&quot;timestamp&quot;, DESCENDING).limit(limit)
+    # Also check &quot;$or&quot; with counterparty_field if provided
+
+@router.skill()
+def load_rules(query: str, rules_collection: str, k: int = 6) -&gt; dict
+    # Text search on db[rules_collection]
+
+@router.skill()
+def enrich_document(collection: str, id_field: str, document_id: str, intelligence: dict) -&gt; dict
+    # Writes _intelligence to db[collection] matching {id_field: document_id}
+    # Handles versioning
+
+@router.skill()
+def load_active_policies(domain: str) -&gt; dict
+    # db[&quot;policies&quot;].find({&quot;active&quot;: True, &quot;domain&quot;: domain})
+
+@router.skill()
+def update_entity_risk(entity_collection: str, entity_id_field: str, entity_id: str, risk_profile: str, reason: str) -&gt; dict
+    # Updates risk_profile and _risk_update on entity
+
+@router.skill()
+def log_reaction(event: dict) -&gt; dict
+    # Same as before — inserts into reaction_timeline
+
+@router.skill()
+def get_timeline(limit: int = 20) -&gt; dict
+    # Same as before
+```
+
+## Reasoner Flow (intelligence.py)
+
+### process_document(document, collection, domain=&quot;finance&quot;)
+1. Load domain config
+2. Extract doc_id using config.document_id_field
+3. Skip if already enriched
+4. Call analyze_document(document, domain_config)
+5. Call enrich_document(collection, id_field, doc_id, analysis)
+6. Load policies, call evaluate_policies
+7. If risk &gt;= cascade threshold, call cascade
+8. Log reaction
+9. Return result
+
+### analyze_document(document, domain_config)
+1. Load entity context using config.context_loading.entity_lookup_field
+2. Load related documents from config.context_loading.history_collection
+3. Load rules from config.rules_collection using text search
+4. Use config.analysis_prompt as the prompt template
+5. Include enrichment_schema description so LLM knows the expected output format
+6. Return DocumentIntelligence
+
+### evaluate_policies(document, intelligence, policies)
+- Same as before, already generic
+
+### cascade(document, intelligence, domain_config)
+1. Read cascade_config from domain_config
+2. If risk &gt;= threshold: update entity risk, find related docs, re-enrich unenriched
+3. If counterparty_field exists and risk &gt;= counterparty_threshold: update counterparty
+4. Return CascadeResult
+
+## demo.py Interface
+
+```bash
+python3 demo.py finance clean
+python3 demo.py finance structuring
+python3 demo.py finance all
+python3 demo.py ecommerce normal
+python3 demo.py ecommerce friendly-fraud
+python3 demo.py ecommerce all
+python3 demo.py finance custom --amount 50000 --country KY --type wire_transfer --narrative &quot;...&quot;
+python3 demo.py ecommerce custom --amount 299 --country US --category electronics --narrative &quot;...&quot;
+python3 demo.py list                    # list available domains and scenarios
+python3 demo.py finance reset
+python3 demo.py finance status
+```
+
+demo.py reads scenarios from domains/{name}/scenarios.json.
+
+## scenarios.json Format
+
+```json
+{
+  &quot;order&quot;: [&quot;normal&quot;, &quot;friendly-fraud&quot;, &quot;velocity-abuse&quot;, &quot;synthetic-identity&quot;, &quot;high-value-mismatch&quot;],
+  &quot;scenarios&quot;: {
+    &quot;normal&quot;: {
+      &quot;title&quot;: &quot;Normal Orders&quot;,
+      &quot;description&quot;: &quot;Three legitimate orders from established customers.&quot;,
+      &quot;watch&quot;: [&quot;Risk scores should stay low.&quot;, &quot;No fraud patterns detected.&quot;],
+      &quot;documents&quot;: [
+        {
+          &quot;order_id&quot;: &quot;__AUTO__&quot;,
+          &quot;customer_id&quot;: &quot;cust_0005&quot;,
+          &quot;amount&quot;: {&quot;random&quot;: [50, 500]},
+          ...
+        }
+      ]
+    }
+  },
+  &quot;custom_defaults&quot;: {
+    &quot;customer_id&quot;: &quot;cust_0012&quot;,
+    &quot;currency&quot;: &quot;USD&quot;,
+    ...
+  }
+}
+```
+
+For `__AUTO__` values, demo.py generates a unique ID.
+For `{&quot;random&quot;: [low, high]}` values, demo.py generates a random value in range.
+This keeps scenarios declarative in JSON rather than hardcoded in Python.
+
+## seed.py Interface
+
+```bash
+python3 setup/seed.py finance       # seeds finance domain
+python3 setup/seed.py ecommerce     # seeds ecommerce domain
+python3 setup/seed.py all           # seeds all domains
+```
+
+seed.py reads from domains/{name}/:
+1. config.json → inserts/upserts into domain_config collection
+2. entities.json → inserts into the configured entity_collection
+3. rules.json → inserts into the configured rules_collection
+4. policies.json → inserts into policies collection (with domain field added)
+
+Also creates appropriate indexes.
+
+## Atlas Trigger Function (updated)
+
+```javascript
+exports = async function(changeEvent) {
+  const doc = changeEvent.fullDocument;
+  if (!doc || doc._intelligence) return;
+
+  // The domain is determined by which collection triggered
+  const domain = changeEvent.ns.coll === &quot;orders&quot; ? &quot;ecommerce&quot; : &quot;finance&quot;;
+  const collection = changeEvent.ns.coll;
+
+  const response = await context.http.post({
+    url: &quot;https://YOUR_TUNNEL_URL/api/v1/execute/async/reactive-intelligence.process_document&quot;,
+    headers: { &quot;Content-Type&quot;: [&quot;application/json&quot;] },
+    body: JSON.stringify({
+      input: { document: doc, collection: collection, domain: domain }
+    })
+  });
+};
+```
+
+## Key Constraints
+
+1. All policies in MongoDB must have a &quot;domain&quot; field so load_active_policies can filter
+2. The analysis_prompt in domain config should be detailed (5-10 sentences) telling the LLM
+   exactly how to reason about documents in this domain
+3. The enrichment_schema in domain config is passed to the LLM so it knows what fields to fill
+4. The `_: bool = True` workaround is still needed for skills with no required params
+   (load_active_policies has domain param now so this may not be needed, but keep for get_timeline)
+5. models.py field `compliance_flags` is renamed to `flags` (generic)</file><file path="domains/ecommerce/entities.json">{
+  &quot;customers&quot;: [
+    {
+      &quot;customer_id&quot;: &quot;cust_0001&quot;,
+      &quot;name&quot;: &quot;Sarah Chen&quot;,
+      &quot;email&quot;: &quot;sarah.chen@example.com&quot;,
+      &quot;account_age_days&quot;: 847,
+      &quot;country&quot;: &quot;US&quot;,
+      &quot;city&quot;: &quot;San Francisco&quot;,
+      &quot;verified_email&quot;: true,
+      &quot;verified_phone&quot;: true,
+      &quot;payment_methods&quot;: [&quot;visa_4242&quot;, &quot;paypal&quot;],
+      &quot;total_orders&quot;: 23,
+      &quot;total_spent&quot;: 4520.00,
+      &quot;avg_order_value&quot;: 196.52,
+      &quot;returns_rate&quot;: 0.04,
+      &quot;risk_profile&quot;: &quot;low&quot;,
+      &quot;last_order_days_ago&quot;: 12
+    },
+    {
+      &quot;customer_id&quot;: &quot;cust_0002&quot;,
+      &quot;name&quot;: &quot;Marcus Johnson&quot;,
+      &quot;email&quot;: &quot;marcus.johnson@example.com&quot;,
+      &quot;account_age_days&quot;: 1394,
+      &quot;country&quot;: &quot;US&quot;,
+      &quot;city&quot;: &quot;Chicago&quot;,
+      &quot;verified_email&quot;: true,
+      &quot;verified_phone&quot;: true,
+      &quot;payment_methods&quot;: [&quot;mastercard_5501&quot;, &quot;apple_pay&quot;],
+      &quot;total_orders&quot;: 48,
+      &quot;total_spent&quot;: 9324.10,
+      &quot;avg_order_value&quot;: 194.25,
+      &quot;returns_rate&quot;: 0.06,
+      &quot;risk_profile&quot;: &quot;low&quot;,
+      &quot;last_order_days_ago&quot;: 5
+    },
+    {
+      &quot;customer_id&quot;: &quot;cust_0003&quot;,
+      &quot;name&quot;: &quot;Priya Nair&quot;,
+      &quot;email&quot;: &quot;priya.nair@example.com&quot;,
+      &quot;account_age_days&quot;: 1028,
+      &quot;country&quot;: &quot;US&quot;,
+      &quot;city&quot;: &quot;Seattle&quot;,
+      &quot;verified_email&quot;: true,
+      &quot;verified_phone&quot;: true,
+      &quot;payment_methods&quot;: [&quot;visa_1188&quot;, &quot;paypal&quot;],
+      &quot;total_orders&quot;: 37,
+      &quot;total_spent&quot;: 7288.40,
+      &quot;avg_order_value&quot;: 196.98,
+      &quot;returns_rate&quot;: 0.05,
+      &quot;risk_profile&quot;: &quot;low&quot;,
+      &quot;last_order_days_ago&quot;: 9
+    },
+    {
+      &quot;customer_id&quot;: &quot;cust_0004&quot;,
+      &quot;name&quot;: &quot;Ethan Walker&quot;,
+      &quot;email&quot;: &quot;ethan.walker@example.com&quot;,
+      &quot;account_age_days&quot;: 685,
+      &quot;country&quot;: &quot;US&quot;,
+      &quot;city&quot;: &quot;Austin&quot;,
+      &quot;verified_email&quot;: true,
+      &quot;verified_phone&quot;: true,
+      &quot;payment_methods&quot;: [&quot;visa_3321&quot;],
+      &quot;total_orders&quot;: 19,
+      &quot;total_spent&quot;: 3015.75,
+      &quot;avg_order_value&quot;: 158.72,
+      &quot;returns_rate&quot;: 0.03,
+      &quot;risk_profile&quot;: &quot;low&quot;,
+      &quot;last_order_days_ago&quot;: 18
+    },
+    {
+      &quot;customer_id&quot;: &quot;cust_0005&quot;,
+      &quot;name&quot;: &quot;Isabella Rossi&quot;,
+      &quot;email&quot;: &quot;isabella.rossi@example.com&quot;,
+      &quot;account_age_days&quot;: 1190,
+      &quot;country&quot;: &quot;US&quot;,
+      &quot;city&quot;: &quot;Boston&quot;,
+      &quot;verified_email&quot;: true,
+      &quot;verified_phone&quot;: true,
+      &quot;payment_methods&quot;: [&quot;mastercard_9011&quot;, &quot;paypal&quot;],
+      &quot;total_orders&quot;: 54,
+      &quot;total_spent&quot;: 11872.30,
+      &quot;avg_order_value&quot;: 219.86,
+      &quot;returns_rate&quot;: 0.07,
+      &quot;risk_profile&quot;: &quot;low&quot;,
+      &quot;last_order_days_ago&quot;: 2
+    },
+    {
+      &quot;customer_id&quot;: &quot;cust_0006&quot;,
+      &quot;name&quot;: &quot;Noah Kim&quot;,
+      &quot;email&quot;: &quot;noah.kim@example.com&quot;,
+      &quot;account_age_days&quot;: 911,
+      &quot;country&quot;: &quot;US&quot;,
+      &quot;city&quot;: &quot;Los Angeles&quot;,
+      &quot;verified_email&quot;: true,
+      &quot;verified_phone&quot;: true,
+      &quot;payment_methods&quot;: [&quot;visa_6630&quot;, &quot;apple_pay&quot;],
+      &quot;total_orders&quot;: 28,
+      &quot;total_spent&quot;: 5642.40,
+      &quot;avg_order_value&quot;: 201.51,
+      &quot;returns_rate&quot;: 0.05,
+      &quot;risk_profile&quot;: &quot;low&quot;,
+      &quot;last_order_days_ago&quot;: 15
+    },
+    {
+      &quot;customer_id&quot;: &quot;cust_0007&quot;,
+      &quot;name&quot;: &quot;Amelia Brown&quot;,
+      &quot;email&quot;: &quot;amelia.brown@example.com&quot;,
+      &quot;account_age_days&quot;: 772,
+      &quot;country&quot;: &quot;US&quot;,
+      &quot;city&quot;: &quot;Denver&quot;,
+      &quot;verified_email&quot;: true,
+      &quot;verified_phone&quot;: true,
+      &quot;payment_methods&quot;: [&quot;visa_7743&quot;, &quot;paypal&quot;],
+      &quot;total_orders&quot;: 31,
+      &quot;total_spent&quot;: 6220.13,
+      &quot;avg_order_value&quot;: 200.65,
+      &quot;returns_rate&quot;: 0.08,
+      &quot;risk_profile&quot;: &quot;low&quot;,
+      &quot;last_order_days_ago&quot;: 11
+    },
+    {
+      &quot;customer_id&quot;: &quot;cust_0008&quot;,
+      &quot;name&quot;: &quot;Luca Bianchi&quot;,
+      &quot;email&quot;: &quot;luca.bianchi@example.com&quot;,
+      &quot;account_age_days&quot;: 534,
+      &quot;country&quot;: &quot;US&quot;,
+      &quot;city&quot;: &quot;New York&quot;,
+      &quot;verified_email&quot;: true,
+      &quot;verified_phone&quot;: true,
+      &quot;payment_methods&quot;: [&quot;mastercard_4409&quot;, &quot;apple_pay&quot;],
+      &quot;total_orders&quot;: 16,
+      &quot;total_spent&quot;: 2988.00,
+      &quot;avg_order_value&quot;: 186.75,
+      &quot;returns_rate&quot;: 0.06,
+      &quot;risk_profile&quot;: &quot;low&quot;,
+      &quot;last_order_days_ago&quot;: 21
+    },
+    {
+      &quot;customer_id&quot;: &quot;cust_0009&quot;,
+      &quot;name&quot;: &quot;Aaliyah Carter&quot;,
+      &quot;email&quot;: &quot;aaliyah.carter@example.com&quot;,
+      &quot;account_age_days&quot;: 1281,
+      &quot;country&quot;: &quot;US&quot;,
+      &quot;city&quot;: &quot;Atlanta&quot;,
+      &quot;verified_email&quot;: true,
+      &quot;verified_phone&quot;: true,
+      &quot;payment_methods&quot;: [&quot;visa_9384&quot;, &quot;paypal&quot;],
+      &quot;total_orders&quot;: 44,
+      &quot;total_spent&quot;: 8520.60,
+      &quot;avg_order_value&quot;: 193.65,
+      &quot;returns_rate&quot;: 0.05,
+      &quot;risk_profile&quot;: &quot;low&quot;,
+      &quot;last_order_days_ago&quot;: 7
+    },
+    {
+      &quot;customer_id&quot;: &quot;cust_0010&quot;,
+      &quot;name&quot;: &quot;Jonas Muller&quot;,
+      &quot;email&quot;: &quot;jonas.muller@example.com&quot;,
+      &quot;account_age_days&quot;: 965,
+      &quot;country&quot;: &quot;DE&quot;,
+      &quot;city&quot;: &quot;Berlin&quot;,
+      &quot;verified_email&quot;: true,
+      &quot;verified_phone&quot;: true,
+      &quot;payment_methods&quot;: [&quot;mastercard_3027&quot;, &quot;paypal&quot;],
+      &quot;total_orders&quot;: 27,
+      &quot;total_spent&quot;: 5211.30,
+      &quot;avg_order_value&quot;: 193.01,
+      &quot;returns_rate&quot;: 0.04,
+      &quot;risk_profile&quot;: &quot;low&quot;,
+      &quot;last_order_days_ago&quot;: 14
+    },
+    {
+      &quot;customer_id&quot;: &quot;cust_0011&quot;,
+      &quot;name&quot;: &quot;Olivia Thompson&quot;,
+      &quot;email&quot;: &quot;olivia.thompson@example.com&quot;,
+      &quot;account_age_days&quot;: 1433,
+      &quot;country&quot;: &quot;US&quot;,
+      &quot;city&quot;: &quot;Portland&quot;,
+      &quot;verified_email&quot;: true,
+      &quot;verified_phone&quot;: true,
+      &quot;payment_methods&quot;: [&quot;visa_6004&quot;, &quot;apple_pay&quot;, &quot;paypal&quot;],
+      &quot;total_orders&quot;: 61,
+      &quot;total_spent&quot;: 13422.80,
+      &quot;avg_order_value&quot;: 220.05,
+      &quot;returns_rate&quot;: 0.09,
+      &quot;risk_profile&quot;: &quot;low&quot;,
+      &quot;last_order_days_ago&quot;: 3
+    },
+    {
+      &quot;customer_id&quot;: &quot;cust_0012&quot;,
+      &quot;name&quot;: &quot;Arjun Patel&quot;,
+      &quot;email&quot;: &quot;arjun.patel@example.com&quot;,
+      &quot;account_age_days&quot;: 602,
+      &quot;country&quot;: &quot;CA&quot;,
+      &quot;city&quot;: &quot;Toronto&quot;,
+      &quot;verified_email&quot;: true,
+      &quot;verified_phone&quot;: true,
+      &quot;payment_methods&quot;: [&quot;visa_1175&quot;, &quot;mastercard_2240&quot;],
+      &quot;total_orders&quot;: 22,
+      &quot;total_spent&quot;: 4116.20,
+      &quot;avg_order_value&quot;: 187.10,
+      &quot;returns_rate&quot;: 0.06,
+      &quot;risk_profile&quot;: &quot;low&quot;,
+      &quot;last_order_days_ago&quot;: 10
+    },
+    {
+      &quot;customer_id&quot;: &quot;cust_0013&quot;,
+      &quot;name&quot;: &quot;Maya Singh&quot;,
+      &quot;email&quot;: &quot;maya.singh@example.com&quot;,
+      &quot;account_age_days&quot;: 818,
+      &quot;country&quot;: &quot;US&quot;,
+      &quot;city&quot;: &quot;San Diego&quot;,
+      &quot;verified_email&quot;: true,
+      &quot;verified_phone&quot;: true,
+      &quot;payment_methods&quot;: [&quot;mastercard_7890&quot;, &quot;paypal&quot;],
+      &quot;total_orders&quot;: 35,
+      &quot;total_spent&quot;: 7034.90,
+      &quot;avg_order_value&quot;: 200.99,
+      &quot;returns_rate&quot;: 0.07,
+      &quot;risk_profile&quot;: &quot;low&quot;,
+      &quot;last_order_days_ago&quot;: 8
+    },
+    {
+      &quot;customer_id&quot;: &quot;cust_0014&quot;,
+      &quot;name&quot;: &quot;David O&apos;Connor&quot;,
+      &quot;email&quot;: &quot;david.oconnor@example.com&quot;,
+      &quot;account_age_days&quot;: 1095,
+      &quot;country&quot;: &quot;GB&quot;,
+      &quot;city&quot;: &quot;London&quot;,
+      &quot;verified_email&quot;: true,
+      &quot;verified_phone&quot;: true,
+      &quot;payment_methods&quot;: [&quot;visa_8411&quot;, &quot;apple_pay&quot;],
+      &quot;total_orders&quot;: 40,
+      &quot;total_spent&quot;: 8780.40,
+      &quot;avg_order_value&quot;: 219.51,
+      &quot;returns_rate&quot;: 0.05,
+      &quot;risk_profile&quot;: &quot;low&quot;,
+      &quot;last_order_days_ago&quot;: 6
+    },
+    {
+      &quot;customer_id&quot;: &quot;cust_0015&quot;,
+      &quot;name&quot;: &quot;Hannah Nguyen&quot;,
+      &quot;email&quot;: &quot;hannah.nguyen@example.com&quot;,
+      &quot;account_age_days&quot;: 483,
+      &quot;country&quot;: &quot;US&quot;,
+      &quot;city&quot;: &quot;Phoenix&quot;,
+      &quot;verified_email&quot;: true,
+      &quot;verified_phone&quot;: true,
+      &quot;payment_methods&quot;: [&quot;visa_5120&quot;],
+      &quot;total_orders&quot;: 14,
+      &quot;total_spent&quot;: 2310.20,
+      &quot;avg_order_value&quot;: 165.01,
+      &quot;returns_rate&quot;: 0.04,
+      &quot;risk_profile&quot;: &quot;low&quot;,
+      &quot;last_order_days_ago&quot;: 24
+    },
+    {
+      &quot;customer_id&quot;: &quot;cust_0016&quot;,
+      &quot;name&quot;: &quot;Benjamin Hall&quot;,
+      &quot;email&quot;: &quot;benjamin.hall@example.com&quot;,
+      &quot;account_age_days&quot;: 1360,
+      &quot;country&quot;: &quot;US&quot;,
+      &quot;city&quot;: &quot;Dallas&quot;,
+      &quot;verified_email&quot;: true,
+      &quot;verified_phone&quot;: true,
+      &quot;payment_methods&quot;: [&quot;mastercard_6132&quot;, &quot;paypal&quot;],
+      &quot;total_orders&quot;: 57,
+      &quot;total_spent&quot;: 12544.30,
+      &quot;avg_order_value&quot;: 220.08,
+      &quot;returns_rate&quot;: 0.06,
+      &quot;risk_profile&quot;: &quot;low&quot;,
+      &quot;last_order_days_ago&quot;: 4
+    },
+    {
+      &quot;customer_id&quot;: &quot;cust_0017&quot;,
+      &quot;name&quot;: &quot;Charlotte Evans&quot;,
+      &quot;email&quot;: &quot;charlotte.evans@example.com&quot;,
+      &quot;account_age_days&quot;: 745,
+      &quot;country&quot;: &quot;AU&quot;,
+      &quot;city&quot;: &quot;Sydney&quot;,
+      &quot;verified_email&quot;: true,
+      &quot;verified_phone&quot;: true,
+      &quot;payment_methods&quot;: [&quot;visa_7302&quot;, &quot;apple_pay&quot;],
+      &quot;total_orders&quot;: 25,
+      &quot;total_spent&quot;: 4940.25,
+      &quot;avg_order_value&quot;: 197.61,
+      &quot;returns_rate&quot;: 0.05,
+      &quot;risk_profile&quot;: &quot;low&quot;,
+      &quot;last_order_days_ago&quot;: 13
+    },
+    {
+      &quot;customer_id&quot;: &quot;cust_0018&quot;,
+      &quot;name&quot;: &quot;Mateo Alvarez&quot;,
+      &quot;email&quot;: &quot;mateo.alvarez@example.com&quot;,
+      &quot;account_age_days&quot;: 920,
+      &quot;country&quot;: &quot;US&quot;,
+      &quot;city&quot;: &quot;Miami&quot;,
+      &quot;verified_email&quot;: true,
+      &quot;verified_phone&quot;: true,
+      &quot;payment_methods&quot;: [&quot;visa_4895&quot;, &quot;paypal&quot;],
+      &quot;total_orders&quot;: 33,
+      &quot;total_spent&quot;: 6702.33,
+      &quot;avg_order_value&quot;: 203.10,
+      &quot;returns_rate&quot;: 0.07,
+      &quot;risk_profile&quot;: &quot;low&quot;,
+      &quot;last_order_days_ago&quot;: 16
+    },
+    {
+      &quot;customer_id&quot;: &quot;cust_0019&quot;,
+      &quot;name&quot;: &quot;Leah Goldstein&quot;,
+      &quot;email&quot;: &quot;leah.goldstein@example.com&quot;,
+      &quot;account_age_days&quot;: 1112,
+      &quot;country&quot;: &quot;US&quot;,
+      &quot;city&quot;: &quot;Philadelphia&quot;,
+      &quot;verified_email&quot;: true,
+      &quot;verified_phone&quot;: true,
+      &quot;payment_methods&quot;: [&quot;mastercard_1008&quot;, &quot;paypal&quot;, &quot;apple_pay&quot;],
+      &quot;total_orders&quot;: 46,
+      &quot;total_spent&quot;: 9361.20,
+      &quot;avg_order_value&quot;: 203.50,
+      &quot;returns_rate&quot;: 0.08,
+      &quot;risk_profile&quot;: &quot;low&quot;,
+      &quot;last_order_days_ago&quot;: 5
+    },
+    {
+      &quot;customer_id&quot;: &quot;cust_0020&quot;,
+      &quot;name&quot;: &quot;Zoe Martin&quot;,
+      &quot;email&quot;: &quot;zoe.martin@example.com&quot;,
+      &quot;account_age_days&quot;: 398,
+      &quot;country&quot;: &quot;CA&quot;,
+      &quot;city&quot;: &quot;Vancouver&quot;,
+      &quot;verified_email&quot;: true,
+      &quot;verified_phone&quot;: true,
+      &quot;payment_methods&quot;: [&quot;visa_2671&quot;, &quot;mastercard_9002&quot;],
+      &quot;total_orders&quot;: 12,
+      &quot;total_spent&quot;: 2028.00,
+      &quot;avg_order_value&quot;: 169.00,
+      &quot;returns_rate&quot;: 0.05,
+      &quot;risk_profile&quot;: &quot;low&quot;,
+      &quot;last_order_days_ago&quot;: 19
+    },
+    {
+      &quot;customer_id&quot;: &quot;cust_0021&quot;,
+      &quot;name&quot;: &quot;Nora Gallagher&quot;,
+      &quot;email&quot;: &quot;nora.gallagher@example.com&quot;,
+      &quot;account_age_days&quot;: 1276,
+      &quot;country&quot;: &quot;GB&quot;,
+      &quot;city&quot;: &quot;Manchester&quot;,
+      &quot;verified_email&quot;: true,
+      &quot;verified_phone&quot;: true,
+      &quot;payment_methods&quot;: [&quot;visa_7146&quot;, &quot;paypal&quot;],
+      &quot;total_orders&quot;: 39,
+      &quot;total_spent&quot;: 8146.50,
+      &quot;avg_order_value&quot;: 208.88,
+      &quot;returns_rate&quot;: 0.06,
+      &quot;risk_profile&quot;: &quot;low&quot;,
+      &quot;last_order_days_ago&quot;: 7
+    },
+    {
+      &quot;customer_id&quot;: &quot;cust_0022&quot;,
+      &quot;name&quot;: &quot;Kai Schmidt&quot;,
+      &quot;email&quot;: &quot;kai.schmidt@example.com&quot;,
+      &quot;account_age_days&quot;: 588,
+      &quot;country&quot;: &quot;DE&quot;,
+      &quot;city&quot;: &quot;Munich&quot;,
+      &quot;verified_email&quot;: true,
+      &quot;verified_phone&quot;: true,
+      &quot;payment_methods&quot;: [&quot;mastercard_4761&quot;, &quot;apple_pay&quot;],
+      &quot;total_orders&quot;: 18,
+      &quot;total_spent&quot;: 3396.42,
+      &quot;avg_order_value&quot;: 188.69,
+      &quot;returns_rate&quot;: 0.04,
+      &quot;risk_profile&quot;: &quot;low&quot;,
+      &quot;last_order_days_ago&quot;: 12
+    },
+    {
+      &quot;customer_id&quot;: &quot;cust_0023&quot;,
+      &quot;name&quot;: &quot;Yuna Park&quot;,
+      &quot;email&quot;: &quot;yuna.park@example.com&quot;,
+      &quot;account_age_days&quot;: 840,
+      &quot;country&quot;: &quot;US&quot;,
+      &quot;city&quot;: &quot;San Jose&quot;,
+      &quot;verified_email&quot;: true,
+      &quot;verified_phone&quot;: true,
+      &quot;payment_methods&quot;: [&quot;visa_5560&quot;, &quot;paypal&quot;],
+      &quot;total_orders&quot;: 30,
+      &quot;total_spent&quot;: 5995.20,
+      &quot;avg_order_value&quot;: 199.84,
+      &quot;returns_rate&quot;: 0.05,
+      &quot;risk_profile&quot;: &quot;low&quot;,
+      &quot;last_order_days_ago&quot;: 9
+    },
+    {
+      &quot;customer_id&quot;: &quot;cust_0024&quot;,
+      &quot;name&quot;: &quot;William Price&quot;,
+      &quot;email&quot;: &quot;william.price@example.com&quot;,
+      &quot;account_age_days&quot;: 1564,
+      &quot;country&quot;: &quot;US&quot;,
+      &quot;city&quot;: &quot;Nashville&quot;,
+      &quot;verified_email&quot;: true,
+      &quot;verified_phone&quot;: true,
+      &quot;payment_methods&quot;: [&quot;mastercard_3591&quot;],
+      &quot;total_orders&quot;: 64,
+      &quot;total_spent&quot;: 13088.00,
+      &quot;avg_order_value&quot;: 204.50,
+      &quot;returns_rate&quot;: 0.07,
+      &quot;risk_profile&quot;: &quot;low&quot;,
+      &quot;last_order_days_ago&quot;: 2
+    },
+    {
+      &quot;customer_id&quot;: &quot;cust_0025&quot;,
+      &quot;name&quot;: &quot;Sofia Ramirez&quot;,
+      &quot;email&quot;: &quot;sofia.ramirez@example.com&quot;,
+      &quot;account_age_days&quot;: 693,
+      &quot;country&quot;: &quot;US&quot;,
+      &quot;city&quot;: &quot;Houston&quot;,
+      &quot;verified_email&quot;: true,
+      &quot;verified_phone&quot;: true,
+      &quot;payment_methods&quot;: [&quot;visa_2451&quot;, &quot;apple_pay&quot;, &quot;paypal&quot;],
+      &quot;total_orders&quot;: 26,
+      &quot;total_spent&quot;: 5062.20,
+      &quot;avg_order_value&quot;: 194.70,
+      &quot;returns_rate&quot;: 0.08,
+      &quot;risk_profile&quot;: &quot;low&quot;,
+      &quot;last_order_days_ago&quot;: 11
+    },
+    {
+      &quot;customer_id&quot;: &quot;cust_0026&quot;,
+      &quot;name&quot;: &quot;Mason Reed&quot;,
+      &quot;email&quot;: &quot;mason.reed@example.com&quot;,
+      &quot;account_age_days&quot;: 173,
+      &quot;country&quot;: &quot;US&quot;,
+      &quot;city&quot;: &quot;Charlotte&quot;,
+      &quot;verified_email&quot;: true,
+      &quot;verified_phone&quot;: false,
+      &quot;payment_methods&quot;: [&quot;visa_6198&quot;],
+      &quot;total_orders&quot;: 4,
+      &quot;total_spent&quot;: 612.40,
+      &quot;avg_order_value&quot;: 153.10,
+      &quot;returns_rate&quot;: 0.10,
+      &quot;risk_profile&quot;: &quot;medium&quot;,
+      &quot;last_order_days_ago&quot;: 20
+    },
+    {
+      &quot;customer_id&quot;: &quot;cust_0027&quot;,
+      &quot;name&quot;: &quot;Ava Brooks&quot;,
+      &quot;email&quot;: &quot;ava.brooks@example.com&quot;,
+      &quot;account_age_days&quot;: 121,
+      &quot;country&quot;: &quot;US&quot;,
+      &quot;city&quot;: &quot;Columbus&quot;,
+      &quot;verified_email&quot;: true,
+      &quot;verified_phone&quot;: true,
+      &quot;payment_methods&quot;: [&quot;mastercard_8422&quot;, &quot;paypal&quot;],
+      &quot;total_orders&quot;: 6,
+      &quot;total_spent&quot;: 998.70,
+      &quot;avg_order_value&quot;: 166.45,
+      &quot;returns_rate&quot;: 0.12,
+      &quot;risk_profile&quot;: &quot;medium&quot;,
+      &quot;last_order_days_ago&quot;: 14
+    },
+    {
+      &quot;customer_id&quot;: &quot;cust_0028&quot;,
+      &quot;name&quot;: &quot;Felix Weber&quot;,
+      &quot;email&quot;: &quot;felix.weber@example.com&quot;,
+      &quot;account_age_days&quot;: 92,
+      &quot;country&quot;: &quot;DE&quot;,
+      &quot;city&quot;: &quot;Hamburg&quot;,
+      &quot;verified_email&quot;: true,
+      &quot;verified_phone&quot;: false,
+      &quot;payment_methods&quot;: [&quot;visa_3307&quot;],
+      &quot;total_orders&quot;: 3,
+      &quot;total_spent&quot;: 540.00,
+      &quot;avg_order_value&quot;: 180.00,
+      &quot;returns_rate&quot;: 0.00,
+      &quot;risk_profile&quot;: &quot;medium&quot;,
+      &quot;last_order_days_ago&quot;: 17
+    },
+    {
+      &quot;customer_id&quot;: &quot;cust_0029&quot;,
+      &quot;name&quot;: &quot;Grace Campbell&quot;,
+      &quot;email&quot;: &quot;grace.campbell@example.com&quot;,
+      &quot;account_age_days&quot;: 160,
+      &quot;country&quot;: &quot;AU&quot;,
+      &quot;city&quot;: &quot;Melbourne&quot;,
+      &quot;verified_email&quot;: true,
+      &quot;verified_phone&quot;: true,
+      &quot;payment_methods&quot;: [&quot;visa_7129&quot;, &quot;apple_pay&quot;],
+      &quot;total_orders&quot;: 7,
+      &quot;total_spent&quot;: 1468.60,
+      &quot;avg_order_value&quot;: 209.80,
+      &quot;returns_rate&quot;: 0.14,
+      &quot;risk_profile&quot;: &quot;medium&quot;,
+      &quot;last_order_days_ago&quot;: 9
+    },
+    {
+      &quot;customer_id&quot;: &quot;cust_0030&quot;,
+      &quot;name&quot;: &quot;Oliver Bennett&quot;,
+      &quot;email&quot;: &quot;oliver.bennett@example.com&quot;,
+      &quot;account_age_days&quot;: 63,
+      &quot;country&quot;: &quot;GB&quot;,
+      &quot;city&quot;: &quot;Birmingham&quot;,
+      &quot;verified_email&quot;: true,
+      &quot;verified_phone&quot;: false,
+      &quot;payment_methods&quot;: [&quot;mastercard_5524&quot;],
+      &quot;total_orders&quot;: 2,
+      &quot;total_spent&quot;: 429.98,
+      &quot;avg_order_value&quot;: 214.99,
+      &quot;returns_rate&quot;: 0.00,
+      &quot;risk_profile&quot;: &quot;medium&quot;,
+      &quot;last_order_days_ago&quot;: 8
+    },
+    {
+      &quot;customer_id&quot;: &quot;cust_0031&quot;,
+      &quot;name&quot;: &quot;Fatima El-Sayed&quot;,
+      &quot;email&quot;: &quot;fatima.elsayed@example.com&quot;,
+      &quot;account_age_days&quot;: 138,
+      &quot;country&quot;: &quot;US&quot;,
+      &quot;city&quot;: &quot;Detroit&quot;,
+      &quot;verified_email&quot;: true,
+      &quot;verified_phone&quot;: true,
+      &quot;payment_methods&quot;: [&quot;visa_2001&quot;, &quot;paypal&quot;],
+      &quot;total_orders&quot;: 5,
+      &quot;total_spent&quot;: 739.50,
+      &quot;avg_order_value&quot;: 147.90,
+      &quot;returns_rate&quot;: 0.08,
+      &quot;risk_profile&quot;: &quot;medium&quot;,
+      &quot;last_order_days_ago&quot;: 3
+    },
+    {
+      &quot;customer_id&quot;: &quot;cust_0032&quot;,
+      &quot;name&quot;: &quot;Lucas Tremblay&quot;,
+      &quot;email&quot;: &quot;lucas.tremblay@example.com&quot;,
+      &quot;account_age_days&quot;: 47,
+      &quot;country&quot;: &quot;CA&quot;,
+      &quot;city&quot;: &quot;Montreal&quot;,
+      &quot;verified_email&quot;: true,
+      &quot;verified_phone&quot;: false,
+      &quot;payment_methods&quot;: [&quot;visa_4399&quot;],
+      &quot;total_orders&quot;: 2,
+      &quot;total_spent&quot;: 188.50,
+      &quot;avg_order_value&quot;: 94.25,
+      &quot;returns_rate&quot;: 0.00,
+      &quot;risk_profile&quot;: &quot;medium&quot;,
+      &quot;last_order_days_ago&quot;: 6
+    },
+    {
+      &quot;customer_id&quot;: &quot;cust_0033&quot;,
+      &quot;name&quot;: &quot;Emily Harper&quot;,
+      &quot;email&quot;: &quot;emily.harper@example.com&quot;,
+      &quot;account_age_days&quot;: 34,
+      &quot;country&quot;: &quot;US&quot;,
+      &quot;city&quot;: &quot;Las Vegas&quot;,
+      &quot;verified_email&quot;: false,
+      &quot;verified_phone&quot;: true,
+      &quot;payment_methods&quot;: [&quot;mastercard_6710&quot;, &quot;crypto&quot;],
+      &quot;total_orders&quot;: 1,
+      &quot;total_spent&quot;: 129.00,
+      &quot;avg_order_value&quot;: 129.00,
+      &quot;returns_rate&quot;: 0.00,
+      &quot;risk_profile&quot;: &quot;medium&quot;,
+      &quot;last_order_days_ago&quot;: 2
+    },
+    {
+      &quot;customer_id&quot;: &quot;cust_0034&quot;,
+      &quot;name&quot;: &quot;Ravi Kulkarni&quot;,
+      &quot;email&quot;: &quot;ravi.kulkarni@example.com&quot;,
+      &quot;account_age_days&quot;: 5,
+      &quot;country&quot;: &quot;US&quot;,
+      &quot;city&quot;: &quot;Jersey City&quot;,
+      &quot;verified_email&quot;: false,
+      &quot;verified_phone&quot;: false,
+      &quot;payment_methods&quot;: [&quot;visa_9902&quot;],
+      &quot;total_orders&quot;: 1,
+      &quot;total_spent&quot;: 84.99,
+      &quot;avg_order_value&quot;: 84.99,
+      &quot;returns_rate&quot;: 0.00,
+      &quot;risk_profile&quot;: &quot;high&quot;,
+      &quot;last_order_days_ago&quot;: 1
+    },
+    {
+      &quot;customer_id&quot;: &quot;cust_0035&quot;,
+      &quot;name&quot;: &quot;Ella Morgan&quot;,
+      &quot;email&quot;: &quot;ella.morgan@example.com&quot;,
+      &quot;account_age_days&quot;: 11,
+      &quot;country&quot;: &quot;GB&quot;,
+      &quot;city&quot;: &quot;Leeds&quot;,
+      &quot;verified_email&quot;: true,
+      &quot;verified_phone&quot;: false,
+      &quot;payment_methods&quot;: [&quot;mastercard_2154&quot;],
+      &quot;total_orders&quot;: 0,
+      &quot;total_spent&quot;: 0.00,
+      &quot;avg_order_value&quot;: 0.00,
+      &quot;returns_rate&quot;: 0.00,
+      &quot;risk_profile&quot;: &quot;high&quot;,
+      &quot;last_order_days_ago&quot;: 999
+    },
+    {
+      &quot;customer_id&quot;: &quot;cust_0036&quot;,
+      &quot;name&quot;: &quot;Noemi Fischer&quot;,
+      &quot;email&quot;: &quot;noemi.fischer@example.com&quot;,
+      &quot;account_age_days&quot;: 2,
+      &quot;country&quot;: &quot;DE&quot;,
+      &quot;city&quot;: &quot;Frankfurt&quot;,
+      &quot;verified_email&quot;: false,
+      &quot;verified_phone&quot;: false,
+      &quot;payment_methods&quot;: [&quot;crypto&quot;],
+      &quot;total_orders&quot;: 0,
+      &quot;total_spent&quot;: 0.00,
+      &quot;avg_order_value&quot;: 0.00,
+      &quot;returns_rate&quot;: 0.00,
+      &quot;risk_profile&quot;: &quot;high&quot;,
+      &quot;last_order_days_ago&quot;: 999
+    },
+    {
+      &quot;customer_id&quot;: &quot;cust_0037&quot;,
+      &quot;name&quot;: &quot;Tyler Brooks&quot;,
+      &quot;email&quot;: &quot;tyler.brooks@example.com&quot;,
+      &quot;account_age_days&quot;: 9,
+      &quot;country&quot;: &quot;US&quot;,
+      &quot;city&quot;: &quot;Orlando&quot;,
+      &quot;verified_email&quot;: true,
+      &quot;verified_phone&quot;: false,
+      &quot;payment_methods&quot;: [&quot;visa_3017&quot;, &quot;paypal&quot;],
+      &quot;total_orders&quot;: 2,
+      &quot;total_spent&quot;: 259.98,
+      &quot;avg_order_value&quot;: 129.99,
+      &quot;returns_rate&quot;: 0.00,
+      &quot;risk_profile&quot;: &quot;high&quot;,
+      &quot;last_order_days_ago&quot;: 1
+    },
+    {
+      &quot;customer_id&quot;: &quot;cust_0038&quot;,
+      &quot;name&quot;: &quot;Jordan Blake&quot;,
+      &quot;email&quot;: &quot;jordan.blake@example.com&quot;,
+      &quot;account_age_days&quot;: 402,
+      &quot;country&quot;: &quot;US&quot;,
+      &quot;city&quot;: &quot;Sacramento&quot;,
+      &quot;verified_email&quot;: true,
+      &quot;verified_phone&quot;: true,
+      &quot;payment_methods&quot;: [&quot;visa_8080&quot;, &quot;paypal&quot;],
+      &quot;total_orders&quot;: 21,
+      &quot;total_spent&quot;: 8950.40,
+      &quot;avg_order_value&quot;: 426.21,
+      &quot;returns_rate&quot;: 0.33,
+      &quot;risk_profile&quot;: &quot;high&quot;,
+      &quot;last_order_days_ago&quot;: 4
+    },
+    {
+      &quot;customer_id&quot;: &quot;cust_0039&quot;,
+      &quot;name&quot;: &quot;Liam Doyle&quot;,
+      &quot;email&quot;: &quot;liam.doyle@example.com&quot;,
+      &quot;account_age_days&quot;: 218,
+      &quot;country&quot;: &quot;US&quot;,
+      &quot;city&quot;: &quot;Tampa&quot;,
+      &quot;verified_email&quot;: true,
+      &quot;verified_phone&quot;: true,
+      &quot;payment_methods&quot;: [&quot;mastercard_1881&quot;, &quot;crypto&quot;],
+      &quot;total_orders&quot;: 12,
+      &quot;total_spent&quot;: 12440.00,
+      &quot;avg_order_value&quot;: 1036.67,
+      &quot;returns_rate&quot;: 0.27,
+      &quot;risk_profile&quot;: &quot;high&quot;,
+      &quot;last_order_days_ago&quot;: 2
+    },
+    {
+      &quot;customer_id&quot;: &quot;cust_0040&quot;,
+      &quot;name&quot;: &quot;Chloe Mercer&quot;,
+      &quot;email&quot;: &quot;chloe.mercer@example.com&quot;,
+      &quot;account_age_days&quot;: 511,
+      &quot;country&quot;: &quot;CA&quot;,
+      &quot;city&quot;: &quot;Calgary&quot;,
+      &quot;verified_email&quot;: true,
+      &quot;verified_phone&quot;: false,
+      &quot;payment_methods&quot;: [&quot;visa_9900&quot;, &quot;apple_pay&quot;],
+      &quot;total_orders&quot;: 9,
+      &quot;total_spent&quot;: 7610.20,
+      &quot;avg_order_value&quot;: 845.58,
+      &quot;returns_rate&quot;: 0.29,
+      &quot;risk_profile&quot;: &quot;high&quot;,
+      &quot;last_order_days_ago&quot;: 6
+    }
+  ],
+  &quot;product_catalog&quot;: [
+    {&quot;product_id&quot;: &quot;prod_001&quot;, &quot;name&quot;: &quot;Wireless Headphones&quot;, &quot;category&quot;: &quot;electronics&quot;, &quot;price&quot;: 79.99, &quot;currency&quot;: &quot;USD&quot;, &quot;risk_tier&quot;: &quot;medium&quot;},
+    {&quot;product_id&quot;: &quot;prod_002&quot;, &quot;name&quot;: &quot;Bluetooth Speaker&quot;, &quot;category&quot;: &quot;electronics&quot;, &quot;price&quot;: 59.99, &quot;currency&quot;: &quot;USD&quot;, &quot;risk_tier&quot;: &quot;medium&quot;},
+    {&quot;product_id&quot;: &quot;prod_003&quot;, &quot;name&quot;: &quot;4K Action Camera&quot;, &quot;category&quot;: &quot;electronics&quot;, &quot;price&quot;: 249.00, &quot;currency&quot;: &quot;USD&quot;, &quot;risk_tier&quot;: &quot;high&quot;},
+    {&quot;product_id&quot;: &quot;prod_004&quot;, &quot;name&quot;: &quot;Smartphone Pro 256GB&quot;, &quot;category&quot;: &quot;electronics&quot;, &quot;price&quot;: 999.00, &quot;currency&quot;: &quot;USD&quot;, &quot;risk_tier&quot;: &quot;high&quot;},
+    {&quot;product_id&quot;: &quot;prod_005&quot;, &quot;name&quot;: &quot;Gaming Laptop 15-inch&quot;, &quot;category&quot;: &quot;electronics&quot;, &quot;price&quot;: 1499.00, &quot;currency&quot;: &quot;USD&quot;, &quot;risk_tier&quot;: &quot;high&quot;},
+    {&quot;product_id&quot;: &quot;prod_006&quot;, &quot;name&quot;: &quot;Mechanical Keyboard&quot;, &quot;category&quot;: &quot;electronics&quot;, &quot;price&quot;: 129.00, &quot;currency&quot;: &quot;USD&quot;, &quot;risk_tier&quot;: &quot;medium&quot;},
+    {&quot;product_id&quot;: &quot;prod_007&quot;, &quot;name&quot;: &quot;Ergonomic Office Chair&quot;, &quot;category&quot;: &quot;home&quot;, &quot;price&quot;: 289.00, &quot;currency&quot;: &quot;USD&quot;, &quot;risk_tier&quot;: &quot;low&quot;},
+    {&quot;product_id&quot;: &quot;prod_008&quot;, &quot;name&quot;: &quot;Standing Desk&quot;, &quot;category&quot;: &quot;home&quot;, &quot;price&quot;: 499.00, &quot;currency&quot;: &quot;USD&quot;, &quot;risk_tier&quot;: &quot;low&quot;},
+    {&quot;product_id&quot;: &quot;prod_009&quot;, &quot;name&quot;: &quot;Air Purifier&quot;, &quot;category&quot;: &quot;home&quot;, &quot;price&quot;: 219.00, &quot;currency&quot;: &quot;USD&quot;, &quot;risk_tier&quot;: &quot;low&quot;},
+    {&quot;product_id&quot;: &quot;prod_010&quot;, &quot;name&quot;: &quot;Espresso Machine&quot;, &quot;category&quot;: &quot;home&quot;, &quot;price&quot;: 349.00, &quot;currency&quot;: &quot;USD&quot;, &quot;risk_tier&quot;: &quot;medium&quot;},
+    {&quot;product_id&quot;: &quot;prod_011&quot;, &quot;name&quot;: &quot;Running Shoes&quot;, &quot;category&quot;: &quot;fashion&quot;, &quot;price&quot;: 139.00, &quot;currency&quot;: &quot;USD&quot;, &quot;risk_tier&quot;: &quot;low&quot;},
+    {&quot;product_id&quot;: &quot;prod_012&quot;, &quot;name&quot;: &quot;Designer Handbag&quot;, &quot;category&quot;: &quot;fashion&quot;, &quot;price&quot;: 890.00, &quot;currency&quot;: &quot;USD&quot;, &quot;risk_tier&quot;: &quot;high&quot;},
+    {&quot;product_id&quot;: &quot;prod_013&quot;, &quot;name&quot;: &quot;Wool Overcoat&quot;, &quot;category&quot;: &quot;fashion&quot;, &quot;price&quot;: 420.00, &quot;currency&quot;: &quot;USD&quot;, &quot;risk_tier&quot;: &quot;medium&quot;},
+    {&quot;product_id&quot;: &quot;prod_014&quot;, &quot;name&quot;: &quot;Luxury Watch&quot;, &quot;category&quot;: &quot;fashion&quot;, &quot;price&quot;: 1250.00, &quot;currency&quot;: &quot;USD&quot;, &quot;risk_tier&quot;: &quot;high&quot;},
+    {&quot;product_id&quot;: &quot;prod_015&quot;, &quot;name&quot;: &quot;Sunglasses&quot;, &quot;category&quot;: &quot;fashion&quot;, &quot;price&quot;: 199.00, &quot;currency&quot;: &quot;USD&quot;, &quot;risk_tier&quot;: &quot;medium&quot;},
+    {&quot;product_id&quot;: &quot;prod_016&quot;, &quot;name&quot;: &quot;Skincare Set&quot;, &quot;category&quot;: &quot;beauty&quot;, &quot;price&quot;: 92.00, &quot;currency&quot;: &quot;USD&quot;, &quot;risk_tier&quot;: &quot;low&quot;},
+    {&quot;product_id&quot;: &quot;prod_017&quot;, &quot;name&quot;: &quot;Hair Dryer Pro&quot;, &quot;category&quot;: &quot;beauty&quot;, &quot;price&quot;: 179.00, &quot;currency&quot;: &quot;USD&quot;, &quot;risk_tier&quot;: &quot;low&quot;},
+    {&quot;product_id&quot;: &quot;prod_018&quot;, &quot;name&quot;: &quot;Perfume Gift Box&quot;, &quot;category&quot;: &quot;beauty&quot;, &quot;price&quot;: 210.00, &quot;currency&quot;: &quot;USD&quot;, &quot;risk_tier&quot;: &quot;medium&quot;},
+    {&quot;product_id&quot;: &quot;prod_019&quot;, &quot;name&quot;: &quot;Vitamin Bundle&quot;, &quot;category&quot;: &quot;health&quot;, &quot;price&quot;: 58.00, &quot;currency&quot;: &quot;USD&quot;, &quot;risk_tier&quot;: &quot;low&quot;},
+    {&quot;product_id&quot;: &quot;prod_020&quot;, &quot;name&quot;: &quot;Adjustable Dumbbells&quot;, &quot;category&quot;: &quot;fitness&quot;, &quot;price&quot;: 329.00, &quot;currency&quot;: &quot;USD&quot;, &quot;risk_tier&quot;: &quot;low&quot;},
+    {&quot;product_id&quot;: &quot;prod_021&quot;, &quot;name&quot;: &quot;Yoga Mat Premium&quot;, &quot;category&quot;: &quot;fitness&quot;, &quot;price&quot;: 65.00, &quot;currency&quot;: &quot;USD&quot;, &quot;risk_tier&quot;: &quot;low&quot;},
+    {&quot;product_id&quot;: &quot;prod_022&quot;, &quot;name&quot;: &quot;Protein Powder 5lb&quot;, &quot;category&quot;: &quot;fitness&quot;, &quot;price&quot;: 74.00, &quot;currency&quot;: &quot;USD&quot;, &quot;risk_tier&quot;: &quot;low&quot;},
+    {&quot;product_id&quot;: &quot;prod_023&quot;, &quot;name&quot;: &quot;Gift Card $100&quot;, &quot;category&quot;: &quot;gift_card&quot;, &quot;price&quot;: 100.00, &quot;currency&quot;: &quot;USD&quot;, &quot;risk_tier&quot;: &quot;high&quot;},
+    {&quot;product_id&quot;: &quot;prod_024&quot;, &quot;name&quot;: &quot;Gift Card $250&quot;, &quot;category&quot;: &quot;gift_card&quot;, &quot;price&quot;: 250.00, &quot;currency&quot;: &quot;USD&quot;, &quot;risk_tier&quot;: &quot;high&quot;},
+    {&quot;product_id&quot;: &quot;prod_025&quot;, &quot;name&quot;: &quot;Drone Quadcopter&quot;, &quot;category&quot;: &quot;electronics&quot;, &quot;price&quot;: 699.00, &quot;currency&quot;: &quot;USD&quot;, &quot;risk_tier&quot;: &quot;high&quot;},
+    {&quot;product_id&quot;: &quot;prod_026&quot;, &quot;name&quot;: &quot;Tablet 11-inch&quot;, &quot;category&quot;: &quot;electronics&quot;, &quot;price&quot;: 549.00, &quot;currency&quot;: &quot;USD&quot;, &quot;risk_tier&quot;: &quot;high&quot;},
+    {&quot;product_id&quot;: &quot;prod_027&quot;, &quot;name&quot;: &quot;Noise Cancelling Earbuds&quot;, &quot;category&quot;: &quot;electronics&quot;, &quot;price&quot;: 229.00, &quot;currency&quot;: &quot;USD&quot;, &quot;risk_tier&quot;: &quot;medium&quot;},
+    {&quot;product_id&quot;: &quot;prod_028&quot;, &quot;name&quot;: &quot;Baby Monitor&quot;, &quot;category&quot;: &quot;home&quot;, &quot;price&quot;: 159.00, &quot;currency&quot;: &quot;USD&quot;, &quot;risk_tier&quot;: &quot;medium&quot;},
+    {&quot;product_id&quot;: &quot;prod_029&quot;, &quot;name&quot;: &quot;Cookware Set&quot;, &quot;category&quot;: &quot;home&quot;, &quot;price&quot;: 279.00, &quot;currency&quot;: &quot;USD&quot;, &quot;risk_tier&quot;: &quot;low&quot;},
+    {&quot;product_id&quot;: &quot;prod_030&quot;, &quot;name&quot;: &quot;Portable SSD 2TB&quot;, &quot;category&quot;: &quot;electronics&quot;, &quot;price&quot;: 189.00, &quot;currency&quot;: &quot;USD&quot;, &quot;risk_tier&quot;: &quot;medium&quot;}
+  ]
+}</file><file path="domains/ecommerce/policies.json">[
+  {
+    &quot;policy_id&quot;: &quot;high-value-new-customer&quot;,
+    &quot;domain&quot;: &quot;ecommerce&quot;,
+    &quot;collection&quot;: &quot;orders&quot;,
+    &quot;trigger&quot;: &quot;insert&quot;,
+    &quot;intent&quot;: &quot;Flag orders over $500 from customers with accounts less than 30 days old for manual review before shipping, with heightened attention to electronics, gift cards, and expedited fulfillment.&quot;,
+    &quot;action&quot;: &quot;hold&quot;,
+    &quot;active&quot;: true
+  },
+  {
+    &quot;policy_id&quot;: &quot;velocity-alert&quot;,
+    &quot;domain&quot;: &quot;ecommerce&quot;,
+    &quot;collection&quot;: &quot;orders&quot;,
+    &quot;trigger&quot;: &quot;insert&quot;,
+    &quot;intent&quot;: &quot;Trigger an investigation when more than three orders are submitted within one hour by the same customer, especially when shipping destinations or payment attempts vary across the burst.&quot;,
+    &quot;action&quot;: &quot;investigate&quot;,
+    &quot;active&quot;: true
+  },
+  {
+    &quot;policy_id&quot;: &quot;address-mismatch&quot;,
+    &quot;domain&quot;: &quot;ecommerce&quot;,
+    &quot;collection&quot;: &quot;orders&quot;,
+    &quot;trigger&quot;: &quot;insert&quot;,
+    &quot;intent&quot;: &quot;Flag orders where shipping details materially differ from billing or profile country, and prioritize mismatches involving high-value goods or first-time delivery locations.&quot;,
+    &quot;action&quot;: &quot;flag&quot;,
+    &quot;active&quot;: true
+  },
+  {
+    &quot;policy_id&quot;: &quot;return-abuse&quot;,
+    &quot;domain&quot;: &quot;ecommerce&quot;,
+    &quot;collection&quot;: &quot;orders&quot;,
+    &quot;trigger&quot;: &quot;insert&quot;,
+    &quot;intent&quot;: &quot;Flag orders above $200 from customers whose historical return rate exceeds 25 percent to prevent friendly fraud and repeated policy abuse before fulfillment proceeds.&quot;,
+    &quot;action&quot;: &quot;flag&quot;,
+    &quot;active&quot;: true
+  },
+  {
+    &quot;policy_id&quot;: &quot;expedited-high-risk&quot;,
+    &quot;domain&quot;: &quot;ecommerce&quot;,
+    &quot;collection&quot;: &quot;orders&quot;,
+    &quot;trigger&quot;: &quot;insert&quot;,
+    &quot;intent&quot;: &quot;Investigate expedited shipments of high-value electronics when the customer account is new, under-verified, or behaviorally inconsistent with prior purchasing history.&quot;,
+    &quot;action&quot;: &quot;investigate&quot;,
+    &quot;active&quot;: true
+  }
+]</file><file path="domains/ecommerce/rules.json">[
+  {
+    &quot;rule_id&quot;: &quot;VELOCITY-001&quot;,
+    &quot;title&quot;: &quot;Order Velocity Spike&quot;,
+    &quot;category&quot;: &quot;velocity&quot;,
+    &quot;description&quot;: &quot;Multiple orders placed in rapid succession from the same customer account, especially with different shipping addresses or expedited shipping, indicate potential fraud or account compromise. Compare order timing against the customer&apos;s normal cadence and flag sudden bursts that are inconsistent with historical behavior.&quot;
+  },
+  {
+    &quot;rule_id&quot;: &quot;VELOCITY-002&quot;,
+    &quot;title&quot;: &quot;Burst Checkout Pattern&quot;,
+    &quot;category&quot;: &quot;velocity&quot;,
+    &quot;description&quot;: &quot;A cluster of small or medium purchases within minutes can signal scripted checkout activity or stolen credential abuse. The risk increases when item mix appears opportunistic and transaction spacing is unnaturally regular.&quot;
+  },
+  {
+    &quot;rule_id&quot;: &quot;IDENTITY-001&quot;,
+    &quot;title&quot;: &quot;Synthetic Identity Signals&quot;,
+    &quot;category&quot;: &quot;identity&quot;,
+    &quot;description&quot;: &quot;Newly created accounts with sparse profile history, limited verification, and immediate high-value purchases are consistent with synthetic identity fraud. Evaluate whether identity attributes appear coherent across email, phone, address, and payment behavior.&quot;
+  },
+  {
+    &quot;rule_id&quot;: &quot;IDENTITY-002&quot;,
+    &quot;title&quot;: &quot;New Account High-Risk Purchase&quot;,
+    &quot;category&quot;: &quot;identity&quot;,
+    &quot;description&quot;: &quot;Accounts younger than 30 days making premium or easily resold purchases should receive additional scrutiny. Elevated concern applies when account maturity does not support the order amount or shipping urgency.&quot;
+  },
+  {
+    &quot;rule_id&quot;: &quot;PAYMENT-001&quot;,
+    &quot;title&quot;: &quot;Card Testing Pattern&quot;,
+    &quot;category&quot;: &quot;payment&quot;,
+    &quot;description&quot;: &quot;Fraud actors often run low-value transactions across multiple cards or retry the same order with slight payment changes to validate stolen credentials. Detect repeated payment attempts, partial declines, or unusual card churn in a short window.&quot;
+  },
+  {
+    &quot;rule_id&quot;: &quot;PAYMENT-002&quot;,
+    &quot;title&quot;: &quot;Unusual Payment Method Shift&quot;,
+    &quot;category&quot;: &quot;payment&quot;,
+    &quot;description&quot;: &quot;A sudden switch to a payment method not previously used by the customer, especially paired with a larger basket, can indicate account takeover. Weight this signal more heavily when combined with location or shipping anomalies.&quot;
+  },
+  {
+    &quot;rule_id&quot;: &quot;SHIPPING-001&quot;,
+    &quot;title&quot;: &quot;Billing and Shipping Mismatch&quot;,
+    &quot;category&quot;: &quot;shipping&quot;,
+    &quot;description&quot;: &quot;Material differences between billing and shipping country or region are a common fraud indicator for unauthorized purchases. Distinguish benign gifting from suspicious mismatch by checking order value, urgency, and customer history.&quot;
+  },
+  {
+    &quot;rule_id&quot;: &quot;SHIPPING-002&quot;,
+    &quot;title&quot;: &quot;Reshipping Network Behavior&quot;,
+    &quot;category&quot;: &quot;shipping&quot;,
+    &quot;description&quot;: &quot;Repeated delivery to freight forwarders, mail drops, or rotating recipient addresses suggests reshipping abuse. Risk increases when the same account alternates destinations across states or countries over a short time period.&quot;
+  },
+  {
+    &quot;rule_id&quot;: &quot;AMOUNT-001&quot;,
+    &quot;title&quot;: &quot;Order Value Anomaly&quot;,
+    &quot;category&quot;: &quot;amount&quot;,
+    &quot;description&quot;: &quot;An order amount significantly above the customer&apos;s typical spend profile can indicate unauthorized activity. Compare against average order value, historical maximums, and category norms before assigning severity.&quot;
+  },
+  {
+    &quot;rule_id&quot;: &quot;AMOUNT-002&quot;,
+    &quot;title&quot;: &quot;Gift Card Concentration Abuse&quot;,
+    &quot;category&quot;: &quot;amount&quot;,
+    &quot;description&quot;: &quot;High concentrations of gift cards or digital-value products are frequently targeted because they are quickly monetized and difficult to recover. Flag baskets dominated by gift cards, particularly from low-history or newly created accounts.&quot;
+  },
+  {
+    &quot;rule_id&quot;: &quot;RETURNS-001&quot;,
+    &quot;title&quot;: &quot;Friendly Fraud and Return Abuse&quot;,
+    &quot;category&quot;: &quot;returns&quot;,
+    &quot;description&quot;: &quot;Customers with persistent high return rates who continue placing expensive orders may be exploiting return policies or filing chargeback-style disputes. Review lifetime returns behavior and previous abuse indicators before fulfillment.&quot;
+  },
+  {
+    &quot;rule_id&quot;: &quot;RETURNS-002&quot;,
+    &quot;title&quot;: &quot;Wardrobing Pattern&quot;,
+    &quot;category&quot;: &quot;returns&quot;,
+    &quot;description&quot;: &quot;Wardrobing involves purchasing apparel or premium goods for short-term use and returning them repeatedly. Watch for cyclical buying and returning around weekends, events, or seasonal spikes.&quot;
+  },
+  {
+    &quot;rule_id&quot;: &quot;DEVICE-001&quot;,
+    &quot;title&quot;: &quot;Device Fingerprint Anomaly&quot;,
+    &quot;category&quot;: &quot;device&quot;,
+    &quot;description&quot;: &quot;Login and checkout from previously unseen device signatures, especially when coupled with payment or location changes, can indicate account takeover. Escalate when device anomalies align with rapid purchasing behavior.&quot;
+  },
+  {
+    &quot;rule_id&quot;: &quot;GEOGRAPHIC-001&quot;,
+    &quot;title&quot;: &quot;Geo Mismatch and Impossible Travel&quot;,
+    &quot;category&quot;: &quot;geographic&quot;,
+    &quot;description&quot;: &quot;Orders originating from locations inconsistent with recent customer activity may reflect compromised accounts or proxy usage. Treat impossible travel patterns and sudden cross-border shifts as high-signal events.&quot;
+  },
+  {
+    &quot;rule_id&quot;: &quot;BEHAVIORAL-001&quot;,
+    &quot;title&quot;: &quot;Unusual Browsing-to-Purchase Flow&quot;,
+    &quot;category&quot;: &quot;behavioral&quot;,
+    &quot;description&quot;: &quot;Fraudulent orders often skip normal browsing behavior and move directly from account access to checkout with little engagement. Fast add-to-cart and immediate purchase of high-resale items should be treated as behavioral risk.&quot;
+  }
+]</file><file path="domains/ecommerce/scenarios.json">{
+  &quot;order&quot;: [&quot;normal&quot;, &quot;friendly-fraud&quot;, &quot;velocity-abuse&quot;, &quot;synthetic-identity&quot;, &quot;high-value-mismatch&quot;],
+  &quot;scenarios&quot;: {
+    &quot;normal&quot;: {
+      &quot;title&quot;: &quot;Normal Orders&quot;,
+      &quot;description&quot;: &quot;Three legitimate orders from established customers with stable purchase histories and consistent shipping details.&quot;,
+      &quot;watch&quot;: [
+        &quot;Risk scores should remain low with pattern_match set to none.&quot;,
+        &quot;Address, payment, and purchase behavior should align with customer history.&quot;
+      ],
+      &quot;documents&quot;: [
+        {
+          &quot;order_id&quot;: &quot;__AUTO__&quot;,
+          &quot;customer_id&quot;: &quot;cust_0003&quot;,
+          &quot;items&quot;: [
+            {&quot;product_id&quot;: &quot;prod_001&quot;, &quot;name&quot;: &quot;Wireless Headphones&quot;, &quot;category&quot;: &quot;electronics&quot;, &quot;quantity&quot;: 1, &quot;unit_price&quot;: 79.99},
+            {&quot;product_id&quot;: &quot;prod_021&quot;, &quot;name&quot;: &quot;Yoga Mat Premium&quot;, &quot;category&quot;: &quot;fitness&quot;, &quot;quantity&quot;: 1, &quot;unit_price&quot;: 65.00}
+          ],
+          &quot;amount&quot;: {&quot;random&quot;: [120, 220]},
+          &quot;currency&quot;: &quot;USD&quot;,
+          &quot;payment_method&quot;: &quot;visa_1188&quot;,
+          &quot;shipping_address&quot;: {&quot;country&quot;: &quot;US&quot;, &quot;city&quot;: &quot;Seattle&quot;, &quot;zip&quot;: &quot;98101&quot;},
+          &quot;billing_address&quot;: {&quot;country&quot;: &quot;US&quot;, &quot;city&quot;: &quot;Seattle&quot;, &quot;zip&quot;: &quot;98101&quot;},
+          &quot;shipping_method&quot;: &quot;standard&quot;,
+          &quot;narrative&quot;: &quot;Routine mixed-category purchase from a long-term verified customer.&quot;,
+          &quot;status&quot;: &quot;pending&quot;,
+          &quot;timestamp&quot;: &quot;__NOW__&quot;
+        },
+        {
+          &quot;order_id&quot;: &quot;__AUTO__&quot;,
+          &quot;customer_id&quot;: &quot;cust_0011&quot;,
+          &quot;items&quot;: [
+            {&quot;product_id&quot;: &quot;prod_016&quot;, &quot;name&quot;: &quot;Skincare Set&quot;, &quot;category&quot;: &quot;beauty&quot;, &quot;quantity&quot;: 2, &quot;unit_price&quot;: 92.00},
+            {&quot;product_id&quot;: &quot;prod_029&quot;, &quot;name&quot;: &quot;Cookware Set&quot;, &quot;category&quot;: &quot;home&quot;, &quot;quantity&quot;: 1, &quot;unit_price&quot;: 279.00}
+          ],
+          &quot;amount&quot;: {&quot;random&quot;: [320, 520]},
+          &quot;currency&quot;: &quot;USD&quot;,
+          &quot;payment_method&quot;: &quot;paypal&quot;,
+          &quot;shipping_address&quot;: {&quot;country&quot;: &quot;US&quot;, &quot;city&quot;: &quot;Portland&quot;, &quot;zip&quot;: &quot;97205&quot;},
+          &quot;billing_address&quot;: {&quot;country&quot;: &quot;US&quot;, &quot;city&quot;: &quot;Portland&quot;, &quot;zip&quot;: &quot;97205&quot;},
+          &quot;shipping_method&quot;: &quot;standard&quot;,
+          &quot;narrative&quot;: &quot;Established customer placing a typical household and beauty replenishment order.&quot;,
+          &quot;status&quot;: &quot;pending&quot;,
+          &quot;timestamp&quot;: &quot;__NOW__&quot;
+        },
+        {
+          &quot;order_id&quot;: &quot;__AUTO__&quot;,
+          &quot;customer_id&quot;: &quot;cust_0022&quot;,
+          &quot;items&quot;: [
+            {&quot;product_id&quot;: &quot;prod_010&quot;, &quot;name&quot;: &quot;Espresso Machine&quot;, &quot;category&quot;: &quot;home&quot;, &quot;quantity&quot;: 1, &quot;unit_price&quot;: 349.00}
+          ],
+          &quot;amount&quot;: {&quot;random&quot;: [300, 420]},
+          &quot;currency&quot;: &quot;USD&quot;,
+          &quot;payment_method&quot;: &quot;mastercard_4761&quot;,
+          &quot;shipping_address&quot;: {&quot;country&quot;: &quot;DE&quot;, &quot;city&quot;: &quot;Munich&quot;, &quot;zip&quot;: &quot;80331&quot;},
+          &quot;billing_address&quot;: {&quot;country&quot;: &quot;DE&quot;, &quot;city&quot;: &quot;Munich&quot;, &quot;zip&quot;: &quot;80331&quot;},
+          &quot;shipping_method&quot;: &quot;standard&quot;,
+          &quot;narrative&quot;: &quot;Normal premium home appliance order with consistent account signals.&quot;,
+          &quot;status&quot;: &quot;pending&quot;,
+          &quot;timestamp&quot;: &quot;__NOW__&quot;
+        }
+      ]
+    },
+    &quot;friendly-fraud&quot;: {
+      &quot;title&quot;: &quot;Friendly Fraud / Return Abuse&quot;,
+      &quot;description&quot;: &quot;Three expensive orders from a customer with a known high return rate and elevated abuse risk profile.&quot;,
+      &quot;watch&quot;: [
+        &quot;Look for RETURNS-001 and RETURNS-002 signals tied to customer history.&quot;,
+        &quot;Evaluate whether high-value repeat purchases are consistent with prior return behavior.&quot;
+      ],
+      &quot;documents&quot;: [
+        {
+          &quot;order_id&quot;: &quot;__AUTO__&quot;,
+          &quot;customer_id&quot;: &quot;cust_0038&quot;,
+          &quot;items&quot;: [
+            {&quot;product_id&quot;: &quot;prod_004&quot;, &quot;name&quot;: &quot;Smartphone Pro 256GB&quot;, &quot;category&quot;: &quot;electronics&quot;, &quot;quantity&quot;: 1, &quot;unit_price&quot;: 999.00}
+          ],
+          &quot;amount&quot;: {&quot;random&quot;: [950, 1200]},
+          &quot;currency&quot;: &quot;USD&quot;,
+          &quot;payment_method&quot;: &quot;visa_8080&quot;,
+          &quot;shipping_address&quot;: {&quot;country&quot;: &quot;US&quot;, &quot;city&quot;: &quot;Sacramento&quot;, &quot;zip&quot;: &quot;95814&quot;},
+          &quot;billing_address&quot;: {&quot;country&quot;: &quot;US&quot;, &quot;city&quot;: &quot;Sacramento&quot;, &quot;zip&quot;: &quot;95814&quot;},
+          &quot;shipping_method&quot;: &quot;standard&quot;,
+          &quot;narrative&quot;: &quot;Repeat high-value electronics purchase from a customer with frequent historical returns.&quot;,
+          &quot;status&quot;: &quot;pending&quot;,
+          &quot;timestamp&quot;: &quot;__NOW__&quot;
+        },
+        {
+          &quot;order_id&quot;: &quot;__AUTO__&quot;,
+          &quot;customer_id&quot;: &quot;cust_0038&quot;,
+          &quot;items&quot;: [
+            {&quot;product_id&quot;: &quot;prod_012&quot;, &quot;name&quot;: &quot;Designer Handbag&quot;, &quot;category&quot;: &quot;fashion&quot;, &quot;quantity&quot;: 1, &quot;unit_price&quot;: 890.00},
+            {&quot;product_id&quot;: &quot;prod_015&quot;, &quot;name&quot;: &quot;Sunglasses&quot;, &quot;category&quot;: &quot;fashion&quot;, &quot;quantity&quot;: 1, &quot;unit_price&quot;: 199.00}
+          ],
+          &quot;amount&quot;: {&quot;random&quot;: [980, 1250]},
+          &quot;currency&quot;: &quot;USD&quot;,
+          &quot;payment_method&quot;: &quot;paypal&quot;,
+          &quot;shipping_address&quot;: {&quot;country&quot;: &quot;US&quot;, &quot;city&quot;: &quot;Sacramento&quot;, &quot;zip&quot;: &quot;95814&quot;},
+          &quot;billing_address&quot;: {&quot;country&quot;: &quot;US&quot;, &quot;city&quot;: &quot;Sacramento&quot;, &quot;zip&quot;: &quot;95814&quot;},
+          &quot;shipping_method&quot;: &quot;express&quot;,
+          &quot;narrative&quot;: &quot;Designer goods order that resembles prior wardrobing-like purchase cycles.&quot;,
+          &quot;status&quot;: &quot;pending&quot;,
+          &quot;timestamp&quot;: &quot;__NOW__&quot;
+        },
+        {
+          &quot;order_id&quot;: &quot;__AUTO__&quot;,
+          &quot;customer_id&quot;: &quot;cust_0038&quot;,
+          &quot;items&quot;: [
+            {&quot;product_id&quot;: &quot;prod_014&quot;, &quot;name&quot;: &quot;Luxury Watch&quot;, &quot;category&quot;: &quot;fashion&quot;, &quot;quantity&quot;: 1, &quot;unit_price&quot;: 1250.00}
+          ],
+          &quot;amount&quot;: {&quot;random&quot;: [1180, 1450]},
+          &quot;currency&quot;: &quot;USD&quot;,
+          &quot;payment_method&quot;: &quot;visa_8080&quot;,
+          &quot;shipping_address&quot;: {&quot;country&quot;: &quot;US&quot;, &quot;city&quot;: &quot;Sacramento&quot;, &quot;zip&quot;: &quot;95814&quot;},
+          &quot;billing_address&quot;: {&quot;country&quot;: &quot;US&quot;, &quot;city&quot;: &quot;Sacramento&quot;, &quot;zip&quot;: &quot;95814&quot;},
+          &quot;shipping_method&quot;: &quot;standard&quot;,
+          &quot;narrative&quot;: &quot;Another premium fashion order likely to stress return abuse controls.&quot;,
+          &quot;status&quot;: &quot;pending&quot;,
+          &quot;timestamp&quot;: &quot;__NOW__&quot;
+        }
+      ]
+    },
+    &quot;velocity-abuse&quot;: {
+      &quot;title&quot;: &quot;Velocity Abuse / Account Takeover Pattern&quot;,
+      &quot;description&quot;: &quot;Five rapid orders from the same customer with expedited shipping and rotating delivery destinations.&quot;,
+      &quot;watch&quot;: [
+        &quot;Detect VELOCITY-001 and VELOCITY-002 burst behavior from a single account.&quot;,
+        &quot;Look for SHIPPING-002 style address rotation and possible takeover indicators.&quot;
+      ],
+      &quot;documents&quot;: [
+        {
+          &quot;order_id&quot;: &quot;__AUTO__&quot;,
+          &quot;customer_id&quot;: &quot;cust_0031&quot;,
+          &quot;items&quot;: [
+            {&quot;product_id&quot;: &quot;prod_027&quot;, &quot;name&quot;: &quot;Noise Cancelling Earbuds&quot;, &quot;category&quot;: &quot;electronics&quot;, &quot;quantity&quot;: 1, &quot;unit_price&quot;: 229.00}
+          ],
+          &quot;amount&quot;: {&quot;random&quot;: [180, 260]},
+          &quot;currency&quot;: &quot;USD&quot;,
+          &quot;payment_method&quot;: &quot;visa_2001&quot;,
+          &quot;shipping_address&quot;: {&quot;country&quot;: &quot;US&quot;, &quot;city&quot;: &quot;Detroit&quot;, &quot;zip&quot;: &quot;48201&quot;},
+          &quot;billing_address&quot;: {&quot;country&quot;: &quot;US&quot;, &quot;city&quot;: &quot;Detroit&quot;, &quot;zip&quot;: &quot;48201&quot;},
+          &quot;shipping_method&quot;: &quot;expedited&quot;,
+          &quot;narrative&quot;: &quot;First order in a rapid sequence with expedited fulfillment.&quot;,
+          &quot;status&quot;: &quot;pending&quot;,
+          &quot;timestamp&quot;: &quot;__NOW__&quot;
+        },
+        {
+          &quot;order_id&quot;: &quot;__AUTO__&quot;,
+          &quot;customer_id&quot;: &quot;cust_0031&quot;,
+          &quot;items&quot;: [
+            {&quot;product_id&quot;: &quot;prod_030&quot;, &quot;name&quot;: &quot;Portable SSD 2TB&quot;, &quot;category&quot;: &quot;electronics&quot;, &quot;quantity&quot;: 1, &quot;unit_price&quot;: 189.00}
+          ],
+          &quot;amount&quot;: {&quot;random&quot;: [140, 220]},
+          &quot;currency&quot;: &quot;USD&quot;,
+          &quot;payment_method&quot;: &quot;visa_2001&quot;,
+          &quot;shipping_address&quot;: {&quot;country&quot;: &quot;US&quot;, &quot;city&quot;: &quot;Cleveland&quot;, &quot;zip&quot;: &quot;44114&quot;},
+          &quot;billing_address&quot;: {&quot;country&quot;: &quot;US&quot;, &quot;city&quot;: &quot;Detroit&quot;, &quot;zip&quot;: &quot;48201&quot;},
+          &quot;shipping_method&quot;: &quot;expedited&quot;,
+          &quot;narrative&quot;: &quot;Second order shortly after checkout with changed destination city.&quot;,
+          &quot;status&quot;: &quot;pending&quot;,
+          &quot;timestamp&quot;: &quot;__NOW__&quot;
+        },
+        {
+          &quot;order_id&quot;: &quot;__AUTO__&quot;,
+          &quot;customer_id&quot;: &quot;cust_0031&quot;,
+          &quot;items&quot;: [
+            {&quot;product_id&quot;: &quot;prod_001&quot;, &quot;name&quot;: &quot;Wireless Headphones&quot;, &quot;category&quot;: &quot;electronics&quot;, &quot;quantity&quot;: 1, &quot;unit_price&quot;: 79.99},
+            {&quot;product_id&quot;: &quot;prod_002&quot;, &quot;name&quot;: &quot;Bluetooth Speaker&quot;, &quot;category&quot;: &quot;electronics&quot;, &quot;quantity&quot;: 1, &quot;unit_price&quot;: 59.99}
+          ],
+          &quot;amount&quot;: {&quot;random&quot;: [120, 200]},
+          &quot;currency&quot;: &quot;USD&quot;,
+          &quot;payment_method&quot;: &quot;paypal&quot;,
+          &quot;shipping_address&quot;: {&quot;country&quot;: &quot;US&quot;, &quot;city&quot;: &quot;Pittsburgh&quot;, &quot;zip&quot;: &quot;15222&quot;},
+          &quot;billing_address&quot;: {&quot;country&quot;: &quot;US&quot;, &quot;city&quot;: &quot;Detroit&quot;, &quot;zip&quot;: &quot;48201&quot;},
+          &quot;shipping_method&quot;: &quot;expedited&quot;,
+          &quot;narrative&quot;: &quot;Third order introduces a payment method shift and another shipping destination.&quot;,
+          &quot;status&quot;: &quot;pending&quot;,
+          &quot;timestamp&quot;: &quot;__NOW__&quot;
+        },
+        {
+          &quot;order_id&quot;: &quot;__AUTO__&quot;,
+          &quot;customer_id&quot;: &quot;cust_0031&quot;,
+          &quot;items&quot;: [
+            {&quot;product_id&quot;: &quot;prod_023&quot;, &quot;name&quot;: &quot;Gift Card $100&quot;, &quot;category&quot;: &quot;gift_card&quot;, &quot;quantity&quot;: 1, &quot;unit_price&quot;: 100.00}
+          ],
+          &quot;amount&quot;: {&quot;random&quot;: [90, 140]},
+          &quot;currency&quot;: &quot;USD&quot;,
+          &quot;payment_method&quot;: &quot;visa_2001&quot;,
+          &quot;shipping_address&quot;: {&quot;country&quot;: &quot;US&quot;, &quot;city&quot;: &quot;Columbus&quot;, &quot;zip&quot;: &quot;43215&quot;},
+          &quot;billing_address&quot;: {&quot;country&quot;: &quot;US&quot;, &quot;city&quot;: &quot;Detroit&quot;, &quot;zip&quot;: &quot;48201&quot;},
+          &quot;shipping_method&quot;: &quot;expedited&quot;,
+          &quot;narrative&quot;: &quot;Fourth order targets quick-conversion digital value with rotated address.&quot;,
+          &quot;status&quot;: &quot;pending&quot;,
+          &quot;timestamp&quot;: &quot;__NOW__&quot;
+        },
+        {
+          &quot;order_id&quot;: &quot;__AUTO__&quot;,
+          &quot;customer_id&quot;: &quot;cust_0031&quot;,
+          &quot;items&quot;: [
+            {&quot;product_id&quot;: &quot;prod_028&quot;, &quot;name&quot;: &quot;Baby Monitor&quot;, &quot;category&quot;: &quot;home&quot;, &quot;quantity&quot;: 1, &quot;unit_price&quot;: 159.00}
+          ],
+          &quot;amount&quot;: {&quot;random&quot;: [130, 210]},
+          &quot;currency&quot;: &quot;USD&quot;,
+          &quot;payment_method&quot;: &quot;visa_2001&quot;,
+          &quot;shipping_address&quot;: {&quot;country&quot;: &quot;US&quot;, &quot;city&quot;: &quot;Buffalo&quot;, &quot;zip&quot;: &quot;14202&quot;},
+          &quot;billing_address&quot;: {&quot;country&quot;: &quot;US&quot;, &quot;city&quot;: &quot;Detroit&quot;, &quot;zip&quot;: &quot;48201&quot;},
+          &quot;shipping_method&quot;: &quot;expedited&quot;,
+          &quot;narrative&quot;: &quot;Fifth order completes the classic rapid-fire compromise sequence.&quot;,
+          &quot;status&quot;: &quot;pending&quot;,
+          &quot;timestamp&quot;: &quot;__NOW__&quot;
+        }
+      ]
+    },
+    &quot;synthetic-identity&quot;: {
+      &quot;title&quot;: &quot;Synthetic Identity Signals&quot;,
+      &quot;description&quot;: &quot;Two high-value orders from very new and weakly verified accounts with mismatched billing and shipping details.&quot;,
+      &quot;watch&quot;: [
+        &quot;Look for IDENTITY-001, IDENTITY-002, SHIPPING-001, and PAYMENT-002 combinations.&quot;,
+        &quot;Expect elevated risk driven by account age, verification gaps, and category risk.&quot;
+      ],
+      &quot;documents&quot;: [
+        {
+          &quot;order_id&quot;: &quot;__AUTO__&quot;,
+          &quot;customer_id&quot;: &quot;cust_0034&quot;,
+          &quot;items&quot;: [
+            {&quot;product_id&quot;: &quot;prod_025&quot;, &quot;name&quot;: &quot;Drone Quadcopter&quot;, &quot;category&quot;: &quot;electronics&quot;, &quot;quantity&quot;: 1, &quot;unit_price&quot;: 699.00},
+            {&quot;product_id&quot;: &quot;prod_027&quot;, &quot;name&quot;: &quot;Noise Cancelling Earbuds&quot;, &quot;category&quot;: &quot;electronics&quot;, &quot;quantity&quot;: 1, &quot;unit_price&quot;: 229.00}
+          ],
+          &quot;amount&quot;: {&quot;random&quot;: [850, 1250]},
+          &quot;currency&quot;: &quot;USD&quot;,
+          &quot;payment_method&quot;: &quot;visa_9902&quot;,
+          &quot;shipping_address&quot;: {&quot;country&quot;: &quot;US&quot;, &quot;city&quot;: &quot;Newark&quot;, &quot;zip&quot;: &quot;07102&quot;},
+          &quot;billing_address&quot;: {&quot;country&quot;: &quot;US&quot;, &quot;city&quot;: &quot;Jersey City&quot;, &quot;zip&quot;: &quot;07302&quot;},
+          &quot;shipping_method&quot;: &quot;express&quot;,
+          &quot;narrative&quot;: &quot;Very new account placing high-value electronics order with mismatched location details.&quot;,
+          &quot;status&quot;: &quot;pending&quot;,
+          &quot;timestamp&quot;: &quot;__NOW__&quot;
+        },
+        {
+          &quot;order_id&quot;: &quot;__AUTO__&quot;,
+          &quot;customer_id&quot;: &quot;cust_0036&quot;,
+          &quot;items&quot;: [
+            {&quot;product_id&quot;: &quot;prod_005&quot;, &quot;name&quot;: &quot;Gaming Laptop 15-inch&quot;, &quot;category&quot;: &quot;electronics&quot;, &quot;quantity&quot;: 1, &quot;unit_price&quot;: 1499.00}
+          ],
+          &quot;amount&quot;: {&quot;random&quot;: [1300, 1700]},
+          &quot;currency&quot;: &quot;USD&quot;,
+          &quot;payment_method&quot;: {&quot;choice&quot;: [&quot;crypto&quot;, &quot;mastercard_7740&quot;]},
+          &quot;shipping_address&quot;: {&quot;country&quot;: &quot;GB&quot;, &quot;city&quot;: &quot;London&quot;, &quot;zip&quot;: &quot;EC1A&quot;},
+          &quot;billing_address&quot;: {&quot;country&quot;: &quot;DE&quot;, &quot;city&quot;: &quot;Frankfurt&quot;, &quot;zip&quot;: &quot;60311&quot;},
+          &quot;shipping_method&quot;: &quot;expedited&quot;,
+          &quot;narrative&quot;: &quot;Brand-new account with cross-border mismatch and an unfamiliar payment pattern.&quot;,
+          &quot;status&quot;: &quot;pending&quot;,
+          &quot;timestamp&quot;: &quot;__NOW__&quot;
+        }
+      ]
+    },
+    &quot;high-value-mismatch&quot;: {
+      &quot;title&quot;: &quot;High-Value Cross-Border Mismatch&quot;,
+      &quot;description&quot;: &quot;One large suspicious electronics order with expedited shipping and a country mismatch between billing and delivery.&quot;,
+      &quot;watch&quot;: [
+        &quot;Assess AMOUNT-001, SHIPPING-001, and GEOGRAPHIC-001 alignment.&quot;,
+        &quot;This should resemble a high-priority manual review candidate.&quot;
+      ],
+      &quot;documents&quot;: [
+        {
+          &quot;order_id&quot;: &quot;__AUTO__&quot;,
+          &quot;customer_id&quot;: &quot;cust_0030&quot;,
+          &quot;items&quot;: [
+            {&quot;product_id&quot;: &quot;prod_004&quot;, &quot;name&quot;: &quot;Smartphone Pro 256GB&quot;, &quot;category&quot;: &quot;electronics&quot;, &quot;quantity&quot;: 1, &quot;unit_price&quot;: 999.00},
+            {&quot;product_id&quot;: &quot;prod_026&quot;, &quot;name&quot;: &quot;Tablet 11-inch&quot;, &quot;category&quot;: &quot;electronics&quot;, &quot;quantity&quot;: 1, &quot;unit_price&quot;: 549.00}
+          ],
+          &quot;amount&quot;: {&quot;random&quot;: [800, 2000]},
+          &quot;currency&quot;: &quot;USD&quot;,
+          &quot;payment_method&quot;: &quot;mastercard_5524&quot;,
+          &quot;shipping_address&quot;: {&quot;country&quot;: &quot;DE&quot;, &quot;city&quot;: &quot;Berlin&quot;, &quot;zip&quot;: &quot;10115&quot;},
+          &quot;billing_address&quot;: {&quot;country&quot;: &quot;GB&quot;, &quot;city&quot;: &quot;Birmingham&quot;, &quot;zip&quot;: &quot;B1 1BB&quot;},
+          &quot;shipping_method&quot;: &quot;expedited&quot;,
+          &quot;narrative&quot;: &quot;Large electronics order from a relatively new account with cross-country address mismatch.&quot;,
+          &quot;status&quot;: &quot;pending&quot;,
+          &quot;timestamp&quot;: &quot;__NOW__&quot;
+        }
+      ]
+    }
+  },
+  &quot;custom_template&quot;: {
+    &quot;customer_id&quot;: &quot;cust_0012&quot;,
+    &quot;currency&quot;: &quot;USD&quot;,
+    &quot;payment_method&quot;: &quot;visa_4242&quot;,
+    &quot;shipping_method&quot;: &quot;standard&quot;,
+    &quot;billing_address&quot;: {&quot;country&quot;: &quot;US&quot;, &quot;city&quot;: &quot;Unknown&quot;},
+    &quot;status&quot;: &quot;pending&quot;
+  }
+}</file><file path="domains/finance/entities.json">[
+  {
+    &quot;account_id&quot;: &quot;acc_0001&quot;,
+    &quot;account_name&quot;: &quot;First Bank&quot;,
+    &quot;account_type&quot;: &quot;institutional&quot;,
+    &quot;country&quot;: &quot;GB&quot;,
+    &quot;city&quot;: &quot;London&quot;,
+    &quot;kyc_status&quot;: &quot;verified&quot;,
+    &quot;risk_profile&quot;: &quot;low&quot;,
+    &quot;onboarding_date&quot;: &quot;2024-04-24&quot;,
+    &quot;pep_flag&quot;: false,
+    &quot;beneficial_owner_verified&quot;: true
+  },
+  {
+    &quot;account_id&quot;: &quot;acc_0002&quot;,
+    &quot;account_name&quot;: &quot;Noah Patel&quot;,
+    &quot;account_type&quot;: &quot;individual&quot;,
+    &quot;country&quot;: &quot;US&quot;,
+    &quot;city&quot;: &quot;New York&quot;,
+    &quot;kyc_status&quot;: &quot;verified&quot;,
+    &quot;risk_profile&quot;: &quot;medium&quot;,
+    &quot;onboarding_date&quot;: &quot;2025-01-06&quot;,
+    &quot;pep_flag&quot;: false,
+    &quot;beneficial_owner_verified&quot;: true
+  },
+  {
+    &quot;account_id&quot;: &quot;acc_0003&quot;,
+    &quot;account_name&quot;: &quot;James Muller&quot;,
+    &quot;account_type&quot;: &quot;individual&quot;,
+    &quot;country&quot;: &quot;DE&quot;,
+    &quot;city&quot;: &quot;Berlin&quot;,
+    &quot;kyc_status&quot;: &quot;verified&quot;,
+    &quot;risk_profile&quot;: &quot;low&quot;,
+    &quot;onboarding_date&quot;: &quot;2024-11-30&quot;,
+    &quot;pep_flag&quot;: false,
+    &quot;beneficial_owner_verified&quot;: true
+  },
+  {
+    &quot;account_id&quot;: &quot;acc_0004&quot;,
+    &quot;account_name&quot;: &quot;Aisha Khan&quot;,
+    &quot;account_type&quot;: &quot;individual&quot;,
+    &quot;country&quot;: &quot;CH&quot;,
+    &quot;city&quot;: &quot;Zurich&quot;,
+    &quot;kyc_status&quot;: &quot;enhanced_due_diligence&quot;,
+    &quot;risk_profile&quot;: &quot;low&quot;,
+    &quot;onboarding_date&quot;: &quot;2021-07-18&quot;,
+    &quot;pep_flag&quot;: false,
+    &quot;beneficial_owner_verified&quot;: true
+  },
+  {
+    &quot;account_id&quot;: &quot;acc_0005&quot;,
+    &quot;account_name&quot;: &quot;Pinnacle Holdings Group&quot;,
+    &quot;account_type&quot;: &quot;corporate&quot;,
+    &quot;country&quot;: &quot;AE&quot;,
+    &quot;city&quot;: &quot;Abu Dhabi&quot;,
+    &quot;kyc_status&quot;: &quot;pending_review&quot;,
+    &quot;risk_profile&quot;: &quot;low&quot;,
+    &quot;onboarding_date&quot;: &quot;2025-08-26&quot;,
+    &quot;pep_flag&quot;: false,
+    &quot;beneficial_owner_verified&quot;: true
+  },
+  {
+    &quot;account_id&quot;: &quot;acc_0006&quot;,
+    &quot;account_name&quot;: &quot;Harbor Holdings LLC&quot;,
+    &quot;account_type&quot;: &quot;corporate&quot;,
+    &quot;country&quot;: &quot;AE&quot;,
+    &quot;city&quot;: &quot;Dubai&quot;,
+    &quot;kyc_status&quot;: &quot;verified&quot;,
+    &quot;risk_profile&quot;: &quot;low&quot;,
+    &quot;onboarding_date&quot;: &quot;2025-11-10&quot;,
+    &quot;pep_flag&quot;: false,
+    &quot;beneficial_owner_verified&quot;: false
+  },
+  {
+    &quot;account_id&quot;: &quot;acc_0007&quot;,
+    &quot;account_name&quot;: &quot;Union Securities&quot;,
+    &quot;account_type&quot;: &quot;institutional&quot;,
+    &quot;country&quot;: &quot;CH&quot;,
+    &quot;city&quot;: &quot;Geneva&quot;,
+    &quot;kyc_status&quot;: &quot;verified&quot;,
+    &quot;risk_profile&quot;: &quot;low&quot;,
+    &quot;onboarding_date&quot;: &quot;2024-12-08&quot;,
+    &quot;pep_flag&quot;: false,
+    &quot;beneficial_owner_verified&quot;: true
+  },
+  {
+    &quot;account_id&quot;: &quot;acc_0008&quot;,
+    &quot;account_name&quot;: &quot;Yuki Khan&quot;,
+    &quot;account_type&quot;: &quot;individual&quot;,
+    &quot;country&quot;: &quot;GB&quot;,
+    &quot;city&quot;: &quot;Edinburgh&quot;,
+    &quot;kyc_status&quot;: &quot;verified&quot;,
+    &quot;risk_profile&quot;: &quot;low&quot;,
+    &quot;onboarding_date&quot;: &quot;2022-07-07&quot;,
+    &quot;pep_flag&quot;: false,
+    &quot;beneficial_owner_verified&quot;: true
+  },
+  {
+    &quot;account_id&quot;: &quot;acc_0009&quot;,
+    &quot;account_name&quot;: &quot;Premier Bank&quot;,
+    &quot;account_type&quot;: &quot;institutional&quot;,
+    &quot;country&quot;: &quot;DE&quot;,
+    &quot;city&quot;: &quot;Frankfurt&quot;,
+    &quot;kyc_status&quot;: &quot;pending_review&quot;,
+    &quot;risk_profile&quot;: &quot;medium&quot;,
+    &quot;onboarding_date&quot;: &quot;2025-07-07&quot;,
+    &quot;pep_flag&quot;: false,
+    &quot;beneficial_owner_verified&quot;: true
+  },
+  {
+    &quot;account_id&quot;: &quot;acc_0010&quot;,
+    &quot;account_name&quot;: &quot;Maya Patel&quot;,
+    &quot;account_type&quot;: &quot;individual&quot;,
+    &quot;country&quot;: &quot;CH&quot;,
+    &quot;city&quot;: &quot;Zurich&quot;,
+    &quot;kyc_status&quot;: &quot;expired&quot;,
+    &quot;risk_profile&quot;: &quot;medium&quot;,
+    &quot;onboarding_date&quot;: &quot;2024-09-04&quot;,
+    &quot;pep_flag&quot;: false,
+    &quot;beneficial_owner_verified&quot;: true
+  },
+  {
+    &quot;account_id&quot;: &quot;acc_0011&quot;,
+    &quot;account_name&quot;: &quot;Crest Securities&quot;,
+    &quot;account_type&quot;: &quot;institutional&quot;,
+    &quot;country&quot;: &quot;PA&quot;,
+    &quot;city&quot;: &quot;Panama City&quot;,
+    &quot;kyc_status&quot;: &quot;verified&quot;,
+    &quot;risk_profile&quot;: &quot;high&quot;,
+    &quot;onboarding_date&quot;: &quot;2025-03-10&quot;,
+    &quot;pep_flag&quot;: false,
+    &quot;beneficial_owner_verified&quot;: true
+  },
+  {
+    &quot;account_id&quot;: &quot;acc_0012&quot;,
+    &quot;account_name&quot;: &quot;Crest Fund Services&quot;,
+    &quot;account_type&quot;: &quot;institutional&quot;,
+    &quot;country&quot;: &quot;JP&quot;,
+    &quot;city&quot;: &quot;Osaka&quot;,
+    &quot;kyc_status&quot;: &quot;verified&quot;,
+    &quot;risk_profile&quot;: &quot;pep&quot;,
+    &quot;onboarding_date&quot;: &quot;2021-07-06&quot;,
+    &quot;pep_flag&quot;: true,
+    &quot;beneficial_owner_verified&quot;: true
+  },
+  {
+    &quot;account_id&quot;: &quot;acc_0013&quot;,
+    &quot;account_name&quot;: &quot;Aisha Khan&quot;,
+    &quot;account_type&quot;: &quot;individual&quot;,
+    &quot;country&quot;: &quot;GB&quot;,
+    &quot;city&quot;: &quot;London&quot;,
+    &quot;kyc_status&quot;: &quot;pending_review&quot;,
+    &quot;risk_profile&quot;: &quot;low&quot;,
+    &quot;onboarding_date&quot;: &quot;2023-02-21&quot;,
+    &quot;pep_flag&quot;: false,
+    &quot;beneficial_owner_verified&quot;: true
+  },
+  {
+    &quot;account_id&quot;: &quot;acc_0014&quot;,
+    &quot;account_name&quot;: &quot;Harbor Partners Group&quot;,
+    &quot;account_type&quot;: &quot;corporate&quot;,
+    &quot;country&quot;: &quot;PA&quot;,
+    &quot;city&quot;: &quot;Panama City&quot;,
+    &quot;kyc_status&quot;: &quot;enhanced_due_diligence&quot;,
+    &quot;risk_profile&quot;: &quot;medium&quot;,
+    &quot;onboarding_date&quot;: &quot;2021-08-17&quot;,
+    &quot;pep_flag&quot;: false,
+    &quot;beneficial_owner_verified&quot;: true
+  },
+  {
+    &quot;account_id&quot;: &quot;acc_0015&quot;,
+    &quot;account_name&quot;: &quot;Harbor Industries LLC&quot;,
+    &quot;account_type&quot;: &quot;corporate&quot;,
+    &quot;country&quot;: &quot;SG&quot;,
+    &quot;city&quot;: &quot;Singapore&quot;,
+    &quot;kyc_status&quot;: &quot;enhanced_due_diligence&quot;,
+    &quot;risk_profile&quot;: &quot;high&quot;,
+    &quot;onboarding_date&quot;: &quot;2023-11-06&quot;,
+    &quot;pep_flag&quot;: false,
+    &quot;beneficial_owner_verified&quot;: true
+  },
+  {
+    &quot;account_id&quot;: &quot;acc_0016&quot;,
+    &quot;account_name&quot;: &quot;Noah Smith&quot;,
+    &quot;account_type&quot;: &quot;individual&quot;,
+    &quot;country&quot;: &quot;CH&quot;,
+    &quot;city&quot;: &quot;Zurich&quot;,
+    &quot;kyc_status&quot;: &quot;verified&quot;,
+    &quot;risk_profile&quot;: &quot;low&quot;,
+    &quot;onboarding_date&quot;: &quot;2024-05-11&quot;,
+    &quot;pep_flag&quot;: false,
+    &quot;beneficial_owner_verified&quot;: true
+  },
+  {
+    &quot;account_id&quot;: &quot;acc_0017&quot;,
+    &quot;account_name&quot;: &quot;Continental Asset Management&quot;,
+    &quot;account_type&quot;: &quot;institutional&quot;,
+    &quot;country&quot;: &quot;US&quot;,
+    &quot;city&quot;: &quot;New York&quot;,
+    &quot;kyc_status&quot;: &quot;expired&quot;,
+    &quot;risk_profile&quot;: &quot;medium&quot;,
+    &quot;onboarding_date&quot;: &quot;2021-04-29&quot;,
+    &quot;pep_flag&quot;: false,
+    &quot;beneficial_owner_verified&quot;: true
+  },
+  {
+    &quot;account_id&quot;: &quot;acc_0018&quot;,
+    &quot;account_name&quot;: &quot;Summit Trading PLC&quot;,
+    &quot;account_type&quot;: &quot;corporate&quot;,
+    &quot;country&quot;: &quot;JP&quot;,
+    &quot;city&quot;: &quot;Tokyo&quot;,
+    &quot;kyc_status&quot;: &quot;pending_review&quot;,
+    &quot;risk_profile&quot;: &quot;medium&quot;,
+    &quot;onboarding_date&quot;: &quot;2024-01-31&quot;,
+    &quot;pep_flag&quot;: false,
+    &quot;beneficial_owner_verified&quot;: true
+  },
+  {
+    &quot;account_id&quot;: &quot;acc_0019&quot;,
+    &quot;account_name&quot;: &quot;Elena Chen&quot;,
+    &quot;account_type&quot;: &quot;individual&quot;,
+    &quot;country&quot;: &quot;DE&quot;,
+    &quot;city&quot;: &quot;Berlin&quot;,
+    &quot;kyc_status&quot;: &quot;expired&quot;,
+    &quot;risk_profile&quot;: &quot;medium&quot;,
+    &quot;onboarding_date&quot;: &quot;2023-03-29&quot;,
+    &quot;pep_flag&quot;: false,
+    &quot;beneficial_owner_verified&quot;: true
+  },
+  {
+    &quot;account_id&quot;: &quot;acc_0020&quot;,
+    &quot;account_name&quot;: &quot;Crown Trust&quot;,
+    &quot;account_type&quot;: &quot;trust&quot;,
+    &quot;country&quot;: &quot;AE&quot;,
+    &quot;city&quot;: &quot;Abu Dhabi&quot;,
+    &quot;kyc_status&quot;: &quot;verified&quot;,
+    &quot;risk_profile&quot;: &quot;medium&quot;,
+    &quot;onboarding_date&quot;: &quot;2024-04-19&quot;,
+    &quot;pep_flag&quot;: false,
+    &quot;beneficial_owner_verified&quot;: true
+  },
+  {
+    &quot;account_id&quot;: &quot;acc_0021&quot;,
+    &quot;account_name&quot;: &quot;Apex Holdings Ltd&quot;,
+    &quot;account_type&quot;: &quot;corporate&quot;,
+    &quot;country&quot;: &quot;JP&quot;,
+    &quot;city&quot;: &quot;Tokyo&quot;,
+    &quot;kyc_status&quot;: &quot;verified&quot;,
+    &quot;risk_profile&quot;: &quot;medium&quot;,
+    &quot;onboarding_date&quot;: &quot;2025-10-27&quot;,
+    &quot;pep_flag&quot;: false,
+    &quot;beneficial_owner_verified&quot;: true
+  },
+  {
+    &quot;account_id&quot;: &quot;acc_0022&quot;,
+    &quot;account_name&quot;: &quot;Premier Fund Services&quot;,
+    &quot;account_type&quot;: &quot;institutional&quot;,
+    &quot;country&quot;: &quot;DE&quot;,
+    &quot;city&quot;: &quot;Frankfurt&quot;,
+    &quot;kyc_status&quot;: &quot;verified&quot;,
+    &quot;risk_profile&quot;: &quot;low&quot;,
+    &quot;onboarding_date&quot;: &quot;2022-05-13&quot;,
+    &quot;pep_flag&quot;: false,
+    &quot;beneficial_owner_verified&quot;: true
+  },
+  {
+    &quot;account_id&quot;: &quot;acc_0023&quot;,
+    &quot;account_name&quot;: &quot;Pinnacle Capital PLC&quot;,
+    &quot;account_type&quot;: &quot;corporate&quot;,
+    &quot;country&quot;: &quot;KY&quot;,
+    &quot;city&quot;: &quot;George Town&quot;,
+    &quot;kyc_status&quot;: &quot;verified&quot;,
+    &quot;risk_profile&quot;: &quot;high&quot;,
+    &quot;onboarding_date&quot;: &quot;2025-11-05&quot;,
+    &quot;pep_flag&quot;: false,
+    &quot;beneficial_owner_verified&quot;: true
+  },
+  {
+    &quot;account_id&quot;: &quot;acc_0024&quot;,
+    &quot;account_name&quot;: &quot;Legacy Trust&quot;,
+    &quot;account_type&quot;: &quot;trust&quot;,
+    &quot;country&quot;: &quot;GB&quot;,
+    &quot;city&quot;: &quot;London&quot;,
+    &quot;kyc_status&quot;: &quot;expired&quot;,
+    &quot;risk_profile&quot;: &quot;high&quot;,
+    &quot;onboarding_date&quot;: &quot;2022-01-28&quot;,
+    &quot;pep_flag&quot;: false,
+    &quot;beneficial_owner_verified&quot;: true
+  },
+  {
+    &quot;account_id&quot;: &quot;acc_0025&quot;,
+    &quot;account_name&quot;: &quot;Legacy Family Office&quot;,
+    &quot;account_type&quot;: &quot;trust&quot;,
+    &quot;country&quot;: &quot;PA&quot;,
+    &quot;city&quot;: &quot;Panama City&quot;,
+    &quot;kyc_status&quot;: &quot;pending_review&quot;,
+    &quot;risk_profile&quot;: &quot;high&quot;,
+    &quot;onboarding_date&quot;: &quot;2025-07-13&quot;,
+    &quot;pep_flag&quot;: false,
+    &quot;beneficial_owner_verified&quot;: true
+  },
+  {
+    &quot;account_id&quot;: &quot;acc_0026&quot;,
+    &quot;account_name&quot;: &quot;Global Holdings LLC&quot;,
+    &quot;account_type&quot;: &quot;corporate&quot;,
+    &quot;country&quot;: &quot;DE&quot;,
+    &quot;city&quot;: &quot;Frankfurt&quot;,
+    &quot;kyc_status&quot;: &quot;verified&quot;,
+    &quot;risk_profile&quot;: &quot;low&quot;,
+    &quot;onboarding_date&quot;: &quot;2021-12-07&quot;,
+    &quot;pep_flag&quot;: false,
+    &quot;beneficial_owner_verified&quot;: true
+  },
+  {
+    &quot;account_id&quot;: &quot;acc_0027&quot;,
+    &quot;account_name&quot;: &quot;Legacy Family Office&quot;,
+    &quot;account_type&quot;: &quot;trust&quot;,
+    &quot;country&quot;: &quot;PA&quot;,
+    &quot;city&quot;: &quot;Panama City&quot;,
+    &quot;kyc_status&quot;: &quot;enhanced_due_diligence&quot;,
+    &quot;risk_profile&quot;: &quot;medium&quot;,
+    &quot;onboarding_date&quot;: &quot;2022-06-28&quot;,
+    &quot;pep_flag&quot;: false,
+    &quot;beneficial_owner_verified&quot;: true
+  },
+  {
+    &quot;account_id&quot;: &quot;acc_0028&quot;,
+    &quot;account_name&quot;: &quot;Oakstone Foundation&quot;,
+    &quot;account_type&quot;: &quot;trust&quot;,
+    &quot;country&quot;: &quot;PA&quot;,
+    &quot;city&quot;: &quot;Panama City&quot;,
+    &quot;kyc_status&quot;: &quot;enhanced_due_diligence&quot;,
+    &quot;risk_profile&quot;: &quot;high&quot;,
+    &quot;onboarding_date&quot;: &quot;2025-01-11&quot;,
+    &quot;pep_flag&quot;: false,
+    &quot;beneficial_owner_verified&quot;: true
+  },
+  {
+    &quot;account_id&quot;: &quot;acc_0029&quot;,
+    &quot;account_name&quot;: &quot;Noah Smith&quot;,
+    &quot;account_type&quot;: &quot;individual&quot;,
+    &quot;country&quot;: &quot;HK&quot;,
+    &quot;city&quot;: &quot;Hong Kong&quot;,
+    &quot;kyc_status&quot;: &quot;enhanced_due_diligence&quot;,
+    &quot;risk_profile&quot;: &quot;medium&quot;,
+    &quot;onboarding_date&quot;: &quot;2025-03-12&quot;,
+    &quot;pep_flag&quot;: false,
+    &quot;beneficial_owner_verified&quot;: true
+  },
+  {
+    &quot;account_id&quot;: &quot;acc_0030&quot;,
+    &quot;account_name&quot;: &quot;Evergreen Trust&quot;,
+    &quot;account_type&quot;: &quot;trust&quot;,
+    &quot;country&quot;: &quot;US&quot;,
+    &quot;city&quot;: &quot;Houston&quot;,
+    &quot;kyc_status&quot;: &quot;pending_review&quot;,
+    &quot;risk_profile&quot;: &quot;pep&quot;,
+    &quot;onboarding_date&quot;: &quot;2023-11-07&quot;,
+    &quot;pep_flag&quot;: true,
+    &quot;beneficial_owner_verified&quot;: false
+  },
+  {
+    &quot;account_id&quot;: &quot;acc_0031&quot;,
+    &quot;account_name&quot;: &quot;Meridian Industries LLC&quot;,
+    &quot;account_type&quot;: &quot;corporate&quot;,
+    &quot;country&quot;: &quot;SG&quot;,
+    &quot;city&quot;: &quot;Singapore&quot;,
+    &quot;kyc_status&quot;: &quot;verified&quot;,
+    &quot;risk_profile&quot;: &quot;low&quot;,
+    &quot;onboarding_date&quot;: &quot;2024-03-31&quot;,
+    &quot;pep_flag&quot;: false,
+    &quot;beneficial_owner_verified&quot;: true
+  },
+  {
+    &quot;account_id&quot;: &quot;acc_0032&quot;,
+    &quot;account_name&quot;: &quot;Crown Family Office&quot;,
+    &quot;account_type&quot;: &quot;trust&quot;,
+    &quot;country&quot;: &quot;JP&quot;,
+    &quot;city&quot;: &quot;Tokyo&quot;,
+    &quot;kyc_status&quot;: &quot;expired&quot;,
+    &quot;risk_profile&quot;: &quot;medium&quot;,
+    &quot;onboarding_date&quot;: &quot;2022-02-23&quot;,
+    &quot;pep_flag&quot;: false,
+    &quot;beneficial_owner_verified&quot;: true
+  },
+  {
+    &quot;account_id&quot;: &quot;acc_0033&quot;,
+    &quot;account_name&quot;: &quot;Continental Fund Services&quot;,
+    &quot;account_type&quot;: &quot;institutional&quot;,
+    &quot;country&quot;: &quot;AE&quot;,
+    &quot;city&quot;: &quot;Dubai&quot;,
+    &quot;kyc_status&quot;: &quot;verified&quot;,
+    &quot;risk_profile&quot;: &quot;medium&quot;,
+    &quot;onboarding_date&quot;: &quot;2022-10-10&quot;,
+    &quot;pep_flag&quot;: false,
+    &quot;beneficial_owner_verified&quot;: true
+  },
+  {
+    &quot;account_id&quot;: &quot;acc_0034&quot;,
+    &quot;account_name&quot;: &quot;Legacy Trust&quot;,
+    &quot;account_type&quot;: &quot;trust&quot;,
+    &quot;country&quot;: &quot;GB&quot;,
+    &quot;city&quot;: &quot;London&quot;,
+    &quot;kyc_status&quot;: &quot;pending_review&quot;,
+    &quot;risk_profile&quot;: &quot;medium&quot;,
+    &quot;onboarding_date&quot;: &quot;2024-01-07&quot;,
+    &quot;pep_flag&quot;: false,
+    &quot;beneficial_owner_verified&quot;: true
+  },
+  {
+    &quot;account_id&quot;: &quot;acc_0035&quot;,
+    &quot;account_name&quot;: &quot;Continental Securities&quot;,
+    &quot;account_type&quot;: &quot;institutional&quot;,
+    &quot;country&quot;: &quot;CH&quot;,
+    &quot;city&quot;: &quot;Zurich&quot;,
+    &quot;kyc_status&quot;: &quot;expired&quot;,
+    &quot;risk_profile&quot;: &quot;high&quot;,
+    &quot;onboarding_date&quot;: &quot;2021-11-20&quot;,
+    &quot;pep_flag&quot;: false,
+    &quot;beneficial_owner_verified&quot;: true
+  },
+  {
+    &quot;account_id&quot;: &quot;acc_0036&quot;,
+    &quot;account_name&quot;: &quot;Meridian Trading Group&quot;,
+    &quot;account_type&quot;: &quot;corporate&quot;,
+    &quot;country&quot;: &quot;DE&quot;,
+    &quot;city&quot;: &quot;Berlin&quot;,
+    &quot;kyc_status&quot;: &quot;verified&quot;,
+    &quot;risk_profile&quot;: &quot;medium&quot;,
+    &quot;onboarding_date&quot;: &quot;2021-08-25&quot;,
+    &quot;pep_flag&quot;: false,
+    &quot;beneficial_owner_verified&quot;: true
+  },
+  {
+    &quot;account_id&quot;: &quot;acc_0037&quot;,
+    &quot;account_name&quot;: &quot;Continental Asset Management&quot;,
+    &quot;account_type&quot;: &quot;institutional&quot;,
+    &quot;country&quot;: &quot;DE&quot;,
+    &quot;city&quot;: &quot;Frankfurt&quot;,
+    &quot;kyc_status&quot;: &quot;verified&quot;,
+    &quot;risk_profile&quot;: &quot;low&quot;,
+    &quot;onboarding_date&quot;: &quot;2024-11-08&quot;,
+    &quot;pep_flag&quot;: false,
+    &quot;beneficial_owner_verified&quot;: true
+  },
+  {
+    &quot;account_id&quot;: &quot;acc_0038&quot;,
+    &quot;account_name&quot;: &quot;First Fund Services&quot;,
+    &quot;account_type&quot;: &quot;institutional&quot;,
+    &quot;country&quot;: &quot;CH&quot;,
+    &quot;city&quot;: &quot;Geneva&quot;,
+    &quot;kyc_status&quot;: &quot;expired&quot;,
+    &quot;risk_profile&quot;: &quot;medium&quot;,
+    &quot;onboarding_date&quot;: &quot;2025-08-26&quot;,
+    &quot;pep_flag&quot;: false,
+    &quot;beneficial_owner_verified&quot;: true
+  },
+  {
+    &quot;account_id&quot;: &quot;acc_0039&quot;,
+    &quot;account_name&quot;: &quot;Yuki Sato&quot;,
+    &quot;account_type&quot;: &quot;individual&quot;,
+    &quot;country&quot;: &quot;US&quot;,
+    &quot;city&quot;: &quot;Miami&quot;,
+    &quot;kyc_status&quot;: &quot;verified&quot;,
+    &quot;risk_profile&quot;: &quot;low&quot;,
+    &quot;onboarding_date&quot;: &quot;2024-12-16&quot;,
+    &quot;pep_flag&quot;: false,
+    &quot;beneficial_owner_verified&quot;: true
+  },
+  {
+    &quot;account_id&quot;: &quot;acc_0040&quot;,
+    &quot;account_name&quot;: &quot;Summit Industries Ltd&quot;,
+    &quot;account_type&quot;: &quot;corporate&quot;,
+    &quot;country&quot;: &quot;US&quot;,
+    &quot;city&quot;: &quot;New York&quot;,
+    &quot;kyc_status&quot;: &quot;expired&quot;,
+    &quot;risk_profile&quot;: &quot;medium&quot;,
+    &quot;onboarding_date&quot;: &quot;2025-09-06&quot;,
+    &quot;pep_flag&quot;: false,
+    &quot;beneficial_owner_verified&quot;: true
+  },
+  {
+    &quot;account_id&quot;: &quot;acc_0041&quot;,
+    &quot;account_name&quot;: &quot;Legacy Family Office&quot;,
+    &quot;account_type&quot;: &quot;trust&quot;,
+    &quot;country&quot;: &quot;DE&quot;,
+    &quot;city&quot;: &quot;Frankfurt&quot;,
+    &quot;kyc_status&quot;: &quot;verified&quot;,
+    &quot;risk_profile&quot;: &quot;medium&quot;,
+    &quot;onboarding_date&quot;: &quot;2022-03-07&quot;,
+    &quot;pep_flag&quot;: false,
+    &quot;beneficial_owner_verified&quot;: true
+  },
+  {
+    &quot;account_id&quot;: &quot;acc_0042&quot;,
+    &quot;account_name&quot;: &quot;Evergreen Trust&quot;,
+    &quot;account_type&quot;: &quot;trust&quot;,
+    &quot;country&quot;: &quot;GB&quot;,
+    &quot;city&quot;: &quot;Manchester&quot;,
+    &quot;kyc_status&quot;: &quot;enhanced_due_diligence&quot;,
+    &quot;risk_profile&quot;: &quot;high&quot;,
+    &quot;onboarding_date&quot;: &quot;2025-06-27&quot;,
+    &quot;pep_flag&quot;: false,
+    &quot;beneficial_owner_verified&quot;: true
+  },
+  {
+    &quot;account_id&quot;: &quot;acc_0043&quot;,
+    &quot;account_name&quot;: &quot;Liam Patel&quot;,
+    &quot;account_type&quot;: &quot;individual&quot;,
+    &quot;country&quot;: &quot;KY&quot;,
+    &quot;city&quot;: &quot;George Town&quot;,
+    &quot;kyc_status&quot;: &quot;enhanced_due_diligence&quot;,
+    &quot;risk_profile&quot;: &quot;high&quot;,
+    &quot;onboarding_date&quot;: &quot;2022-07-01&quot;,
+    &quot;pep_flag&quot;: false,
+    &quot;beneficial_owner_verified&quot;: true
+  },
+  {
+    &quot;account_id&quot;: &quot;acc_0044&quot;,
+    &quot;account_name&quot;: &quot;Bluewater Ventures Group&quot;,
+    &quot;account_type&quot;: &quot;corporate&quot;,
+    &quot;country&quot;: &quot;GB&quot;,
+    &quot;city&quot;: &quot;Manchester&quot;,
+    &quot;kyc_status&quot;: &quot;expired&quot;,
+    &quot;risk_profile&quot;: &quot;low&quot;,
+    &quot;onboarding_date&quot;: &quot;2025-08-08&quot;,
+    &quot;pep_flag&quot;: false,
+    &quot;beneficial_owner_verified&quot;: true
+  },
+  {
+    &quot;account_id&quot;: &quot;acc_0045&quot;,
+    &quot;account_name&quot;: &quot;Harbor Partners Ltd&quot;,
+    &quot;account_type&quot;: &quot;corporate&quot;,
+    &quot;country&quot;: &quot;HK&quot;,
+    &quot;city&quot;: &quot;Hong Kong&quot;,
+    &quot;kyc_status&quot;: &quot;verified&quot;,
+    &quot;risk_profile&quot;: &quot;low&quot;,
+    &quot;onboarding_date&quot;: &quot;2025-05-03&quot;,
+    &quot;pep_flag&quot;: false,
+    &quot;beneficial_owner_verified&quot;: true
+  },
+  {
+    &quot;account_id&quot;: &quot;acc_0046&quot;,
+    &quot;account_name&quot;: &quot;Continental Asset Management&quot;,
+    &quot;account_type&quot;: &quot;institutional&quot;,
+    &quot;country&quot;: &quot;DE&quot;,
+    &quot;city&quot;: &quot;Berlin&quot;,
+    &quot;kyc_status&quot;: &quot;expired&quot;,
+    &quot;risk_profile&quot;: &quot;low&quot;,
+    &quot;onboarding_date&quot;: &quot;2024-04-04&quot;,
+    &quot;pep_flag&quot;: false,
+    &quot;beneficial_owner_verified&quot;: true
+  },
+  {
+    &quot;account_id&quot;: &quot;acc_0047&quot;,
+    &quot;account_name&quot;: &quot;Orion Capital Ltd&quot;,
+    &quot;account_type&quot;: &quot;corporate&quot;,
+    &quot;country&quot;: &quot;CH&quot;,
+    &quot;city&quot;: &quot;Zurich&quot;,
+    &quot;kyc_status&quot;: &quot;verified&quot;,
+    &quot;risk_profile&quot;: &quot;low&quot;,
+    &quot;onboarding_date&quot;: &quot;2023-02-28&quot;,
+    &quot;pep_flag&quot;: false,
+    &quot;beneficial_owner_verified&quot;: true
+  },
+  {
+    &quot;account_id&quot;: &quot;acc_0048&quot;,
+    &quot;account_name&quot;: &quot;Apex Ventures PLC&quot;,
+    &quot;account_type&quot;: &quot;corporate&quot;,
+    &quot;country&quot;: &quot;HK&quot;,
+    &quot;city&quot;: &quot;Hong Kong&quot;,
+    &quot;kyc_status&quot;: &quot;pending_review&quot;,
+    &quot;risk_profile&quot;: &quot;low&quot;,
+    &quot;onboarding_date&quot;: &quot;2021-05-24&quot;,
+    &quot;pep_flag&quot;: false,
+    &quot;beneficial_owner_verified&quot;: true
+  },
+  {
+    &quot;account_id&quot;: &quot;acc_0049&quot;,
+    &quot;account_name&quot;: &quot;Harbor Logistics PLC&quot;,
+    &quot;account_type&quot;: &quot;corporate&quot;,
+    &quot;country&quot;: &quot;AE&quot;,
+    &quot;city&quot;: &quot;Abu Dhabi&quot;,
+    &quot;kyc_status&quot;: &quot;pending_review&quot;,
+    &quot;risk_profile&quot;: &quot;low&quot;,
+    &quot;onboarding_date&quot;: &quot;2022-10-31&quot;,
+    &quot;pep_flag&quot;: false,
+    &quot;beneficial_owner_verified&quot;: true
+  },
+  {
+    &quot;account_id&quot;: &quot;acc_0050&quot;,
+    &quot;account_name&quot;: &quot;Kenji Wright&quot;,
+    &quot;account_type&quot;: &quot;individual&quot;,
+    &quot;country&quot;: &quot;CH&quot;,
+    &quot;city&quot;: &quot;Zurich&quot;,
+    &quot;kyc_status&quot;: &quot;verified&quot;,
+    &quot;risk_profile&quot;: &quot;high&quot;,
+    &quot;onboarding_date&quot;: &quot;2024-03-11&quot;,
+    &quot;pep_flag&quot;: false,
+    &quot;beneficial_owner_verified&quot;: true
+  }
+]</file><file path="domains/finance/policies.json">[
+  {
+    &quot;policy_id&quot;: &quot;high-value-kyc&quot;,
+    &quot;collection&quot;: &quot;transactions&quot;,
+    &quot;trigger&quot;: &quot;insert&quot;,
+    &quot;intent&quot;: &quot;Flag wire transfers over $100,000 from accounts with incomplete KYC verification for immediate compliance review&quot;,
+    &quot;action&quot;: &quot;investigate&quot;,
+    &quot;active&quot;: true,
+    &quot;domain&quot;: &quot;finance&quot;
+  },
+  {
+    &quot;policy_id&quot;: &quot;high-risk-jurisdiction&quot;,
+    &quot;collection&quot;: &quot;transactions&quot;,
+    &quot;trigger&quot;: &quot;insert&quot;,
+    &quot;intent&quot;: &quot;Escalate any transaction where either the originator or counterparty is in a high-risk jurisdiction like Cayman Islands or Panama&quot;,
+    &quot;action&quot;: &quot;escalate&quot;,
+    &quot;active&quot;: true,
+    &quot;domain&quot;: &quot;finance&quot;
+  },
+  {
+    &quot;policy_id&quot;: &quot;structuring-detection&quot;,
+    &quot;collection&quot;: &quot;transactions&quot;,
+    &quot;trigger&quot;: &quot;insert&quot;,
+    &quot;intent&quot;: &quot;Detect cash deposits or check deposits just below $10,000 that may indicate structuring to avoid CTR reporting thresholds&quot;,
+    &quot;action&quot;: &quot;flag&quot;,
+    &quot;active&quot;: true,
+    &quot;domain&quot;: &quot;finance&quot;
+  },
+  {
+    &quot;policy_id&quot;: &quot;velocity-alert&quot;,
+    &quot;collection&quot;: &quot;transactions&quot;,
+    &quot;trigger&quot;: &quot;insert&quot;,
+    &quot;intent&quot;: &quot;Flag accounts that receive more than 3 transactions within a single hour as potential velocity anomalies&quot;,
+    &quot;action&quot;: &quot;investigate&quot;,
+    &quot;active&quot;: true,
+    &quot;domain&quot;: &quot;finance&quot;
+  },
+  {
+    &quot;policy_id&quot;: &quot;round-trip-monitor&quot;,
+    &quot;collection&quot;: &quot;transactions&quot;,
+    &quot;trigger&quot;: &quot;insert&quot;,
+    &quot;intent&quot;: &quot;Identify transactions where funds appear to flow in a circular pattern back toward the originating account through intermediaries&quot;,
+    &quot;action&quot;: &quot;escalate&quot;,
+    &quot;active&quot;: true,
+    &quot;domain&quot;: &quot;finance&quot;
+  }
+]</file><file path="domains/finance/rules.json">[
+  {
+    &quot;rule_id&quot;: &quot;BSA-001&quot;,
+    &quot;title&quot;: &quot;Currency Transaction Report (CTR)&quot;,
+    &quot;jurisdiction&quot;: &quot;US&quot;,
+    &quot;category&quot;: &quot;reporting&quot;,
+    &quot;description&quot;: &quot;Financial institutions must file a CTR for cash transactions over $10,000 in one business day. Aggregated transactions that exceed the threshold for the same customer must also be reported.&quot;
+  },
+  {
+    &quot;rule_id&quot;: &quot;BSA-002&quot;,
+    &quot;title&quot;: &quot;Suspicious Activity Report (SAR)&quot;,
+    &quot;jurisdiction&quot;: &quot;US&quot;,
+    &quot;category&quot;: &quot;reporting&quot;,
+    &quot;description&quot;: &quot;A SAR is required when activity appears to involve illicit funds, evasion of BSA controls, or no clear lawful purpose. Institutions should file promptly and document rationale for escalation.&quot;
+  },
+  {
+    &quot;rule_id&quot;: &quot;BSA-003&quot;,
+    &quot;title&quot;: &quot;Structuring and Smurfing Detection&quot;,
+    &quot;jurisdiction&quot;: &quot;US&quot;,
+    &quot;category&quot;: &quot;detection&quot;,
+    &quot;description&quot;: &quot;Structuring occurs when deposits are split to avoid CTR thresholds, often just below $10,000. Repeated sub-threshold cash patterns over short windows should trigger enhanced review.&quot;
+  },
+  {
+    &quot;rule_id&quot;: &quot;FATF-001&quot;,
+    &quot;title&quot;: &quot;FATF Recommendation 10: CDD&quot;,
+    &quot;jurisdiction&quot;: &quot;international&quot;,
+    &quot;category&quot;: &quot;kyc&quot;,
+    &quot;description&quot;: &quot;Institutions must identify and verify customers, beneficial owners, and expected account purpose. Higher-risk relationships require enhanced due diligence and stronger ongoing monitoring.&quot;
+  },
+  {
+    &quot;rule_id&quot;: &quot;FATF-002&quot;,
+    &quot;title&quot;: &quot;FATF Recommendation 16: Wire Transfers&quot;,
+    &quot;jurisdiction&quot;: &quot;international&quot;,
+    &quot;category&quot;: &quot;wire&quot;,
+    &quot;description&quot;: &quot;Wire transfers must carry complete originator and beneficiary details to support traceability. Missing or inconsistent payment fields should be treated as compliance exceptions.&quot;
+  },
+  {
+    &quot;rule_id&quot;: &quot;FATF-003&quot;,
+    &quot;title&quot;: &quot;FATF High-Risk Jurisdictions Controls&quot;,
+    &quot;jurisdiction&quot;: &quot;international&quot;,
+    &quot;category&quot;: &quot;jurisdiction&quot;,
+    &quot;description&quot;: &quot;Transactions connected to high-risk jurisdictions require enhanced due diligence and stricter monitoring. Control frameworks should apply additional scrutiny to source of funds and counterparties.&quot;
+  },
+  {
+    &quot;rule_id&quot;: &quot;EU-5AMLD&quot;,
+    &quot;title&quot;: &quot;EU 5th Anti-Money Laundering Directive&quot;,
+    &quot;jurisdiction&quot;: &quot;EU&quot;,
+    &quot;category&quot;: &quot;aml&quot;,
+    &quot;description&quot;: &quot;5AMLD strengthens transparency on beneficial ownership and broadens AML obligations. Institutions should maintain robust risk-based controls and reporting discipline across member states.&quot;
+  },
+  {
+    &quot;rule_id&quot;: &quot;MAS-626&quot;,
+    &quot;title&quot;: &quot;MAS Notice 626&quot;,
+    &quot;jurisdiction&quot;: &quot;SG&quot;,
+    &quot;category&quot;: &quot;aml&quot;,
+    &quot;description&quot;: &quot;MAS Notice 626 requires Singapore banks to apply customer due diligence, screening, and suspicious transaction reporting. Enhanced controls are required for high-risk customers and cross-border payments.&quot;
+  },
+  {
+    &quot;rule_id&quot;: &quot;OFAC-SDN&quot;,
+    &quot;title&quot;: &quot;OFAC SDN Sanctions Screening&quot;,
+    &quot;jurisdiction&quot;: &quot;US&quot;,
+    &quot;category&quot;: &quot;sanctions&quot;,
+    &quot;description&quot;: &quot;US persons are prohibited from dealings with SDN-listed individuals and entities. Screening should include names, aliases, beneficial owners, and payment references before and after execution.&quot;
+  },
+  {
+    &quot;rule_id&quot;: &quot;LAYER-001&quot;,
+    &quot;title&quot;: &quot;Layering Pattern Detection&quot;,
+    &quot;jurisdiction&quot;: &quot;international&quot;,
+    &quot;category&quot;: &quot;detection&quot;,
+    &quot;description&quot;: &quot;Layering is characterized by rapid sequential transfers across multiple accounts to obscure provenance. Amount reductions, short intervals, and cross-border hops are common indicators.&quot;
+  },
+  {
+    &quot;rule_id&quot;: &quot;SMURF-001&quot;,
+    &quot;title&quot;: &quot;Smurfing Sequence Detection&quot;,
+    &quot;jurisdiction&quot;: &quot;international&quot;,
+    &quot;category&quot;: &quot;detection&quot;,
+    &quot;description&quot;: &quot;Smurfing relies on repeated small deposits made below reportable limits. Institutions should aggregate activity by account, branch, and related parties to reveal hidden structuring.&quot;
+  },
+  {
+    &quot;rule_id&quot;: &quot;VELOC-001&quot;,
+    &quot;title&quot;: &quot;Velocity Anomaly Detection&quot;,
+    &quot;jurisdiction&quot;: &quot;international&quot;,
+    &quot;category&quot;: &quot;detection&quot;,
+    &quot;description&quot;: &quot;Dormant or low-activity accounts that suddenly generate bursts of high-value transfers represent elevated risk. Velocity checks should compare recent behavior against account baseline.&quot;
+  },
+  {
+    &quot;rule_id&quot;: &quot;ROUND-001&quot;,
+    &quot;title&quot;: &quot;Round-Tripping Detection&quot;,
+    &quot;jurisdiction&quot;: &quot;international&quot;,
+    &quot;category&quot;: &quot;detection&quot;,
+    &quot;description&quot;: &quot;Round-tripping occurs when funds return to the originator through intermediary entities. Circular paths with similar values and tight timing windows require investigation.&quot;
+  },
+  {
+    &quot;rule_id&quot;: &quot;PEP-001&quot;,
+    &quot;title&quot;: &quot;PEP Enhanced Due Diligence&quot;,
+    &quot;jurisdiction&quot;: &quot;international&quot;,
+    &quot;category&quot;: &quot;kyc&quot;,
+    &quot;description&quot;: &quot;Politically exposed persons require stronger onboarding and periodic review controls. Institutions should verify source of wealth, source of funds, and maintain heightened monitoring.&quot;
+  },
+  {
+    &quot;rule_id&quot;: &quot;TRAVEL-001&quot;,
+    &quot;title&quot;: &quot;Wire Travel Rule Data Quality&quot;,
+    &quot;jurisdiction&quot;: &quot;international&quot;,
+    &quot;category&quot;: &quot;wire&quot;,
+    &quot;description&quot;: &quot;Payment messages must preserve complete transfer metadata through intermediaries. Missing payer or beneficiary fields should be blocked or routed for manual review.&quot;
+  },
+  {
+    &quot;rule_id&quot;: &quot;CORR-001&quot;,
+    &quot;title&quot;: &quot;Correspondent Banking Oversight&quot;,
+    &quot;jurisdiction&quot;: &quot;international&quot;,
+    &quot;category&quot;: &quot;kyc&quot;,
+    &quot;description&quot;: &quot;Correspondent relationships should be risk-rated with documented AML control assessments. Nested relationship exposure and unusual payment corridors require additional scrutiny.&quot;
+  },
+  {
+    &quot;rule_id&quot;: &quot;BENOWN-001&quot;,
+    &quot;title&quot;: &quot;Beneficial Ownership Transparency&quot;,
+    &quot;jurisdiction&quot;: &quot;international&quot;,
+    &quot;category&quot;: &quot;kyc&quot;,
+    &quot;description&quot;: &quot;Legal-entity customers must disclose and verify ultimate beneficial owners and control persons. Opaque ownership chains should trigger enhanced due diligence.&quot;
+  },
+  {
+    &quot;rule_id&quot;: &quot;SHELL-001&quot;,
+    &quot;title&quot;: &quot;Shell Entity Risk Indicators&quot;,
+    &quot;jurisdiction&quot;: &quot;international&quot;,
+    &quot;category&quot;: &quot;detection&quot;,
+    &quot;description&quot;: &quot;Shell entities can be used to mask origin and destination of funds in laundering schemes. Indicators include minimal operational footprint and disproportionate transaction value.&quot;
+  },
+  {
+    &quot;rule_id&quot;: &quot;TBML-001&quot;,
+    &quot;title&quot;: &quot;Trade-Based Money Laundering Signals&quot;,
+    &quot;jurisdiction&quot;: &quot;international&quot;,
+    &quot;category&quot;: &quot;detection&quot;,
+    &quot;description&quot;: &quot;TBML uses trade documents and pricing manipulation to move value illicitly. Over- or under-invoicing and inconsistent shipment patterns are common red flags.&quot;
+  },
+  {
+    &quot;rule_id&quot;: &quot;SANCTION-001&quot;,
+    &quot;title&quot;: &quot;Cross-Border Sanctions Escalation&quot;,
+    &quot;jurisdiction&quot;: &quot;international&quot;,
+    &quot;category&quot;: &quot;sanctions&quot;,
+    &quot;description&quot;: &quot;Cross-border transfers involving sanctioned regions or restricted sectors require immediate escalation. Screening logic should evaluate counterparty, ownership, and narrative context together.&quot;
+  }
+]</file><file path="domains/finance/scenarios.json">{
+  &quot;order&quot;: [
+    &quot;clean&quot;,
+    &quot;structuring&quot;,
+    &quot;round-trip&quot;,
+    &quot;layering&quot;,
+    &quot;big-one&quot;
+  ],
+  &quot;scenarios&quot;: {
+    &quot;clean&quot;: {
+      &quot;title&quot;: &quot;Clean Business Transactions&quot;,
+      &quot;description&quot;: &quot;Three normal transactions with realistic narratives.&quot;,
+      &quot;watch&quot;: [
+        &quot;Risk scores should stay low.&quot;,
+        &quot;Pattern match should be none.&quot;,
+        &quot;No flags.&quot;
+      ],
+      &quot;documents&quot;: [
+        {
+          &quot;transaction_id&quot;: &quot;__AUTO__&quot;,
+          &quot;account_id&quot;: &quot;acc_0005&quot;,
+          &quot;counterparty_id&quot;: &quot;acc_0010&quot;,
+          &quot;amount&quot;: {
+            &quot;random&quot;: [
+              1000,
+              20000
+            ]
+          },
+          &quot;currency&quot;: &quot;USD&quot;,
+          &quot;type&quot;: &quot;ach&quot;,
+          &quot;channel&quot;: &quot;online_banking&quot;,
+          &quot;geolocation&quot;: {
+            &quot;country&quot;: &quot;US&quot;,
+            &quot;city&quot;: &quot;Chicago&quot;
+          },
+          &quot;narrative&quot;: {
+            &quot;choice&quot;: [
+              &quot;Invoice settlement for quarterly logistics services&quot;,
+              &quot;Enterprise software annual license renewal&quot;
+            ]
+          },
+          &quot;status&quot;: &quot;completed&quot;,
+          &quot;timestamp&quot;: &quot;__NOW__&quot;
+        },
+        {
+          &quot;transaction_id&quot;: &quot;__AUTO__&quot;,
+          &quot;account_id&quot;: &quot;acc_0018&quot;,
+          &quot;counterparty_id&quot;: &quot;acc_0022&quot;,
+          &quot;amount&quot;: {
+            &quot;random&quot;: [
+              1500,
+              25000
+            ]
+          },
+          &quot;currency&quot;: &quot;EUR&quot;,
+          &quot;type&quot;: &quot;wire_transfer&quot;,
+          &quot;channel&quot;: &quot;api&quot;,
+          &quot;geolocation&quot;: {
+            &quot;country&quot;: &quot;DE&quot;,
+            &quot;city&quot;: &quot;Berlin&quot;
+          },
+          &quot;narrative&quot;: {
+            &quot;choice&quot;: [
+              &quot;Vendor payment for managed infrastructure support&quot;,
+              &quot;Regional office operating expense transfer&quot;
+            ]
+          },
+          &quot;status&quot;: &quot;completed&quot;,
+          &quot;timestamp&quot;: &quot;__NOW__&quot;
+        },
+        {
+          &quot;transaction_id&quot;: &quot;__AUTO__&quot;,
+          &quot;account_id&quot;: &quot;acc_0033&quot;,
+          &quot;counterparty_id&quot;: &quot;acc_0007&quot;,
+          &quot;amount&quot;: {
+            &quot;random&quot;: [
+              1200,
+              18000
+            ]
+          },
+          &quot;currency&quot;: &quot;GBP&quot;,
+          &quot;type&quot;: &quot;ach&quot;,
+          &quot;channel&quot;: &quot;api&quot;,
+          &quot;geolocation&quot;: {
+            &quot;country&quot;: &quot;GB&quot;,
+            &quot;city&quot;: &quot;London&quot;
+          },
+          &quot;narrative&quot;: {
+            &quot;choice&quot;: [
+              &quot;Professional services retainer payment&quot;,
+              &quot;Procurement payment for approved hardware order&quot;
+            ]
+          },
+          &quot;status&quot;: &quot;completed&quot;,
+          &quot;timestamp&quot;: &quot;__NOW__&quot;
+        }
+      ]
+    },
+    &quot;structuring&quot;: {
+      &quot;title&quot;: &quot;Structuring Pattern&quot;,
+      &quot;description&quot;: &quot;Five cash deposits from one account, all just under the $10K threshold.&quot;,
+      &quot;watch&quot;: [
+        &quot;Pattern detection should identify structuring behavior.&quot;,
+        &quot;Risk should rise across repeated deposits.&quot;,
+        &quot;Flags should include structuring-related rules.&quot;
+      ],
+      &quot;documents&quot;: [
+        {
+          &quot;transaction_id&quot;: &quot;__AUTO__&quot;,
+          &quot;account_id&quot;: &quot;acc_0028&quot;,
+          &quot;counterparty_id&quot;: &quot;acc_0028&quot;,
+          &quot;amount&quot;: {
+            &quot;random&quot;: [
+              9100,
+              9950
+            ]
+          },
+          &quot;currency&quot;: &quot;USD&quot;,
+          &quot;type&quot;: &quot;cash_deposit&quot;,
+          &quot;channel&quot;: &quot;branch&quot;,
+          &quot;geolocation&quot;: {
+            &quot;country&quot;: &quot;US&quot;,
+            &quot;city&quot;: &quot;Miami&quot;
+          },
+          &quot;narrative&quot;: {
+            &quot;choice&quot;: [
+              &quot;Cash deposit from daily branch activity&quot;,
+              &quot;Cash receipt settlement&quot;,
+              &quot;Cash deposit for local operations&quot;
+            ]
+          },
+          &quot;status&quot;: &quot;completed&quot;,
+          &quot;timestamp&quot;: &quot;__NOW__&quot;
+        },
+        {
+          &quot;transaction_id&quot;: &quot;__AUTO__&quot;,
+          &quot;account_id&quot;: &quot;acc_0028&quot;,
+          &quot;counterparty_id&quot;: &quot;acc_0028&quot;,
+          &quot;amount&quot;: {
+            &quot;random&quot;: [
+              9100,
+              9950
+            ]
+          },
+          &quot;currency&quot;: &quot;USD&quot;,
+          &quot;type&quot;: &quot;cash_deposit&quot;,
+          &quot;channel&quot;: &quot;branch&quot;,
+          &quot;geolocation&quot;: {
+            &quot;country&quot;: &quot;US&quot;,
+            &quot;city&quot;: &quot;Miami&quot;
+          },
+          &quot;narrative&quot;: {
+            &quot;choice&quot;: [
+              &quot;Cash deposit from daily branch activity&quot;,
+              &quot;Cash receipt settlement&quot;,
+              &quot;Cash deposit for local operations&quot;
+            ]
+          },
+          &quot;status&quot;: &quot;completed&quot;,
+          &quot;timestamp&quot;: &quot;__NOW__&quot;
+        },
+        {
+          &quot;transaction_id&quot;: &quot;__AUTO__&quot;,
+          &quot;account_id&quot;: &quot;acc_0028&quot;,
+          &quot;counterparty_id&quot;: &quot;acc_0028&quot;,
+          &quot;amount&quot;: {
+            &quot;random&quot;: [
+              9100,
+              9950
+            ]
+          },
+          &quot;currency&quot;: &quot;USD&quot;,
+          &quot;type&quot;: &quot;cash_deposit&quot;,
+          &quot;channel&quot;: &quot;branch&quot;,
+          &quot;geolocation&quot;: {
+            &quot;country&quot;: &quot;US&quot;,
+            &quot;city&quot;: &quot;Miami&quot;
+          },
+          &quot;narrative&quot;: {
+            &quot;choice&quot;: [
+              &quot;Cash deposit from daily branch activity&quot;,
+              &quot;Cash receipt settlement&quot;,
+              &quot;Cash deposit for local operations&quot;
+            ]
+          },
+          &quot;status&quot;: &quot;completed&quot;,
+          &quot;timestamp&quot;: &quot;__NOW__&quot;
+        },
+        {
+          &quot;transaction_id&quot;: &quot;__AUTO__&quot;,
+          &quot;account_id&quot;: &quot;acc_0028&quot;,
+          &quot;counterparty_id&quot;: &quot;acc_0028&quot;,
+          &quot;amount&quot;: {
+            &quot;random&quot;: [
+              9100,
+              9950
+            ]
+          },
+          &quot;currency&quot;: &quot;USD&quot;,
+          &quot;type&quot;: &quot;cash_deposit&quot;,
+          &quot;channel&quot;: &quot;branch&quot;,
+          &quot;geolocation&quot;: {
+            &quot;country&quot;: &quot;US&quot;,
+            &quot;city&quot;: &quot;Miami&quot;
+          },
+          &quot;narrative&quot;: {
+            &quot;choice&quot;: [
+              &quot;Cash deposit from daily branch activity&quot;,
+              &quot;Cash receipt settlement&quot;,
+              &quot;Cash deposit for local operations&quot;
+            ]
+          },
+          &quot;status&quot;: &quot;completed&quot;,
+          &quot;timestamp&quot;: &quot;__NOW__&quot;
+        },
+        {
+          &quot;transaction_id&quot;: &quot;__AUTO__&quot;,
+          &quot;account_id&quot;: &quot;acc_0028&quot;,
+          &quot;counterparty_id&quot;: &quot;acc_0028&quot;,
+          &quot;amount&quot;: {
+            &quot;random&quot;: [
+              9100,
+              9950
+            ]
+          },
+          &quot;currency&quot;: &quot;USD&quot;,
+          &quot;type&quot;: &quot;cash_deposit&quot;,
+          &quot;channel&quot;: &quot;branch&quot;,
+          &quot;geolocation&quot;: {
+            &quot;country&quot;: &quot;US&quot;,
+            &quot;city&quot;: &quot;Miami&quot;
+          },
+          &quot;narrative&quot;: {
+            &quot;choice&quot;: [
+              &quot;Cash deposit from daily branch activity&quot;,
+              &quot;Cash receipt settlement&quot;,
+              &quot;Cash deposit for local operations&quot;
+            ]
+          },
+          &quot;status&quot;: &quot;completed&quot;,
+          &quot;timestamp&quot;: &quot;__NOW__&quot;
+        }
+      ]
+    },
+    &quot;round-trip&quot;: {
+      &quot;title&quot;: &quot;Round-Trip Flow&quot;,
+      &quot;description&quot;: &quot;Three-hop circular transfer A-&gt;B-&gt;C-&gt;A.&quot;,
+      &quot;watch&quot;: [
+        &quot;Pattern detection should identify circular flow.&quot;,
+        &quot;Summary should mention round-tripping behavior.&quot;,
+        &quot;Related accounts may get risk updates.&quot;
+      ],
+      &quot;documents&quot;: [
+        {
+          &quot;transaction_id&quot;: &quot;__AUTO__&quot;,
+          &quot;account_id&quot;: &quot;acc_0015&quot;,
+          &quot;counterparty_id&quot;: &quot;acc_0025&quot;,
+          &quot;amount&quot;: {
+            &quot;random&quot;: [
+              120000,
+              220000
+            ]
+          },
+          &quot;currency&quot;: &quot;USD&quot;,
+          &quot;type&quot;: &quot;wire_transfer&quot;,
+          &quot;channel&quot;: &quot;swift&quot;,
+          &quot;geolocation&quot;: {
+            &quot;country&quot;: &quot;CH&quot;,
+            &quot;city&quot;: &quot;Zurich&quot;
+          },
+          &quot;narrative&quot;: &quot;Investment allocation transfer&quot;,
+          &quot;status&quot;: &quot;completed&quot;,
+          &quot;timestamp&quot;: &quot;__NOW__&quot;
+        },
+        {
+          &quot;transaction_id&quot;: &quot;__AUTO__&quot;,
+          &quot;account_id&quot;: &quot;acc_0025&quot;,
+          &quot;counterparty_id&quot;: &quot;acc_0035&quot;,
+          &quot;amount&quot;: {
+            &quot;random&quot;: [
+              115000,
+              210000
+            ]
+          },
+          &quot;currency&quot;: &quot;USD&quot;,
+          &quot;type&quot;: &quot;wire_transfer&quot;,
+          &quot;channel&quot;: &quot;swift&quot;,
+          &quot;geolocation&quot;: {
+            &quot;country&quot;: &quot;HK&quot;,
+            &quot;city&quot;: &quot;Hong Kong&quot;
+          },
+          &quot;narrative&quot;: &quot;Intercompany treasury adjustment&quot;,
+          &quot;status&quot;: &quot;completed&quot;,
+          &quot;timestamp&quot;: &quot;__NOW__&quot;
+        },
+        {
+          &quot;transaction_id&quot;: &quot;__AUTO__&quot;,
+          &quot;account_id&quot;: &quot;acc_0035&quot;,
+          &quot;counterparty_id&quot;: &quot;acc_0015&quot;,
+          &quot;amount&quot;: {
+            &quot;random&quot;: [
+              110000,
+              205000
+            ]
+          },
+          &quot;currency&quot;: &quot;USD&quot;,
+          &quot;type&quot;: &quot;wire_transfer&quot;,
+          &quot;channel&quot;: &quot;swift&quot;,
+          &quot;geolocation&quot;: {
+            &quot;country&quot;: &quot;SG&quot;,
+            &quot;city&quot;: &quot;Singapore&quot;
+          },
+          &quot;narrative&quot;: &quot;Portfolio balancing transfer&quot;,
+          &quot;status&quot;: &quot;completed&quot;,
+          &quot;timestamp&quot;: &quot;__NOW__&quot;
+        }
+      ]
+    },
+    &quot;layering&quot;: {
+      &quot;title&quot;: &quot;Layering Across Jurisdictions&quot;,
+      &quot;description&quot;: &quot;Four SWIFT hops US-&gt;HK-&gt;KY-&gt;CH with slight value decay.&quot;,
+      &quot;watch&quot;: [
+        &quot;Pattern detection should identify layering behavior.&quot;,
+        &quot;High-risk jurisdiction controls should trigger on KY hop.&quot;,
+        &quot;Cascade can propagate risk to linked entities.&quot;
+      ],
+      &quot;documents&quot;: [
+        {
+          &quot;transaction_id&quot;: &quot;__AUTO__&quot;,
+          &quot;account_id&quot;: &quot;acc_0003&quot;,
+          &quot;counterparty_id&quot;: &quot;acc_0019&quot;,
+          &quot;amount&quot;: {
+            &quot;random&quot;: [
+              180000,
+              320000
+            ]
+          },
+          &quot;currency&quot;: &quot;USD&quot;,
+          &quot;type&quot;: &quot;wire_transfer&quot;,
+          &quot;channel&quot;: &quot;swift&quot;,
+          &quot;geolocation&quot;: {
+            &quot;country&quot;: &quot;US&quot;,
+            &quot;city&quot;: &quot;New York&quot;
+          },
+          &quot;narrative&quot;: &quot;Cross-border settlement transfer&quot;,
+          &quot;status&quot;: &quot;completed&quot;,
+          &quot;timestamp&quot;: &quot;__NOW__&quot;
+        },
+        {
+          &quot;transaction_id&quot;: &quot;__AUTO__&quot;,
+          &quot;account_id&quot;: &quot;acc_0019&quot;,
+          &quot;counterparty_id&quot;: &quot;acc_0038&quot;,
+          &quot;amount&quot;: {
+            &quot;random&quot;: [
+              175000,
+              315000
+            ]
+          },
+          &quot;currency&quot;: &quot;USD&quot;,
+          &quot;type&quot;: &quot;wire_transfer&quot;,
+          &quot;channel&quot;: &quot;swift&quot;,
+          &quot;geolocation&quot;: {
+            &quot;country&quot;: &quot;HK&quot;,
+            &quot;city&quot;: &quot;Hong Kong&quot;
+          },
+          &quot;narrative&quot;: &quot;Strategic reserve movement&quot;,
+          &quot;status&quot;: &quot;completed&quot;,
+          &quot;timestamp&quot;: &quot;__NOW__&quot;
+        },
+        {
+          &quot;transaction_id&quot;: &quot;__AUTO__&quot;,
+          &quot;account_id&quot;: &quot;acc_0038&quot;,
+          &quot;counterparty_id&quot;: &quot;acc_0046&quot;,
+          &quot;amount&quot;: {
+            &quot;random&quot;: [
+              170000,
+              310000
+            ]
+          },
+          &quot;currency&quot;: &quot;USD&quot;,
+          &quot;type&quot;: &quot;wire_transfer&quot;,
+          &quot;channel&quot;: &quot;swift&quot;,
+          &quot;geolocation&quot;: {
+            &quot;country&quot;: &quot;KY&quot;,
+            &quot;city&quot;: &quot;George Town&quot;
+          },
+          &quot;narrative&quot;: &quot;Liquidity routing transfer&quot;,
+          &quot;status&quot;: &quot;completed&quot;,
+          &quot;timestamp&quot;: &quot;__NOW__&quot;
+        },
+        {
+          &quot;transaction_id&quot;: &quot;__AUTO__&quot;,
+          &quot;account_id&quot;: &quot;acc_0046&quot;,
+          &quot;counterparty_id&quot;: &quot;acc_0009&quot;,
+          &quot;amount&quot;: {
+            &quot;random&quot;: [
+              165000,
+              305000
+            ]
+          },
+          &quot;currency&quot;: &quot;USD&quot;,
+          &quot;type&quot;: &quot;wire_transfer&quot;,
+          &quot;channel&quot;: &quot;swift&quot;,
+          &quot;geolocation&quot;: {
+            &quot;country&quot;: &quot;CH&quot;,
+            &quot;city&quot;: &quot;Geneva&quot;
+          },
+          &quot;narrative&quot;: &quot;Offshore vehicle funding movement&quot;,
+          &quot;status&quot;: &quot;completed&quot;,
+          &quot;timestamp&quot;: &quot;__NOW__&quot;
+        }
+      ]
+    },
+    &quot;big-one&quot;: {
+      &quot;title&quot;: &quot;Single High-Risk Wire&quot;,
+      &quot;description&quot;: &quot;One large pending-review SWIFT wire from Cayman Islands.&quot;,
+      &quot;watch&quot;: [
+        &quot;Risk score should be high or critical.&quot;,
+        &quot;Flags should include high-value and jurisdiction rules.&quot;,
+        &quot;Policy and cascade activity should appear in reaction_timeline.&quot;
+      ],
+      &quot;documents&quot;: [
+        {
+          &quot;transaction_id&quot;: &quot;__AUTO__&quot;,
+          &quot;account_id&quot;: &quot;acc_0042&quot;,
+          &quot;counterparty_id&quot;: &quot;acc_0049&quot;,
+          &quot;amount&quot;: {
+            &quot;random&quot;: [
+              500000,
+              1200000
+            ]
+          },
+          &quot;currency&quot;: &quot;USD&quot;,
+          &quot;type&quot;: &quot;wire_transfer&quot;,
+          &quot;channel&quot;: &quot;swift&quot;,
+          &quot;geolocation&quot;: {
+            &quot;country&quot;: &quot;KY&quot;,
+            &quot;city&quot;: &quot;George Town&quot;
+          },
+          &quot;narrative&quot;: &quot;Consulting fees - offshore vehicle administration&quot;,
+          &quot;status&quot;: &quot;pending_review&quot;,
+          &quot;timestamp&quot;: &quot;__NOW__&quot;
+        }
+      ]
+    }
+  },
+  &quot;custom_template&quot;: {
+    &quot;account_id&quot;: &quot;acc_0012&quot;,
+    &quot;counterparty_id&quot;: &quot;acc_0030&quot;,
+    &quot;currency&quot;: &quot;USD&quot;,
+    &quot;channel&quot;: &quot;api&quot;,
+    &quot;city&quot;: &quot;Unknown&quot;,
+    &quot;status&quot;: &quot;completed&quot;
+  }
+}</file><file path="reasoners/__init__.py"></file><file path="reasoners/router.py">router = AgentRouter(tags=[&quot;reactive-intelligence&quot;])</file><file path=".dockerignore">.git
+.env
+__pycache__
+*.pyc
+.venv</file><file path="domains/ecommerce/config.json">{
+  &quot;domain&quot;: &quot;ecommerce&quot;,
+  &quot;display_name&quot;: &quot;E-Commerce Order Intelligence&quot;,
+  &quot;description&quot;: &quot;Fraud detection and risk assessment for online orders&quot;,
+  &quot;document_collection&quot;: &quot;orders&quot;,
+  &quot;document_id_field&quot;: &quot;order_id&quot;,
+  &quot;entity_collection&quot;: &quot;customers&quot;,
+  &quot;entity_id_field&quot;: &quot;customer_id&quot;,
+  &quot;rules_collection&quot;: &quot;fraud_rules&quot;,
+  &quot;context_loading&quot;: {
+    &quot;entity_lookup_field&quot;: &quot;customer_id&quot;,
+    &quot;counterparty_field&quot;: null,
+    &quot;history_collection&quot;: &quot;orders&quot;,
+    &quot;history_match_fields&quot;: [
+      &quot;customer_id&quot;
+    ],
+    &quot;history_limit&quot;: 30
+  },
+  &quot;enrichment_schema&quot;: {
+    &quot;risk_score&quot;: &quot;float 0.0-1.0 indicating fraud probability&quot;,
+    &quot;risk_category&quot;: &quot;one of: low, medium, high, critical&quot;,
+    &quot;pattern_match&quot;: &quot;detected fraud pattern or &apos;none&apos; (e.g. friendly_fraud, velocity_abuse, synthetic_identity, card_testing, account_takeover)&quot;,
+    &quot;flags&quot;: &quot;list of applicable fraud rule IDs from the fraud_rules collection&quot;,
+    &quot;summary&quot;: &quot;2-3 sentence fraud assessment&quot;,
+    &quot;evidence&quot;: &quot;list of {fact, source, weight} objects supporting the assessment&quot;,
+    &quot;recommended_actions&quot;: &quot;list of actions: hold, escalate, review_counterparty, enhanced_monitoring, clear, investigate_network&quot;,
+    &quot;confidence&quot;: &quot;float 0.0-1.0 confidence in assessment&quot;,
+    &quot;related_entities_flagged&quot;: &quot;entity IDs warranting investigation&quot;,
+    &quot;investigation_depth&quot;: &quot;triage_only, standard, or deep&quot;
+  },
+  &quot;cascade_config&quot;: {
+    &quot;risk_threshold&quot;: 0.7,
+    &quot;update_entities&quot;: true,
+    &quot;reenrich_related&quot;: true,
+    &quot;counterparty_threshold&quot;: null,
+    &quot;max_reenrich&quot;: 5
+  },
+  &quot;analysis_prompt&quot;: &quot;You are an e-commerce fraud analyst reviewing an incoming order for potential payment abuse, account compromise, or synthetic identity behavior. Evaluate whether the order amount is materially different from the customer&apos;s average order value and lifetime purchasing pattern. Compare shipping and billing details, and treat country-level or unusual city-level mismatches as elevated risk signals when combined with other anomalies. Factor in item category risk, especially high-resale electronics, gift cards, luxury goods, and expedited shipping combinations. Consider account age, verification state, and whether order velocity suggests card testing or takeover behavior within short time windows. Review payment method consistency and identify sudden switches to unfamiliar cards, crypto, or high-friction payment paths that differ from customer history. Use the fraud rules as evidence and cite exact rule IDs such as VELOCITY-001, IDENTITY-002, PAYMENT-001, SHIPPING-001, and AMOUNT-002 when relevant. If behavior appears consistent with legitimate history and no meaningful fraud indicators are present, set pattern_match to \&quot;none\&quot; and keep risk_score below 0.3. Only include precise, defensible flags and avoid broad or speculative tagging. Return output that strictly follows the enrichment schema with a calibrated risk score, categorical risk label, clear pattern match, exact rule flags, and a concise 2-3 sentence summary.&quot;,
+  &quot;policy_prompt&quot;: &quot;Evaluate this order against each policy using judgment. Consider the order details, customer history, and fraud signals. A policy triggers when the order meaningfully matches the policy intent.&quot;
+}</file><file path="domains/finance/config.json">{
+  &quot;domain&quot;: &quot;finance&quot;,
+  &quot;display_name&quot;: &quot;Financial Transaction Intelligence&quot;,
+  &quot;description&quot;: &quot;AML compliance and financial crime detection&quot;,
+  &quot;document_collection&quot;: &quot;transactions&quot;,
+  &quot;document_id_field&quot;: &quot;transaction_id&quot;,
+  &quot;entity_collection&quot;: &quot;accounts&quot;,
+  &quot;entity_id_field&quot;: &quot;account_id&quot;,
+  &quot;rules_collection&quot;: &quot;compliance_rules&quot;,
+  &quot;context_loading&quot;: {
+    &quot;entity_lookup_field&quot;: &quot;account_id&quot;,
+    &quot;counterparty_field&quot;: &quot;counterparty_id&quot;,
+    &quot;history_collection&quot;: &quot;transactions&quot;,
+    &quot;history_match_fields&quot;: [
+      &quot;account_id&quot;,
+      &quot;counterparty_id&quot;
+    ],
+    &quot;history_limit&quot;: 50
+  },
+  &quot;enrichment_schema&quot;: {
+    &quot;risk_score&quot;: &quot;float 0.0-1.0 indicating overall risk&quot;,
+    &quot;risk_category&quot;: &quot;one of: low, medium, high, critical&quot;,
+    &quot;pattern_match&quot;: &quot;detected pattern name or &apos;none&apos;&quot;,
+    &quot;flags&quot;: &quot;list of applicable rule IDs from the rules collection&quot;,
+    &quot;summary&quot;: &quot;2-3 sentence executive summary&quot;,
+    &quot;evidence&quot;: &quot;list of {fact, source, weight} objects supporting the assessment&quot;,
+    &quot;recommended_actions&quot;: &quot;list of actions: hold, escalate, review_counterparty, enhanced_monitoring, clear, investigate_network&quot;,
+    &quot;confidence&quot;: &quot;float 0.0-1.0 confidence in assessment&quot;,
+    &quot;related_entities_flagged&quot;: &quot;entity IDs warranting investigation&quot;,
+    &quot;investigation_depth&quot;: &quot;triage_only, standard, or deep&quot;
+  },
+  &quot;cascade_config&quot;: {
+    &quot;risk_threshold&quot;: 0.7,
+    &quot;update_entities&quot;: true,
+    &quot;reenrich_related&quot;: true,
+    &quot;counterparty_threshold&quot;: 0.8,
+    &quot;max_reenrich&quot;: 10
+  },
+  &quot;analysis_prompt&quot;: &quot;You are a financial crime analyst performing anti-money-laundering risk assessment for a banking transaction. Evaluate the transaction in context of account profile, jurisdiction exposure, transaction type, amount, and narrative quality. Consider whether activity fits known typologies such as structuring, layering, round-tripping, velocity abuse, sanctions evasion, or shell-entity movement. Weigh historical behavior and linked counterparty patterns when estimating risk. Use the provided rules as constraints and cite the most relevant rule IDs in flags when they materially apply. Keep risk scoring calibrated: clean routine behavior should remain low, while multi-signal suspicious behavior should be high or critical. Explain the key drivers in a concise executive summary that a compliance officer can act on. If no suspicious pattern is found, set pattern_match to none and keep risk proportionate.&quot;,
+  &quot;policy_prompt&quot;: &quot;Evaluate this document against each policy using judgment, not literal string matching.&quot;
+}</file><file path=".env.example"># Required
+OPENROUTER_API_KEY=sk-or-v1-...
+
+# Required - MongoDB Atlas connection string
+# Get from: Atlas UI -&gt; Your Cluster -&gt; Connect -&gt; Drivers -&gt; Copy connection string
+MONGODB_URI=mongodb+srv://USERNAME:PASSWORD@cluster0.XXXXX.mongodb.net/reactive_intelligence?retryWrites=true&amp;w=majority
+
+# Required for Atlas Triggers - public URL from cloudflared tunnel
+# Run: cloudflared tunnel --url http://localhost:8092
+# Copy the https://xxx.trycloudflare.com URL
+AGENTFIELD_PUBLIC_URL=https://xxx.trycloudflare.com
+
+# Optional
+MONGODB_DATABASE=reactive_intelligence
+AI_MODEL=openrouter/minimax/minimax-m2.5</file><file path=".gitignore">__pycache__/
+*.pyc
+.env
+*.egg-info/
+.DS_Store
+.docker-sdk/
+agentfield-sdk/</file><file path="docker-compose.yml">services:
+  control-plane:
+    image: agentfield/control-plane:latest
+    environment:
+      AGENTFIELD_HTTP_ADDR: 0.0.0.0:8080
+      AGENTFIELD_STORAGE_MODE: local
+    ports:
+      - &quot;8092:8080&quot;
+    volumes:
+      - agentfield-data:/data
+    restart: unless-stopped
+  reactive-intelligence:
+    build: .
+    env_file: .env
+    environment:
+      AGENTFIELD_SERVER: http://control-plane:8080
+      AGENT_CALLBACK_URL: http://reactive-intelligence:8001
+      PORT: &quot;8001&quot;
+      AI_MODEL: ${AI_MODEL:-openrouter/minimax/minimax-m2.5}
+      MONGODB_DATABASE: ${MONGODB_DATABASE:-reactive_intelligence}
+    ports:
+      - &quot;8004:8001&quot;
+    depends_on:
+      control-plane:
+        condition: service_started
+    restart: unless-stopped
+volumes:
+  agentfield-data:</file><file path="Dockerfile">FROM python:3.12-slim
+
+WORKDIR /app
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY . .
+
+CMD [&quot;python&quot;, &quot;main.py&quot;]</file><file path="LICENSE">Apache License
+                           Version 2.0, January 2004
+                        http://www.apache.org/licenses/
+
+   TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
+
+   1. Definitions.
+
+      &quot;License&quot; shall mean the terms and conditions for use, reproduction,
+      and distribution as defined by Sections 1 through 9 of this document.
+
+      &quot;Licensor&quot; shall mean the copyright owner or entity authorized by
+      the copyright owner that is granting the License.
+
+      &quot;Legal Entity&quot; shall mean the union of the acting entity and all
+      other entities that control, are controlled by, or are under common
+      control with that entity. For the purposes of this definition,
+      &quot;control&quot; means (i) the power, direct or indirect, to cause the
+      direction or management of such entity, whether by contract or
+      otherwise, or (ii) ownership of fifty percent (50%) or more of the
+      outstanding shares, or (iii) beneficial ownership of such entity.
+
+      &quot;You&quot; (or &quot;Your&quot;) shall mean an individual or Legal Entity
+      exercising permissions granted by this License.
+
+      &quot;Source&quot; form shall mean the preferred form for making modifications,
+      including but not limited to software source code, documentation
+      source, and configuration files.
+
+      &quot;Object&quot; form shall mean any form resulting from mechanical
+      transformation or translation of a Source form, including but
+      not limited to compiled object code, generated documentation,
+      and conversions to other media types.
+
+      &quot;Work&quot; shall mean the work of authorship, whether in Source or
+      Object form, made available under the License, as indicated by a
+      copyright notice that is included in or attached to the work
+      (an example is provided in the Appendix below).
+
+      &quot;Derivative Works&quot; shall mean any work, whether in Source or Object
+      form, that is based on (or derived from) the Work and for which the
+      editorial revisions, annotations, elaborations, or other modifications
+      represent, as a whole, an original work of authorship. For the purposes
+      of this License, Derivative Works shall not include works that remain
+      separable from, or merely link (or bind by name) to the interfaces of,
+      the Work and Derivative Works thereof.
+
+      &quot;Contribution&quot; shall mean any work of authorship, including
+      the original version of the Work and any modifications or additions
+      to that Work or Derivative Works thereof, that is intentionally
+      submitted to the Licensor for inclusion in the Work by the copyright owner
+      or by an individual or Legal Entity authorized to submit on behalf of
+      the copyright owner. For the purposes of this definition, &quot;submitted&quot;
+      means any form of electronic, verbal, or written communication sent
+      to the Licensor or its representatives, including but not limited to
+      communication on electronic mailing lists, source code control systems,
+      and issue tracking systems that are managed by, or on behalf of, the
+      Licensor for the purpose of discussing and improving the Work, but
+      excluding communication that is conspicuously marked or otherwise
+      designated in writing by the copyright owner as &quot;Not a Contribution.&quot;
+
+      &quot;Contributor&quot; shall mean Licensor and any individual or Legal Entity
+      on behalf of whom a Contribution has been received by the Licensor and
+      subsequently incorporated within the Work.
+
+   2. Grant of Copyright License. Subject to the terms and conditions of
+      this License, each Contributor hereby grants to You a perpetual,
+      worldwide, non-exclusive, no-charge, royalty-free, irrevocable
+      copyright license to reproduce, prepare Derivative Works of,
+      publicly display, publicly perform, sublicense, and distribute the
+      Work and such Derivative Works in Source or Object form.
+
+   3. Grant of Patent License. Subject to the terms and conditions of
+      this License, each Contributor hereby grants to You a perpetual,
+      worldwide, non-exclusive, no-charge, royalty-free, irrevocable
+      (except as stated in this section) patent license to make, have made,
+      use, offer to sell, sell, import, and otherwise transfer the Work,
+      where such license applies only to those patent claims licensable
+      by such Contributor that are necessarily infringed by their
+      Contribution(s) alone or by combination of their Contribution(s)
+      with the Work to which such Contribution(s) was submitted. If You
+      institute patent litigation against any entity (including a
+      cross-claim or counterclaim in a lawsuit) alleging that the Work
+      or a Contribution incorporated within the Work constitutes direct
+      or contributory patent infringement, then any patent licenses
+      granted to You under this License for that Work shall terminate
+      as of the date such litigation is filed.
+
+   4. Redistribution. You may reproduce and distribute copies of the
+      Work or Derivative Works thereof in any medium, with or without
+      modifications, and in Source or Object form, provided that You
+      meet the following conditions:
+
+      (a) You must give any other recipients of the Work or
+          Derivative Works a copy of this License; and
+
+      (b) You must cause any modified files to carry prominent notices
+          stating that You changed the files; and
+
+      (c) You must retain, in the Source form of any Derivative Works
+          that You distribute, all copyright, patent, trademark, and
+          attribution notices from the Source form of the Work,
+          excluding those notices that do not pertain to any part of
+          the Derivative Works; and
+
+      (d) If the Work includes a &quot;NOTICE&quot; text file as part of its
+          distribution, then any Derivative Works that You distribute must
+          include a readable copy of the attribution notices contained
+          within such NOTICE file, excluding any notices that do not
+          pertain to any part of the Derivative Works, in at least one
+          of the following places: within a NOTICE text file distributed
+          as part of the Derivative Works; within the Source form or
+          documentation, if provided along with the Derivative Works; or,
+          within a display generated by the Derivative Works, if and
+          wherever such third-party notices normally appear. The contents
+          of the NOTICE file are for informational purposes only and
+          do not modify the License. You may add Your own attribution
+          notices within Derivative Works that You distribute, alongside
+          or as an addendum to the NOTICE text from the Work, provided
+          that such additional attribution notices cannot be construed
+          as modifying the License.
+
+      You may add Your own copyright statement to Your modifications and
+      may provide additional or different license terms and conditions
+      for use, reproduction, or distribution of Your modifications, or
+      for any such Derivative Works as a whole, provided Your use,
+      reproduction, and distribution of the Work otherwise complies with
+      the conditions stated in this License.
+
+   5. Submission of Contributions. Unless You explicitly state otherwise,
+      any Contribution intentionally submitted for inclusion in the Work
+      by You to the Licensor shall be under the terms and conditions of
+      this License, without any additional terms or conditions.
+      Notwithstanding the above, nothing herein shall supersede or modify
+      the terms of any separate license agreement you may have executed
+      with Licensor regarding such Contributions.
+
+   6. Trademarks. This License does not grant permission to use the trade
+      names, trademarks, service marks, or product names of the Licensor,
+      except as required for reasonable and customary use in describing the
+      origin of the Work and reproducing the content of the NOTICE file.
+
+   7. Disclaimer of Warranty. Unless required by applicable law or
+      agreed to in writing, Licensor provides the Work (and each
+      Contributor provides its Contributions) on an &quot;AS IS&quot; BASIS,
+      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+      implied, including, without limitation, any warranties or conditions
+      of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A
+      PARTICULAR PURPOSE. You are solely responsible for determining the
+      appropriateness of using or redistributing the Work and assume any
+      risks associated with Your exercise of permissions under this License.
+
+   8. Limitation of Liability. In no event and under no legal theory,
+      whether in tort (including negligence), contract, or otherwise,
+      unless required by applicable law (such as deliberate and grossly
+      negligent acts) or agreed to in writing, shall any Contributor be
+      liable to You for damages, including any direct, indirect, special,
+      incidental, or consequential damages of any character arising as a
+      result of this License or out of the use or inability to use the
+      Work (including but not limited to damages for loss of goodwill,
+      work stoppage, computer failure or malfunction, or any and all
+      other commercial damages or losses), even if such Contributor
+      has been advised of the possibility of such damages.
+
+   9. Accepting Warranty or Additional Liability. While redistributing
+      the Work or Derivative Works thereof, You may choose to offer,
+      and charge a fee for, acceptance of support, warranty, indemnity,
+      or other liability obligations and/or rights consistent with this
+      License. However, in accepting such obligations, You may act only
+      on Your own behalf and on Your sole responsibility, not on behalf
+      of any other Contributor, and only if You agree to indemnify,
+      defend, and hold each Contributor harmless for any liability
+      incurred by, or claims asserted against, such Contributor by reason
+      of your accepting any such warranty or additional liability.
+
+   END OF TERMS AND CONDITIONS
+
+   Copyright 2025 AgentField Contributors
+
+   Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.</file><file path="Makefile">.PHONY: up down build logs seed demo reset status tunnel list poll
+
+ifneq (,$(wildcard ./.env))
+include .env
+export
+endif
+
+DOMAIN ?= finance
+SCENARIO ?= clean
+
+up:
+	docker compose up --build -d
+
+down:
+	docker compose down
+
+build:
+	docker compose build
+
+logs:
+	docker compose logs -f reactive-intelligence
+
+seed:
+	@test -n &quot;$(MONGODB_URI)&quot; || (echo &quot;MONGODB_URI is required. Add it to .env&quot; &amp;&amp; exit 1)
+	python3 setup/seed.py $(DOMAIN)
+
+seed-all:
+	@test -n &quot;$(MONGODB_URI)&quot; || (echo &quot;MONGODB_URI is required. Add it to .env&quot; &amp;&amp; exit 1)
+	python3 setup/seed.py all
+
+demo:
+	python3 demo.py $(DOMAIN) $(SCENARIO)
+
+reset:
+	python3 demo.py $(DOMAIN) reset
+
+status:
+	python3 demo.py $(DOMAIN) status
+
+list:
+	python3 demo.py list
+
+tunnel:
+	cloudflared tunnel --url http://localhost:8092
+
+ID ?=
+poll:
+	@test -n &quot;$(ID)&quot; || (echo &quot;Usage: make poll ID=&lt;execution_id&gt;&quot; &amp;&amp; exit 1)
+	@curl -s http://localhost:8092/api/v1/executions/$(ID) | python3 -m json.tool</file><file path="railway.toml">[build]
+builder = &quot;dockerfile&quot;
+dockerfilePath = &quot;Dockerfile&quot;
+
+[deploy]
+startCommand = &quot;bash -c &apos;python setup/seed.py all; echo Starting agent...; exec python -u main.py&apos;&quot;
+restartPolicyType = &quot;on_failure&quot;
+restartPolicyMaxRetries = 3</file><file path="requirements.txt">agentfield
+pydantic&gt;=2.0
+httpx
+pymongo[srv]
+openai
+python-dotenv</file><file path="reasoners/intelligence.py">def _build_rule_query(document: dict[str, Any]) -&gt; str
+⋮----
+geo = document.get(&quot;geolocation&quot;) or document.get(&quot;shipping_address&quot;) or {}
+items = document.get(&quot;items&quot;, [])
+categories = &quot; &quot;.join(
+parts = [
+⋮----
+triage_result = await router.ai(
+⋮----
+context_loading = domain_config.get(&quot;context_loading&quot;, {})
+entity_lookup_field = context_loading.get(&quot;entity_lookup_field&quot;)
+history_collection = context_loading.get(&quot;history_collection&quot;)
+history_match_fields = context_loading.get(&quot;history_match_fields&quot;, [])
+history_limit = int(context_loading.get(&quot;history_limit&quot;, 50))
+entity_collection = domain_config.get(&quot;entity_collection&quot;)
+entity_id_field = domain_config.get(&quot;entity_id_field&quot;)
+rules_collection = domain_config.get(&quot;rules_collection&quot;)
+⋮----
+entity_id = document.get(entity_lookup_field) if entity_lookup_field else None
+⋮----
+entity_task = router.app.call(
+rules_task = router.app.call(
+⋮----
+related_tasks: list[Any] = []
+⋮----
+value = document.get(field_name)
+⋮----
+gathered = await asyncio.gather(entity_task, rules_task, *related_tasks)
+entity_result = gathered[0]
+rules_result = gathered[1]
+related_results = gathered[2:]
+⋮----
+entity = entity_result.get(&quot;entity&quot;, {})
+rules = rules_result.get(&quot;rules&quot;, [])
+⋮----
+related_documents_map: dict[str, dict[str, Any]] = {}
+doc_id_field = domain_config.get(&quot;document_id_field&quot;)
+⋮----
+key = related_doc.get(doc_id_field) if doc_id_field else None
+⋮----
+related_documents = list(related_documents_map.values())
+deep_context_available = bool(counterparty_context) or bool(recent_high_risk)
+⋮----
+intelligence = await router.ai(
+⋮----
+result = await router.ai(
+⋮----
+evaluations = [e.model_dump() for e in result.evaluations]
+any_triggered = any(e[&quot;triggered&quot;] for e in evaluations)
+⋮----
+network_insight = await router.ai(
+⋮----
+cascade_config = domain_config.get(&quot;cascade_config&quot;, {})
+⋮----
+document_collection = domain_config.get(&quot;document_collection&quot;)
+document_id_field = domain_config.get(&quot;document_id_field&quot;)
+⋮----
+counterparty_field = context_loading.get(&quot;counterparty_field&quot;)
+history_collection = context_loading.get(&quot;history_collection&quot;, document_collection)
+⋮----
+risk_score = float(intelligence.get(&quot;risk_score&quot;, 0))
+risk_threshold = float(cascade_config.get(&quot;risk_threshold&quot;, 0.7))
+ct_raw = cascade_config.get(&quot;counterparty_threshold&quot;)
+counterparty_threshold = float(ct_raw) if ct_raw is not None else float(&quot;inf&quot;)
+update_entities = bool(cascade_config.get(&quot;update_entities&quot;, True))
+reenrich_related = bool(cascade_config.get(&quot;reenrich_related&quot;, True))
+max_reenrich = int(cascade_config.get(&quot;max_reenrich&quot;, 10))
+⋮----
+entity_updates: list[str] = []
+documents_reenriched = 0
+trigger_doc_id = (
+⋮----
+entity_lookup_key = (
+counterparty_key = (
+doc_id_key = document_id_field if isinstance(document_id_field, str) else None
+⋮----
+entity_id = document.get(entity_lookup_key)
+⋮----
+related_result = await router.app.call(
+related = related_result.get(&quot;documents&quot;, [])
+unenriched = [
+⋮----
+tasks = [
+results = await asyncio.gather(*tasks, return_exceptions=True)
+⋮----
+counterparty_id = str(document.get(counterparty_key))
+⋮----
+recent_high_risk_result = await router.app.call(
+related_high_risk = recent_high_risk_result.get(&quot;documents&quot;, [])
+⋮----
+network_insight = await router.app.call(
+⋮----
+documents_affected = 1 + len(entity_updates) + documents_reenriched
+summary = (
+⋮----
+result = CascadeResult(
+⋮----
+doc_collection = domain_config.get(&quot;document_collection&quot;)
+⋮----
+doc_id = document.get(doc_id_field) if isinstance(doc_id_field, str) else None
+⋮----
+analysis = await router.app.call(
+⋮----
+config_result = await router.app.call(
+domain_config = config_result.get(&quot;config&quot;)
+⋮----
+doc_id_field = domain_config.get(&quot;document_id_field&quot;, &quot;id&quot;)
+doc_id = document.get(doc_id_field, &quot;unknown&quot;)
+⋮----
+triage = await router.app.call(
+⋮----
+investigation_needed = bool(triage.get(&quot;investigation_needed&quot;))
+investigation_depth = &quot;standard&quot;
+⋮----
+counterparty_context_task = None
+⋮----
+counterparty_context_task = router.app.call(
+⋮----
+recent_high_risk_task = router.app.call(
+⋮----
+counterparty_context = counterparty_result
+⋮----
+recent_high_risk_result = await recent_high_risk_task
+counterparty_context = None
+⋮----
+investigation_depth = &quot;deep&quot;
+⋮----
+risk_score = float(analysis.get(&quot;risk_score&quot;, 0))
+⋮----
+investigation_depth = &quot;triage_only&quot;
+⋮----
+policies_result = await router.app.call(
+policies = policies_result.get(&quot;policies&quot;, [])
+⋮----
+policy_result = await router.app.call(
+triggered_policies = [
+⋮----
+cascade_result = None
+⋮----
+cascade_result = await router.app.call(</file><file path="reasoners/skills.py">_client: MongoClient[dict[str, Any]] | None = None
+_db = None
+⋮----
+def _get_db()
+⋮----
+uri = os.getenv(&quot;MONGODB_URI&quot;)
+⋮----
+_client = MongoClient(uri)
+_db = _client[os.getenv(&quot;MONGODB_DATABASE&quot;, &quot;reactive_intelligence&quot;)]
+⋮----
+def _serialize(value: Any) -&gt; Any
+⋮----
+@router.skill()
+def load_domain_config(domain: str) -&gt; dict[str, Any]
+⋮----
+db = _get_db()
+config = db[&quot;domain_config&quot;].find_one({&quot;domain&quot;: domain}, {&quot;_id&quot;: 0})
+⋮----
+entity = db[entity_collection].find_one({entity_id_field: entity_id}, {&quot;_id&quot;: 0})
+⋮----
+query: dict[str, Any] = {match_field: match_value}
+⋮----
+docs = list(
+⋮----
+@router.skill()
+def load_rules(query: str, rules_collection: str, k: int = 6) -&gt; dict[str, Any]
+⋮----
+enrichment = dict(intelligence)
+⋮----
+existing = db[collection].find_one({id_field: document_id})
+⋮----
+@router.skill()
+def load_active_policies(domain: str) -&gt; dict[str, Any]
+⋮----
+policies = list(db[&quot;policies&quot;].find({&quot;active&quot;: True, &quot;domain&quot;: domain}, {&quot;_id&quot;: 0}))
+⋮----
+current = db[entity_collection].find_one(
+previous = current.get(&quot;risk_profile&quot;) if current else None
+result = db[entity_collection].update_one(
+⋮----
+@router.skill()
+def log_reaction(event: dict[str, Any]) -&gt; dict[str, Any]
+⋮----
+payload = dict(event)
+⋮----
+entity = db[entity_collection].find_one(
+recent_documents = list(
+⋮----
+cutoff = datetime.now(timezone.utc) - timedelta(hours=int(hours_window))
+query: dict[str, Any] = {
+⋮----
+@router.skill()
+def get_timeline(limit: int = 20, _: bool = True) -&gt; dict[str, Any]
+⋮----
+events = list(</file><file path="demo.py">BASE_DIR = Path(__file__).resolve().parent
+⋮----
+DOMAINS_DIR = BASE_DIR / &quot;domains&quot;
+⋮----
+def require_env(name: str) -&gt; str
+⋮----
+value = os.getenv(name, &quot;&quot;).strip()
+⋮----
+def get_db()
+⋮----
+mongodb_uri = require_env(&quot;MONGODB_URI&quot;)
+db_name = os.getenv(&quot;MONGODB_DATABASE&quot;, &quot;reactive_intelligence&quot;)
+⋮----
+def get_agentfield_url() -&gt; str
+⋮----
+def load_json(path: Path) -&gt; Any
+⋮----
+def list_domains() -&gt; list[str]
+⋮----
+domains = []
+⋮----
+def load_domain_files(domain: str) -&gt; tuple[dict[str, Any], dict[str, Any]]
+⋮----
+domain_dir = DOMAINS_DIR / domain
+⋮----
+config_path = domain_dir / &quot;config.json&quot;
+scenarios_path = domain_dir / &quot;scenarios.json&quot;
+⋮----
+def print_ui_urls()
+⋮----
+def new_document_id(prefix: str) -&gt; str
+⋮----
+timestamp = datetime.now(timezone.utc).strftime(&quot;%Y%m%d%H%M%S%f&quot;)
+⋮----
+def _resolve_value(value: Any, id_prefix: str) -&gt; Any
+⋮----
+options = value[&quot;choice&quot;]
+⋮----
+id_prefix = f&quot;{domain[:5]}_doc&quot;
+docs = []
+⋮----
+doc_id_field = config.get(&quot;document_id_field&quot;)
+⋮----
+def wait_for_enrichment(db, collection: str, id_field: str, document_ids: list[str])
+⋮----
+poll_seconds = 3
+timeout_seconds = max(30, len(document_ids) * 15)
+spinner = &quot;|/-\\&quot;
+start = time.time()
+tick = 0
+⋮----
+elapsed = int(time.time() - start)
+enriched = db[collection].count_documents(
+spin = spinner[tick % len(spinner)]
+⋮----
+payload_doc = {k: v for k, v in document.items() if k != &quot;_id&quot;}
+⋮----
+response = httpx.post(
+⋮----
+body = response.json()
+⋮----
+def show_results(db, config: dict[str, Any], documents: list[dict[str, Any]]) -&gt; None
+⋮----
+collection = config[&quot;document_collection&quot;]
+id_field = config[&quot;document_id_field&quot;]
+⋮----
+doc = db[collection].find_one(
+intelligence = doc.get(&quot;_intelligence&quot;) if doc else None
+⋮----
+amount = doc.get(&quot;amount&quot;)
+⋮----
+geo = doc.get(&quot;geolocation&quot;) or doc.get(&quot;shipping_address&quot;) or {}
+country = geo.get(&quot;country&quot;, &quot;??&quot;) if isinstance(geo, dict) else &quot;??&quot;
+amount_label = (
+⋮----
+flags = intelligence.get(&quot;flags&quot;, [])
+⋮----
+summary = intelligence.get(&quot;summary&quot;, &quot;&quot;)
+⋮----
+doc_type = doc.get(&quot;type&quot;) or doc.get(&quot;shipping_method&quot;) or &quot;?&quot;
+⋮----
+execution_ids = []
+⋮----
+execution_id = trigger_processing(doc, collection, domain)
+⋮----
+entity_collection = config[&quot;entity_collection&quot;]
+entity_id_field = config[&quot;entity_id_field&quot;]
+cascaded = list(
+⋮----
+timeline = list(
+⋮----
+ts = event.get(&quot;timestamp&quot;)
+ts_label = (
+⋮----
+watch_items = scenario_info.get(&quot;watch&quot;, [])
+⋮----
+def reset_domain_data(db, config: dict[str, Any]) -&gt; None
+⋮----
+context_loading = config.get(&quot;context_loading&quot;, {})
+⋮----
+def status(db, domain: str, config: dict[str, Any]) -&gt; None
+⋮----
+threshold = float(config.get(&quot;cascade_config&quot;, {}).get(&quot;risk_threshold&quot;, 0.7))
+total = db[collection].count_documents({})
+enriched = db[collection].count_documents({&quot;_intelligence&quot;: {&quot;$exists&quot;: True}})
+high_risk = db[collection].count_documents(
+cascaded = db[config[&quot;entity_collection&quot;]].count_documents(
+reactions = db[&quot;reaction_timeline&quot;].count_documents({&quot;domain&quot;: domain})
+⋮----
+defaults = scenarios.get(&quot;custom_template&quot;, {})
+⋮----
+entity_field = context_loading.get(
+counterparty_field = context_loading.get(&quot;counterparty_field&quot;)
+id_field = config.get(&quot;document_id_field&quot;)
+⋮----
+doc = dict(defaults)
+⋮----
+raw_geo = doc.get(&quot;geolocation&quot;)
+geolocation: dict[str, object] = dict(raw_geo) if isinstance(raw_geo, dict) else {}
+⋮----
+def show_domain_list()
+⋮----
+domains = list_domains()
+⋮----
+order = scenarios.get(&quot;order&quot;, [])
+⋮----
+def parse_args()
+⋮----
+parser = argparse.ArgumentParser(description=&quot;Reactive Atlas demo runner&quot;)
+⋮----
+def main()
+⋮----
+args = parse_args()
+⋮----
+scenario_order = scenarios_doc.get(&quot;order&quot;, [])
+scenario_map = scenarios_doc.get(&quot;scenarios&quot;, {})
+⋮----
+db = get_db()
+⋮----
+scenario_info = scenario_map.get(scenario_name, {})
+documents = build_documents_for_scenario(args.domain, config, scenario_info)
+⋮----
+custom_doc = build_custom_document(args, config, scenarios_doc)
+⋮----
+supported = scenario_order + [&quot;all&quot;, &quot;custom&quot;, &quot;reset&quot;, &quot;status&quot;]
+⋮----
+scenario_info = scenario_map[args.command]</file><file path="main.py">DOMAIN = os.getenv(&quot;DOMAIN&quot;, &quot;finance&quot;)
+⋮----
+app = Agent(</file><file path="models.py">class Evidence(BaseModel)
+⋮----
+fact: str = Field(description=&quot;Specific observable fact&quot;)
+source: str = Field(
+weight: Literal[&quot;strong&quot;, &quot;moderate&quot;, &quot;weak&quot;] = Field(
+⋮----
+class TriageResult(BaseModel)
+⋮----
+priority: Literal[&quot;low&quot;, &quot;routine&quot;, &quot;elevated&quot;, &quot;urgent&quot;, &quot;critical&quot;] = Field(
+signals: list[str] = Field(description=&quot;Initial observations from quick scan&quot;)
+investigation_needed: bool = Field(
+investigation_focus: list[str] = Field(
+⋮----
+class DocumentIntelligence(BaseModel)
+⋮----
+risk_score: float = Field(description=&quot;Risk score 0.0-1.0&quot;)
+risk_category: Literal[&quot;low&quot;, &quot;medium&quot;, &quot;high&quot;, &quot;critical&quot;] = Field(
+pattern_match: str = Field(description=&quot;Detected pattern name, or &apos;none&apos;&quot;)
+flags: list[str] = Field(description=&quot;Applicable rule IDs from the domain rules&quot;)
+summary: str = Field(description=&quot;2-3 sentence executive summary&quot;)
+evidence: list[Evidence] = Field(
+recommended_actions: list[str] = Field(
+confidence: float = Field(
+related_entities_flagged: list[str] = Field(
+investigation_depth: Literal[&quot;triage_only&quot;, &quot;standard&quot;, &quot;deep&quot;] = Field(
+⋮----
+class PolicyEvaluation(BaseModel)
+⋮----
+policy_id: str = Field(description=&quot;ID of the policy evaluated&quot;)
+triggered: bool = Field(description=&quot;Whether the policy was triggered&quot;)
+action: str = Field(
+reasoning: str = Field(
+⋮----
+class PolicyEvaluationList(BaseModel)
+⋮----
+evaluations: list[PolicyEvaluation] = Field(description=&quot;One evaluation per policy&quot;)
+⋮----
+class NetworkInsight(BaseModel)
+⋮----
+summary: str = Field(
+entities_involved: list[str] = Field(
+total_exposure: float = Field(
+risk_pattern: str = Field(
+⋮----
+class CascadeResult(BaseModel)
+⋮----
+documents_affected: int = Field(description=&quot;Total documents updated in cascade&quot;)
+entity_updates: list[str] = Field(
+documents_reenriched: int = Field(
+summary: str = Field(description=&quot;One paragraph summary of the cascade&quot;)
+network_insight: NetworkInsight | None = Field(</file><file path="setup/seed.py">BASE_DIR = Path(__file__).resolve().parent.parent
+⋮----
+DOMAINS_DIR = BASE_DIR / &quot;domains&quot;
+⋮----
+def load_json(path: Path) -&gt; Any
+⋮----
+def list_available_domains() -&gt; list[str]
+⋮----
+domains: list[str] = []
+⋮----
+required = [
+⋮----
+document_collection = config[&quot;document_collection&quot;]
+document_id_field = config[&quot;document_id_field&quot;]
+entity_collection = config[&quot;entity_collection&quot;]
+entity_id_field = config[&quot;entity_id_field&quot;]
+rules_collection = config[&quot;rules_collection&quot;]
+context_loading = config.get(&quot;context_loading&quot;, {})
+⋮----
+def seed_domain(db, domain: str) -&gt; None
+⋮----
+domain_dir = DOMAINS_DIR / domain
+config = load_json(domain_dir / &quot;config.json&quot;)
+entities_raw = load_json(domain_dir / &quot;entities.json&quot;)
+rules = load_json(domain_dir / &quot;rules.json&quot;)
+policies = load_json(domain_dir / &quot;policies.json&quot;)
+⋮----
+entities = entities_raw
+⋮----
+entities = entities_raw.get(entity_collection, [])
+⋮----
+entities = []
+⋮----
+normalized_policies = []
+⋮----
+item = dict(policy)
+⋮----
+def main() -&gt; None
+⋮----
+parser = argparse.ArgumentParser(description=&quot;Seed Reactive Atlas domain data&quot;)
+⋮----
+args = parser.parse_args()
+⋮----
+mongodb_uri = os.getenv(&quot;MONGODB_URI&quot;, &quot;mongodb://localhost:27019&quot;)
+mongodb_database = os.getenv(&quot;MONGODB_DATABASE&quot;, &quot;reactive_intelligence&quot;)
+⋮----
+available = list_available_domains()
+⋮----
+targets = available
+⋮----
+targets = [args.domain]
+⋮----
+client = MongoClient(mongodb_uri)
+db = client[mongodb_database]</file><file path="README.md"># Reactive Atlas
+
+**Turn any MongoDB collection into an AI-powered intelligence layer.**
+
+Atlas Triggers detect changes. [AgentField](https://github.com/Agent-Field/agentfield) adds the reasoning. Documents arrive raw and leave enriched — risk scores, pattern detection, policy decisions, all written back in place. No application code. No rule engines. No polling.
+
+[![AgentField](https://img.shields.io/badge/Powered%20by-AgentField-6366f1?style=flat-square)](https://github.com/Agent-Field/agentfield)
+[![MongoDB Atlas](https://img.shields.io/badge/MongoDB-Atlas-00ED64?style=flat-square&amp;logo=mongodb&amp;logoColor=white)](https://www.mongodb.com/atlas)
+[![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?style=flat-square&amp;logo=docker&amp;logoColor=white)](https://docs.docker.com/compose/)
+[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg?style=flat-square)](LICENSE)
+[![More from Agent-Field](https://img.shields.io/badge/More_from-Agent--Field-111827?style=flat-square&amp;logo=github)](https://github.com/Agent-Field)
+
+![Every Collection Becomes Intelligent](architecture.png)
+
+---
+
+## One-Call DX
+
+Trigger it with the `af` CLI (requires af ≥ 0.1.87) — it streams live progress and prints the result:
+
+```bash
+af call reactive-intelligence.process_document --in &apos;{&quot;collection&quot;: &quot;transactions&quot;, &quot;document&quot;: {&quot;transaction_id&quot;: &quot;txn_20240315_a8f3&quot;, &quot;account_id&quot;: &quot;acc_0028&quot;, &quot;amount&quot;: 9800, &quot;type&quot;: &quot;cash_deposit&quot;, &quot;channel&quot;: &quot;branch&quot;, &quot;narrative&quot;: &quot;Cash deposit from daily operations&quot;, &quot;status&quot;: &quot;completed&quot;}}&apos;
+```
+
+Prefer raw HTTP? Hit the API directly with curl:
+
+```bash
+curl -X POST http://localhost:8080/api/v1/execute/async/reactive-intelligence.process_document \
+  -H &quot;Content-Type: application/json&quot; \
+  -d &apos;{&quot;input&quot;: {&quot;collection&quot;: &quot;transactions&quot;, &quot;document&quot;: {&quot;transaction_id&quot;: &quot;txn_20240315_a8f3&quot;, &quot;account_id&quot;: &quot;acc_0028&quot;, &quot;amount&quot;: 9800, &quot;type&quot;: &quot;cash_deposit&quot;, &quot;channel&quot;: &quot;branch&quot;, &quot;narrative&quot;: &quot;Cash deposit from daily operations&quot;, &quot;status&quot;: &quot;completed&quot;}}}&apos;
+```
+
+A cash deposit hits the `transactions` collection:
+
+```json
+{
+  &quot;transaction_id&quot;: &quot;txn_20240315_a8f3&quot;,
+  &quot;account_id&quot;: &quot;acc_0028&quot;,
+  &quot;amount&quot;: 9800,
+  &quot;type&quot;: &quot;cash_deposit&quot;,
+  &quot;channel&quot;: &quot;branch&quot;,
+  &quot;geolocation&quot;: { &quot;country&quot;: &quot;US&quot;, &quot;city&quot;: &quot;Miami&quot; },
+  &quot;narrative&quot;: &quot;Cash deposit from daily operations&quot;,
+  &quot;status&quot;: &quot;completed&quot;
+}
+```
+
+10 seconds later, **the same document** in Atlas:
+
+```json
+{
+  &quot;transaction_id&quot;: &quot;txn_20240315_a8f3&quot;,
+  &quot;account_id&quot;: &quot;acc_0028&quot;,
+  &quot;amount&quot;: 9800,
+  &quot;type&quot;: &quot;cash_deposit&quot;,
+  &quot;channel&quot;: &quot;branch&quot;,
+  &quot;geolocation&quot;: { &quot;country&quot;: &quot;US&quot;, &quot;city&quot;: &quot;Miami&quot; },
+  &quot;narrative&quot;: &quot;Cash deposit from daily operations&quot;,
+  &quot;status&quot;: &quot;completed&quot;,
+  &quot;_intelligence&quot;: {
+    &quot;risk_score&quot;: 0.82,
+    &quot;risk_category&quot;: &quot;high&quot;,
+    &quot;pattern_match&quot;: &quot;structuring&quot;,
+    &quot;flags&quot;: [&quot;STRUCT-001&quot;, &quot;THRESH-001&quot;, &quot;VELOCITY-002&quot;],
+    &quot;summary&quot;: &quot;Cash deposit of $9,800 is just below the $10,000 CTR reporting threshold. Account acc_0028 has made 4 similar sub-threshold deposits within 48 hours totaling $38,400. Pattern is consistent with structuring to avoid BSA reporting requirements.&quot;,
+    &quot;evidence&quot;: [
+      {&quot;fact&quot;: &quot;Amount $9,800 is 98% of $10,000 CTR threshold&quot;, &quot;source&quot;: &quot;rules&quot;, &quot;weight&quot;: &quot;strong&quot;},
+      {&quot;fact&quot;: &quot;4 similar deposits in 48h totaling $38,400&quot;, &quot;source&quot;: &quot;transaction_history&quot;, &quot;weight&quot;: &quot;strong&quot;},
+      {&quot;fact&quot;: &quot;Account is Panama-based trust with enhanced due diligence&quot;, &quot;source&quot;: &quot;entity_profile&quot;, &quot;weight&quot;: &quot;moderate&quot;},
+      {&quot;fact&quot;: &quot;All deposits via Miami branch - same channel, same city&quot;, &quot;source&quot;: &quot;transaction_history&quot;, &quot;weight&quot;: &quot;moderate&quot;}
+    ],
+    &quot;recommended_actions&quot;: [&quot;hold&quot;, &quot;escalate&quot;, &quot;review_counterparty&quot;],
+    &quot;confidence&quot;: 0.91,
+    &quot;related_entities_flagged&quot;: [&quot;acc_0028&quot;],
+    &quot;investigation_depth&quot;: &quot;deep&quot;,
+    &quot;analyzed_at&quot;: &quot;2024-03-15T14:23:07Z&quot;,
+    &quot;version&quot;: 1
+  }
+}
+```
+
+No code wrote that. An Atlas Trigger fired. AgentField triaged the deposit, flagged the near-threshold amount, investigated the account&apos;s history and counterparty patterns, applied compliance rules, and enriched the document in place — with an evidence chain explaining exactly why. The account&apos;s risk profile was updated. Four related transactions were flagged for re-analysis.
+
+**The database initiated intelligence. The application did nothing.**
+
+---
+
+## Architecture
+
+```mermaid
+flowchart TD
+    subgraph Atlas [&quot;MongoDB Atlas&quot;]
+        C1[&quot;transactions&quot;]
+        C2[&quot;orders&quot;]
+        C3[&quot;any collection&quot;]
+        DC[&quot;domain_config&quot;]
+        RT[&quot;reaction_timeline&quot;]
+    end
+
+    subgraph AF [&quot;AgentField&quot;]
+        R[&quot;Reasoner: process_document&quot;]
+        S1[&quot;Load entity context&quot;]
+        S2[&quot;Retrieve domain rules&quot;]
+        S3[&quot;LLM structured reasoning&quot;]
+        S4[&quot;Evaluate policies&quot;]
+        S5[&quot;Cascade risk updates&quot;]
+    end
+
+    C1 -- &quot;Atlas Trigger&quot; --&gt; R
+    C2 -- &quot;Atlas Trigger&quot; --&gt; R
+    C3 -. &quot;Atlas Trigger&quot; .-&gt; R
+    DC -- &quot;config drives behavior&quot; --&gt; R
+    R --&gt; S1 --&gt; S2 --&gt; S3 --&gt; S4 --&gt; S5
+    S3 -- &quot;_intelligence&quot; --&gt; C1
+    S3 -- &quot;_intelligence&quot; --&gt; C2
+    S5 -- &quot;audit trail&quot; --&gt; RT
+```
+
+The architecture has three parts:
+
+- **Atlas Triggers** fire on document insert and call AgentField over HTTPS. This is MongoDB&apos;s native change detection — no external poller, no cron, no queue.
+- **AgentField** runs the reasoning agent. It loads a domain config from MongoDB that tells it which collection to watch, what entity to look up, which rules to apply, what prompt to use, and when to cascade. The agent is generic; the config makes it specific.
+- **`_intelligence`** is written back into the source document. The original data is untouched. Intelligence is additive, versioned, and queryable — you can index on `_intelligence.risk_score` and build dashboards directly off enriched documents.
+
+### What happens on every insert
+
+1. **Atlas Trigger** fires and passes the full document to AgentField
+2. **Domain resolution** — the collection name maps to a domain config document in MongoDB
+3. **Triage** — quick LLM assessment: is this document worth investigating? Amount anomalies, narrative red flags, jurisdiction signals
+4. **Deep investigation** (if triage warrants) — entity profile, counterparty context, transaction history, and relevant rules loaded in parallel
+5. **LLM reasoning** — the domain-specific prompt, full context, triage signals, and rule set produce a structured `DocumentIntelligence` judgment with evidence chain
+6. **In-place enrichment** — `_intelligence` is written back to the source document
+7. **Policy evaluation** — plain-English policies are checked against the enrichment
+8. **Cascade** — if risk exceeds the threshold, linked entity profiles are updated, related documents are re-analyzed, and a network-level intelligence summary is generated
+9. **Audit trail** — every decision, including triage priority and investigation depth, is logged to `reaction_timeline`
+
+---
+
+## Config is the product
+
+All AI behavior lives in a single MongoDB document. This is the entire configuration for the finance domain:
+
+```json
+{
+  &quot;domain&quot;: &quot;finance&quot;,
+  &quot;document_collection&quot;: &quot;transactions&quot;,
+  &quot;document_id_field&quot;: &quot;transaction_id&quot;,
+  &quot;entity_collection&quot;: &quot;accounts&quot;,
+  &quot;entity_id_field&quot;: &quot;account_id&quot;,
+  &quot;rules_collection&quot;: &quot;compliance_rules&quot;,
+  &quot;context_loading&quot;: {
+    &quot;entity_lookup_field&quot;: &quot;account_id&quot;,
+    &quot;counterparty_field&quot;: &quot;counterparty_id&quot;,
+    &quot;history_match_fields&quot;: [&quot;account_id&quot;, &quot;counterparty_id&quot;],
+    &quot;history_limit&quot;: 50
+  },
+  &quot;cascade_config&quot;: {
+    &quot;risk_threshold&quot;: 0.7,
+    &quot;update_entities&quot;: true,
+    &quot;reenrich_related&quot;: true,
+    &quot;max_reenrich&quot;: 10
+  },
+  &quot;analysis_prompt&quot;: &quot;You are a financial crime analyst performing AML risk assessment...&quot;
+}
+```
+
+Every field controls behavior:
+- **`document_collection`** + **`entity_collection`** — which collections to read from and write to
+- **`context_loading`** — how to assemble context (which fields link documents to entities, how much history to load)
+- **`cascade_config`** — when and how to propagate risk (threshold, whether to update entities, how many related docs to re-enrich)
+- **`analysis_prompt`** — the domain-specific instructions the LLM follows
+- **`rules_collection`** — which rules the AI reasons over (loaded via text search, not hardcoded)
+
+Change the config document in MongoDB and the AI behavior changes immediately. No code. No redeploy. A compliance team can tune their AML thresholds. A fraud team can adjust cascade sensitivity. A new domain can be live in 30 minutes.
+
+&gt; **Same engine, different trigger:** [AF Deep Research](https://github.com/Agent-Field/af-deep-research) applies AgentField&apos;s multi-agent architecture to research — 10,000+ agent invocations per query with self-correcting loops.
+
+---
+
+## Use cases
+
+This pattern works anywhere documents arrive and need intelligent assessment. The engine is domain-agnostic — the config document makes it specific.
+
+| Domain | Collection | What the AI does | Why rules engines fail |
+|---|---|---|---|
+| **Financial compliance** | `transactions` | AML pattern detection, structuring identification, counterparty risk propagation | Structuring is a *pattern* across transactions, not a property of one |
+| **E-commerce fraud** | `orders` | Velocity abuse, synthetic identity signals, friendly fraud detection | Account takeover looks different every time; the *combination* of signals matters |
+| **Healthcare triage** | `patient_intake` | Urgency scoring, drug interaction alerts, department routing | Urgency depends on the full patient context, not individual symptoms |
+| **Content moderation** | `posts` | Toxicity scoring, policy violation detection, context-aware escalation | Sarcasm, cultural context, and evolving norms defeat keyword matching |
+| **Cybersecurity** | `security_events` | Threat classification, anomaly scoring, lateral movement detection | Novel attack patterns aren&apos;t in the rule book yet |
+| **Insurance claims** | `claims` | Fraud signal detection, claimant history cross-referencing, fast-track routing | Legitimate claims that *look* suspicious need judgment, not flags |
+| **IoT / Telemetry** | `sensor_readings` | Anomaly detection, predictive maintenance triggers, fleet-wide correlation | &quot;Anomalous&quot; depends on the device&apos;s own baseline, not a global threshold |
+| **Supply chain** | `shipments` | Delay risk scoring, vendor reliability assessment, route anomaly detection | Risk is contextual — same delay means different things for different routes |
+
+The &quot;Why rules engines fail&quot; column is the point. Every domain above has been attempted with static rules, and every one hits the same wall: **context-dependent judgment doesn&apos;t reduce to if-else**. That&apos;s what the LLM provides.
+
+### Economics
+
+Every document is assessed, enriched, and audited for less than a cent on budget models — under two cents on mid-tier. At 10,000 documents per day, total agent cost runs ~$400-600/mo. One compliance analyst reviewing 30-50 documents manually costs $6,000+/mo.
+
+The agent reads and writes to your existing Atlas collections — no new clusters, no ETL pipeline, no separate vector database.
+
+**Monthly agent cost** (assumes ~15% flag rate)
+
+| Documents/day | Budget model | Mid-tier model |
+|---|---|---|
+| 1,000 | ~$40 | ~$60 |
+| 10,000 | ~$400 | ~$600 |
+| 100,000 | ~$4,000 | ~$6,000 |
+
+Budget = MiniMax, Gemini Flash. Mid-tier = GPT-4o-mini.
+
+&lt;details&gt;
+&lt;summary&gt;Per-document cost breakdown&lt;/summary&gt;
+
+Each document goes through 3 agent steps: triage, analysis, policy evaluation. Flagged documents trigger cascade — up to 14 total steps including network analysis and re-enrichment of related documents.
+
+| | Agent steps | Tokens | Budget | Mid-tier |
+|---|---|---|---|---|
+| Routine document | 3 | ~6K | &lt; $0.01 | &lt; $0.01 |
+| Flagged + cascade | up to 14 | ~40K | &lt; $0.01 | ~$0.01 |
+
+Triage is a quick screen (~500 tokens). Analysis loads entity context, transaction history, counterparty data, and domain rules in parallel before reasoning (~3,500-12,000 tokens depending on investigation depth). Policy evaluation checks plain-English policies against the enrichment (~1,300 tokens). Cascade re-enriches up to 10 related documents and generates a network-level intelligence summary.
+
+At high volume, route triage through a budget model and send only flagged documents to a stronger model.
+
+&lt;/details&gt;
+
+### Shipped examples
+
+This repo ships two fully worked domains you can run right now:
+
+**[Finance — AML compliance](domains/finance/)**: 50 accounts, 20 compliance rules, 5 policies, 5 scenarios
+
+```bash
+python3 demo.py finance structuring    # 5 cash deposits just under $10K
+python3 demo.py finance round-trip     # circular A-&gt;B-&gt;C-&gt;A transfer
+python3 demo.py finance layering       # US-&gt;HK-&gt;KY-&gt;CH SWIFT chain
+python3 demo.py finance big-one        # single $500K+ Cayman wire
+python3 demo.py finance clean          # 3 normal transfers (baseline)
+```
+
+**[E-commerce — order fraud](domains/ecommerce/)**: 40 customers, 15 fraud rules, 5 policies, 5 scenarios
+
+```bash
+python3 demo.py ecommerce velocity-abuse       # 5 rapid orders, rotating addresses
+python3 demo.py ecommerce synthetic-identity   # new accounts, mismatched signals
+python3 demo.py ecommerce friendly-fraud       # high returns history + expensive items
+python3 demo.py ecommerce high-value-mismatch  # cross-border electronics, new account
+python3 demo.py ecommerce normal               # 3 legitimate orders (baseline)
+```
+
+Both run on the same agent, same skills, same reasoning loop. The only difference is the config document in MongoDB.
+
+---
+
+## Build your own domain
+
+Adding a new domain requires **zero Python code changes**. The engine is fully config-driven.
+
+```
+domains/yourname/
+  config.json        # What to watch, how to reason, when to cascade
+  entities.json      # Seed entities (accounts, customers, devices, patients)
+  rules.json         # Domain rules the AI reasons over
+  policies.json      # Plain-English policies evaluated after enrichment
+  scenarios.json     # Demo scenarios with document templates
+```
+
+```bash
+python3 setup/seed.py yourname        # seed the domain
+python3 demo.py yourname yourscenario # run a scenario
+```
+
+Add your collection to the Atlas Trigger&apos;s `domainMap` and you&apos;re live. The same trigger function handles all domains.
+
+---
+
+## Prerequisites
+
+- [Docker](https://docs.docker.com/get-docker/) and Docker Compose
+- Python 3.10+
+- [MongoDB Atlas](https://www.mongodb.com/cloud/atlas/register) account (free M0 tier is sufficient)
+- [OpenRouter](https://openrouter.ai) API key
+- [cloudflared](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/downloads/) (free tunnel, no account required)
+
+---
+
+## Quick Start
+
+```bash
+git clone https://github.com/Agent-Field/af-reactive-atlas-mongodb.git &amp;&amp; cd af-reactive-atlas-mongodb
+cp .env.example .env          # Add OPENROUTER_API_KEY, MONGODB_URI
+docker compose up -d
+```
+
+Starts AgentField control plane (`http://localhost:8092`) + Reactive Intelligence agent.
+
+&gt; Atlas Triggers require a public URL. See [Setup](#setup) below for tunnel + trigger configuration.
+
+## Setup
+
+### 1. Clone and configure
+
+```bash
+git clone https://github.com/Agent-Field/af-reactive-atlas-mongodb.git
+cd af-reactive-atlas-mongodb
+cp .env.example .env
+```
+
+Edit `.env` with your values:
+
+```env
+OPENROUTER_API_KEY=sk-or-v1-...
+MONGODB_URI=mongodb+srv://user:pass@cluster0.xxxxx.mongodb.net/reactive_intelligence?retryWrites=true&amp;w=majority
+```
+
+### 2. Start AgentField
+
+```bash
+docker compose up -d
+```
+
+Two services start: the AgentField control plane at `http://localhost:8092` and the `reactive-intelligence` agent at `http://localhost:8004`.
+
+### 3. Seed Atlas
+
+```bash
+python3 setup/seed.py all
+```
+
+Seeds both domains: accounts, customers, compliance rules, fraud rules, policies, and domain configuration documents.
+
+### 4. Open a public tunnel
+
+Atlas Triggers require a public HTTPS URL to reach your local AgentField instance.
+
+```bash
+cloudflared tunnel --url http://localhost:8092
+```
+
+Copy the `https://xxxx.trycloudflare.com` URL for the next step.
+
+### 5. Create Atlas Triggers
+
+Create two triggers in [Atlas App Services](https://cloud.mongodb.com) — one for each domain.
+
+**Trigger 1 — Finance:** Database trigger, Insert operation, collection `transactions`, Full Document enabled.
+
+**Trigger 2 — E-commerce:** Database trigger, Insert operation, collection `orders`, Full Document enabled.
+
+Use the same function for both triggers, replacing `YOUR_TUNNEL_URL`:
+
+```javascript
+exports = async function(changeEvent) {
+  const doc = changeEvent.fullDocument;
+  if (!doc || doc._intelligence) return;
+
+  const collection = changeEvent.ns.coll;
+  const domainMap = { transactions: &quot;finance&quot;, orders: &quot;ecommerce&quot; };
+  const domain = domainMap[collection] || &quot;finance&quot;;
+
+  const response = await context.http.post({
+    url: &quot;https://YOUR_TUNNEL_URL/api/v1/execute/async/reactive-intelligence.process_document&quot;,
+    headers: { &quot;Content-Type&quot;: [&quot;application/json&quot;] },
+    body: JSON.stringify({
+      input: { document: doc, collection: collection, domain: domain }
+    })
+  });
+
+  if (response.statusCode &gt;= 400) {
+    throw new Error(`AgentField returned ${response.statusCode}`);
+  }
+};
+```
+
+### 6. Run a scenario
+
+```bash
+python3 demo.py finance structuring
+python3 demo.py ecommerce velocity-abuse
+```
+
+---
+
+## Demo commands
+
+```bash
+python3 demo.py list                    # list all domains and scenarios
+python3 demo.py finance all             # run all finance scenarios in sequence
+python3 demo.py ecommerce all           # run all ecommerce scenarios
+python3 demo.py finance status          # show enrichment counts
+python3 demo.py finance reset           # clear demo data, preserve base data
+
+# custom document injection
+python3 demo.py finance custom \
+  --amount 75000 --country KY --type wire_transfer \
+  --narrative &quot;Consulting fees - offshore vehicle&quot;
+
+python3 demo.py ecommerce custom \
+  --amount 999 --country US \
+  --narrative &quot;Rush order electronics&quot;
+```
+
+Every run uses randomized amounts and IDs. No two runs produce identical documents.
+
+---
+
+## What to watch
+
+**In Atlas UI** (`cloud.mongodb.com` -&gt; Browse Collections):
+
+- `transactions` and `orders` — each document gains `_intelligence` within 10-15 seconds of insert
+- `reaction_timeline` — every AI decision logged with timestamps, scores, and triggered policies
+- `accounts` and `customers` — risk profiles update when cascade fires on high-risk documents
+
+**In AgentField UI** (`http://localhost:8092`):
+
+- Each insert creates a visible execution trace for `process_document`
+- The trace shows every skill call: config load, entity lookup, rule retrieval, LLM reasoning, enrichment write, policy evaluation, cascade
+
+---
+
+## Under the hood
+
+Built on [AgentField](https://github.com/Agent-Field/agentfield) — a framework for running AI agents as microservices with built-in observability, async execution, and structured skill composition.
+
+| Skill | What it does |
+|---|---|
+| `load_domain_config` | Load domain config from MongoDB — all behavior derives from this |
+| `load_entity_context` | Fetch entity profile (account, customer, device, patient) |
+| `find_counterparty_context` | Follow the money — load counterparty entity and their recent transactions |
+| `find_related_documents` | Load historical documents for context |
+| `find_recent_high_risk` | Scan for recently flagged documents to detect network patterns |
+| `load_rules` | Retrieve relevant domain rules via text search |
+| `enrich_document` | Write `_intelligence` back into the source document |
+| `load_active_policies` | Load domain-scoped policies (plain English, not code) |
+| `update_entity_risk` | Propagate risk changes to linked entities |
+| `log_reaction` | Append to `reaction_timeline` for full audit trail |
+
+Skills handle deterministic MongoDB operations. The LLM handles judgment. The split is intentional: skills are auditable and testable; the reasoner handles the parts that require contextual interpretation.
+
+This is different from a chatbot — intelligence runs on database events and mutates operational data. This is different from a rule engine — policies are semantic, written in plain English, evaluated with judgment.
+
+---
+
+## Environment variables
+
+| Variable | Required | Description |
+|---|---|---|
+| `OPENROUTER_API_KEY` | Yes | LLM API key via OpenRouter |
+| `MONGODB_URI` | Yes | Atlas connection string |
+| `AGENTFIELD_PUBLIC_URL` | Yes | Tunnel URL Atlas uses to reach local AgentField |
+| `MONGODB_DATABASE` | No | Database name (default: `reactive_intelligence`) |
+| `AI_MODEL` | No | LLM model ID (default: `openrouter/minimax/minimax-m2.5`) |
+| `AGENTFIELD_URL` | No | Local control plane URL (default: `http://localhost:8092`) |
+
+---
+
+## Related
+
+- [AgentField](https://github.com/Agent-Field/agentfield) — the AI Backend framework powering this pattern
+- [agentfield.ai](http://www.agentfield.ai) — documentation and additional examples
+
+---
+
+### Also built on AgentField
+
+&gt; **[AF Deep Research](https://github.com/Agent-Field/af-deep-research)** — Autonomous research backend. 10,000+ agent invocations per query with self-correcting loops.
+&gt;
+&gt; **[SEC-AF](https://github.com/Agent-Field/sec-af)** — AI-native security auditor. 250 agents per audit, 94% noise reduction, every finding proven exploitable.
+
+[All repos →](https://github.com/Agent-Field)
+
+---
+
+## License
+
+Apache 2.0 · [See what else we&apos;re building →](https://github.com/Agent-Field)</file></files></repomix>

@@ -1,0 +1,238 @@
+<repomix><file_summary>This file is a merged representation of the entire codebase, combined into a single document by Repomix.
+The content has been processed where comments have been removed, empty lines have been removed, line numbers have been added, content has been formatted for parsing in xml style, content has been compressed (code blocks are separated by ⋮---- delimiter), security check has been disabled.<purpose>This file contains a packed representation of the entire repository&apos;s contents.
+It is designed to be easily consumable by AI systems for analysis, code review,
+or other automated processes.</purpose><file_format>The content is organized as follows:
+1. This summary section
+2. Repository information
+3. Directory structure
+4. Repository files (if enabled)
+5. Repository files, each consisting of:
+  - File path as an attribute
+  - Full contents of the file</file_format><usage_guidelines>- This file should be treated as read-only. Any changes should be made to the
+  original repository files, not this packed version.
+- When processing this file, use the file path to distinguish
+  between different files in the repository.
+- Be aware that this file may contain sensitive information. Handle it with
+  the same level of security as you would the original repository.
+- Pay special attention to the Repository Description. These contain important context and guidelines specific to this project.</usage_guidelines><notes>- Some files may have been excluded based on .gitignore rules and Repomix&apos;s configuration
+- Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
+- Files matching patterns in .gitignore are excluded
+- Files matching default ignore patterns are excluded
+- Code comments have been removed from supported file types
+- Empty lines have been removed from all files
+- Line numbers have been added to the beginning of each line
+- Content has been formatted for parsing in xml style
+- Content has been compressed - code blocks are separated by ⋮---- delimiter
+- Security check has been disabled - content may contain sensitive information
+- Files are sorted by Git change count (files with more changes are at the bottom)</notes></file_summary><user_provided_header>Repository: hermes-agent-docker | Generated from knowledge/sources | Generated: 2026-06-24 18:52:44</user_provided_header><directory_structure>.codegraph/
+  .gitignore
+.github/
+  workflows/
+    docker.yml
+.dockerignore
+.gitignore
+docker-entrypoint.sh
+Dockerfile
+LICENSE
+README.md</directory_structure><files>This section contains the contents of the repository&apos;s files.<file path=".codegraph/.gitignore"># CodeGraph data files — local to each machine, not for committing.
+# Ignore everything in .codegraph/ except this file itself, so transient
+# files (the database, daemon.pid, sockets, logs) never show up in git.
+*
+!.gitignore</file><file path=".dockerignore">.git</file><file path=".gitignore">.DS_Store</file><file path="docker-entrypoint.sh">set -eu
+HERMES_HOME=${HERMES_HOME:-/home/agent/.hermes}
+DEFAULTS_DIR=/usr/local/share/hermes-home
+SEED_MARKER=&quot;$HERMES_HOME/.docker-defaults-seeded&quot;
+mkdir -p &quot;$HERMES_HOME&quot;
+if [ ! -e &quot;$SEED_MARKER&quot; ] &amp;&amp; [ -z &quot;$(find &quot;$HERMES_HOME&quot; -mindepth 1 -maxdepth 1 -print -quit 2&gt;/dev/null)&quot; ]; then
+  cp -a &quot;$DEFAULTS_DIR&quot;/. &quot;$HERMES_HOME&quot;/
+  : &gt; &quot;$SEED_MARKER&quot;
+fi
+exec &quot;$@&quot;</file><file path="LICENSE">MIT License
+
+Copyright (c) 2026 Daniil Zaitsev
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the &quot;Software&quot;), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.</file><file path=".github/workflows/docker.yml">name: docker
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - &quot;v*&quot;
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      hermes_ref:
+        description: Hermes git ref to build (branch or tag)
+        required: false
+        default: main
+        type: string
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+jobs:
+  docker:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Log in to GHCR
+        if: github.event_name != &apos;pull_request&apos;
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Extract Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=tag
+            type=sha
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=raw,value=${{ inputs.hermes_ref }},enable=${{ github.event_name == &apos;workflow_dispatch&apos; &amp;&amp; inputs.hermes_ref != &apos;&apos; }}
+      - name: Build and push image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          build-args: |
+            HERMES_REF=${{ inputs.hermes_ref || &apos;main&apos; }}
+          platforms: linux/amd64,linux/arm64
+          push: ${{ github.event_name != &apos;pull_request&apos; }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max</file><file path="README.md"># hermes-agent-docker
+
+Minimal Docker image packaging for [Hermes Agent](https://github.com/NousResearch/hermes-agent).
+
+## Image contents
+
+The image in this repo:
+- installs Hermes with the official upstream install script
+- includes `mini-swe-agent`
+- persists Hermes state under `/home/agent/.hermes`
+- is intended for straightforward local builds and multi-arch publishing
+
+## Quick start
+
+### Build locally
+
+Build the latest `main` by default:
+
+```bash
+docker build -t hermes-agent-docker:local .
+```
+
+Build a specific Hermes tag:
+
+```bash
+docker build \
+  --build-arg HERMES_REF=v2026.3.30 \
+  -t hermes-agent-docker:v2026.3.30 .
+```
+
+`HERMES_REF` defaults to `main` and can point to either a branch or a tag.
+
+### Run Hermes
+
+Mount two paths:
+- your current project into `/home/agent/workspace`
+- a persistent Hermes home directory into `/home/agent/.hermes`
+
+```bash
+docker run --rm -it \
+  -v &quot;$PWD:/home/agent/workspace&quot; \
+  -v &quot;$HOME/.hermes:/home/agent/.hermes&quot; \
+  hermes-agent-docker:local \
+  hermes
+```
+
+### Run doctor
+
+```bash
+docker run --rm \
+  -v &quot;$HOME/.hermes:/home/agent/.hermes&quot; \
+  hermes-agent-docker:local \
+  hermes doctor
+```
+
+## Persistence
+
+Hermes stores config, sessions, memories, and related state in `/home/agent/.hermes` inside the container. Mount that path to keep state across runs.
+
+On first start with an empty mounted `/home/agent/.hermes`, the container seeds that directory from image-prepared Hermes defaults before launching the requested command.
+
+If you do not mount `/home/agent/.hermes`, Hermes will still start, but its state will be lost when the container exits.
+
+## Environment and setup
+
+Run `hermes setup` inside the container and persist `/home/agent/.hermes`, or place the expected config files inside that mounted directory.</file><file path="Dockerfile">FROM docker/sandbox-templates:shell
+
+ARG HERMES_REF=main
+ARG CODEX_VERSION=0.118.0
+
+COPY docker-entrypoint.sh /usr/local/bin/hermes-entrypoint
+
+USER root
+
+RUN apt-get update \
+    &amp;&amp; DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ffmpeg \
+    &amp;&amp; rm -rf /var/lib/apt/lists/* \
+    &amp;&amp; mkdir -p /home/agent/.hermes /home/agent/.local/bin \
+    &amp;&amp; chown -R agent:agent /home/agent/.hermes /home/agent/.local
+
+USER agent
+ENV HOME=/home/agent
+ENV PATH=&quot;/home/agent/.local/bin:${PATH}&quot;
+WORKDIR /home/agent
+
+RUN curl -fsSL &quot;https://raw.githubusercontent.com/NousResearch/hermes-agent/${HERMES_REF}/scripts/install.sh&quot; \
+    | bash -s -- --skip-setup --branch &quot;${HERMES_REF}&quot; --dir /home/agent/hermes-agent
+
+RUN NPM_CONFIG_PREFIX=/home/agent/.local npm install -g @openai/codex@${CODEX_VERSION}
+
+RUN cd /home/agent/hermes-agent \
+    &amp;&amp; (npm audit fix &gt;/dev/null || [ $? -eq 1 ])
+
+RUN cd /home/agent/hermes-agent/scripts/whatsapp-bridge \
+    &amp;&amp; (npm audit fix &gt;/dev/null || [ $? -eq 1 ])
+
+RUN HERMES_HOME=/home/agent/.hermes HOME=/home/agent hermes skills list &gt;/dev/null
+
+USER root
+RUN mkdir -p /usr/local/share/hermes-home \
+    &amp;&amp; cp -a /home/agent/.hermes/. /usr/local/share/hermes-home/ \
+    &amp;&amp; chmod 755 /usr/local/bin/hermes-entrypoint \
+    &amp;&amp; chown -R agent:agent /usr/local/share/hermes-home
+
+USER agent
+WORKDIR /home/agent/workspace
+VOLUME [&quot;/home/agent/.hermes&quot;]
+ENTRYPOINT [&quot;/usr/local/bin/hermes-entrypoint&quot;]</file></files></repomix>
