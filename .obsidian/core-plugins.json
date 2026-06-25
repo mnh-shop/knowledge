@@ -18,5 +18,16 @@
   "bookmarks": true,
   "outline": true,
   "word-count": true,
-  "file-recovery": true
+  "file-recovery": true,
+  "footnotes": false,
+  "markdown-importer": false,
+  "zk-prefixer": false,
+  "random-note": false,
+  "slides": false,
+  "audio-recorder": false,
+  "workspaces": false,
+  "publish": false,
+  "sync": true,
+  "bases": true,
+  "webviewer": false
 }

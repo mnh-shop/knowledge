@@ -625,6 +625,6 @@ claude mcp add openclaw-tools -- node --import tsx /path/to/openclaw/src/mcp/ope
 ## Cross-References
 
 - [[domains/architecture/openclaw-architecture.md]] -- Overall system architecture
-- [[domains/acp/openclaw-acp.md]] -- ACP agent protocol (related MCP-adjacent protocol)
+- [[domains/acp/openclaw-acp-implementation.md]] -- ACP agent protocol (related MCP-adjacent protocol)
 - [[assets/mcp-servers/openclaw-mcp-server.md]] -- MCP server config asset file
 - [[assets/deployment/openclaw-quadlet.md]] -- Quadlet deployment patterns

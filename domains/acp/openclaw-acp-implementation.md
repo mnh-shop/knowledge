@@ -806,7 +806,7 @@ serveAcpGateway({
 ## Cross-References
 
 - [[domains/architecture/openclaw-architecture.md]] -- Gateway and agent system architecture
-- [[domains/mcp/openclaw-mcp.md]] -- MCP integration (related companion protocol)
+- [[domains/mcp/openclaw-mcp-implementation.md]] -- MCP integration (related companion protocol)
 - [[assets/acp-agents/openclaw-acp-agent.md]] -- ACP agent asset file
 - [[domains/acp/hermes-acp-implementation.md]] -- Hermes ACP implementation (interop reference)
 
