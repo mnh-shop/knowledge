@@ -1,4 +1,4 @@
 repo_slug=hermes-suite
 source_dir=/Users/admin1/Documents/knowledge/sources/hermes-suite/
 codegraph_command=codegraph init
-generated_at=2026-06-24 18:52:18
+generated_at=2026-06-25 13:46:01

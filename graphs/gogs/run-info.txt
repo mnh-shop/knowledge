@@ -1,4 +1,4 @@
 repo_slug=gogs
 source_dir=/Users/admin1/Documents/knowledge/sources/gogs/
 codegraph_command=codegraph init
-generated_at=2026-06-24 18:52:17
+generated_at=2026-06-25 13:44:09

@@ -1,4 +1,4 @@
 repo_slug=buildah
 source_dir=/Users/admin1/Documents/knowledge/sources/buildah/
 codegraph_command=codegraph init
-generated_at=2026-06-24 16:35:23
+generated_at=2026-06-25 13:43:55

@@ -1,4 +1,4 @@
 repo_slug=hermes-agent
 source_dir=/Users/admin1/Documents/knowledge/sources/hermes-agent/
 codegraph_command=codegraph init
-generated_at=2026-06-24 14:19:09
+generated_at=2026-06-25 13:45:59

@@ -1,4 +1,4 @@
 repo_slug=hermes-workspace
 source_dir=/Users/admin1/Documents/knowledge/sources/hermes-workspace/
 codegraph_command=codegraph init
-generated_at=2026-06-24 14:19:21
+generated_at=2026-06-25 13:46:12
