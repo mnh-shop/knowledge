@@ -2,7 +2,7 @@
 name: hermes-mcp-implementation
 description: "Hermes MCP implementation: MCP client consuming external tools and MCP server exposing Hermes capabilities"
 source: sources/hermes-agent/
-tags: [agent-gateway, cli, hermes, mcp, messaging, multi-platform, typescript]
+tags: [agent-gateway, cli, hermes, mcp, messaging, multi-platform]
 ---
 
 # Hermes MCP Implementation — Two Modes
@@ -46,9 +46,9 @@ connect, tool discovery, keepalive, reconnection, shutdown.
 
 **Rate limiting / retry:**
 - Max initial connect retries: 3
-- Max reconnect retries: 2
-- Max backoff seconds: exponential
-- Default tool timeout: configurable
+- Max *reconnect* retries: 5 (subsequent connection drops after initial connect)
+- Max backoff seconds: 60 (doubled each retry: 1, 2, 4, 8, ... 60 cap)
+- Default tool timeout: configurable (`_DEFAULT_TOOL_TIMEOUT`)
 
 **Handlers:**
 - `SamplingHandler` — server-initiated LLM sampling requests
@@ -72,7 +72,35 @@ See [[hermes-mcp-serve]] for the full asset reference. Key points:
 
 ---
 
-## 3. Optional MCP Servers (`optional-mcps/`)
+## 3. Codex Runtime MCP Server — `agent/transports/hermes_tools_mcp_server.py`
+
+When Hermes runs under a Codex app-server runtime, Codex owns the agent loop
+and needs a tool surface. This module exposes a curated subset of Hermes tools
+to the spawned Codex subprocess via stdio MCP.
+
+**Exposed tools (25):**
+- `web_search`, `web_extract` — Firecrawl web search/extraction
+- `browser_navigate`, `browser_click`, `browser_type`, `browser_press`,
+  `browser_snapshot`, `browser_scroll`, `browser_back`, `browser_get_images`,
+  `browser_console`, `browser_vision` — Camofox/Browserbase automation
+- `vision_analyze` — image inspection by vision model
+- `image_generate` — image generation
+- `skill_view`, `skills_list` — Hermes skill library
+- `text_to_speech` — TTS
+- `kanban_complete`, `kanban_block`, `kanban_comment`, `kanban_heartbeat`,
+  `kanban_show`, `kanban_list`, `kanban_create`, `kanban_unblock`,
+  `kanban_link` — Kanban worker handoff tools
+
+**Deliberately not exposed** (covered by Codex's own built-ins): terminal,
+shell, file read/write/patch, search_files, process, clarify. Also excluded:
+delegate_task, memory, session_search, todo (require AIAgent loop context).
+
+This server is distinct from `mcp_serve.py` — it's a *tool gateway* for the
+Codex runtime, not a messaging bridge.
+
+---
+
+## 4. Optional MCP Servers (`optional-mcps/`)
 
 Bundleable MCP server manifests that can be installed on demand:
 
@@ -105,6 +133,7 @@ hermes mcp serve       # Run Hermes as an MCP server
 ## Links
 
 - MCP server (serve side): `sources/hermes-agent/mcp_serve.py`
+- Codex runtime MCP server: `sources/hermes-agent/agent/transports/hermes_tools_mcp_server.py`
 - MCP client (consume side): `sources/hermes-agent/tools/mcp_tool.py`
 - MCP OAuth: `sources/hermes-agent/tools/mcp_oauth_manager.py`
 - Optional MCP manifests: `sources/hermes-agent/optional-mcps/`
