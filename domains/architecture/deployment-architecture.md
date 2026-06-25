@@ -1,7 +1,7 @@
 ---
 name: deployment-architecture
 description: Defense-in-depth architecture for deploying autonomous AI agent stacks — macOS dev, Linux VM production, rootless Podman isolation
-tags: [deployment, architecture, defense-in-depth, podman]
+tags: [shared, architecture, deployment, architecture, landscape]
 metadata:
   type: reference
 ---

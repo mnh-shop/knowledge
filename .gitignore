@@ -20,3 +20,6 @@ sources/
 # Large generated binaries
 *.log
 *.tmp
+
+# Smart Connections AI cache
+.smart-env/

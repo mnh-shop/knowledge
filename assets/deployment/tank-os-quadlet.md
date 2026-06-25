@@ -1,6 +1,6 @@
 ---
 name: tank-os-quadlet
-tags: [tank-os, quadlet, bootc, openclaw]
+tags: [tank-os, quadlet, bootc, fedora, immutable-os, container-os, image-based]
 description: Tank OS Quadlet Files
 ---
 

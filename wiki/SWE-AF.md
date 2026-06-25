@@ -1,6 +1,6 @@
 ---
 name: swe-af
-tags: [agentfield, swe, engineering, factory]
+tags: [swe-af, wiki, typescript, swe, engineering-factory, multi-agent]
 description: Wiki entry for SWE-AF — autonomous software engineering factory runtime built on AgentField (Apache 2.0)
 ---
 
