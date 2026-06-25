@@ -1,6 +1,6 @@
 ---
 name: hermes-agent
-tags: [hermes, agent, wiki]
+tags: [hermes, wiki, typescript, agent-gateway, messaging, multi-platform]
 description: Wiki entry for Hermes Agent: self-improving AI agent by Nous Research with multi-platform messaging (MIT)
 ---
 
@@ -214,7 +214,7 @@ commands:
 - [[hermes-mcp-serve]] -- MCP messaging bridge
 - [[hermes-mcp-implementation]] -- MCP implementation
 
-## Related repos in this knowledge system
+## Related
 
 | Repo | Relationship |
 |---|---|

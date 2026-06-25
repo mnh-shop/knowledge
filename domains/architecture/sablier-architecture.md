@@ -1,9 +1,6 @@
 ---
 name: sablier-architecture
-tags:
-  - sablier
-  - scale-to-zero
-  - architecture
+tags: [sablier, architecture, golang, scale-to-zero, reverse-proxy, lifecycle]
 description: Sablier Architecture
 ---
 

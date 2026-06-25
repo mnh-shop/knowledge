@@ -1,6 +1,6 @@
 ---
 name: hermes-agent-profile
-tags: [hermes, agent, profile]
+tags: [hermes, profile, typescript, agent-gateway, messaging, multi-platform]
 description: Agent profile for Hermes Agent: development guide for AI coding assistants and contributors to the Hermes Agent project
 ---
 

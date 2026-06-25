@@ -1,6 +1,6 @@
 ---
 name: openclaw
-tags: [openclaw, agent-gateway, wiki]
+tags: [openclaw, wiki, typescript, agent-gateway, messaging, personal-assistant, live-canvas]
 description: OpenClaw — Personal AI Assistant
 ---
 
@@ -170,7 +170,7 @@ docker pull ghcr.io/openclaw/openclaw:latest
 | **Docker** | Multi-stage, 183MB, slim | Docker published |
 | **Sponsors** | OpenAI, GitHub, NVIDIA, Vercel, Convex | Nous Research |
 
-## Domain docs & assets
+## Related
 
 - [Architecture](domains/architecture/openclaw-architecture.md) — 753-line deep dive: 8-phase startup, WebSocket runtime, A2UI, plugins
 - [API](domains/api/openclaw-api.md) — 90+ RPC methods, WebSocket streaming, TypeScript/Python clients

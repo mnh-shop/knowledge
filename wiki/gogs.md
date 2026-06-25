@@ -1,7 +1,7 @@
 ---
 name: gogs
 description: Gogs — Self-Hosted Git Service
-tags: [gogs, git, self-hosted, wiki]
+tags: [gogs, wiki, golang, git, self-hosted, version-control, ssh]
 ---
 
 # Gogs — Self-Hosted Git Service

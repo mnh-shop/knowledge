@@ -1,6 +1,6 @@
 ---
 name: openclaw-mcp-implementation
-tags: [openclaw, mcp, channel-bridge, tools]
+tags: [openclaw, mcp, typescript, agent-gateway, messaging, personal-assistant, live-canvas]
 description: OpenClaw MCP Implementation
 ---
 
@@ -283,7 +283,7 @@ All three MCP servers call `routeLogsToStderr()` to keep stdout clean. Stderr is
 
 ---
 
-## Cross-References
+## Related
 
 - [[domains/architecture/openclaw-architecture.md]] -- Gateway architecture
 - [[domains/acp/openclaw-acp-implementation.md]] -- ACP protocol (companion protocol)
@@ -635,7 +635,7 @@ claude mcp add openclaw-tools -- node --import tsx /path/to/openclaw/src/mcp/ope
 
 ---
 
-## Cross-References
+## Related
 
 - [[domains/architecture/openclaw-architecture.md]] -- Overall system architecture
 - [[domains/acp/openclaw-acp-implementation.md]] -- ACP agent protocol (related MCP-adjacent protocol)

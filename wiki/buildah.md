@@ -1,6 +1,6 @@
 ---
 name: buildah
-tags: [buildah, oci, image-builder, wiki]
+tags: [buildah, wiki, golang, image-builder, oci, daemonless]
 description: Buildah — OCI Image Builder
 ---
 
@@ -201,7 +201,7 @@ Buildah runs in CI/CD (GitHub Actions, GitLab CI) or as part of a local build wo
 
 See `install.md` in the repo for full details.
 
-## Domain docs & assets
+## Related
 
 - [Architecture](domains/architecture/buildah-architecture.md) — 4-layer architecture, image building pipeline, rootless mode
 - [Deployment](domains/deployment/buildah-deployment.md) — CI/CD pipelines, rootless config, agent image build examples

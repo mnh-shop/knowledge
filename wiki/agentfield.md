@@ -1,6 +1,6 @@
 ---
 name: agentfield
-tags: [agentfield, control-plane, wiki]
+tags: [agentfield, wiki, golang, control-plane, identity, orchestration, harness]
 ---
 
 # AgentField
@@ -161,7 +161,7 @@ Config via `config/agentfield.yaml` or environment variables (env vars take prec
 | **Backup** | PostgreSQL: `pg_dump`, SQLite: `cp`. DID keys backed up separately |
 | **Troubleshooting** | 11 common scenarios documented in `domains/deployment/agentfield-deployment.md` |
 
-## Related Repos (built on AgentField)
+## Related
 
 | Repo | What it adds |
 |------|-------------|

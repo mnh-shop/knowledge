@@ -1,6 +1,6 @@
 ---
 name: openclaw-acp-agent
-tags: [acp, agent, openclaw, protocol]
+tags: [openclaw, acp-agent, typescript, agent-gateway, messaging, personal-assistant, live-canvas]
 description: OpenClaw ACP Agent
 ---
 
@@ -336,7 +336,7 @@ The ACP server (`openclaw acp`) supports these flags for advanced configuration:
 
 ---
 
-## Cross-References
+## Related
 
 - [[domains/acp/openclaw-acp-implementation.md]] -- Comprehensive ACP implementation document
 - [[domains/mcp/openclaw-mcp-implementation.md]] -- MCP integration (related companion protocol)

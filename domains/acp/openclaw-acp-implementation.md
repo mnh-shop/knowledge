@@ -1,6 +1,6 @@
 ---
 name: openclaw-acp-implementation
-tags: [openclaw, acp, protocol, bridge]
+tags: [openclaw, acp, typescript, agent-gateway, messaging, personal-assistant, live-canvas]
 description: OpenClaw ACP Implementation
 ---
 
@@ -380,7 +380,7 @@ const replay = await ledger.readReplayBySessionKey("agent:main:acp:session-1");
 
 ---
 
-## Cross-References
+## Related
 
 - [[domains/architecture/openclaw-architecture.md]] -- Gateway architecture and agent system
 - [[domains/mcp/openclaw-mcp-implementation.md]] -- MCP integration (companion protocol)
@@ -817,7 +817,7 @@ serveAcpGateway({
 
 ---
 
-## Cross-References
+## Related
 
 - [[domains/architecture/openclaw-architecture.md]] -- Gateway and agent system architecture
 - [[domains/mcp/openclaw-mcp-implementation.md]] -- MCP integration (related companion protocol)

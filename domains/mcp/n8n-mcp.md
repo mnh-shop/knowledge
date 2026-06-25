@@ -1,6 +1,6 @@
 ---
 name: n8n-mcp
-tags: [n8n, mcp, apps, browser]
+tags: [n8n, mcp, typescript, vue, workflow-automation, low-code, integration, fair-code]
 description: n8n — MCP Integration
 ---
 

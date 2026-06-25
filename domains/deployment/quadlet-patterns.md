@@ -506,7 +506,7 @@ The following quadlet-specific asset files exist in this knowledge base:
 
 ---
 
-## Related Documentation
+## Related
 
 - [[podman-deployment]] -- Full Podman deployment guide including Quadlet lifecycle, secret lifecycle, health checks, and auto-updates.
 - [[podman-architecture]] -- Deep-dive into Podman's daemonless architecture.

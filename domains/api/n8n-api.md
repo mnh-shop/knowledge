@@ -1,6 +1,6 @@
 ---
 name: n8n-api
-tags: [n8n, api, rest, reference]
+tags: [n8n, api, typescript, vue, workflow-automation, low-code, integration, fair-code]
 description: n8n — API Architecture
 ---
 

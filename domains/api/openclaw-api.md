@@ -1,6 +1,6 @@
 ---
 name: openclaw-api
-tags: [openclaw, api, websocket, rpc]
+tags: [openclaw, api, typescript, agent-gateway, messaging, personal-assistant, live-canvas]
 description: OpenClaw API Reference
 ---
 
@@ -684,7 +684,7 @@ for chunk in stream:
 
 ---
 
-## Cross-References
+## Related
 
 - [[domains/architecture/openclaw-architecture.md]] -- Gateway architecture
 - [[domains/mcp/openclaw-mcp-implementation.md]] -- MCP integration implementation

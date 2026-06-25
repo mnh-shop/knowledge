@@ -1,6 +1,6 @@
 ---
 name: swe-af-architecture
-tags: [agentfield, engineering, swe, architecture]
+tags: [swe-af, architecture, typescript, swe, engineering-factory, multi-agent]
 description: Architecture of SWE-AF — autonomous software engineering factory transforming a single API call into coordinated specialized agents
 ---
 

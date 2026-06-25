@@ -1,6 +1,6 @@
 ---
 name: hermes-gateway-api
-tags: [hermes, gateway, api, messaging]
+tags: [hermes, api, typescript, agent-gateway, messaging, multi-platform]
 description: Hermes Gateway API reference: multi-platform messaging layer connecting to 20+ platforms through adapter pattern
 ---
 

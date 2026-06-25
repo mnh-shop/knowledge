@@ -1,6 +1,6 @@
 ---
 name: buildah-deployment
-tags: [buildah, deployment, installation]
+tags: [buildah, deployment, golang, image-builder, oci, daemonless]
 description: Buildah Deployment
 ---
 

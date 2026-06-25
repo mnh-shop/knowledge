@@ -1,6 +1,6 @@
 ---
 name: mission-control
-tags: [mission-control, dashboard, orchestration, wiki]
+tags: [mission-control, wiki, typescript, nextjs, react, dashboard, orchestration, monitoring]
 description: Mission Control — AI Agent Orchestration Dashboard
 ---
 
@@ -113,7 +113,7 @@ docker compose -f docker-compose.yml -f docker-compose.hardened.yml up -d
 
 Mission Control is **most useful when paired with at least one agent gateway** — it provides the dashboard/management plane that Hermes, OpenClaw, and others lack natively.
 
-## Domain docs & assets
+## Related
 
 - [Architecture: mission-control](domains/architecture/mission-control-architecture.md)
 - [API: mission-control](domains/api/mission-control-api.md) — 101 REST endpoints, 35 MCP tools

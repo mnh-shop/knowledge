@@ -1,6 +1,6 @@
 ---
 name: hermes-startup-architect
-tags: [hermes, skill, startup, wiki]
+tags: [hermes, wiki, typescript, agent-gateway, messaging, multi-platform]
 description: Wiki entry for Hermes Startup Architect: Hermes Agent skill for turning startup ideas into research-backed kits (MIT)
 ---
 

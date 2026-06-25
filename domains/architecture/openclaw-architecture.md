@@ -1,6 +1,6 @@
 ---
 name: openclaw-architecture
-tags: [openclaw, gateway, architecture]
+tags: [openclaw, architecture, typescript, agent-gateway, messaging, personal-assistant, live-canvas]
 description: OpenClaw Architecture
 ---
 
@@ -751,7 +751,7 @@ Device management for companion devices (mobile, desktop):
 
 ---
 
-## Cross-References
+## Related
 
 - [[domains/mcp/openclaw-mcp-implementation.md]] -- MCP integration implementation
 - [[domains/acp/openclaw-acp-implementation.md]] -- ACP agent protocol implementation

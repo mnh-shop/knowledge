@@ -1,7 +1,7 @@
 ---
 name: nix-podman-stacks-n8n
 type: integration
-tags: [nix-podman-stacks, n8n, integration, module]
+tags: [nix-podman-stacks, integration, nix, home-manager, iac, declarative, podman, self-hosted-stacks]
 description: Integration: nix-podman-stacks n8n Module
 ---
 

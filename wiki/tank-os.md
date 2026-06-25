@@ -1,6 +1,6 @@
 ---
 name: tank-os
-tags: [tank-os, bootc, fedora, wiki]
+tags: [tank-os, wiki, bootc, fedora, immutable-os, container-os, image-based]
 description: Tank OS — Fedora Bootc Image for OpenClaw
 ---
 
@@ -219,7 +219,7 @@ tank-os packages [[openclaw]] as a bootable OS. It does not deploy [[hermes-agen
 - [[buildah]] — Builds the bootc container image
 - [[podlet]] — Could generate Quadlet files for customization
 
-## Domain docs & assets
+## Related
 
 - [Architecture](domains/architecture/tank-os-architecture.md) — Bootc Containerfile analysis, Quadlet files, secret sync engine, build system
 - [Deployment](domains/deployment/tank-os-deployment.md) — QEMU boot, cloud-init, SSH tunnel, bootc updates

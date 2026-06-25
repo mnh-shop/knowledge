@@ -1,6 +1,6 @@
 ---
 name: n8n
-tags: [n8n, workflow, automation, wiki]
+tags: [n8n, wiki, typescript, vue, workflow-automation, low-code, integration, fair-code]
 description: n8n
 ---
 

@@ -1,6 +1,6 @@
 ---
 name: podman-architecture
-tags: [podman, container-engine, architecture]
+tags: [podman, architecture, golang, container-engine, daemonless, rootless, oci]
 description: "Podman Architecture"
 ---
 # Podman Architecture

@@ -1,6 +1,6 @@
 ---
 name: podman-deployment
-tags: [podman, deployment, installation, quadlet]
+tags: [podman, deployment, golang, container-engine, daemonless, rootless, oci]
 description: "Podman Deployment"
 ---
 # Podman Deployment

@@ -1,6 +1,6 @@
 ---
 name: stack-landscape
-tags: [landscape, repos, layers, compatibility]
+tags: [shared, integration, deployment, architecture, landscape]
 description: Full system landscape mapping across 23 repositories organized in 6 functional layers with compatibility matrix
 ---
 

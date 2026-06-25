@@ -1,6 +1,6 @@
 ---
 name: sec-af-profile
-tags: [agentfield, security, auditor, profile]
+tags: [sec-af, profile, typescript, security, auditor, adversarial]
 description: Agent profile for SEC-AF — AI-native security auditor agent built on AgentField for adversarial security analysis
 ---
 

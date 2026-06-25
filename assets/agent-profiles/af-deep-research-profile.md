@@ -1,7 +1,7 @@
 ---
 name: af-deep-research-profile
 description: AF Deep Research — Agent Profile
-tags: [agentfield, research, agent, profile]
+tags: [af-deep-research, profile, typescript, deep-research, recursive-agents, research]
 ---
 
 # ---
@@ -267,7 +267,7 @@ AF Deep Research combines AgentField's production infrastructure with advanced r
 
 **Built by AgentField team** — early preview, APIs may change, feedback welcome through Discord and GitHub.
 
-## Related Repositories
+## Related
 
 - **Contract-AF**: Legal contract risk analyzer with recursive multi-agent pattern
 - **AF Reactive Atlas MongoDB**: Turn any MongoDB collection into an AI intelligence layer

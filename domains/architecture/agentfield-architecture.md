@@ -1,6 +1,6 @@
 ---
 name: agentfield-architecture
-tags: [agentfield, control-plane, architecture]
+tags: [agentfield, architecture, golang, control-plane, identity, orchestration, harness]
 ---
 
 # AgentField: AI Control Plane Architecture

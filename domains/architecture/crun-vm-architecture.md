@@ -1,6 +1,6 @@
 ---
 name: crun-vm-architecture
-tags: [crun-vm, qemu, oci, runtime]
+tags: [crun-vm, architecture, rust, qemu, oci-runtime, vm, container-runtime]
 description: crun-vm Architecture
 ---
 

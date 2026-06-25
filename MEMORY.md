@@ -1,6 +1,6 @@
 ---
 name: memory
-tags: [knowledge, structure, coverage, compatibility]
+tags: [shared, index, deployment, architecture, landscape]
 ---
 
 # MEMORY.md
@@ -225,7 +225,7 @@ knowledge/
 - [hermes-agent-docker](wiki/hermes-agent-docker.md) (NEW) — Minimal Docker image for Hermes Agent
 - [hermes-suite](wiki/hermes-suite.md) (NEW) — All-in-one Hermes container (gateway + dashboard + webui)
 
-## Domain docs
+## Related
 
 **General Architecture:**
 - [Deployment Architecture](domains/architecture/deployment-architecture.md) — Defense-in-depth: host → VM → rootless Podman → agents

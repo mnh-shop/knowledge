@@ -1,6 +1,6 @@
 ---
 name: agentfield-deployment
-tags: [agentfield, deployment, docker, helm, production]
+tags: [agentfield, deployment, golang, control-plane, identity, orchestration, harness]
 ---
 
 # AgentField Deployment Guide

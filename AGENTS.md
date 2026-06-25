@@ -1,6 +1,6 @@
 ---
 name: agents
-tags: [knowledge, structure, guidelines]
+tags: [shared, index, deployment, architecture, landscape]
 ---
 
 # AGENTS.md

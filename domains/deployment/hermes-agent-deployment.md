@@ -1,6 +1,6 @@
 ---
 name: hermes-agent-deployment
-tags: [hermes, deployment, agent, operations]
+tags: [hermes, deployment, typescript, agent-gateway, messaging, multi-platform]
 description: Hermes Agent deployment and operations guide for the multi-platform personal AI agent
 ---
 
@@ -954,7 +954,7 @@ ssh -L 9118:127.0.0.1:9119 hermes@<remote-host> -N
 - [[hermes-mcp-serve]] -- MCP server asset
 - [[hermes-gateway-platforms]] -- Gateway platforms asset
 
-## Cross-References
+## Related
 
 - [[wiki/hermes-agent.md]] -- Wiki entry
 - [[domains/architecture/hermes-agent-architecture.md]] -- System architecture

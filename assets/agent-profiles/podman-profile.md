@@ -2,7 +2,7 @@
 name: podman-profile
 title: Podman
 category: container-engine
-tags: [podman, containers, profile]
+tags: [podman, profile, golang, container-engine, daemonless, rootless, oci]
 repo: https://github.com/containers/podman
 license: Apache-2.0
 maturity: stable

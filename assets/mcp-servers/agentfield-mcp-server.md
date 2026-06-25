@@ -1,6 +1,6 @@
 ---
 name: agentfield-mcp-server
-tags: [agentfield, mcp, bridge, server]
+tags: [agentfield, mcp-server, golang, control-plane, identity, orchestration, harness]
 description: MCP server reference for wrapping AgentField REST API as an MCP bridge server for Claude Code
 ---
 
@@ -360,7 +360,7 @@ OpenClaw's rate limiting, circuit breaking, and API key authentication become an
 - Use TLS in production
 - The bridge should use AgentField API key auth; the MCP protocol itself handles transport
 
-## Cross-Reference
+## Related
 
 - [AgentField Architecture](../../domains/architecture/agentfield-architecture.md)
 - [AgentField API](../../domains/api/agentfield-api.md) -- REST endpoints, execution flow, integration patterns

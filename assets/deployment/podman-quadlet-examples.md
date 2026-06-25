@@ -1,6 +1,6 @@
 ---
 name: podman-quadlet-examples
-tags: [podman, quadlet, examples, patterns]
+tags: [podman, quadlet, golang, container-engine, daemonless, rootless, oci]
 description: "Podman Quadlet Examples -- Production-Ready Configurations"
 ---
 # Podman Quadlet Examples -- Production-Ready Configurations

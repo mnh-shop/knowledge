@@ -1,6 +1,6 @@
 ---
 name: clawpier-deployment
-tags: [clawpier, deployment, tauri, desktop]
+tags: [clawpier, deployment, rust, tauri, desktop, agent-manager, gui]
 description: "ClawPier Deployment"
 ---
 # ClawPier Deployment

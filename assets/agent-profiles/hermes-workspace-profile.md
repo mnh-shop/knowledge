@@ -1,6 +1,6 @@
 ---
 name: hermes-workspace-profile
-tags: [hermes, workspace, profile]
+tags: [hermes, profile, typescript, agent-gateway, messaging, multi-platform]
 description: Agent profile for Hermes Workspace: quick reference profile for the web/desktop command center for Hermes Agent
 ---
 
@@ -91,7 +91,7 @@ Hermes-workspace is the web UI and API server for the Hermes agent ecosystem. It
 - [[hermes-workspace-mcp-hub]] -- MCP hub implementation
 - [[hermes-workspace-swarm-architecture]] -- Swarm architecture
 
-## Related Knowledge Files
+## Related
 
 - `../domains/api/hermes-workspace-api.md` — Full REST API endpoint inventory
 - `../domains/deployment/hermes-workspace-deployment.md` — Deployment guide

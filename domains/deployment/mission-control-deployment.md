@@ -1,6 +1,6 @@
 ---
 name: mission-control-deployment
-tags: [mission-control, deployment, dashboard]
+tags: [mission-control, deployment, typescript, nextjs, react, dashboard, orchestration, monitoring]
 description: Mission Control Deployment
 ---
 

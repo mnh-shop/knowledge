@@ -1,10 +1,6 @@
 ---
 name: podlet-quadlet-examples
-tags:
-  - podlet
-  - quadlet
-  - examples
-  - conversion
+tags: [podlet, quadlet, rust, quadlet-generator, systemd, conversion]
 description: "Podlet Quadlet Examples"
 ---
 

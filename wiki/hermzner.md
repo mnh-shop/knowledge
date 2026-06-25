@@ -1,6 +1,6 @@
 ---
 name: hermzner
-tags: [hermzner, hetzner, terraform, ansible]
+tags: [hermzner, wiki, terraform, ansible, iac, hetzner, vps, deployment-automation]
 description: "Hermzner — Hardened Hermes on Hetzner"
 ---
 
@@ -67,7 +67,7 @@ ssh -L 9119:127.0.0.1:9119 hermes@<tailscale-ip>
 
 Hermzner is **specifically for [[hermes-agent]]** — it deploys Hermes and nothing else. It does not deploy or configure [[agentfield]], [[n8n]], or [[openclaw]]. It could be extended to deploy a combined stack, but out of the box it's single-service.
 
-## Domain docs & assets
+## Related
 
 - [Architecture](domains/architecture/hermzner-architecture.md) — Terraform+Vault+Ansible architecture, security controls, Tailscale integration
 - [Deployment](domains/deployment/hermzner-deployment.md) — Deploy flow, networking, secrets, monitoring

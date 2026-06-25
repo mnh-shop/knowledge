@@ -1,7 +1,7 @@
 ---
 name: nix-podman-stacks
 type: wiki
-tags: [nix, podman, quadlet, wiki]
+tags: [nix-podman-stacks, wiki, nix, home-manager, iac, declarative, podman, self-hosted-stacks]
 description: nix-podman-stacks
 ---
 
@@ -217,7 +217,7 @@ For our **Hermes agent workspace**, nix-podman-stacks can serve as the declarati
 }
 ```
 
-## Domain docs & assets
+## Related
 
 - [Architecture](domains/architecture/nix-podman-stacks-architecture.md) — Nix module system, `nps.stacks` namespace, cross-stack integrations (Traefik, Homepage, Monitoring, OIDC), secret injection
 - [n8n Integration](integrations/nix-podman-stacks-n8n.md) — How the n8n module works, options, Traefik/Homepage/Monitoring integration, production gaps and extension patterns

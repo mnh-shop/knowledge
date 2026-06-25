@@ -1,6 +1,6 @@
 ---
 name: crun-vm-deployment
-tags: [crun-vm, deployment, qemu, oci]
+tags: [crun-vm, deployment, rust, qemu, oci-runtime, vm, container-runtime]
 description: crun-vm Deployment Guide
 ---
 
@@ -890,7 +890,7 @@ podman exec <container> journalctl -u libvirtd --no-pager -n 50
 
 ---
 
-## Cross-References
+## Related
 
 - [[domains/architecture/crun-vm-architecture.md]] -- Full architecture documentation
 - [[wiki/crun-vm.md]] -- Wiki entry

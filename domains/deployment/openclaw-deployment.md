@@ -1,6 +1,6 @@
 ---
 name: openclaw-deployment
-tags: [openclaw, deployment, podman, docker]
+tags: [openclaw, deployment, typescript, agent-gateway, messaging, personal-assistant, live-canvas]
 description: OpenClaw Deployment Guide
 ---
 
@@ -807,7 +807,7 @@ Creates a sanitized zip with config shape, log summaries, health snapshots, stab
 
 ---
 
-## Cross-References
+## Related
 
 - [[domains/architecture/openclaw-architecture.md]] -- System architecture
 - [[domains/mcp/openclaw-mcp-implementation.md]] -- MCP implementation

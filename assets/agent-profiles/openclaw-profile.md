@@ -1,6 +1,6 @@
 ---
 name: openclaw-profile
-tags: [openclaw, agent-gateway, profile]
+tags: [openclaw, profile, typescript, agent-gateway, messaging, personal-assistant, live-canvas]
 description: OpenClaw is a personal AI assistant (MIT) — TypeScript, Node.js, 30+ channels, ACP + MCP + Gateway, Live Canvas
 metadata:
   type: reference

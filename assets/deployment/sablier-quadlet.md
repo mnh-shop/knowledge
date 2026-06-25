@@ -1,10 +1,6 @@
 ---
 name: sablier-quadlet
-tags:
-  - sablier
-  - quadlet
-  - podman
-  - scale-to-zero
+tags: [sablier, quadlet, golang, scale-to-zero, reverse-proxy, lifecycle]
 description: Sablier Quadlet Deployment (Rootless Podman)
 ---
 

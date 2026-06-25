@@ -1,10 +1,6 @@
 ---
 name: sablier-deployment
-tags:
-  - sablier
-  - deployment
-  - scale-to-zero
-  - podman
+tags: [sablier, deployment, golang, scale-to-zero, reverse-proxy, lifecycle]
 description: Sablier Deployment Guide
 ---
 

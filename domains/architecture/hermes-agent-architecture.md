@@ -1,6 +1,6 @@
 ---
 name: hermes-agent-architecture
-tags: [hermes, agent, architecture, codegraph]
+tags: [hermes, architecture, typescript, agent-gateway, messaging, multi-platform]
 description: Hermes Agent architecture: multi-platform personal AI agent by Nous Research with 3,726 files and 257 indexed symbols
 ---
 

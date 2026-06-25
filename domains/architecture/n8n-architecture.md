@@ -1,6 +1,6 @@
 ---
 name: n8n-architecture
-tags: [n8n, architecture, workflow]
+tags: [n8n, architecture, typescript, vue, workflow-automation, low-code, integration, fair-code]
 description: n8n — Architecture
 ---
 

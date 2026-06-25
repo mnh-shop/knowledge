@@ -1,6 +1,6 @@
 ---
 name: openclaw-quadlet
-tags: [openclaw, quadlet, podman, deployment]
+tags: [openclaw, quadlet, typescript, agent-gateway, messaging, personal-assistant, live-canvas]
 description: OpenClaw Quadlet Deployment (Rootless Podman)
 ---
 
@@ -473,7 +473,7 @@ systemctl --user status openclaw-gateway.service
 
 ---
 
-## Cross-References
+## Related
 
 - [[domains/deployment/openclaw-deployment.md]] -- Full deployment guide
 - [[domains/architecture/openclaw-architecture.md]] -- Architecture overview

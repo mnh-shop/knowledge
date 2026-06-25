@@ -1,7 +1,7 @@
 ---
 name: gogs-deployment
 description: Gogs Deployment
-tags: [gogs, deployment, git]
+tags: [gogs, deployment, golang, git, self-hosted, version-control, ssh]
 ---
 
 # Gogs Deployment

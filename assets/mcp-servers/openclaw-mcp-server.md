@@ -1,6 +1,6 @@
 ---
 name: openclaw-mcp-server
-tags: [openclaw, mcp, channel, tools]
+tags: [openclaw, mcp-server, typescript, agent-gateway, messaging, personal-assistant, live-canvas]
 description: OpenClaw MCP Server
 ---
 
@@ -220,7 +220,7 @@ Reads `openclaw.json` for tool allow/deny policy:
 
 ---
 
-## Cross-References
+## Related
 
 - [[domains/mcp/openclaw-mcp-implementation.md]] -- Comprehensive MCP implementation document
 - [[domains/architecture/openclaw-architecture.md]] -- Gateway architecture

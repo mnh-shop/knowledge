@@ -1,6 +1,6 @@
 ---
 name: tank-os-deployment
-tags: [tank-os, deployment, bootc, fedora]
+tags: [tank-os, deployment, bootc, fedora, immutable-os, container-os, image-based]
 description: Tank OS Deployment
 ---
 

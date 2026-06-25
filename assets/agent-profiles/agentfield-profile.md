@@ -1,7 +1,7 @@
 ---
 name: agentfield-profile
 description: AgentField is an Apache 2.0 control plane for AI agents — Go backend, 3 SDKs (Python/Go/TypeScript), DID/VC identity, harness orchestration
-tags: [agentfield, control-plane, profile]
+tags: [agentfield, profile, golang, control-plane, identity, orchestration, harness]
 metadata:
   type: reference
 source: sources/agentfield/

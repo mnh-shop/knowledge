@@ -1,6 +1,6 @@
 ---
 name: mission-control-profile
-tags: [mission-control, dashboard, profile]
+tags: [mission-control, profile, typescript, nextjs, react, dashboard, orchestration, monitoring]
 description: Mission Control -- Quick Reference Profile
 ---
 

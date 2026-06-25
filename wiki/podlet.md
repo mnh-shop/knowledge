@@ -1,10 +1,6 @@
 ---
 name: podlet
-tags:
-  - podlet
-  - quadlet
-  - generator
-  - wiki
+tags: [podlet, wiki, rust, quadlet-generator, systemd, conversion]
 description: "Podlet"
 ---
 
@@ -141,7 +137,7 @@ The `podlet compose` command is particularly valuable for converting our Compose
 - **zbus**: D-Bus communication with systemd for service conflict detection
 - **color-eyre**: Error handling and reporting
 
-## Domain docs & assets
+## Related
 
 - [Architecture](domains/architecture/podlet-architecture.md) — Conversion pipeline, 27+ flag-to-Quadlet key mappings, compose conversion, serde serializer
 - [Deployment](domains/deployment/podlet-deployment.md) — Installation, 6 usage patterns, best practices

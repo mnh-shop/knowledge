@@ -1,6 +1,6 @@
 ---
 name: hermes-suite-architecture
-tags: [hermes, suite, architecture, all-in-one]
+tags: [hermes, architecture, typescript, agent-gateway, messaging, multi-platform]
 description: Hermes Suite architecture: all-in-one Hermes container combining gateway, built-in dashboard, and browser-based WebUI
 ---
 

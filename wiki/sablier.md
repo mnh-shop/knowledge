@@ -1,10 +1,6 @@
 ---
 name: sablier
-tags:
-  - sablier
-  - scale-to-zero
-  - proxy
-  - wiki
+tags: [sablier, wiki, golang, scale-to-zero, reverse-proxy, lifecycle]
 description: Sablier
 ---
 
@@ -80,7 +76,7 @@ Fire-and-forget HTTP POST on start/stop events. Payload: `{"event": "started"|"s
 | `pkg/tracing/` | OpenTelemetry tracing |
 | `pkg/webhook/` | Webhook dispatcher |
 
-## Domain docs & assets
+## Related
 
 - [Architecture](domains/architecture/sablier-architecture.md) — Scale-to-zero flow, request dedup, session expiry, proxy plugin model
 - [Deployment](domains/deployment/sablier-deployment.md) — Traefik/Caddy/Nginx/Envoy configs, agent service examples

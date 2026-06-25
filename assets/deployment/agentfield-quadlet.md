@@ -1,6 +1,6 @@
 ---
 name: agentfield-quadlet
-tags: [agentfield, quadlet, podman, deployment]
+tags: [agentfield, quadlet, golang, control-plane, identity, orchestration, harness]
 description: Rootless Podman Quadlet deployment configuration for AgentField control plane with PostgreSQL, volume, and network units
 ---
 
@@ -593,7 +593,7 @@ Accessed from another container on the same network by the `.container` filename
 
 ---
 
-## Cross-Reference
+## Related
 
 - [AgentField Architecture](../../domains/architecture/agentfield-architecture.md)
 - [AgentField API](../../domains/api/agentfield-api.md)

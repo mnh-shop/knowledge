@@ -1,6 +1,6 @@
 ---
 name: n8n-deployment
-tags: [n8n, deployment, docker, scaling]
+tags: [n8n, deployment, typescript, vue, workflow-automation, low-code, integration, fair-code]
 description: n8n — Deployment
 ---
 

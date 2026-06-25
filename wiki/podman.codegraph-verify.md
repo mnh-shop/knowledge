@@ -1,6 +1,6 @@
 ---
 name: podman-codegraph-verify
-tags: [podman, codegraph, verification, rootless]
+tags: [podman, wiki, golang, container-engine, daemonless, rootless, oci]
 description: "Codegraph Verification: podman"
 ---
 # Codegraph Verification: podman

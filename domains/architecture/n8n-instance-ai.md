@@ -1,6 +1,6 @@
 ---
 name: n8n-instance-ai
-tags: [n8n, instance-ai, architecture, agent]
+tags: [n8n, architecture, typescript, vue, workflow-automation, low-code, integration, fair-code]
 description: n8n — Instance AI Architecture
 ---
 

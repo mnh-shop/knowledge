@@ -1,6 +1,6 @@
 ---
 name: hermes-agent-docker
-tags: [hermes, docker, packaging, wiki]
+tags: [hermes-agent-docker, wiki, docker, packaging, container-deployment]
 description: Wiki entry for Hermes Agent Docker: minimal Docker image for Hermes Agent with configurable version pinning (MIT)
 ---
 

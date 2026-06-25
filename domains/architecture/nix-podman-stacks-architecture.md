@@ -1,7 +1,7 @@
 ---
 name: nix-podman-stacks-architecture
 type: architecture
-tags: [nix, podman, quadlet, architecture]
+tags: [nix-podman-stacks, architecture, nix, home-manager, iac, declarative, podman, self-hosted-stacks]
 description: Architecture: nix-podman-stacks
 ---
 

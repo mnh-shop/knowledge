@@ -1,6 +1,6 @@
 ---
 name: hermes-workspace
-tags: [hermes, workspace, swarm, wiki]
+tags: [hermes, wiki, typescript, agent-gateway, messaging, multi-platform]
 description: Wiki entry for Hermes Workspace: web/desktop command center for Hermes Agent with swarm orchestration and MCP hub (MIT)
 ---
 
@@ -157,7 +157,7 @@ code.
 - [[hermes-workspace-quadlet]] -- Quadlet deployment
 - [[hermes-workspace-profile]] -- Agent profile
 
-## Related repos
+## Related
 
 | Repo | Relationship |
 |---|---|

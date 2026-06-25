@@ -1,6 +1,6 @@
 ---
 name: hermes-agent-docker-deployment
-tags: [hermes, docker, deployment, packaging]
+tags: [hermes-agent-docker, deployment, docker, packaging, container-deployment]
 description: Hermes Agent Docker deployment guide for the minimal Docker image packaging
 ---
 

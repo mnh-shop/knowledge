@@ -1,6 +1,6 @@
 ---
 name: sec-af
-tags: [agentfield, security, auditor, wiki]
+tags: [sec-af, wiki, typescript, security, auditor, adversarial]
 description: Wiki entry for SEC-AF — AI-native security auditor that confirms exploitability, not just pattern detection (Apache 2.0)
 ---
 

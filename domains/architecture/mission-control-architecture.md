@@ -1,6 +1,6 @@
 ---
 name: mission-control-architecture
-tags: [mission-control, dashboard, architecture]
+tags: [mission-control, architecture, typescript, nextjs, react, dashboard, orchestration, monitoring]
 description: Mission Control Architecture
 ---
 

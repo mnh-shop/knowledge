@@ -1,6 +1,6 @@
 ---
 name: podman
-tags: [podman, containers, engine, wiki]
+tags: [podman, wiki, golang, container-engine, daemonless, rootless, oci]
 description: "Podman — Container Management Tool"
 ---
 # Podman — Container Management Tool
@@ -189,7 +189,7 @@ Podman is the **foundation runtime** for the entire agent deployment stack:
 - [[podlet]] — Quadlet file generator (convert `podman run` → .container units)
 - [[nix-podman-stacks]] — Nix-native Quadlet management
 
-## Domain docs & assets
+## Related
 
 - [[podman-architecture]] — 3-layer architecture, rootless re-exec mechanism, container lifecycle flow
 - [[podman-deployment]] — Quadlet, secrets, auto-updates, Podman Machine, troubleshooting

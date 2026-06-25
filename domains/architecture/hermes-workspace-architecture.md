@@ -1,6 +1,6 @@
 ---
 name: hermes-workspace-architecture
-tags: [hermes, workspace, architecture]
+tags: [hermes, architecture, typescript, agent-gateway, messaging, multi-platform]
 description: Hermes Workspace architecture: web/desktop command center for Hermes Agent with swarm orchestration and MCP hub
 ---
 

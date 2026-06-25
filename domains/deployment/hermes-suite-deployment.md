@@ -1,6 +1,6 @@
 ---
 name: hermes-suite-deployment
-tags: [hermes, suite, deployment, all-in-one]
+tags: [hermes, deployment, typescript, agent-gateway, messaging, multi-platform]
 description: Hermes Suite deployment guide for the all-in-one Hermes container image combining gateway, dashboard, and WebUI
 ---
 

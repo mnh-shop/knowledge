@@ -1,6 +1,6 @@
 ---
 name: hermes-agent-quadlet
-tags: [hermes, quadlet, podman, deployment]
+tags: [hermes, quadlet, typescript, agent-gateway, messaging, multi-platform]
 description: Production-ready rootless Podman Quadlet configuration for deploying Hermes Agent with systemd-native lifecycle management
 ---
 
@@ -773,7 +773,7 @@ ls -la /run/user/$(id -u)/systemd/generator/
 - [[hermes-agent-docker]] -- Docker packaging
 - [[hermes-workspace-quadlet]] -- Workspace Quadlet deployment
 
-## Cross-References
+## Related
 
 - [[domains/deployment/hermes-agent-deployment.md]] -- Full deployment guide
 - [[domains/architecture/hermes-agent-architecture.md]] -- Architecture overview

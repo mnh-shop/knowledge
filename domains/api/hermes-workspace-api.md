@@ -1,6 +1,6 @@
 ---
 name: hermes-workspace-api
-tags: [hermes, workspace, api, reference]
+tags: [hermes, api, typescript, agent-gateway, messaging, multi-platform]
 description: Hermes Workspace API reference for the web/desktop command center
 ---
 

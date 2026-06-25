@@ -1,6 +1,6 @@
 ---
 name: af-reactive-atlas-mongodb-architecture
-tags: [agentfield, mongodb, reactive, architecture]
+tags: [af-reactive-atlas-mongodb, architecture, typescript, mongodb, reactive, real-time, atlas-triggers]
 description: Architecture of AF Reactive Atlas MongoDB — intelligence layer turning MongoDB collections into self-assessing systems via Atlas Triggers
 ---
 

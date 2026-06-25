@@ -1,6 +1,6 @@
 ---
 name: agentfield-api
-tags: [agentfield, api, rest, reference]
+tags: [agentfield, api, golang, control-plane, identity, orchestration, harness]
 ---
 
 # AgentField API Reference

@@ -1,6 +1,6 @@
 ---
 name: hermes-workspace-deployment
-tags: [hermes, workspace, deployment, system-requirements]
+tags: [hermes, deployment, typescript, agent-gateway, messaging, multi-platform]
 description: Hermes Workspace deployment guide with system requirements and runtime configuration
 ---
 

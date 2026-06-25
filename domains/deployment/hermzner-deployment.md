@@ -1,6 +1,6 @@
 ---
 name: hermzner-deployment
-tags: [hermzner, hetzner, deployment, terraform]
+tags: [hermzner, deployment, terraform, ansible, iac, hetzner, vps, deployment-automation]
 description: Hermzner Deployment Guide
 ---
 
