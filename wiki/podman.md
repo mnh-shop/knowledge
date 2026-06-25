@@ -1,3 +1,8 @@
+---
+name: podman
+tags: [podman, containers, engine, wiki]
+description: "Podman — Container Management Tool"
+---
 # Podman — Container Management Tool
 
 | Field | Value |
@@ -186,7 +191,18 @@ Podman is the **foundation runtime** for the entire agent deployment stack:
 
 ## Domain docs & assets
 
-- [Architecture](domains/architecture/podman-architecture.md) — 3-layer architecture, rootless re-exec mechanism, container lifecycle flow
-- [Deployment](domains/deployment/podman-deployment.md) — Quadlet, secrets, auto-updates, Podman Machine, troubleshooting
-- [Quadlet Examples](assets/deployment/podman-quadlet-examples.md) — .container/.volume/.network/.pod/.kube/.build/.image patterns
-- [Agent Profile](assets/agent-profiles/podman-profile.md) — Skills, integration knowledge, SSH tunnel patterns
+- [[podman-architecture]] — 3-layer architecture, rootless re-exec mechanism, container lifecycle flow
+- [[podman-deployment]] — Quadlet, secrets, auto-updates, Podman Machine, troubleshooting
+- [[podman-quadlet-examples]] — .container/.volume/.network/.pod/.kube/.build/.image patterns
+- [[podman-profile]] — Skills, integration knowledge, SSH tunnel patterns
+- [[podman.codegraph-verify]] — Codegraph verification of architecture claims
+
+## Cross-project
+
+- [[hermes-agent]] — Agent platform running inside Podman containers
+- [[openclaw]] — Agent platform running inside Podman containers
+- [[agentfield]] — Control plane deployed via rootless Podman
+- [[mission-control]] — Dashboard deployed in Podman containers
+- [[n8n]] — Workflow automation running in Podman containers
+- [[sablier]] — Scale-to-zero daemon for Podman containers
+- [[gogs]] — Self-hosted Git service deployable via Podman

@@ -175,8 +175,13 @@
       "bases:Create new base": false
     }
   },
-  "active": "be5c35bd7dbe689d",
+  "active": "bfc3e027f1f8d1cc",
   "lastOpenFiles": [
+    "tests/_run_validation.py",
+    "tests/validate-wikilinks.py",
+    "tests/validate_wikilinks.py",
+    "domains/architecture/n8n-instance-ai.md.tmp.3845.8ecd8337e784",
+    "MEMORY_NEW.md.tmp.3845.fcf2618789ff",
     "sources/hermes-agent/website/i18n/zh-Hans/docusaurus-plugin-content-docs/current/user-guide/messaging/index.md",
     "domains/architecture/openclaw-architecture.md",
     "sources/podman/docs/source/markdown/podman.1.md",

@@ -1,3 +1,9 @@
+---
+name: mission-control-architecture
+tags: [mission-control, dashboard, architecture]
+description: Mission Control Architecture
+---
+
 # Mission Control Architecture
 **Source:** `sources/mission-control/`
 
@@ -553,3 +559,12 @@ Each skill gets a `security_status` ('unchecked' | 'safe' | 'suspicious' | 'bloc
 | `src/lib/csp.ts` | Content Security Policy |
 | `src/lib/injection-guard.ts` | Prompt and command injection detection |
 | `src/lib/rate-limit.ts` | Rate limiting |
+
+## Related
+
+- [[mission-control]] -- Project overview and feature summary
+- [[mission-control-api]] -- REST, MCP, and CLI interfaces
+- [[mission-control-deployment]] -- Deployment configuration and methods
+- [[mission-control-mcp-server]] -- MCP server implementation
+- [[mission-control-quadlet]] -- Container deployment with Quadlet
+- [[mission-control-profile]] -- Quick reference profile

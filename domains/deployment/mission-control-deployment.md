@@ -1,3 +1,9 @@
+---
+name: mission-control-deployment
+tags: [mission-control, deployment, dashboard]
+description: Mission Control Deployment
+---
+
 # Mission Control Deployment
 **Source:** `sources/mission-control/`
 
@@ -290,3 +296,11 @@ WantedBy=default.target
 ```
 
 A full Quadlet `.container` file for this project is available at `/Users/admin1/Documents/knowledge/assets/deployment/mission-control-quadlet.md`.
+
+## Related
+
+- [[mission-control]] -- Project overview
+- [[mission-control-architecture]] -- Architecture context for deployment
+- [[mission-control-quadlet]] -- Quadlet container configuration
+- [[mission-control-profile]] -- Deployment quick reference
+- [[mission-control-api]] -- API reference for the deployed service

@@ -1,3 +1,8 @@
+---
+name: podman-codegraph-verify
+tags: [podman, codegraph, verification, rootless]
+description: "Codegraph Verification: podman"
+---
 # Codegraph Verification: podman
 
 **Date:** 2026-06-24
@@ -73,3 +78,16 @@ The architecture documentation in `domains/architecture/podman-architecture.md` 
 
 - **Verdict:** ✅ CORRECT
 - **Fix needed:** None
+
+## Related
+
+- [[podman]] -- Main wiki entry with overview and architecture
+- [[podman-architecture]] -- Deep-dive into architecture
+- [[podman-deployment]] -- Deployment guide with Quadlet lifecycle
+- [[podman-quadlet-examples]] -- Production Quadlet file collection
+- [[podman-profile]] -- Quick-reference profile card
+
+## Cross-project
+
+- [[agentfield.codegraph-verify]] -- Similar codegraph verification for AgentField
+- [[openclaw.codegraph-verify]] -- Similar codegraph verification for OpenClaw

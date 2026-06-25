@@ -1,3 +1,8 @@
+---
+name: clawpier-architecture
+tags: [clawpier, tauri, desktop, architecture]
+description: "ClawPier Architecture — Tauri Desktop Agent Manager"
+---
 # ClawPier Architecture — Tauri Desktop Agent Manager
 
 | Field | Value |
@@ -183,6 +188,7 @@ When sending a message to a bot, ClawPier:
 ## Related
 
 - [[clawpier]] — Wiki entry
-- Deployment: [ClawPier Deployment](domains/deployment/clawpier-deployment.md)
+- [[clawpier-deployment]] — Deployment guide
+- [[clawpier-profile]] — Agent profile
 - [[openclaw]] — Primary agent runtime
 - [[hermes-agent]] — Secondary agent runtime

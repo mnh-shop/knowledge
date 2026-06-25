@@ -1,3 +1,9 @@
+---
+name: hermes-agent-docker
+tags: [hermes, docker, packaging, wiki]
+description: Wiki entry for Hermes Agent Docker: minimal Docker image for Hermes Agent with configurable version pinning (MIT)
+---
+
 # Hermes Agent Docker — Minimal Docker Image Packaging
 
 | Field | Value |
@@ -63,6 +69,16 @@ Hermes config, sessions, memories, and state live in `/home/agent/.hermes`. Moun
 ## Related
 
 - [[hermes-agent]] — The agent this Docker image packages
-- [[clawpier]] — Desktop GUI that manages Hermes/OpenClaw Docker containers
+- [[hermes-agent-docker-deployment]] — Docker deployment guide
+- [[hermes-agent-deployment]] — Full deployment guide
 - [[hermes-suite]] — All-in-one Hermes container (alternative)
+- [[hermes-suite-deployment]] — Suite deployment guide
+- [[clawpier]] — Desktop GUI that manages Hermes/OpenClaw Docker containers
 - [[hermzner]] — Production Hermes deployment blueprint
+
+## Cross-project
+
+- [[openclaw]] -- Comparable Docker packaging for competing agent
+- [[podman]] -- Container runtime for deploying Hermes Docker image
+- [[buildah]] -- Alternative image build approach
+- [[mission-control]] -- Dashboard alternative for managing Hermes

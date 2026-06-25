@@ -1,3 +1,8 @@
+---
+name: agentfield-quadlet
+tags: [agentfield, quadlet, podman, deployment]
+---
+
 # AgentField Quadlet Deployment
 **Source:** `sources/agentfield/`
 
@@ -593,3 +598,16 @@ Accessed from another container on the same network by the `.container` filename
 - [AgentField API](../../domains/api/agentfield-api.md)
 - [AgentField Deployment](../../domains/deployment/agentfield-deployment.md) -- broader deployment context including Docker Compose and Helm
 - [AgentField MCP Server](../mcp-servers/agentfield-mcp-server.md)
+
+## Related
+
+- [[agentfield]] -- wiki page for the platform
+- [[agentfield-architecture]] -- system architecture
+- [[agentfield-api]] -- REST API reference
+- [[agentfield-deployment]] -- deployment guide
+- [[agentfield-mcp-server]] -- MCP bridge server
+- [[agentfield-profile]] -- AgentField platform profile
+- [[SWE-AF]] -- software engineering agent
+- [[sec-af]] -- security analysis agent
+- [[af-deep-research]] -- deep research agent
+- [[af-reactive-atlas-mongodb]] -- reactive MongoDB agent

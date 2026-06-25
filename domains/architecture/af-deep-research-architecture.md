@@ -1,3 +1,8 @@
+---
+name: af-deep-research-architecture
+tags: [agentfield, deep-research, architecture]
+---
+
 # AF Deep Research Architecture
 
 **Source:** `sources/af-deep-research/`
@@ -234,3 +239,11 @@ curl -X POST http://localhost:8080/api/v1/execute/async/meta_deep_research.execu
 ## Conclusion
 
 AF Deep Research represents the next evolution in autonomous research systems, combining AgentField's production infrastructure with advanced recursive research algorithms. It transforms complex knowledge discovery into a structured, quality-assured process that scales intelligently with query complexity, delivering production-ready research packages suitable for integration into downstream analytics, decision support, and intelligence systems.
+
+## Related
+
+- [[af-deep-research]] -- wiki page for this agent
+- [[af-deep-research-profile]] -- agent profile
+- [[agentfield]] -- core AgentField platform
+- [[agentfield-architecture]] -- platform architecture
+- [[agentfield-deployment]] -- deployment guide

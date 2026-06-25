@@ -1,3 +1,9 @@
+---
+name: hermzner-deployment
+tags: [hermzner, hetzner, deployment, terraform]
+description: Hermzner Deployment Guide
+---
+
 # Hermzner Deployment Guide
 
 This guide covers deploying a hardened Hermes Agent on a Hetzner VPS using the Hermzner provisioning pipeline.
@@ -289,3 +295,9 @@ cd sources/hermzner/terraform
 terraform refresh
 terraform plan
 ```
+
+## Related
+
+- [[hermzner-architecture]] -- architecture overview and design decisions
+- [[hermzner-terraform-ansible]] -- Terraform and Ansible configuration reference
+- [[hermzner]] -- project overview and wiki

@@ -1,3 +1,9 @@
+---
+name: gogs-api
+description: Gogs API
+tags: [gogs, api, rest, reference]
+---
+
 # Gogs API
 
 | Field | Value |
@@ -82,5 +88,5 @@ Webhooks support JSON payload format and can target any HTTP endpoint (e.g., n8n
 ## Related
 
 - [[gogs]] — Wiki entry
-- [Gogs Architecture](domains/architecture/gogs-architecture.md)
-- [Gogs Deployment](domains/deployment/gogs-deployment.md)
+- [[gogs-architecture]] — Architecture and component design
+- [[gogs-deployment]] — Deployment options and configuration

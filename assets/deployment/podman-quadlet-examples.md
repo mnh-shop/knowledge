@@ -1,3 +1,8 @@
+---
+name: podman-quadlet-examples
+tags: [podman, quadlet, examples, patterns]
+description: "Podman Quadlet Examples -- Production-Ready Configurations"
+---
 # Podman Quadlet Examples -- Production-Ready Configurations
 **Source:** `sources/podman/`
 
@@ -987,8 +992,10 @@ Volume=%h/models/llama-q4:/models:Z
 
 ---
 
-## Cross-References
+## Related
 
+- [[podman]] -- Main wiki entry with overview and Quadlet integration
 - [[podman-architecture]] -- Deep-dive architecture document
 - [[podman-deployment]] -- Deployment guide with step-by-step instructions
 - [[podman-profile]] -- Quick-reference profile card
+- [[podman.codegraph-verify]] -- Codegraph verification of architecture claims

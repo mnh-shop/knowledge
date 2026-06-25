@@ -1,3 +1,13 @@
+---
+name: podlet-deployment
+tags:
+  - podlet
+  - deployment
+  - installation
+  - quadlet
+description: "Podlet Deployment Guide"
+---
+
 # Podlet Deployment Guide
 **Source:** `sources/podlet/`
 
@@ -291,3 +301,9 @@ podlet -u podman run -d --name hermes-db \
 9. **Name things deliberately**: Quadlet uses the filename (minus extension) as the service name. Use `--name` to control filenames.
 
 10. **Keep generated files in version control**: Store `.container`, `.pod`, `.kube`, `.volume`, `.network` files in your repo alongside compose files for reproducibility.
+
+## Related
+
+- [[podlet-architecture]] -- Conversion pipeline and flag-to-Quadlet mapping
+- [[podlet-quadlet-examples]] -- Detailed conversion examples for common scenarios
+- [[podlet]] -- Wiki overview, key features, and source file roles

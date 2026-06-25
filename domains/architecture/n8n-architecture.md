@@ -1,3 +1,9 @@
+---
+name: n8n-architecture
+tags: [n8n, architecture, workflow]
+description: n8n — Architecture
+---
+
 # n8n — Architecture
 
 **Source:** `/Users/admin1/Documents/knowledge/sources/n8n/`

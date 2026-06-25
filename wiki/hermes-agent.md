@@ -1,3 +1,9 @@
+---
+name: hermes-agent
+tags: [hermes, agent, wiki]
+description: Wiki entry for Hermes Agent: self-improving AI agent by Nous Research with multi-platform messaging (MIT)
+---
+
 # Hermes Agent
 
 | Field | Value |
@@ -193,6 +199,21 @@ commands:
 
 ---
 
+## Related
+
+- [[hermes-agent-profile]] -- Agent profile / development guidelines
+- [[hermes-agent-architecture]] -- System architecture
+- [[hermes-agent-deployment]] -- Deployment guide
+- [[hermes-agent-docker]] -- Docker packaging
+- [[hermes-agent-docker-deployment]] -- Docker deployment guide
+- [[hermes-agent-quadlet]] -- Quadlet deployment
+- [[hermes-acp-agent]] -- ACP agent configuration
+- [[hermes-acp-implementation]] -- ACP implementation
+- [[hermes-gateway-api]] -- Gateway API reference
+- [[hermes-gateway-platforms]] -- Gateway platform adapters
+- [[hermes-mcp-serve]] -- MCP messaging bridge
+- [[hermes-mcp-implementation]] -- MCP implementation
+
 ## Related repos in this knowledge system
 
 | Repo | Relationship |
@@ -202,3 +223,18 @@ commands:
 | [[hermes-workspace]] | Hermes workspace environment (isolated dev/testing workspace) |
 | [[hermes-startup-architect]] | Startup architect skill for Hermes |
 | [[hermes-agent]] profile | `assets/agent-profiles/hermes-agent-profile.md` (dev guidelines from AGENTS.md) |
+
+## Cross-project
+
+- [[openclaw]] — Competing agent gateway (TypeScript, MIT)
+- [[agentfield]] — Control plane that can orchestrate Hermes agents via MCP
+- [[mission-control]] — Dashboard that can connect to Hermes gateway
+- [[podman]] — Container runtime Hermes agents run inside
+- [[n8n]] — Workflow engine callable from Hermes MCP tools
+- [[hermzner]] — Deployment blueprint for Hermes on Hetzner
+- [[tank-os]] — Bootc OS pattern applicable to Hermes deployment
+- [[clawpier]] — Desktop GUI for managing Hermes Docker containers
+- [[buildah]] — Builds the container images Hermes agents run inside
+- [[nix-podman-stacks]] — Declarative Nix-based container infrastructure
+- [[sablier]] — Scale-to-zero for Hermes agent services
+- [[gogs]] — Self-hosted Git backend for agent code repositories

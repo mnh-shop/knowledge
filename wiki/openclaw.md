@@ -1,3 +1,9 @@
+---
+name: openclaw
+tags: [openclaw, agent-gateway, wiki]
+description: OpenClaw — Personal AI Assistant
+---
+
 # OpenClaw — Personal AI Assistant
 
 | Field | Value |
@@ -177,8 +183,33 @@ docker pull ghcr.io/openclaw/openclaw:latest
 
 ## Related
 
+- [[openclaw-architecture]] -- System architecture deep dive
+- [[openclaw-api]] -- REST and WebSocket API reference
+- [[openclaw-mcp-implementation]] -- MCP server implementation details
+- [[openclaw-acp-implementation]] -- ACP protocol implementation details
+- [[openclaw-deployment]] -- Full deployment and operations guide
+- [[openclaw-mcp-server]] -- MCP server asset configuration
+- [[openclaw-acp-agent]] -- ACP agent asset registration
+- [[openclaw-quadlet]] -- Quadlet deployment patterns
+- [[openclaw-profile]] -- Quick reference profile
+- [[openclaw.codegraph-verify]] -- Codegraph verification document
 - [[tank-os]] — Fedora bootc image to deploy OpenClaw as a bootable appliance
 - [[hermes-agent]] — Competing agent gateway (Python, MIT)
 - [[mission-control]] — Dashboard that can connect to OpenClaw as a gateway
 - [[agentfield]] — Control plane that could orchestrate OpenClaw agents via MCP
 - [[n8n]] — Workflow engine that can be called from OpenClaw MCP tools
+
+## Cross-project
+
+- [[hermes-agent]] — Competing agent gateway (Python, MIT)
+- [[agentfield]] — Control plane that orchestrates OpenClaw agents via MCP
+- [[mission-control]] — Dashboard that monitors OpenClaw gateway
+- [[podman]] — Container runtime for OpenClaw deployment
+- [[tank-os]] — Fedora bootc image packaging OpenClaw
+- [[clawpier]] — Desktop GUI for managing OpenClaw Docker containers
+- [[buildah]] — Builds container images for OpenClaw channels/plugins
+- [[nix-podman-stacks]] — Declarative Nix-based container deployment
+- [[sablier]] — Scale-to-zero for OpenClaw services
+- [[gogs]] — Self-hosted Git backend for OpenClaw configuration
+- [[hermzner]] — Comparable deployment blueprint (Hermes-focused)
+- [[crun-vm]] — Extra isolation for OpenClaw deployment on bare metal

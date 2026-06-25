@@ -1,3 +1,13 @@
+---
+name: podlet
+tags:
+  - podlet
+  - quadlet
+  - generator
+  - wiki
+description: "Podlet"
+---
+
 # Podlet
 
 | Field | Value |
@@ -136,3 +146,18 @@ The `podlet compose` command is particularly valuable for converting our Compose
 - [Architecture](domains/architecture/podlet-architecture.md) — Conversion pipeline, 27+ flag-to-Quadlet key mappings, compose conversion, serde serializer
 - [Deployment](domains/deployment/podlet-deployment.md) — Installation, 6 usage patterns, best practices
 - [Quadlet Examples](assets/deployment/podlet-quadlet-examples.md) — 5 concrete conversion examples (OpenClaw, Hermes stack, generate from objects)
+
+## Related
+
+- [[podlet-architecture]] -- Conversion pipeline and flag-to-Quadlet mapping
+- [[podlet-deployment]] -- Installation, usage patterns, and best practices
+- [[podlet-quadlet-examples]] -- Concrete conversion examples for OpenClaw and Hermes stacks
+
+## Cross-project
+
+- [[podman]] -- Podman Quadlet files Podlet generates
+- [[tank-os]] -- Quadlet files for bootc OS deployment
+- [[hermes-agent]] -- Quadlet files for Hermes agent deployment
+- [[openclaw]] -- Quadlet files for OpenClaw agent deployment
+- [[agentfield]] -- Quadlet files for AgentField control plane
+- [[nix-podman-stacks]] -- Alternative Nix approach to Quadlet management

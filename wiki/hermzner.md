@@ -1,3 +1,9 @@
+---
+name: hermzner
+tags: [hermzner, hetzner, terraform, ansible]
+description: "Hermzner — Hardened Hermes on Hetzner"
+---
+
 # Hermzner — Hardened Hermes on Hetzner
 
 | Field | Value |
@@ -70,3 +76,21 @@ Hermzner is **specifically for [[hermes-agent]]** — it deploys Hermes and noth
 ## Similar Repos
 
 - [[tank-os]] — same deployment pattern, but for OpenClaw (bootc image rather than Terraform + Hetzner)
+
+## Related
+
+- [[hermzner-architecture]] — architecture overview and design decisions
+- [[hermzner-deployment]] — deployment guide and operational procedures
+- [[hermzner-terraform-ansible]] — Terraform and Ansible configuration reference
+
+## Cross-project
+
+- [[hermes-agent]] -- Deploys Hermes Agent on Hetzner VPS
+- [[podman]] -- Rootless Podman as container runtime
+- [[tank-os]] -- Similar deployment pattern (bootc vs Terraform)
+- [[openclaw]] -- Comparable deployment pattern (bootc-based)
+- [[agentfield]] -- Could be extended to deploy
+- [[n8n]] -- Could be included in combined stack deployment
+- [[gogs]] -- Self-hosted Git service for deployment configs
+- [[buildah]] -- Building container images for deployment
+- [[clawpier]] -- Desktop alternative to VPS deployment

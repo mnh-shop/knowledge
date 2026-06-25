@@ -1,3 +1,8 @@
+---
+name: memory
+tags: [knowledge, structure, coverage, compatibility]
+---
+
 # MEMORY.md
 
 This knowledge folder is a simple GitHub-only knowledge system for coding agents.

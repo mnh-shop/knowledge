@@ -1,3 +1,9 @@
+---
+name: n8n-api
+tags: [n8n, api, rest, reference]
+description: n8n — API Architecture
+---
+
 # n8n — API Architecture
 
 **Source:** `sources/n8n/packages/cli/src/`
@@ -143,4 +149,6 @@ Enterprise features (`.ee.` files) are gated by license checks:
 - n8n Architecture: [[n8n-architecture]]
 - n8n Instance AI: [[n8n-instance-ai]]
 - n8n MCP: [[n8n-mcp]]
+- n8n Deployment: [[n8n-deployment]] -- Deployment models, Docker images, and scaling
+- n8n Agent Profile: [[n8n-agent-profile]] -- Engineering standards and development patterns
 - Wiki entry: [[n8n]]

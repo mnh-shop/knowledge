@@ -1,3 +1,9 @@
+---
+name: hermes-workspace-profile
+tags: [hermes, workspace, profile]
+description: Agent profile for Hermes Workspace: quick reference profile for the web/desktop command center for Hermes Agent
+---
+
 # Hermes Workspace — Quick Reference Profile
 **Source:** `sources/hermes-workspace/`
 
@@ -74,6 +80,16 @@ Hermes-workspace is the web UI and API server for the Hermes agent ecosystem. It
 - **tmux** (required for swarm on Linux/macOS)
 - **Python 3** (required for PTY terminal)
 - **pnpm** (for building)
+
+## Related
+
+- [[hermes-workspace]] -- Wiki entry for Hermes Workspace
+- [[hermes-workspace-api]] -- Full REST API endpoint inventory
+- [[hermes-workspace-deployment]] -- Deployment guide
+- [[hermes-workspace-quadlet]] -- Rootless Podman Quadlet config
+- [[hermes-workspace-architecture]] -- System architecture
+- [[hermes-workspace-mcp-hub]] -- MCP hub implementation
+- [[hermes-workspace-swarm-architecture]] -- Swarm architecture
 
 ## Related Knowledge Files
 

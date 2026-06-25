@@ -1,3 +1,8 @@
+---
+name: af-reactive-atlas-mongodb-profile
+tags: [agentfield, mongodb, reactive, profile]
+---
+
 # AF Reactive Atlas MongoDB Agent Profile
 
 **This agent profile describes the Reactive Atlas MongoDB intelligence layer — an AgentField-based AI agent that turns MongoDB collections into intelligent, self-assessing systems through real-time change-triggered reasoning.**
@@ -463,3 +468,10 @@ exports = async function(changeEvent) {
 - Supply chain monitoring
 
 This agent represents a fundamental shift from traditional ETL and rules-based approaches to real-time, AI-driven intelligence for database systems.
+
+## Related
+
+- [[af-reactive-atlas-mongodb]] -- wiki page for this agent
+- [[af-reactive-atlas-mongodb-architecture]] -- architecture documentation
+- [[agentfield]] -- core AgentField platform
+- [[agentfield-profile]] -- AgentField platform profile

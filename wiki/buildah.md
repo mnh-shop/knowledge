@@ -1,3 +1,9 @@
+---
+name: buildah
+tags: [buildah, oci, image-builder, wiki]
+description: Buildah — OCI Image Builder
+---
+
 # Buildah — OCI Image Builder
 
 | Field | Value |
@@ -200,3 +206,20 @@ See `install.md` in the repo for full details.
 - [Architecture](domains/architecture/buildah-architecture.md) — 4-layer architecture, image building pipeline, rootless mode
 - [Deployment](domains/deployment/buildah-deployment.md) — CI/CD pipelines, rootless config, agent image build examples
 - [Agent Profile](assets/agent-profiles/buildah-profile.md) — Buildah as a build-time tool, configuration reference
+
+## Related
+
+- [[buildah-architecture]] — Four-layer architecture, image building pipeline, rootless mode
+- [[buildah-deployment]] — Installation, CI/CD pipelines, rootless configuration
+- [[buildah-profile]] — Agent profile, configuration reference, command cheatsheet
+
+## Cross-project
+
+- [[podman]] -- Runtime counterpart (`podman build` delegates to Buildah)
+- [[hermes-agent]] -- Builds agent container images
+- [[openclaw]] -- Builds agent container images
+- [[agentfield]] -- CI/CD pipeline for agent deployment
+- [[n8n]] -- Custom image building for workflow nodes
+- [[tank-os]] -- Builds bootc container OS images
+- [[hermzner]] -- Image builds for Hetzner deployment
+- [[nix-podman-stacks]] -- Declarative image management via Nix

@@ -1,3 +1,8 @@
+---
+name: agentfield-architecture
+tags: [agentfield, control-plane, architecture]
+---
+
 # AgentField: AI Control Plane Architecture
 **Source:** `sources/agentfield/`
 
@@ -420,3 +425,17 @@ The Go server initializes a `StorageFactory` abstracting SQLite vs PostgreSQL:
 | `control-plane/internal/skillkit/skill_data/agentfield/SKILL.md` | The /agentfield Claude Code skill (255-line architectural specification) |
 | `deployments/docker/docker-compose.yml` | Docker Compose: PostgreSQL + control-plane + demo agents |
 | `deployments/helm/` | Helm chart for Kubernetes deployment |
+
+## Related
+
+- [[agentfield]] -- wiki page for the platform
+- [[agentfield-api]] -- REST API reference
+- [[agentfield-deployment]] -- deployment guide
+- [[agentfield-quadlet]] -- Quadlet deployment
+- [[agentfield-mcp-server]] -- MCP bridge server
+- [[agentfield-profile]] -- AgentField platform profile
+- [[agentfield.codegraph-verify]] -- codegraph verification
+- [[SWE-AF]] -- autonomous engineering factory
+- [[sec-af]] -- security auditor agent
+- [[af-deep-research]] -- deep research engine
+- [[af-reactive-atlas-mongodb]] -- reactive MongoDB intelligence

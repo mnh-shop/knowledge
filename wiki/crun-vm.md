@@ -1,3 +1,9 @@
+---
+name: crun-vm
+tags: [crun-vm, qemu, oci, runtime]
+description: CRUN-VM — OCI Runtime for Running VMs as Containers
+---
+
 # CRUN-VM — OCI Runtime for Running VMs as Containers
 
 | Field | Value |
@@ -120,4 +126,12 @@ crun-vm fills a specific niche: **deepest isolation on bare metal**. For product
 - [[podman]] — The container engine crun-vm integrates with
 - [[tank-os]] — Fedora bootc image deployable via crun-vm
 - [[hermzner]] — Alternative deployment approach (Terraform + Ansible, no crun-vm)
-- [crun-vm Deployment](domains/deployment/crun-vm-deployment.md) — Docker Compose, Quadlet, Kubernetes deployment guide
+- [[crun-vm-architecture]] — Full architecture reference
+- [[crun-vm-deployment]] — Deployment and operations guide
+
+## Cross-project
+
+- [[hermes-agent]] — Could run agents inside VMs for extra isolation
+- [[openclaw]] — Could run agents inside VMs for extra isolation
+- [[buildah]] — Builds bootc images for crun-vm deployment
+- [[nix-podman-stacks]] — Declarative alternative to VM-based isolation

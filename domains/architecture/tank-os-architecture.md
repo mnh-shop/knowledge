@@ -1,3 +1,9 @@
+---
+name: tank-os-architecture
+tags: [tank-os, bootc, fedora, architecture]
+description: Tank OS Architecture
+---
+
 # Tank OS Architecture
 
 ## Overview
@@ -159,3 +165,9 @@ The architecture generalizes cleanly to any service that needs to be deployed as
 5. Replicate the CLI shim pattern for `sudo` delegation
 
 A hypothetical `hermes-bootc` would differ only in base image tag, packages installed, Quadlet image/ports/volumes/command, bootstrap script logic, secret names, and config file locations. The entire OS+workload-as-OCI-image pattern, transactional updates via bootc, and the Podman secret injection pipeline are the reusable architectural assets.
+
+## Related
+
+- [[tank-os]] -- Wiki overview of the Tank OS project
+- [[tank-os-quadlet]] -- Detailed Quadlet file reference
+- [[tank-os-deployment]] -- Deployment guide

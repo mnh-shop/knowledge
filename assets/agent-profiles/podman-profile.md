@@ -1,13 +1,15 @@
 ---
+name: podman-profile
 title: Podman
 category: container-engine
-tags: [podman, containers, container-engine, oci, systemd, quadlet, rootless, deployment]
+tags: [podman, containers, profile]
 repo: https://github.com/containers/podman
 license: Apache-2.0
 maturity: stable
 language: Go (primary), C (rootless reexec), Rust (netavark)
 status: active
 source: sources/podman/
+description: "Agent profile for Podman: container engine skills, integration knowledge, and SSH tunnel deployment patterns"
 ---
 
 # Podman Profile
@@ -279,8 +281,10 @@ systemctl --user daemon-reload
 systemctl --user start *.service
 ```
 
-## Related Knowledge Base Pages
+## Related
 
+- [[podman]] -- Main wiki entry with overview and deployment role
 - [[podman-architecture]] -- Deep-dive into architecture
 - [[podman-deployment]] -- Deployment guide
 - [[podman-quadlet-examples]] -- Production Quadlet files
+- [[podman.codegraph-verify]] -- Codegraph verification of architecture claims

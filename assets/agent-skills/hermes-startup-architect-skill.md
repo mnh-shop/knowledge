@@ -1,3 +1,9 @@
+---
+name: hermes-startup-architect-skill
+tags: [hermes, skill, startup, research]
+description: Hermes Agent skill that transforms a raw startup idea into a comprehensive research-backed startup kit with 8 files
+---
+
 # Skill: Startup Architect
 
 **Source:** `sources/hermes-startup-architect/skills/business/startup-architect/SKILL.md`
@@ -66,6 +72,11 @@ cp skills/business/startup-architect/SKILL.md ~/.hermes/skills/business/startup-
 ```
 
 Then trigger with: "I want to build [idea]. Use the startup-architect skill."
+
+## Related
+
+- [[hermes-startup-architect]] -- Wiki entry for Startup Architect
+- [[hermes-agent]] -- Hermes Agent runtime that executes this skill
 
 ## Links
 

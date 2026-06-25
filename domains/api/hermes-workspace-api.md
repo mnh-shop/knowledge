@@ -1,3 +1,9 @@
+---
+name: hermes-workspace-api
+tags: [hermes, workspace, api, reference]
+description: Hermes Workspace API reference for the web/desktop command center
+---
+
 # Hermes Workspace API
 **Source:** `sources/hermes-workspace/`
 
@@ -264,3 +270,13 @@ The workspace does NOT use ACP (Agent Communication Protocol) for worker managem
 4. **Checkpoint Polling** — After dispatch, polls for fresh checkpoints by reading `runtime.json` and `state.db` from the worker's profile directory.
 
 5. **Lifecycle Management** — `autoSweepLifecycle()` handles context window management with thresholds: softTokens (250k), handoffTokens (400k), hardTokens (500k). States: healthy < watch < handoff_required < renew_required.
+
+## Related
+
+- [[hermes-workspace]] -- Wiki entry for Hermes Workspace
+- [[hermes-workspace-architecture]] -- System architecture
+- [[hermes-workspace-deployment]] -- Deployment guide
+- [[hermes-workspace-profile]] -- Agent profile
+- [[hermes-workspace-mcp-hub]] -- MCP hub implementation
+- [[hermes-workspace-swarm-architecture]] -- Swarm architecture
+- [[hermes-workspace-quadlet]] -- Quadlet deployment

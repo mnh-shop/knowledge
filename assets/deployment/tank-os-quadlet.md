@@ -1,3 +1,9 @@
+---
+name: tank-os-quadlet
+tags: [tank-os, quadlet, bootc, openclaw]
+description: Tank OS Quadlet Files
+---
+
 # Tank OS Quadlet Files
 **Source:** `sources/tank-os/`
 
@@ -149,3 +155,9 @@ These are NOT created by the Quadlet itself -- the bootstrap scripts ensure the 
 - `service-gator` depends on network (`After=network-online.target`) to ensure MCP endpoints are reachable
 - `openclaw` does NOT depend on network -- it can start before connectivity exists and wait for secrets to be injected
 - After `sync-podman-secrets` writes drop-in files, a `systemctl --user daemon-reload` is required (performed by the secret sync script)
+
+## Related
+
+- [[tank-os]] -- Wiki overview of the Tank OS project
+- [[tank-os-architecture]] -- Architecture context for Quadlet services
+- [[tank-os-deployment]] -- Deployment guide for the OS image

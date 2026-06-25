@@ -1,3 +1,13 @@
+---
+name: podlet-quadlet-examples
+tags:
+  - podlet
+  - quadlet
+  - examples
+  - conversion
+description: "Podlet Quadlet Examples"
+---
+
 # Podlet Quadlet Examples
 **Source:** `sources/podlet/`
 
@@ -506,3 +516,9 @@ podlet --service-name openclaw-acp \
 
 # Generates: openclaw-acp.container with ServiceName=openclaw-acp
 ```
+
+## Related
+
+- [[podlet-architecture]] -- Conversion pipeline and flag-to-Quadlet mapping behind the examples
+- [[podlet-deployment]] -- Installation, usage patterns, and deployment best practices
+- [[podlet]] -- Wiki overview, key features, and source file roles

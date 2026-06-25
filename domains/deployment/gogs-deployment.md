@@ -1,3 +1,9 @@
+---
+name: gogs-deployment
+description: Gogs Deployment
+tags: [gogs, deployment, git]
+---
+
 # Gogs Deployment
 
 | Field | Value |
@@ -161,5 +167,5 @@ rsync -av /data/git/repositories/ /backup/repos/
 ## Related
 
 - [[gogs]] — Wiki entry
-- [Gogs Architecture](domains/architecture/gogs-architecture.md)
-- [Gogs API](domains/api/gogs-api.md)
+- [[gogs-architecture]] — Architecture and component design
+- [[gogs-api]] — REST API reference

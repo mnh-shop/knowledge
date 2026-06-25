@@ -1,3 +1,8 @@
+---
+name: agentfield-deployment
+tags: [agentfield, deployment, docker, helm, production]
+---
+
 # AgentField Deployment Guide
 **Source:** `sources/agentfield/`
 
@@ -554,3 +559,16 @@ All builds use tags `embedded sqlite_fts5` and link flags `-s -w`. The `af` CLI 
 | `pydantic>=2.0` | Schema validation |
 | `websockets` | Streaming execution |
 | `aiohttp` | Async HTTP |
+
+## Related
+
+- [[agentfield]] -- wiki page for the platform
+- [[agentfield-architecture]] -- system architecture
+- [[agentfield-api]] -- REST API reference
+- [[agentfield-quadlet]] -- Quadlet deployment
+- [[agentfield-mcp-server]] -- MCP bridge server
+- [[agentfield-profile]] -- AgentField platform profile
+- [[SWE-AF]] -- autonomous engineering factory
+- [[sec-af]] -- security auditor agent
+- [[af-deep-research]] -- deep research engine
+- [[af-reactive-atlas-mongodb]] -- reactive MongoDB intelligence

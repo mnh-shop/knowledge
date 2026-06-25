@@ -1,3 +1,9 @@
+---
+name: hermes-workspace-mcp-hub
+tags: [hermes, workspace, mcp, hub]
+description: Hermes Workspace MCP Hub: centralized MCP server management for Hermes workspace agents
+---
+
 # Hermes Workspace — MCP Hub
 
 **Source:** `sources/hermes-workspace/src/server/mcp-hub/`
@@ -59,6 +65,8 @@ The MCP Hub feeds the `/mcp` screen, which shows:
 
 ## Related
 
-- Wiki: [[hermes-workspace]]
-- Architecture: [[hermes-workspace-architecture]]
-- UI: `sources/hermes-workspace/src/screens/mcp/`
+- [[hermes-workspace]] -- Wiki entry
+- [[hermes-workspace-architecture]] -- System architecture
+- [[hermes-workspace-api]] -- REST API reference
+- [[hermes-workspace-deployment]] -- Deployment guide
+- [[hermes-mcp-implementation]] -- Hermes MCP implementation patterns

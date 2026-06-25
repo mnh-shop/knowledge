@@ -1,3 +1,9 @@
+---
+name: mission-control-quadlet
+tags: [mission-control, quadlet, podman, deployment]
+description: Mission Control Quadlet Configuration
+---
+
 # Mission Control Quadlet Configuration
 **Source:** `sources/mission-control/`
 
@@ -124,3 +130,10 @@ journalctl --user -u mission-control -f
 - The memory limit of 512MB is the recommended minimum. Increase to 2GB if using the `/chat` panel with `node-pty` terminal emulation.
 - For Tailscale Serve mode, map ports accordingly and set `NEXT_PUBLIC_GATEWAY_URL` to the Tailscale funnel URL.
 - The hardened with internal-only network requires a reverse proxy to terminate TLS and forward to the internal mc-internal network. Without this, the dashboard UI itself will be unreachable.
+
+## Related
+
+- [[mission-control]] -- Project overview
+- [[mission-control-deployment]] -- Full deployment guide and configuration
+- [[mission-control-architecture]] -- Architecture context for container configuration
+- [[mission-control-profile]] -- Quick reference profile

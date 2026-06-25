@@ -1,3 +1,9 @@
+---
+name: mission-control-mcp-server
+tags: [mission-control, mcp, json-rpc, server]
+description: Mission Control MCP Server
+---
+
 # Mission Control MCP Server
 **Source:** `sources/mission-control/`
 
@@ -45,3 +51,10 @@ Profile support: reads from `~/.mission-control/profiles/default.json` (stores U
 - Stdio line-based transport uses readline -- each line parsed as JSON-RPC 2.0
 - Results JSON-stringified to stdout; errors surface as MCP error content or JSON-RPC errors
 - API contract parity with the CLI -- both call the same `/api/*` REST layer
+
+## Related
+
+- [[mission-control]] -- Project overview
+- [[mission-control-api]] -- REST API that the MCP server wraps
+- [[mission-control-architecture]] -- Where the MCP server fits in the architecture
+- [[mission-control-profile]] -- Quick reference for running the MCP server

@@ -1,3 +1,9 @@
+---
+name: hermes-startup-architect
+tags: [hermes, skill, startup, wiki]
+description: Wiki entry for Hermes Startup Architect: Hermes Agent skill for turning startup ideas into research-backed kits (MIT)
+---
+
 # Hermes Startup Architect
 
 | Field | Value |
@@ -43,3 +49,15 @@ This is a small, self-contained skill. Forking considerations:
   new asset types
 - **Dependency:** Requires Hermes Agent to run; skill format is
   Hermes-specific (SKILL.md with frontmatter + workflow steps)
+
+## Related
+
+- [[hermes-startup-architect-skill]] -- Skill asset (SKILL.md definition)
+- [[hermes-agent]] -- Hermes Agent runtime that executes this skill
+
+## Cross-project
+
+- [[hermes-workspace]] -- Can install this startup skill inside the workspace
+- [[n8n]] -- Could automate startup research workflows
+- [[agentfield]] -- Could orchestrate startup analysis as agent tasks
+- [[af-deep-research]] -- Deep research engine could enhance startup research

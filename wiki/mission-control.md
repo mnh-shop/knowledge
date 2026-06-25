@@ -1,3 +1,9 @@
+---
+name: mission-control
+tags: [mission-control, dashboard, orchestration, wiki]
+description: Mission Control — AI Agent Orchestration Dashboard
+---
+
 # Mission Control — AI Agent Orchestration Dashboard
 
 | Field | Value |
@@ -122,3 +128,18 @@ Mission Control is **most useful when paired with at least one agent gateway** �
 - [[hermes-agent]] — Supported gateway (via framework adapter)
 - [[agentfield]] — Generic REST integration for management plane
 - [[stack-landscape]] — Where this fits in the overall deployment stack
+- [[mission-control-architecture]] — Detailed system architecture
+- [[mission-control-api]] — REST API, MCP tools, and CLI reference
+- [[mission-control-deployment]] — Deployment methods and configuration
+- [[mission-control-mcp-server]] — MCP server setup and tools
+- [[mission-control-quadlet]] — Quadlet container deployment
+- [[mission-control-profile]] — Quick reference profile
+
+## Cross-project
+
+- [[n8n]] -- Workflow engine with webhook panel integration
+- [[podman]] -- Container runtime for Mission Control deployment
+- [[clawpier]] -- Alternative desktop GUI for agent management
+- [[gogs]] -- Self-hosted Git service for pipeline integration
+- [[nix-podman-stacks]] -- Declarative container deployment
+- [[sablier]] -- Scale-to-zero for Mission Control services

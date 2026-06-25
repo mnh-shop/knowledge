@@ -1,3 +1,9 @@
+---
+name: mission-control-api
+tags: [mission-control, api, rest, reference]
+description: Mission Control API
+---
+
 # Mission Control API
 **Source:** `sources/mission-control/`
 
@@ -265,3 +271,11 @@ There is **no first-party Agentfield integration**. Integration patterns availab
 5. **Direct API consumption**: Agentfield can call any MC REST API endpoint with `x-api-key` auth
 
 Recommended architecture: A dedicated `AgentfieldAdapter` (framework adapter pattern) plus an `/api/agentfield/*` route namespace with webhook/hook mechanism similar to Hermes.
+
+## Related
+
+- [[mission-control]] -- Project overview
+- [[mission-control-architecture]] -- API design patterns and routing structure
+- [[mission-control-mcp-server]] -- MCP server that wraps these endpoints
+- [[mission-control-deployment]] -- Deploying the API server
+- [[mission-control-profile]] -- Quick reference for API usage

@@ -1,3 +1,10 @@
+---
+name: nix-podman-stacks-architecture
+type: architecture
+tags: [nix, podman, quadlet, architecture]
+description: Architecture: nix-podman-stacks
+---
+
 # Architecture: nix-podman-stacks
 
 **Source:** `sources/nix-podman-stacks/`
@@ -424,3 +431,8 @@ systemd --user services + sockets + networks
            ▼
 Rootless Podman containers
 ```
+
+## Related
+
+- [[nix-podman-stacks]] -- Project wiki overview and usage
+- [[nix-podman-stacks-n8n]] -- n8n module integration details (key example stack)

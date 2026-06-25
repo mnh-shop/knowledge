@@ -1,3 +1,9 @@
+---
+name: openclaw-mcp-server
+tags: [openclaw, mcp, channel, tools]
+description: OpenClaw MCP Server
+---
+
 # OpenClaw MCP Server
 **Source:** `sources/openclaw/`
 
@@ -204,6 +210,13 @@ Reads `openclaw.json` for tool allow/deny policy:
 6. **Plugin tools approval** -- When a plugin tool requires approval, the MCP bridge reports it as an error. Approval flows are not supported over the MCP bridge for plugin tools.
 
 7. **Connection latency** -- The channel server must establish a WebSocket connection to the Gateway before serving tools. Operation latency is bounded by Gateway round-trip time.
+
+## Related
+
+- [[openclaw-acp-agent]] -- ACP agent asset registration (companion protocol)
+- [[openclaw-api]] -- REST and WebSocket API reference
+- [[openclaw-deployment]] -- Full deployment guide
+- [[openclaw]] -- Main wiki entry
 
 ---
 

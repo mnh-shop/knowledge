@@ -1,3 +1,8 @@
+---
+name: swe-af-architecture
+tags: [agentfield, engineering, swe, architecture]
+---
+
 # SWE-AF Architecture Documentation
 
 ## Overview
@@ -407,6 +412,14 @@ SWE-AF can be extended through AgentField's plugin system:
 SWE-AF represents a significant step toward autonomous software engineering, moving beyond single-agent wrappers to true factory-scale orchestration. By combining multiple specialized agents with adaptive control loops, git worktree isolation, and comprehensive testing, SWE-AF achieves enterprise-grade reliability and performance that outperforms individual AI coding assistants.
 
 The architecture successfully balances adaptability with speed, offering both a full-featured build pipeline (SWE-planner) and a speed-optimized variant (SWE-fast) for different scenarios. The factory pattern, while complex, enables SWE-AF to handle tasks that would be impossible for single-agent systems, making it suitable for building complex software systems at scale.
+
+## Related
+
+- [[SWE-AF]] -- wiki page for this agent
+- [[swe-af-profile]] -- agent profile
+- [[agentfield]] -- core AgentField platform
+- [[agentfield-architecture]] -- platform architecture
+- [[agentfield-deployment]] -- deployment guide
 
 ---
 

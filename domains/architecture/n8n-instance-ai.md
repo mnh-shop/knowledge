@@ -1,3 +1,9 @@
+---
+name: n8n-instance-ai
+tags: [n8n, instance-ai, architecture, agent]
+description: n8n — Instance AI Architecture
+---
+
 # n8n — Instance AI Architecture
 
 **Source:** `sources/n8n/packages/@n8n/instance-ai/`
@@ -326,4 +332,6 @@ The agent never talks to providers directly — only sees the Workspace.
 - n8n Architecture: [[n8n-architecture]]
 - n8n MCP: [[n8n-mcp]]
 - n8n API: [[n8n-api]]
+- n8n Deployment: [[n8n-deployment]] -- Deployment models, Docker images, and scaling
+- n8n Agent Profile: [[n8n-agent-profile]] -- Engineering standards and development patterns
 - Wiki entry: [[n8n]]

@@ -1,3 +1,9 @@
+---
+name: hermes-workspace-architecture
+tags: [hermes, workspace, architecture]
+description: Hermes Workspace architecture: web/desktop command center for Hermes Agent with swarm orchestration and MCP hub
+---
+
 # Hermes Workspace Architecture
 
 **Codegraph:** `graphs/hermes-workspace/`
@@ -129,6 +135,16 @@ This is a substantial codebase (~4MB raw). Forking considerations:
   subsystem, MCP hub)
 - **Unique value:** Swarm orchestration, MCP hub, all-in-one Hermes control
   plane — features that don't exist in hermes-agent itself
+
+## Related
+
+- [[hermes-workspace]] -- Wiki entry
+- [[hermes-workspace-profile]] -- Agent profile
+- [[hermes-workspace-api]] -- REST API reference
+- [[hermes-workspace-swarm-architecture]] -- Swarm architecture
+- [[hermes-workspace-deployment]] -- Deployment guide
+- [[hermes-workspace-mcp-hub]] -- MCP hub implementation
+- [[hermes-workspace-quadlet]] -- Quadlet deployment
 
 ## Links
 

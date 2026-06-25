@@ -1,3 +1,9 @@
+---
+name: tank-os-deployment
+tags: [tank-os, deployment, bootc, fedora]
+description: Tank OS Deployment
+---
+
 # Tank OS Deployment
 
 This guide covers building, deploying, and managing a Tank OS instance.
@@ -232,4 +238,10 @@ For `bootc-image-builder`, equivalent provisioning can be done via `bootc-config
 name = "openclaw"
 groups = ["wheel"]
 ssh_authorized_keys = ["ssh-ed25519 AAAA..."]
+
+## Related
+
+- [[tank-os]] -- Wiki overview of the Tank OS project
+- [[tank-os-architecture]] -- Architecture overview
+- [[tank-os-quadlet]] -- Quadlet file reference
 ```

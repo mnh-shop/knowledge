@@ -1,3 +1,8 @@
+---
+name: clawpier
+tags: [clawpier, tauri, desktop, wiki]
+description: "ClawPier — Tauri Desktop App for Managing Sandboxed AI Agents"
+---
 # ClawPier — Tauri Desktop App for Managing Sandboxed AI Agents
 
 | Field | Value |
@@ -117,8 +122,19 @@ Prerequisite: Docker must be installed and running.
 
 ## Related
 
+- [[clawpier-profile]] — Agent profile
+- [[clawpier-architecture]] — Architecture documentation
+- [[clawpier-deployment]] — Deployment guide
 - [[openclaw]] — The primary agent runtime ClawPier manages
 - [[hermes-agent]] — The secondary agent runtime ClawPier manages
 - [[hermes-agent-docker]] — Alternative Docker packaging for Hermes (without the desktop GUI)
 - [[hermes-suite]] — Alternative all-in-one Hermes container
 - [[mission-control]] — Web-based alternative dashboard for agent orchestration
+
+## Cross-project
+
+- [[podman]] — Container runtime (via Docker API) for agent sandboxing
+- [[tank-os]] — Bootc OS approach to running OpenClaw
+- [[hermzner]] — Production VPS deployment alternative to desktop
+- [[n8n]] — Workflow engine complementary to desktop agent management
+- [[gogs]] — Self-hosted Git service for agent code

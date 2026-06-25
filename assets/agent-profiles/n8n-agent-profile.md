@@ -4,6 +4,7 @@ description: Engineering profile for the n8n monorepo — standards, patterns, a
 metadata:
   type: reference
 source: sources/n8n/
+tags: [n8n, workflow, profile]
 ---
 
 # n8n — Agent Profile
@@ -90,4 +91,5 @@ For full structure see [[n8n-architecture]]. Key packages:
 - n8n Instance AI: [[n8n-instance-ai]]
 - n8n MCP: [[n8n-mcp]]
 - n8n API: [[n8n-api]]
+- n8n Deployment: [[n8n-deployment]] -- Deployment models, Docker images, and scaling
 - Wiki entry: [[n8n]]

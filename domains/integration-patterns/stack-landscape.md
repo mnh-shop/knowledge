@@ -1,3 +1,8 @@
+---
+name: stack-landscape
+tags: [landscape, repos, layers, compatibility]
+---
+
 # Stack Landscape — 23 Repos Across 6 Layers
 
 **Source:** `domains/integration-patterns/`

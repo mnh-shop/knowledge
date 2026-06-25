@@ -1,5 +1,6 @@
 ---
 name: openclaw-profile
+tags: [openclaw, agent-gateway, profile]
 description: OpenClaw is a personal AI assistant (MIT) — TypeScript, Node.js, 30+ channels, ACP + MCP + Gateway, Live Canvas
 metadata:
   type: reference
@@ -36,3 +37,15 @@ openclaw onboard --install-daemon
 **State:** SQLite only — shared state DB + per-agent DB. No Redis/Postgres required.
 
 **Related repos:** [[tank-os]] (bootc deploy), [[mission-control]] (dashboard)
+
+## Related
+
+- [[openclaw-architecture]] -- System architecture overview
+- [[openclaw-api]] -- REST and WebSocket API reference
+- [[openclaw-deployment]] -- Full deployment guide
+- [[openclaw-acp-implementation]] -- ACP protocol implementation
+- [[openclaw-mcp-implementation]] -- MCP server implementation
+- [[openclaw-acp-agent]] -- ACP agent asset registration
+- [[openclaw-mcp-server]] -- MCP server asset configuration
+- [[openclaw-quadlet]] -- Quadlet deployment patterns
+- [[openclaw]] -- Main wiki entry

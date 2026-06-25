@@ -1,3 +1,8 @@
+---
+name: agentfield-codegraph-verify
+tags: [agentfield, codegraph, verification, routes]
+---
+
 # Codegraph Verification: agentfield
 
 **Date:** 2026-06-24
@@ -60,6 +65,14 @@
 - **Verdict:** ✅ CORRECT
 - **Fix needed:** None
 
+## Related
+
+- [[agentfield]] -- wiki page for the platform
+- [[agentfield-architecture]] -- system architecture with route groups
+- [[agentfield-api]] -- REST API reference
+- [[agentfield-deployment]] -- deployment modes documentation
+- [[agentfield-profile]] -- AgentField platform profile
+
 ## Summary
 All 5 key claims from the wiki have been verified against the source code via codegraph exploration:
 - ✅ Route groups: Confirmed 14 route groups exist in control plane
@@ -67,3 +80,8 @@ All 5 key claims from the wiki have been verified against the source code via co
 - ✅ DID/VC with Ed25519: Ed25519 cryptographic operations are used for DID identity
 - ✅ app.harness(): Method exists and supports Claude Code/Codex dispatch
 - ✅ Deployment modes: Local SQLite+BoltDB, Docker Compose PostgreSQL+pgvector, and Helm all supported
+
+## Cross-project
+
+- [[openclaw.codegraph-verify]] -- Similar codegraph verification for OpenClaw
+- [[podman.codegraph-verify]] -- Similar codegraph verification for Podman

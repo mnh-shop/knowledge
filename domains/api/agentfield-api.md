@@ -1,3 +1,8 @@
+---
+name: agentfield-api
+tags: [agentfield, api, rest, reference]
+---
+
 # AgentField API Reference
 **Source:** `sources/agentfield/`
 
@@ -708,3 +713,12 @@ Architecture contract: AgentField is the **agent execution layer** (reasoning, m
 - OpenClaw-managed agents call AgentField agents via OpenClaw's routing layer
 - AgentField's `app.call()` routes through OpenClaw for non-AgentField targets
 - Transparent cross-mesh calls, unified agent mesh
+
+## Related
+
+- [[agentfield]] -- wiki page for the platform
+- [[agentfield-architecture]] -- system architecture
+- [[agentfield-deployment]] -- deployment guide
+- [[agentfield-quadlet]] -- Quadlet deployment
+- [[agentfield-mcp-server]] -- MCP bridge server
+- [[agentfield-profile]] -- AgentField platform profile

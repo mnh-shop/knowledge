@@ -1,3 +1,10 @@
+---
+name: nix-podman-stacks
+type: wiki
+tags: [nix, podman, quadlet, wiki]
+description: nix-podman-stacks
+---
+
 # nix-podman-stacks
 
 **Source**: `tarow/nix-podman-stacks` on GitHub
@@ -214,3 +221,22 @@ For our **Hermes agent workspace**, nix-podman-stacks can serve as the declarati
 
 - [Architecture](domains/architecture/nix-podman-stacks-architecture.md) — Nix module system, `nps.stacks` namespace, cross-stack integrations (Traefik, Homepage, Monitoring, OIDC), secret injection
 - [n8n Integration](integrations/nix-podman-stacks-n8n.md) — How the n8n module works, options, Traefik/Homepage/Monitoring integration, production gaps and extension patterns
+
+## Related
+
+- [[nix-podman-stacks-architecture]] -- Nix module composition, cross-stack integration, and architecture pillars
+- [[nix-podman-stacks-n8n]] -- n8n module, options, integration details, and production gaps
+
+## Cross-project
+
+- [[podman]] -- Foundation runtime managed by nix-podman-stacks
+- [[n8n]] -- Built-in n8n stack module
+- [[hermes-agent]] -- Potential deployment target in Hermes infrastructure
+- [[openclaw]] -- Potential deployment target
+- [[tank-os]] -- Complementary OS-level immutability approach
+- [[hermzner]] -- Alternative to Nix-based deployment
+- [[agentfield]] -- Agent infrastructure deployment via stacks
+- [[mission-control]] -- Dashboard deployment via stacks
+- [[podlet]] -- Similar Quadlet generation (Nix vs CLI approach)
+- [[gogs]] -- Self-hosted Git service via stack modules
+- [[sablier]] -- Scale-to-zero integration with stacks

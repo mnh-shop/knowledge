@@ -1,3 +1,9 @@
+---
+name: hermes-suite-architecture
+tags: [hermes, suite, architecture, all-in-one]
+description: Hermes Suite architecture: all-in-one Hermes container combining gateway, built-in dashboard, and browser-based WebUI
+---
+
 # Hermes Suite Architecture — All-in-One Hermes Container
 
 | Field | Value |
@@ -123,6 +129,9 @@ Default Docker Compose config sets 4GB memory limit. CPU is unbounded by default
 ## Related
 
 - [[hermes-suite]] — Wiki entry
-- [Deployment: hermes-suite](domains/deployment/hermes-suite-deployment.md)
+- [[hermes-suite-deployment]] — Deployment guide
+- [[hermes-agent]] — Core agent runtime
+- [[hermes-agent-docker]] — Simpler single-service Docker packaging
+- [[hermes-agent-deployment]] — Agent deployment guide
 - [[hermes-agent]] — Core agent runtime
 - [[hermes-agent-docker]] — Simpler single-service Docker packaging

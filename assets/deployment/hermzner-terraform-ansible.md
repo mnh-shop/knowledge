@@ -1,3 +1,9 @@
+---
+name: hermzner-terraform-ansible
+tags: [hermzner, terraform, ansible, hetzner]
+description: Hermzner Terraform and Ansible Reference
+---
+
 # Hermzner Terraform and Ansible Reference
 
 ## Terraform Configuration
@@ -379,3 +385,9 @@ podman logs hermes
 # Run interactive command
 podman exec -it hermes /opt/hermes/.venv/bin/hermes --help
 ```
+
+## Related
+
+- [[hermzner-architecture]] -- architecture overview and design decisions
+- [[hermzner-deployment]] -- deployment guide and operational procedures
+- [[hermzner]] -- project overview and wiki

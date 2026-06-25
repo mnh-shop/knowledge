@@ -1,3 +1,8 @@
+---
+name: podman-architecture
+tags: [podman, container-engine, architecture]
+description: "Podman Architecture"
+---
 # Podman Architecture
 **Source:** `sources/podman/`
 
@@ -564,9 +569,10 @@ Podman Machine is a thin management layer that runs a Linux virtual machine on m
 | `libpod/lock/` | Lock manager: SHM-based and file-based locking for container/pod/volume synchronization |
 | `libpod/shutdown/` | Signal handler registry: graceful shutdown of storage on SIGTERM/SIGINT |
 
-## Cross-References
+## Related
 
 - [[podman]] -- Wiki entry with overview and installation
 - [[podman-deployment]] -- Deployment guide with step-by-step instructions
 - [[podman-quadlet-examples]] -- Production-ready Quadlet file collection
 - [[podman-profile]] -- Quick-reference profile card
+- [[podman.codegraph-verify]] -- Codegraph verification of architecture claims

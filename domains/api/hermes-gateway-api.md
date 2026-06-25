@@ -1,3 +1,9 @@
+---
+name: hermes-gateway-api
+tags: [hermes, gateway, api, messaging]
+description: Hermes Gateway API reference: multi-platform messaging layer connecting to 20+ platforms through adapter pattern
+---
+
 # Hermes Gateway API — Multi-Platform Messaging Layer
 
 ## What it is
@@ -122,6 +128,13 @@ hermes slack                     # Configure Slack
 hermes whatsapp                  # Configure WhatsApp Cloud
 hermes webhook                   # Manage webhooks
 ```
+
+## Related
+
+- [[hermes-gateway-platforms]] -- Platform adapter reference
+- [[hermes-agent]] -- Core agent runtime
+- [[hermes-agent-architecture]] -- System architecture
+- [[hermes-agent-deployment]] -- Deployment guide
 
 ## Links
 

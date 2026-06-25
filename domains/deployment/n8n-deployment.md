@@ -1,3 +1,9 @@
+---
+name: n8n-deployment
+tags: [n8n, deployment, docker, scaling]
+description: n8n — Deployment
+---
+
 # n8n — Deployment
 
 **Source:** `sources/n8n/docker/`, `sources/n8n/packages/cli/src/scaling/`, `sources/n8n/packages/cli/src/task-runners/`
@@ -131,5 +137,8 @@ Environment variables for all settings. Key ones:
 ## Related
 
 - n8n Architecture: [[n8n-architecture]]
+- n8n Instance AI: [[n8n-instance-ai]] -- Autonomous agent architecture and tools
 - n8n API: [[n8n-api]]
+- n8n MCP: [[n8n-mcp]] -- MCP integration surfaces
+- n8n Agent Profile: [[n8n-agent-profile]] -- Engineering standards and development patterns
 - Wiki entry: [[n8n]]

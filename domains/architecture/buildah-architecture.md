@@ -1,3 +1,9 @@
+---
+name: buildah-architecture
+tags: [buildah, oci, image-builder, architecture]
+description: Buildah Architecture
+---
+
 # Buildah Architecture
 
 ## Overview
@@ -258,3 +264,9 @@ From `go.mod`:
 - `github.com/openshift/imagebuilder` — Dockerfile parsing and instruction processing
 - `github.com/opencontainers/image-spec` — OCI image spec types
 - `github.com/spf13/cobra` — CLI framework
+
+## Related
+
+- [[buildah]] — Wiki overview, feature comparison, relationship to Podman
+- [[buildah-deployment]] — Installation, CI/CD pipelines, rootless configuration
+- [[buildah-profile]] — Agent profile, configuration reference, command cheatsheet

@@ -1,3 +1,9 @@
+---
+name: openclaw-architecture
+tags: [openclaw, gateway, architecture]
+description: OpenClaw Architecture
+---
+
 # OpenClaw Architecture
 **Source:** `sources/openclaw/`
 
@@ -738,6 +744,10 @@ Device management for companion devices (mobile, desktop):
 | `packages/gateway-protocol/src/schema/protocol-schemas.ts` | Schema registry |
 | `packages/gateway-protocol/src/version.ts` | Protocol version constants |
 | `extensions/` | 85+ bundled plugins (providers, channels, skills) |
+
+## Related
+
+- [[openclaw.codegraph-verify]] -- Codegraph verification document
 
 ---
 

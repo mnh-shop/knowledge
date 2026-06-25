@@ -1,3 +1,8 @@
+---
+name: podman-deployment
+tags: [podman, deployment, installation, quadlet]
+description: "Podman Deployment"
+---
 # Podman Deployment
 **Source:** `sources/podman/`
 
@@ -865,8 +870,10 @@ journalctl -u myapp.service -f                   # Rootful
 
 ---
 
-## Cross-References
+## Related
 
+- [[podman]] -- Wiki entry with overview and installation
 - [[podman-architecture]] -- Deep-dive architecture document
 - [[podman-quadlet-examples]] -- Production-ready Quadlet file collection
 - [[podman-profile]] -- Quick-reference profile card
+- [[podman.codegraph-verify]] -- Codegraph verification of architecture claims

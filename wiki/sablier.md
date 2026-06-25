@@ -1,3 +1,13 @@
+---
+name: sablier
+tags:
+  - sablier
+  - scale-to-zero
+  - proxy
+  - wiki
+description: Sablier
+---
+
 # Sablier
 
 Scale-to-zero daemon for containerized workloads. Manages container lifecycle based on demand via reverse proxy plugin integration.
@@ -75,3 +85,19 @@ Fire-and-forget HTTP POST on start/stop events. Payload: `{"event": "started"|"s
 - [Architecture](domains/architecture/sablier-architecture.md) — Scale-to-zero flow, request dedup, session expiry, proxy plugin model
 - [Deployment](domains/deployment/sablier-deployment.md) — Traefik/Caddy/Nginx/Envoy configs, agent service examples
 - [Quadlet Config](assets/deployment/sablier-quadlet.md) — Standalone, Traefik-integrated, agent service examples
+
+## Related
+
+- [[sablier-architecture]] -- Architecture deep-dive, boot flow, provider layer
+- [[sablier-deployment]] -- Deployment guide for Docker, Podman, Kubernetes
+- [[sablier-quadlet]] -- Quadlet `.container` files for rootless Podman
+
+## Cross-project
+
+- [[podman]] -- Podman provider support for scale-to-zero
+- [[hermes-agent]] -- Scale-to-zero for Hermes agent services
+- [[openclaw]] -- Scale-to-zero for OpenClaw agent services
+- [[n8n]] -- Scale-to-zero for n8n workflow services
+- [[agentfield]] -- Scale-to-zero for AgentField control plane
+- [[mission-control]] -- Scale-to-zero for Mission Control dashboard
+- [[nix-podman-stacks]] -- Sablier integration in Nix-managed stacks

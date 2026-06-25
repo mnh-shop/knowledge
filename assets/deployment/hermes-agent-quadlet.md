@@ -1,3 +1,9 @@
+---
+name: hermes-agent-quadlet
+tags: [hermes, quadlet, podman, deployment]
+description: Production-ready rootless Podman Quadlet configuration for deploying Hermes Agent with systemd-native lifecycle management
+---
+
 # Hermes Agent -- Rootless Podman Quadlet Deployment
 
 **Type:** Deployment asset (rootless Podman Quadlet)  
@@ -757,6 +763,15 @@ ls -la /run/user/$(id -u)/systemd/generator/
 | `%t` | Runtime directory | `/run/user/1000` |
 
 ---
+
+## Related
+
+- [[hermes-agent]] -- Core agent runtime
+- [[hermes-agent-architecture]] -- System architecture
+- [[hermes-agent-deployment]] -- Full deployment guide
+- [[hermes-agent-docker-deployment]] -- Docker deployment guide
+- [[hermes-agent-docker]] -- Docker packaging
+- [[hermes-workspace-quadlet]] -- Workspace Quadlet deployment
 
 ## Cross-References
 

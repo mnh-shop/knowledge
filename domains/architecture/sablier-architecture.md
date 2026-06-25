@@ -1,3 +1,12 @@
+---
+name: sablier-architecture
+tags:
+  - sablier
+  - scale-to-zero
+  - architecture
+description: Sablier Architecture
+---
+
 # Sablier Architecture
 
 **Language**: Go  
@@ -575,3 +584,9 @@ In a rootless Podman environment on a 2GB CX23 VPS, Sablier provides significant
 - Potential savings: 60-80% RAM reduction during off-hours
 - Cold-start penalty: 3-10 seconds per service (Podman, cached images)
 - Scale mode alternative: `sablier.idle.replicas=1`, `sablier.idle.cpu=0.1`, `sablier.idle.memory=64m` -- zero cold-start at ~64MB per service
+
+## Related
+
+- [[sablier-deployment]] -- Deployment guide with practical configuration examples
+- [[sablier-quadlet]] -- Quadlet configuration for rootless Podman deployment
+- [[sablier]] -- Main wiki page for Sablier

@@ -1,3 +1,9 @@
+---
+name: hermes-workspace-deployment
+tags: [hermes, workspace, deployment, system-requirements]
+description: Hermes Workspace deployment guide with system requirements and runtime configuration
+---
+
 # Hermes Workspace Deployment
 
 ## System Requirements
@@ -209,3 +215,14 @@ Workspace Server (:3000)
 3. **SSE stability**: The workspace uses SSE (Server-Sent Events) for streaming. Host networking or proper reverse proxy SSE configuration (no buffering, `Connection: keep-alive`) is recommended to avoid connection drops.
 
 4. **Privilege considerations**: Rootless Podman means UID/GID mapping must match the workspace container user (`workspace`, UID 10010). The entry point script auto-remaps UID/GID via `HERMES_UID`/`HERMES_GID`.
+
+## Related
+
+- [[hermes-workspace]] — Wiki entry
+- [[hermes-workspace-architecture]] — System architecture
+- [[hermes-workspace-api]] — REST API reference
+- [[hermes-workspace-profile]] — Agent profile
+- [[hermes-workspace-quadlet]] — Quadlet deployment
+- [[hermes-workspace-mcp-hub]] — MCP hub implementation
+- [[hermes-workspace-swarm-architecture]] — Swarm architecture
+- [[hermes-agent-deployment]] — Agent deployment guide

@@ -1,3 +1,9 @@
+---
+name: hermes-agent-architecture
+tags: [hermes, agent, architecture, codegraph]
+description: Hermes Agent architecture: multi-platform personal AI agent by Nous Research with 3,726 files and 257 indexed symbols
+---
+
 # Hermes Agent Architecture
 
 **Codegraph:** `graphs/hermes-agent` (3,726 files, 257 symbols indexed)
@@ -172,6 +178,14 @@ See [[hermes-mcp-serve]] for full details.
 | MCP | `mcp` package (FastMCP) |
 | ACP | `acp` package |
 | Models | Anthropic, Gemini, Bedrock, OpenAI, OpenRouter, NovitaAI, NVIDIA NIM, etc. |
+
+## Related
+
+- [[hermes-agent]] -- Wiki entry
+- [[hermes-agent-profile]] -- Agent profile / development guidelines
+- [[hermes-agent-deployment]] -- Deployment guide
+- [[hermes-acp-implementation]] -- ACP implementation patterns
+- [[hermes-mcp-implementation]] -- MCP implementation patterns
 
 ## Links
 

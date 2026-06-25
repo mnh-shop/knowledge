@@ -1,3 +1,8 @@
+---
+name: af-reactive-atlas-mongodb
+tags: [agentfield, mongodb, reactive, intelligence]
+---
+
 # AF Reactive Atlas MongoDB
 
 | Field | Value |
@@ -280,3 +285,21 @@ Apache 2.0 · [See what else we're building →](https://github.com/Agent-Field)
 **File source:** `sources/af-reactive-atlas-mongodb/`
 
 **Updated:** 2026-06-24 to reflect current architecture with AgentField integration, reactive pipelines, and 4-core systems compatibility.
+
+## Related
+
+- [[af-reactive-atlas-mongodb-architecture]] -- architecture documentation
+- [[af-reactive-atlas-mongodb-profile]] -- agent profile
+- [[agentfield]] -- core AgentField platform
+- [[agentfield-profile]] -- AgentField platform profile
+- [[agentfield-deployment]] -- deployment guide
+
+## Cross-project
+
+- [[SWE-AF]] -- Sibling autonomous engineering factory on AgentField
+- [[sec-af]] -- Sibling security auditor on AgentField
+- [[af-deep-research]] -- Sibling research engine on AgentField
+- [[hermes-agent]] -- Potential agent integration for document analysis
+- [[openclaw]] -- Potential agent integration for document analysis
+- [[n8n]] -- Workflow integration with MongoDB intelligence
+- [[gogs]] -- Git service for domain configuration storage

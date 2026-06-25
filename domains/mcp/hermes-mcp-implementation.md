@@ -1,3 +1,9 @@
+---
+name: hermes-mcp-implementation
+tags: [hermes, mcp, client, server]
+description: Hermes MCP implementation: MCP client consuming external tools and MCP server exposing Hermes capabilities
+---
+
 # Hermes MCP Implementation — Two Modes
 
 Hermes implements MCP in two directions:
@@ -87,6 +93,13 @@ default.
 hermes mcp             # MCP commands
 hermes mcp serve       # Run Hermes as an MCP server
 ```
+
+## Related
+
+- [[hermes-mcp-serve]] -- MCP server asset
+- [[hermes-agent]] -- Core agent runtime
+- [[hermes-agent-architecture]] -- System architecture
+- [[hermes-acp-implementation]] -- ACP implementation (related protocol)
 
 ## Links
 

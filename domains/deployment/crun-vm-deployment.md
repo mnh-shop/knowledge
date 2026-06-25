@@ -1,3 +1,9 @@
+---
+name: crun-vm-deployment
+tags: [crun-vm, deployment, qemu, oci]
+description: crun-vm Deployment Guide
+---
+
 # crun-vm Deployment Guide
 
 Comprehensive deployment and operations guide for crun-vm -- an OCI runtime shim that runs QEMU/KVM virtual machines as OCI containers.
@@ -874,6 +880,13 @@ podman exec <container> journalctl -u libvirtd --no-pager -n 50
 | `embed/virtiofsd.sh` | virtiofsd wrapper script |
 | `embed/bootc/prepare.sh` | bootc VM image generation (140 lines) |
 | `embed/bootc/entrypoint.sh` | bootc install helper (56 lines) |
+
+---
+
+## Related
+
+- [[crun-vm-architecture]] -- Full architecture reference
+- [[crun-vm]] -- Wiki entry
 
 ---
 

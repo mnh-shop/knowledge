@@ -1,3 +1,13 @@
+---
+name: podlet-architecture
+tags:
+  - podlet
+  - quadlet
+  - conversion
+  - architecture
+description: "Podlet Architecture"
+---
+
 # Podlet Architecture
 **Source:** `sources/podlet/`
 
@@ -305,3 +315,9 @@ Error: error converting compose file
   caused by: `attachable` is not supported
   Suggestion: Remove the `attachable` field from the compose network definition
 ```
+
+## Related
+
+- [[podlet-deployment]] -- Installation, usage patterns, and deployment workflow
+- [[podlet-quadlet-examples]] -- Concrete conversion examples demonstrating the pipeline
+- [[podlet]] -- Wiki overview, key features, and source file roles

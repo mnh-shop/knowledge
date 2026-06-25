@@ -1,3 +1,9 @@
+---
+name: hermes-suite
+tags: [hermes, suite, all-in-one, wiki]
+description: Wiki entry for Hermes Suite: all-in-one Hermes container combining gateway, built-in dashboard, and browser-based WebUI (MIT)
+---
+
 # Hermes Suite — All-in-One Hermes Container Image
 
 | Field | Value |
@@ -123,8 +129,18 @@ ENABLE_WHATSAPP_BRIDGE=false
 
 ## Related
 
-- [[hermes-agent]]
-- [[hermes-agent-docker]]
-- [[clawpier]]
-- [[hermzner]]
-- [[mission-control]] — Web-based dashboard alternative
+- [[hermes-suite-architecture]] -- System architecture
+- [[hermes-suite-deployment]] -- Deployment guide
+- [[hermes-agent]] -- Core agent runtime
+- [[hermes-agent-docker]] -- Simpler Docker packaging
+- [[hermes-agent-deployment]] -- Agent deployment guide
+- [[clawpier]] -- Desktop GUI alternative
+- [[hermzner]] -- Production Hermes on Hetzner
+- [[mission-control]] -- Web-based dashboard alternative
+
+## Cross-project
+
+- [[openclaw]] -- Comparable all-in-one agent suite
+- [[podman]] -- Container runtime for suite deployment
+- [[tank-os]] -- Bootc OS pattern comparable to suite approach
+- [[n8n]] -- Workflow automation for Hermes suite integration

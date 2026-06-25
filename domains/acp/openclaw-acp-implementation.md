@@ -1,3 +1,9 @@
+---
+name: openclaw-acp-implementation
+tags: [openclaw, acp, protocol, bridge]
+description: OpenClaw ACP Implementation
+---
+
 # OpenClaw ACP Implementation
 **Source:** `sources/openclaw/`
 
@@ -363,6 +369,14 @@ const replay = await ledger.readReplayBySessionKey("agent:main:acp:session-1");
 | `src/acp/conversation-id.ts` | Stable conversation identity across sessions |
 | `src/acp/control-plane/control-plane-connection.ts` | Gateway ACP control plane connection |
 | `src/agents/acp-spawn.ts` | ACP subagent spawning from Gateway agents |
+
+## Related
+
+- [[openclaw-profile]] -- Quick reference profile
+- [[openclaw-mcp-server]] -- MCP server asset configuration (companion protocol)
+- [[openclaw-quadlet]] -- Quadlet deployment patterns
+- [[openclaw-deployment]] -- Full deployment guide
+- [[openclaw]] -- Main wiki entry
 
 ---
 

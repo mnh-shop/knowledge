@@ -1,3 +1,9 @@
+---
+name: hermes-agent-docker-deployment
+tags: [hermes, docker, deployment, packaging]
+description: Hermes Agent Docker deployment guide for the minimal Docker image packaging
+---
+
 # Hermes Agent Docker — Deployment
 
 | Field | Value |
@@ -80,5 +86,8 @@ The image builds on both amd64 and arm64. The Dockerfile doesn't specify a speci
 
 - [[hermes-agent-docker]] — Wiki entry
 - [[hermes-agent]] — The agent runtime this packages
+- [[hermes-agent-deployment]] — Full deployment guide
 - [[hermes-suite]] — Alternative all-in-one Hermes container
+- [[hermes-suite-deployment]] — Suite deployment guide
+- [[hermes-suite-architecture]] — Suite architecture
 - [[clawpier]] — Desktop GUI alternative

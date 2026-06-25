@@ -1,3 +1,8 @@
+---
+name: agentfield
+tags: [agentfield, control-plane, wiki]
+---
+
 # AgentField
 
 | Field | Value |
@@ -183,3 +188,30 @@ Config via `config/agentfield.yaml` or environment variables (env vars take prec
 | **Activity** | Active development, corporate backing? |
 | **Unique value** | IAM for agents (DID/VC), harness orchestration, cross-agent mesh, canary deployments |
 | **Fork cost** | Moderate — Go monorepo with 3 SDKs |
+
+## Related
+
+- [[agentfield-architecture]] -- system architecture
+- [[agentfield-api]] -- REST API reference
+- [[agentfield-deployment]] -- deployment guide
+- [[agentfield-quadlet]] -- Quadlet deployment
+- [[agentfield-mcp-server]] -- MCP bridge server
+- [[agentfield-profile]] -- AgentField platform profile
+- [[agentfield.codegraph-verify]] -- codegraph verification
+- [[swe-af-profile]] -- SWE-AF profile
+- [[sec-af-profile]] -- SEC-AF profile
+- [[af-deep-research-profile]] -- Deep Research profile
+- [[af-reactive-atlas-mongodb-profile]] -- Reactive MongoDB profile
+
+## Cross-project
+
+- [[hermes-agent]] — Agent platform with MCP bridge to AgentField
+- [[openclaw]] — Agent platform with MCP bridge to AgentField
+- [[mission-control]] — Dashboard that can consume AgentField REST API
+- [[podman]] — Container runtime for AgentField deployment
+- [[n8n]] — Complementary workflow engine for AI orchestration
+- [[buildah]] — Image builder in AgentField CI/CD pipeline
+- [[nix-podman-stacks]] — Declarative container management for AgentField
+- [[gogs]] — Self-hosted Git service for agent workflow repos
+- [[sablier]] — Scale-to-zero for AgentField services
+- [[tank-os]] — Bootc OS for AgentField deployment

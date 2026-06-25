@@ -1,3 +1,8 @@
+---
+name: swe-af-profile
+tags: [agentfield, engineering, swe, profile]
+---
+
 # SWE-AF Agent Profile
 
 ## Overview
@@ -485,6 +490,14 @@ Each agent has comprehensive test coverage:
 SWE-AF agents represent a sophisticated, factory-scale autonomous software engineering system. Each agent specializes in a specific aspect of the development pipeline while maintaining loose coupling and strong coordination through AgentField's mesh architecture. The adaptive control loops, git worktree isolation, and comprehensive error recovery mechanisms enable SWE-AF to handle complex software engineering tasks with enterprise-grade reliability.
 
 The agent profile encompasses not just individual agent capabilities, but the entire ecosystem of specialized agents that work together to transform high-level goals into production-ready code. This factory pattern achieves scalability and reliability that would be impossible with single-agent systems, making SWE-AF suitable for building complex software systems at scale.
+
+## Related
+
+- [[SWE-AF]] -- wiki page for this agent
+- [[swe-af-architecture]] -- architecture documentation
+- [[agentfield]] -- core AgentField platform
+- [[agentfield-profile]] -- AgentField platform profile
+- [[sec-af-profile]] -- sibling SEC-AF profile
 
 ---
 

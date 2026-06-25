@@ -1,3 +1,8 @@
+---
+name: sec-af-profile
+tags: [agentfield, security, auditor, profile]
+---
+
 # SEC-AF Agent Profile
 
 ## What SEC-AF Is
@@ -317,3 +322,11 @@ For questions, issues, or support:
 - **Documentation**: This profile and `docs/` directory
 - **Community**: AgentField Slack/Discord channels
 - **Production Support**: Enterprise subscription through AgentField
+
+## Related
+
+- [[sec-af]] -- wiki page for this agent
+- [[sec-af-architecture]] -- architecture documentation
+- [[agentfield]] -- core AgentField platform
+- [[agentfield-profile]] -- AgentField platform profile
+- [[swe-af-profile]] -- sibling SWE-AF profile

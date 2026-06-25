@@ -1,3 +1,8 @@
+---
+name: agentfield-mcp-server
+tags: [agentfield, mcp, bridge, server]
+---
+
 # AgentField MCP Server
 **Source:** `sources/agentfield/`
 
@@ -360,3 +365,12 @@ OpenClaw's rate limiting, circuit breaking, and API key authentication become an
 - [AgentField API](../../domains/api/agentfield-api.md) -- REST endpoints, execution flow, integration patterns
 - [AgentField Deployment](../../domains/deployment/agentfield-deployment.md) -- local, Docker Compose, Quadlet
 - [AgentField Quadlet](../deployment/agentfield-quadlet.md) -- Quadlet-specific deployment
+
+## Related
+
+- [[agentfield]] -- wiki page for the platform
+- [[agentfield-architecture]] -- system architecture
+- [[agentfield-api]] -- REST API reference
+- [[agentfield-deployment]] -- deployment guide
+- [[agentfield-quadlet]] -- Quadlet deployment
+- [[agentfield-profile]] -- AgentField platform profile

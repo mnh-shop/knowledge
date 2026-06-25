@@ -1,3 +1,9 @@
+---
+name: hermes-suite-deployment
+tags: [hermes, suite, deployment, all-in-one]
+description: Hermes Suite deployment guide for the all-in-one Hermes container image combining gateway, dashboard, and WebUI
+---
+
 # Hermes Suite — Deployment
 
 | Field | Value |
@@ -192,8 +198,9 @@ Must configure `WHATSAPP_ALLOWED_USERS` in `~/.hermes/.env` to restrict access.
 ## Related
 
 - [[hermes-suite]] — Wiki entry
-- [Architecture: hermes-suite](domains/architecture/hermes-suite-architecture.md)
+- [[hermes-suite-architecture]] — System architecture
 - [[hermes-agent]] — Core agent runtime
 - [[hermes-agent-docker]] — Simpler single-service Docker packaging
+- [[hermes-agent-deployment]] — Agent deployment guide
 - [[clawpier]] — Desktop GUI for managing Hermes/OpenClaw containers
-- [[hermzner]] — Production Hermes on Hetzner (multi-container, no suite)
+- [[hermzner]] — Production Hermes on Hetzner

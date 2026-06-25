@@ -1,6 +1,7 @@
 ---
 name: buildah-profile
 description: Buildah is a daemonless, rootless OCI image builder — the build-time layer for agent deployment pipelines
+tags: [buildah, oci, image-builder, profile]
 metadata:
   type: reference
 source: sources/buildah/
@@ -257,6 +258,9 @@ Developer pushes code
 
 ## Related
 
+- [[buildah]] -- Wiki overview, feature comparison, relationship to Podman
+- [[buildah-architecture]] -- Four-layer architecture, image building pipeline, rootless mode
+- [[buildah-deployment]] -- Installation, CI/CD pipelines, rootless configuration
 - [[podman]] — Runtime counterpart (runs what Buildah builds)
 - [[podman-deployment]] — Runtime deployment, Quadlet, rootless config
 - [[agentfield]] — Manages deployed agents

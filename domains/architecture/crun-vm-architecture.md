@@ -1,3 +1,9 @@
+---
+name: crun-vm-architecture
+tags: [crun-vm, qemu, oci, runtime]
+description: crun-vm Architecture
+---
+
 # crun-vm Architecture
 
 **Version**: 0.3.0  
@@ -372,3 +378,8 @@ crun-vm fills the gap between "containers are lightweight but share the host ker
 - **KubeVirt**: More featureful (live migration, snapshot, GPU passthrough), but requires significant infrastructure. crun-vm is simpler but far less capable.
 - **QEMU/libvirt directly**: No container integration. crun-vm provides a thin layer that makes QEMU VMs look like OCI containers.
 - **Firecracker / microVMs**: Faster boot, lower overhead, but limited device support. crun-vm provides full QEMU virtio device model.
+
+## Related
+
+- [[crun-vm]] -- Wiki overview of crun-vm
+- [[crun-vm-deployment]] -- Deployment and operations guide

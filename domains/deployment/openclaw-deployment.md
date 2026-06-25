@@ -1,3 +1,9 @@
+---
+name: openclaw-deployment
+tags: [openclaw, deployment, podman, docker]
+description: OpenClaw Deployment Guide
+---
+
 # OpenClaw Deployment Guide
 
 Comprehensive deployment and operations guide for OpenClaw -- a self-hosted AI agent gateway and runtime, written in TypeScript on Node.js.
@@ -793,6 +799,11 @@ Creates a sanitized zip with config shape, log summaries, health snapshots, stab
 | `src/state/openclaw-agent-db.ts` | Per-agent SQLite DB |
 | `scripts/docker/setup.sh` | Docker setup automation |
 | `Dockerfile` | Multi-stage Docker build |
+
+## Related
+
+- [[openclaw-acp-agent]] -- ACP agent asset registration
+- [[openclaw-mcp-server]] -- MCP server asset configuration
 
 ---
 

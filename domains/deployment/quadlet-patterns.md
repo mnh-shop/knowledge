@@ -1,7 +1,7 @@
 ---
 name: quadlet-patterns
 description: General Quadlet deployment patterns for rootless Podman -- systemd-native container lifecycle
-tags: [podman, quadlet, systemd, deployment, containers]
+tags: [podman, quadlet, systemd, patterns]
 ---
 
 # Quadlet Deployment Patterns

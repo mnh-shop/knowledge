@@ -1,3 +1,9 @@
+---
+name: hermes-agent-deployment
+tags: [hermes, deployment, agent, operations]
+description: Hermes Agent deployment and operations guide for the multi-platform personal AI agent
+---
+
 # Hermes Agent Deployment Guide
 
 Deployment and operations guide for Hermes Agent -- a multi-platform personal AI agent by Nous Research.
@@ -936,6 +942,17 @@ ssh -L 9118:127.0.0.1:9119 hermes@<remote-host> -N
 | `setup-hermes.sh` | Setup script |
 
 ---
+
+## Related
+
+- [[hermes-agent]] -- Wiki entry
+- [[hermes-agent-architecture]] -- System architecture
+- [[hermes-agent-quadlet]] -- Quadlet deployment asset
+- [[hermes-agent-docker]] -- Docker packaging
+- [[hermes-agent-docker-deployment]] -- Docker deployment guide
+- [[hermes-acp-agent]] -- ACP agent asset
+- [[hermes-mcp-serve]] -- MCP server asset
+- [[hermes-gateway-platforms]] -- Gateway platforms asset
 
 ## Cross-References
 

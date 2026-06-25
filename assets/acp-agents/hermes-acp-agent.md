@@ -1,3 +1,9 @@
+---
+name: hermes-acp-agent
+tags: [acp, agent, hermes, protocol]
+description: ACP agent configuration for Hermes Agent wrapping its AIAgent behind the Agent Communication Protocol
+---
+
 # ACP Agent: `HermesACPAgent`
 
 **File:** `sources/hermes-agent/acp_adapter/server.py`
@@ -127,6 +133,12 @@ Tool calls           → build_tool_start / build_tool_complete chunks
 Edit approval        → EditApprovalRequester wrapping conn.request_permission
 MCP servers          → tools.mcp_tool.register_mcp_servers
 ```
+
+## Related
+
+- [[hermes-agent]] -- Core agent runtime wrapped by this ACP adapter
+- [[hermes-acp-implementation]] -- Deep dive into ACP server and client modes
+- [[hermes-agent-architecture]] -- System architecture of Hermes Agent
 
 ## Links
 

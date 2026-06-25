@@ -1,11 +1,8 @@
 ---
 name: af-deep-research-profile
-keywords: [research, AI, autonomous research, meta-reasoning, intelligence gathering, AgentField]
-type: specialized
-lang: python
-license: Apache 2.0
-release: early-preview
-status: active-research-target
+description: AF Deep Research — Agent Profile
+tags: [agentfield, research, agent, profile]
+---
 
 # ---
 
@@ -277,3 +274,10 @@ AF Deep Research combines AgentField's production infrastructure with advanced r
 - **agentfield**: Main AgentField control plane and SDK
 - **SWE-AF**: Software engineering analysis for pull requests
 - **sec-af**: Security analysis and vulnerability assessment
+
+## Related
+
+- [[af-deep-research]] -- wiki page for this agent
+- [[af-deep-research-architecture]] -- architecture documentation
+- [[agentfield]] -- core AgentField platform
+- [[agentfield-profile]] -- AgentField platform profile

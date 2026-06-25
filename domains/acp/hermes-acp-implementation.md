@@ -1,3 +1,9 @@
+---
+name: hermes-acp-implementation
+tags: [hermes, acp, protocol, implementation]
+description: Deep dive into Hermes ACP implementation: server mode for ACP clients and client mode for connecting to external ACP agents
+---
+
 # Hermes ACP Implementation
 
 Hermes implements ACP (Agent Communication Protocol) in two directions:
@@ -108,6 +114,13 @@ This means MCP servers can be provisioned *through* ACP — an editor like
 Zed can start Hermes with its own MCP servers already registered.
 
 ---
+
+## Related
+
+- [[hermes-acp-agent]] -- ACP agent asset
+- [[hermes-agent]] -- Core agent runtime
+- [[hermes-agent-architecture]] -- System architecture
+- [[hermes-mcp-implementation]] -- MCP implementation (related protocol)
 
 ## Links
 

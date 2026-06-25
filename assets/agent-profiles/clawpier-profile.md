@@ -1,3 +1,8 @@
+---
+name: clawpier-profile
+tags: [clawpier, tauri, desktop, profile]
+description: "Agent Profile: ClawPier"
+---
 # Agent Profile: ClawPier
 
 **Type:** Desktop Agent Manager (not an agent itself — manages agents)
@@ -53,5 +58,5 @@ workspace management, config import/export, ClawHub skills, port management.
 ## Related
 
 - [[clawpier]] — Wiki entry
-- [Architecture](domains/architecture/clawpier-architecture.md)
-- [Deployment](domains/deployment/clawpier-deployment.md)
+- [[clawpier-architecture]] — Architecture documentation
+- [[clawpier-deployment]] — Deployment guide

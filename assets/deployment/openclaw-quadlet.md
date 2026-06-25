@@ -1,3 +1,9 @@
+---
+name: openclaw-quadlet
+tags: [openclaw, quadlet, podman, deployment]
+description: OpenClaw Quadlet Deployment (Rootless Podman)
+---
+
 # OpenClaw Quadlet Deployment (Rootless Podman)
 **Source:** `sources/openclaw/`
 
@@ -456,6 +462,14 @@ systemctl --user enable openclaw-gateway.service
 # 6. Verify
 systemctl --user status openclaw-gateway.service
 ```
+
+## Related
+
+- [[openclaw-acp-agent]] -- ACP agent asset registration
+- [[openclaw-acp-implementation]] -- ACP protocol implementation
+- [[openclaw-mcp-implementation]] -- MCP server implementation
+- [[openclaw-api]] -- API reference
+- [[openclaw]] -- Main wiki entry
 
 ---
 

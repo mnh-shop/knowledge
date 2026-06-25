@@ -1,3 +1,8 @@
+---
+name: af-deep-research
+tags: [agentfield, deep-research, research, engine]
+---
+
 # AF Deep Research
 
 | Field | Value |
@@ -246,3 +251,21 @@ docker compose up --build
 ## Conclusion
 
 AF Deep Research represents the next evolution in autonomous research systems, combining AgentField's production infrastructure with advanced recursive research algorithms. It transforms complex knowledge discovery into a structured, quality-assured process that scales intelligently with query complexity, delivering production-ready research packages suitable for integration into downstream analytics, decision support, and intelligence systems.
+
+## Related
+
+- [[af-deep-research-architecture]] -- architecture documentation
+- [[af-deep-research-profile]] -- agent profile
+- [[agentfield]] -- core AgentField platform
+- [[agentfield-profile]] -- AgentField platform profile
+- [[agentfield-deployment]] -- deployment guide
+
+## Cross-project
+
+- [[SWE-AF]] -- Sibling autonomous engineering factory on AgentField
+- [[sec-af]] -- Sibling security auditor on AgentField
+- [[af-reactive-atlas-mongodb]] -- Sibling MongoDB intelligence on AgentField
+- [[hermes-agent]] -- Potential integration with research outputs
+- [[openclaw]] -- Potential integration with research outputs
+- [[n8n]] -- Can trigger research workflows
+- [[gogs]] -- Self-hosted Git service for research repository storage

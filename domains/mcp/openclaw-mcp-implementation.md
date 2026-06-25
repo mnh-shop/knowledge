@@ -1,3 +1,9 @@
+---
+name: openclaw-mcp-implementation
+tags: [openclaw, mcp, channel-bridge, tools]
+description: OpenClaw MCP Implementation
+---
+
 # OpenClaw MCP Implementation
 **Source:** `sources/openclaw/`
 
@@ -267,6 +273,13 @@ All three MCP servers call `routeLogsToStderr()` to keep stdout clean. Stderr is
 | `src/mcp/channel-bridge.ts` | Gateway WebSocket bridge for channel server |
 | `src/mcp/mcp-helpers.ts` | Shared MCP utilities (logging, etc.) |
 | `src/gateway/server-ws-runtime.ts` | Gateway WebSocket runtime that MCP servers connect to |
+
+## Related
+
+- [[openclaw-acp-agent]] -- ACP agent asset registration (companion protocol)
+- [[openclaw-deployment]] -- Full deployment guide
+- [[openclaw-profile]] -- Quick reference profile
+- [[openclaw]] -- Main wiki entry
 
 ---
 

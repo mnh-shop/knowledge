@@ -1,3 +1,9 @@
+---
+name: hermes-workspace-quadlet
+tags: [hermes, workspace, quadlet, deployment]
+description: Rootless Podman Quadlet deployment configuration for Hermes Workspace with companion Hermes Agent as systemd services
+---
+
 # Hermes Workspace — Rootless Podman Quadlet
 **Source:** `sources/hermes-workspace/`
 
@@ -245,3 +251,11 @@ podman exec hermes-workspace curl -s http://hermes-agent:8642/health
 # Restart after config change
 systemctl --user restart hermes-workspace.service
 ```
+
+## Related
+
+- [[hermes-workspace]] -- Wiki entry for Hermes Workspace
+- [[hermes-workspace-deployment]] -- Deployment guide
+- [[hermes-workspace-architecture]] -- System architecture
+- [[hermes-agent-quadlet]] -- Hermes Agent Quadlet deployment
+- [[hermes-agent-deployment]] -- Agent deployment guide

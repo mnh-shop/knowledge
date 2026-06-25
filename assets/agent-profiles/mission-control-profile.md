@@ -1,3 +1,9 @@
+---
+name: mission-control-profile
+tags: [mission-control, dashboard, profile]
+description: Mission Control -- Quick Reference Profile
+---
+
 # Mission Control -- Quick Reference Profile
 **Source:** `sources/mission-control/`
 
@@ -133,3 +139,12 @@ claude mcp add mission-control -- node /path/to/mission-control/scripts/mc-mcp-s
 ```
 
 Config via `~/.mission-control/profiles/default.json` or `MC_URL`/`MC_API_KEY` env vars.
+
+## Related
+
+- [[mission-control]] -- Project overview and feature summary
+- [[mission-control-architecture]] -- Detailed architecture and system design
+- [[mission-control-api]] -- REST API, MCP tools, and CLI reference
+- [[mission-control-deployment]] -- Deployment methods and configuration
+- [[mission-control-mcp-server]] -- MCP server setup and tools
+- [[mission-control-quadlet]] -- Quadlet container deployment

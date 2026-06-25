@@ -1,3 +1,9 @@
+---
+name: openclaw-api
+tags: [openclaw, api, websocket, rpc]
+description: OpenClaw API Reference
+---
+
 # OpenClaw API Reference
 **Source:** `sources/openclaw/`
 
@@ -667,6 +673,14 @@ for chunk in stream:
 | `src/mcp/channel-server.ts` | MCP channel bridge server |
 | `src/mcp/plugin-tools-serve.ts` | MCP plugin tools server |
 | `src/mcp/openclaw-tools-serve.ts` | MCP built-in tools server |
+
+## Related
+
+- [[openclaw-acp-agent]] -- ACP agent asset registration
+- [[openclaw-mcp-server]] -- MCP server asset configuration
+- [[openclaw-quadlet]] -- Quadlet deployment patterns
+- [[openclaw-profile]] -- Quick reference profile
+- [[openclaw]] -- Main wiki entry
 
 ---
 

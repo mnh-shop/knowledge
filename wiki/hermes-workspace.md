@@ -1,3 +1,9 @@
+---
+name: hermes-workspace
+tags: [hermes, workspace, swarm, wiki]
+description: Wiki entry for Hermes Workspace: web/desktop command center for Hermes Agent with swarm orchestration and MCP hub (MIT)
+---
+
 # Hermes Workspace
 
 | Field | Value |
@@ -141,9 +147,27 @@ code.
 | **Unique value** | Swarm, MCP Hub, unified control plane — not available in hermes-agent itself |
 | **Zero-fork** | Designed to be cloned, not forked — upstream is always hermes-agent |
 
+## Related
+
+- [[hermes-workspace-architecture]] -- System architecture
+- [[hermes-workspace-swarm-architecture]] -- Swarm architecture
+- [[hermes-workspace-api]] -- REST API reference
+- [[hermes-workspace-deployment]] -- Deployment guide
+- [[hermes-workspace-mcp-hub]] -- MCP hub implementation
+- [[hermes-workspace-quadlet]] -- Quadlet deployment
+- [[hermes-workspace-profile]] -- Agent profile
+
 ## Related repos
 
 | Repo | Relationship |
 |---|---|
 | [[hermes-agent]] | Backend — Hermes Workspace is the UI control plane for Hermes Agent |
 | [[hermes-startup-architect]] | Hermes skill — can be installed inside the workspace |
+
+## Cross-project
+
+- [[openclaw]] -- Comparable workspace/UI concept
+- [[mission-control]] -- Alternative orchestration dashboard
+- [[n8n]] -- Workflow engine complementary to workspace automation
+- [[podman]] -- Container runtime for workspace deployment
+- [[agentfield]] -- Alternative control plane for agent orchestration

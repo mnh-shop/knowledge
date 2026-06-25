@@ -1,3 +1,13 @@
+---
+name: sablier-deployment
+tags:
+  - sablier
+  - deployment
+  - scale-to-zero
+  - podman
+description: Sablier Deployment Guide
+---
+
 # Sablier Deployment Guide
 
 Guide for deploying Sablier as a scale-to-zero daemon with Podman, Docker, or Kubernetes, including reverse proxy integration.
@@ -556,3 +566,9 @@ services:
 | Scale mode not working | Idle replicas not set | Set `sablier.idle.replicas=1` |
 | Webhook not firing | URL or auth wrong | Check Sablier logs for webhook errors |
 | `permission denied` on Podman socket | Socket mount has wrong SELinux context | Use `:Z` flag on volume mount |
+
+## Related
+
+- [[sablier-architecture]] -- Architecture overview, session lifecycle, provider details
+- [[sablier-quadlet]] -- Quadlet configs for rootless Podman with Traefik integration
+- [[sablier]] -- Main wiki page for Sablier

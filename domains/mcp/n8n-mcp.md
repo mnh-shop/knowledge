@@ -1,3 +1,9 @@
+---
+name: n8n-mcp
+tags: [n8n, mcp, apps, browser]
+description: n8n — MCP Integration
+---
+
 # n8n — MCP Integration
 
 **Sources:**
@@ -141,5 +147,7 @@ n8n-native MCP server that exposes n8n tools and resources through the Model Con
 - n8n Architecture: [[n8n-architecture]]
 - n8n Instance AI: [[n8n-instance-ai]]
 - n8n API: [[n8n-api]]
+- n8n Deployment: [[n8n-deployment]] -- Deployment models, Docker images, and scaling
+- n8n Agent Profile: [[n8n-agent-profile]] -- Engineering standards and development patterns
 - Hermes MCP (for comparison): [[hermes-mcp-implementation]]
 - Wiki entry: [[n8n]]

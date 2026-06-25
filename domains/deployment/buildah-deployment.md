@@ -1,3 +1,9 @@
+---
+name: buildah-deployment
+tags: [buildah, deployment, installation]
+description: Buildah Deployment
+---
+
 # Buildah Deployment
 
 ## Installation
@@ -432,3 +438,9 @@ EOF
 - [containers/storage configuration](https://github.com/containers/storage/blob/main/docs/containers-storage.conf.5.md)
 - [Podman rootless tutorial](https://github.com/containers/podman/blob/main/docs/tutorials/rootless_tutorial.md)
 - [OCI image format specification](https://github.com/opencontainers/image-spec)
+
+## Related
+
+- [[buildah]] — Wiki overview, feature comparison, relationship to Podman
+- [[buildah-architecture]] — Four-layer architecture, image building pipeline, rootless mode
+- [[buildah-profile]] — Agent profile, configuration reference, command cheatsheet

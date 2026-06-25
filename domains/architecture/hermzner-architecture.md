@@ -1,3 +1,9 @@
+---
+name: hermzner-architecture
+tags: [hermzner, hetzner, terraform, ansible]
+description: Hermzner Architecture
+---
+
 # Hermzner Architecture
 
 ## Overview
@@ -201,3 +207,9 @@ The 11-assertion verification playbook (`verify.yml`) validates:
 9. Data directory is 0700
 10. .env file is 0600
 11. Health endpoint responds
+
+## Related
+
+- [[hermzner-terraform-ansible]] -- Terraform and Ansible configuration reference
+- [[hermzner-deployment]] -- deployment guide and operational procedures
+- [[hermzner]] -- project overview and wiki

@@ -1,3 +1,8 @@
+---
+name: sec-af
+tags: [agentfield, security, auditor, wiki]
+---
+
 # SEC-AF
 
 | Field | Value |
@@ -50,3 +55,22 @@ Requires AgentField control plane, Python 3.11+, OpenRouter API key. Air-gapped 
 - `src/sec_af/orchestrator.py` — SEC-AF orchestrator managing the full audit pipeline
 - `prompts/` — Strategy-specific prompts for each agent type
 - `examples/` — Sample usage and integration patterns
+
+## Related
+
+- [[sec-af-architecture]] -- architecture documentation
+- [[sec-af-profile]] -- agent profile
+- [[agentfield]] -- core AgentField platform
+- [[agentfield-profile]] -- AgentField platform profile
+- [[agentfield-deployment]] -- deployment guide
+- [[swe-af-profile]] -- sibling SWE-AF profile
+
+## Cross-project
+
+- [[SWE-AF]] -- Sibling autonomous engineering factory on AgentField
+- [[af-deep-research]] -- Sibling research engine on AgentField
+- [[af-reactive-atlas-mongodb]] -- Sibling MongoDB intelligence on AgentField
+- [[hermes-agent]] -- Can audit Hermes agent applications
+- [[openclaw]] -- Can audit OpenClaw agent applications
+- [[n8n]] -- Can audit n8n workflow configurations
+- [[gogs]] -- Can audit Git repositories for security issues

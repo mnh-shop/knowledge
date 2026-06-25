@@ -1,3 +1,9 @@
+---
+name: hermes-mcp-serve
+tags: [hermes, mcp, messaging, bridge]
+description: MCP server configuration for Hermes Agent mcp_serve.py: a messaging bridge server using FastMCP over stdio transport
+---
+
 # MCP Server: `mcp_serve.py` — Hermes Messaging Bridge
 
 **File:** `sources/hermes-agent/mcp_serve.py`
@@ -93,6 +99,13 @@ check is ~1μs). Event types: `message`, `approval_requested`,
 hermes mcp serve              # default
 hermes mcp serve --verbose    # debug logging to stderr
 ```
+
+## Related
+
+- [[hermes-mcp-implementation]] -- MCP implementation patterns
+- [[hermes-agent]] -- Core Hermes Agent runtime
+- [[hermes-agent-architecture]] -- System architecture
+- [[hermes-gateway-platforms]] -- Gateway platform adapters
 
 ## Links
 

@@ -1,3 +1,9 @@
+---
+name: hermes-gateway-platforms
+tags: [hermes, gateway, platforms, adapters]
+description: Gateway platform adapter reference for Hermes Agent: 20+ messaging platforms through the BasePlatformAdapter pattern
+---
+
 # Gateway Platforms — Platform Adapter Reference
 
 **Source:** `sources/hermes-agent/gateway/`, `sources/hermes-agent/plugins/platforms/`
@@ -99,6 +105,13 @@ class BasePlatformAdapter(ABC):
 3. Built-in adapters live in `gateway/platforms/`
 4. Plugin adapters scanned from `plugins/platforms/` at startup
 5. `PlatformRegistry` provides late-binding registration for tool use
+
+## Related
+
+- [[hermes-gateway-api]] -- Gateway API reference
+- [[hermes-agent]] -- Core Hermes Agent runtime
+- [[hermes-agent-architecture]] -- System architecture
+- [[hermes-mcp-serve]] -- MCP messaging bridge for conversations
 
 ## Links
 

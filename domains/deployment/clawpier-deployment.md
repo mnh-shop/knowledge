@@ -1,3 +1,8 @@
+---
+name: clawpier-deployment
+tags: [clawpier, deployment, tauri, desktop]
+description: "ClawPier Deployment"
+---
 # ClawPier Deployment
 
 | Field | Value |
@@ -124,6 +129,7 @@ Configure health checks with automatic restart on failure to recover from crashe
 ## Related
 
 - [[clawpier]] — Wiki entry
-- [ClawPier Architecture](domains/architecture/clawpier-architecture.md)
+- [[clawpier-architecture]] — Architecture documentation
+- [[clawpier-profile]] — Agent profile
 - [[openclaw]] — Primary agent runtime
 - [[hermes-agent]] — Secondary agent runtime

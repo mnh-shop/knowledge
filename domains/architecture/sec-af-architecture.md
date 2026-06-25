@@ -1,3 +1,8 @@
+---
+name: sec-af-architecture
+tags: [agentfield, security, auditor, architecture]
+---
+
 # SEC-AF Architecture Documentation
 
 ## Overview
@@ -150,3 +155,11 @@ To add a new vulnerability class:
 4. The orchestrator discovers and runs it automatically
 
 This modularity enables continuous expansion of the security analysis capabilities without changes to the core pipeline.
+
+## Related
+
+- [[sec-af]] -- wiki page for this agent
+- [[sec-af-profile]] -- agent profile
+- [[agentfield]] -- core AgentField platform
+- [[agentfield-architecture]] -- platform architecture
+- [[agentfield-deployment]] -- deployment guide

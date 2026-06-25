@@ -1,3 +1,13 @@
+---
+name: sablier-quadlet
+tags:
+  - sablier
+  - quadlet
+  - podman
+  - scale-to-zero
+description: Sablier Quadlet Deployment (Rootless Podman)
+---
+
 # Sablier Quadlet Deployment (Rootless Podman)
 
 This document provides Quadlet `.container` files for deploying Sablier as a rootless Podman service via systemd user units, along with integrated reverse proxy and agent service examples.
@@ -562,3 +572,9 @@ Scale mode alternative: keep containers at minimal CPU/RAM:
 | All 3 agents active | ~800 MB | Peak for heavy use |
 | Scale mode (all idle) | ~250 MB | Services throttled to 64 MB each |
 | Scale mode (all active) | ~800 MB | Full resources restored |
+
+## Related
+
+- [[sablier-architecture]] -- Architecture overview, boot flow, provider layer
+- [[sablier-deployment]] -- Deployment guide with Docker/Kubernetes/proxy configs
+- [[sablier]] -- Main wiki page for Sablier

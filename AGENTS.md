@@ -1,3 +1,8 @@
+---
+name: agents
+tags: [knowledge, structure, guidelines]
+---
+
 # AGENTS.md
 
 This is a GitHub-only knowledge system for coding agents.

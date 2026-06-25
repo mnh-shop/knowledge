@@ -1,3 +1,9 @@
+---
+name: hermes-workspace-swarm-architecture
+tags: [hermes, workspace, swarm, architecture]
+description: Hermes Workspace swarm architecture: multi-agent orchestration via swarm.yaml and swarm-* server modules
+---
+
 # Hermes Workspace — Swarm Architecture
 
 **Source:** `sources/hermes-workspace/`
@@ -93,6 +99,14 @@ The swarm uses `hermes-agent` Hermes Agent instances as workers. Each
 worker is a `hermes` CLI process with a Hermes profile configured to the
 worker's tools, skills, and MCP servers. The workspace manages these
 processes through tmux sessions.
+
+## Related
+
+- [[hermes-workspace]] -- Wiki entry
+- [[hermes-workspace-architecture]] -- System architecture
+- [[hermes-workspace-api]] -- REST API reference
+- [[hermes-workspace-profile]] -- Agent profile
+- [[hermes-workspace-deployment]] -- Deployment guide
 
 ## Links
 

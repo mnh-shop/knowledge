@@ -1,3 +1,10 @@
+---
+name: nix-podman-stacks-n8n
+type: integration
+tags: [nix-podman-stacks, n8n, integration, module]
+description: Integration: nix-podman-stacks n8n Module
+---
+
 # Integration: nix-podman-stacks n8n Module
 
 **Source**: `/Users/admin1/Documents/knowledge/sources/nix-podman-stacks/modules/n8n/default.nix`
@@ -241,3 +248,8 @@ services.podman.containers."n8n-db" = {
 ## Summary
 
 The nix-podman-stacks n8n module provides a quick-start, single-flag deployment path for n8n with automatic Traefik, Homepage, and Glance integration. It is best suited for non-production or development use cases. For production n8n deployments, the module serves as a foundation that should be extended with PostgreSQL, encryption keys, and optionally OIDC and custom nodes -- following the same patterns used by more complex modules like `paperless`, `immich`, or `mealie` in the same repository.
+
+## Related
+
+- [[nix-podman-stacks]] -- Project wiki overview
+- [[nix-podman-stacks-architecture]] -- Nix module system and cross-stack integration architecture

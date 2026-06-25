@@ -1,3 +1,9 @@
+---
+name: openclaw-codegraph-verify
+tags: [openclaw, codegraph, verification, channels]
+description: Codegraph Verification: openclaw
+---
+
 # Codegraph Verification: openclaw
 
 **Date:** 2026-06-24
@@ -66,3 +72,15 @@ The OpenClaw wiki is largely accurate but **underestimates the scale** of severa
 - **Plugin SDK:** ✅ Correct (comprehensive SDK structure confirmed)
 
 The codebase demonstrates enterprise-scale architecture with extensive cross-channel support, protocol implementations, and platform integrations.
+
+## Related
+
+- [[openclaw]] -- Main wiki entry
+- [[openclaw-architecture]] -- System architecture verified by this document
+- [[openclaw-acp-implementation]] -- ACP implementation details referenced in claims
+- [[openclaw-mcp-implementation]] -- MCP implementation details referenced in claims
+
+## Cross-project
+
+- [[agentfield.codegraph-verify]] -- Similar codegraph verification for AgentField
+- [[podman.codegraph-verify]] -- Similar codegraph verification for Podman

@@ -1,3 +1,9 @@
+---
+name: n8n
+tags: [n8n, workflow, automation, wiki]
+description: n8n
+---
+
 # n8n
 
 | Field | Value |
@@ -183,3 +189,15 @@ A workflow automation platform with 400+ integrations, AI-native workflow buildi
 - [[n8n-api]] — REST and Public API
 - [[n8n-deployment]] — Self-hosted deployment
 - [[n8n-agent-profile]] — Engineering profile
+
+## Cross-project
+
+- [[hermes-agent]] -- MCP tool integration for workflow automation
+- [[openclaw]] -- MCP tool integration for workflow automation
+- [[agentfield]] -- Complementary AI decision orchestration
+- [[mission-control]] -- Webhook panel integration
+- [[podman]] -- Container runtime for n8n deployment
+- [[nix-podman-stacks]] -- Nix deployment module for n8n
+- [[gogs]] -- Webhook triggers from Git events
+- [[buildah]] -- Custom n8n image building with pre-installed nodes
+- [[sablier]] -- Scale-to-zero for n8n workflow services

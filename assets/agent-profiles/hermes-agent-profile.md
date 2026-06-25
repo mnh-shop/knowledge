@@ -1,3 +1,9 @@
+---
+name: hermes-agent-profile
+tags: [hermes, agent, profile]
+description: Agent profile for Hermes Agent: development guide for AI coding assistants and contributors to the Hermes Agent project
+---
+
 # Agent Profile: hermes-agent
 
 **Source:** `sources/hermes-agent/AGENTS.md`
@@ -44,6 +50,15 @@
   NOT whether the product is allowed to grow.
 - **Behavior contracts over snapshots** — test how two pieces of code
   interact, not what their intermediate state is.
+
+## Related
+
+- [[hermes-agent]] -- Wiki entry for Hermes Agent
+- [[hermes-agent-architecture]] -- System architecture
+- [[hermes-gateway-platforms]] -- Gateway platform adapters
+- [[hermes-acp-agent]] -- ACP agent configuration
+- [[hermes-mcp-serve]] -- MCP messaging bridge
+- [[hermes-agent-deployment]] -- Deployment and operations guide
 
 ## Links
 

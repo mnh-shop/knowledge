@@ -1,3 +1,8 @@
+---
+name: swe-af
+tags: [agentfield, swe, engineering, factory]
+---
+
 # SWE-AF
 
 | Field | Value |
@@ -159,6 +164,17 @@ SWE-AF accepts standard AgentField configuration plus SWE-AF-specific fields:
 
 See [`examples/agent-comparison/README.md`](examples/agent-comparison/README.md) for detailed benchmark methodology and reproduction.
 
+## Related
+
+- [[swe-af-architecture]] -- architecture documentation
+- [[swe-af-profile]] -- agent profile
+- [[agentfield]] -- core AgentField platform
+- [[agentfield-profile]] -- AgentField platform profile
+- [[agentfield-deployment]] -- deployment guide
+- [[sec-af]] -- sibling security auditor agent
+- [[af-deep-research]] -- sibling research engine
+- [[af-reactive-atlas-mongodb]] -- sibling MongoDB intelligence agent
+
 ---
 
 ### Also built on AgentField
@@ -168,3 +184,15 @@ See [`examples/agent-comparison/README.md`](examples/agent-comparison/README.md)
 > **[Contract-AF](https://github.com/Agent-Field/contract-af)** — Legal contract risk analyzer. Agents spawn agents at runtime. Adversarial review catches what solo LLMs miss.
 
 SWE-AF is built on [AgentField](https://github.com/Agent-Field/agentfield) as a first step from single-agent harnesses to autonomous software engineering factories.
+
+## Cross-project
+
+- [[agentfield]] -- Core platform SWE-AF is built on
+- [[hermes-agent]] -- Can trigger SWE-AF builds via Hermes automation
+- [[openclaw]] -- Can invoke SWE-AF builders via API
+- [[n8n]] -- Can orchestrate SWE-AF builds via no-code workflows
+- [[gogs]] -- Git operations in SWE-AF engineering pipeline
+- [[sec-af]] -- Sibling security auditor on AgentField
+- [[af-deep-research]] -- Sibling research engine on AgentField
+- [[af-reactive-atlas-mongodb]] -- Sibling MongoDB intelligence on AgentField
+- [[buildah]] -- Image building in engineering pipeline

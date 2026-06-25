@@ -1,3 +1,9 @@
+---
+name: openclaw-acp-agent
+tags: [acp, agent, openclaw, protocol]
+description: OpenClaw ACP Agent
+---
+
 # OpenClaw ACP Agent
 **Source:** `sources/openclaw/`
 
@@ -319,6 +325,14 @@ The ACP server (`openclaw acp`) supports these flags for advanced configuration:
 | `--no-prefix-cwd` | Disable CWD prefixing |
 | `--provenance` | Provenance mode: off/meta/meta+receipt |
 | `--verbose` | Verbose logging |
+
+## Related
+
+- [[openclaw-profile]] -- Quick reference profile
+- [[openclaw-mcp-server]] -- MCP server asset configuration (companion protocol)
+- [[openclaw-quadlet]] -- Quadlet deployment patterns
+- [[openclaw-deployment]] -- Full deployment guide
+- [[openclaw]] -- Main wiki entry
 
 ---
 

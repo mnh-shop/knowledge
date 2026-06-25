@@ -1,3 +1,9 @@
+---
+name: gogs-architecture
+description: Gogs Architecture — Self-Hosted Git Service
+tags: [gogs, git, architecture]
+---
+
 # Gogs Architecture — Self-Hosted Git Service
 
 | Field | Value |
@@ -128,5 +134,5 @@ moon run web:lint      # Lint frontend code
 ## Related
 
 - [[gogs]] — Wiki entry
-- [Gogs Deployment](domains/deployment/gogs-deployment.md)
-- [Gogs API](domains/api/gogs-api.md) — REST API reference
+- [[gogs-deployment]] — Deployment options and configuration
+- [[gogs-api]] — REST API reference

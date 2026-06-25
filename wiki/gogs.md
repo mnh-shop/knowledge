@@ -1,3 +1,9 @@
+---
+name: gogs
+description: Gogs — Self-Hosted Git Service
+tags: [gogs, git, self-hosted, wiki]
+---
+
 # Gogs — Self-Hosted Git Service
 
 | Field | Value |
@@ -131,3 +137,16 @@ Gogs has an experimental REST API documented at https://gogs.io/api-reference.
 - [[tank-os]] — Bootc appliance, Gogs could host its build configs
 - [[n8n]] — Webhook integration for Git event → workflow pipelines
 - [[SWE-AF]] — Autonomous engineering runtime, uses Git for code management
+- [[gogs-architecture]] — Architecture and component design
+- [[gogs-api]] — REST API reference
+- [[gogs-deployment]] — Deployment options and configuration
+
+## Cross-project
+
+- [[hermes-agent]] — Git backend for Hermes agent code repositories
+- [[openclaw]] — Git backend for OpenClaw agent code repositories
+- [[agentfield]] — Git operations in agent workflow automation
+- [[mission-control]] — Pipeline integration with Git events
+- [[podman]] — Container runtime for Gogs deployment
+- [[sec-af]] — Security auditing of Git repositories
+- [[nix-podman-stacks]] — Nix-based deployment of Gogs
