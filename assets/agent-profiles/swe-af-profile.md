@@ -1,6 +1,6 @@
 ---
 name: swe-af-profile
-tags: [swe-af, profile, python, swe, engineering-factory, multi-agent, ai-llm, developer-tools, automation, agent-profile, cli, git, monitoring, optimization, orchestration, security, storage]
+tags: [agent-profile, ai-llm, engineering-factory, git, monitoring, multi-agent, optimization, orchestration, profile, python, security, swe, swe-af]
 description: Agent profile for SWE-AF — autonomous software engineering factory agents with multi-agent coordination and self-healing capabilities
 ---
 

@@ -1,6 +1,6 @@
 ---
 name: nanobot
-tags: [ai-llm, automation, multi-platform, webhook, cli, mcp, rest-api, messaging, plugin-sdk, container, dashboard, desktop-app, docker, event-bus, git, monitoring, security]
+tags: [ai-llm, cli, dashboard, desktop-app, docker, event-bus, mcp, messaging, monitoring, multi-platform, plugin-sdk, rest-api, security, webhook]
 description: "Open-source ultra-lightweight personal AI agent with WebUI, chat channels, tools, and memory"
 ---
 

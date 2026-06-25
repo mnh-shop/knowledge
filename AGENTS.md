@@ -1,7 +1,7 @@
 ---
 name: agents
 description: "Agent implementation index: deployment targets, implementation status, and codegraph verification for all agent projects"
-tags: [shared, index, deployment, architecture, landscape, documentation, ai-llm, acp, cli, container, event-bus, git, mcp, plugin-sdk, quadlet, storage, systemd, webhook]
+tags: [acp, ai-llm, architecture, cli, deployment, git, index, landscape, mcp, plugin-sdk, quadlet, shared, systemd]
 ---
 
 # AGENTS.md

@@ -1,6 +1,6 @@
 ---
 name: hermes-suite-architecture
-tags: [hermes, architecture, typescript, agent-gateway, messaging, multi-platform, ai-llm, automation, orchestration, cli, container, dashboard, docker, git, plugin-sdk]
+tags: [agent-gateway, architecture, container, dashboard, docker, git, hermes, messaging, multi-platform, podman, typescript]
 description: "Hermes Suite architecture: all-in-one Hermes container combining gateway, built-in dashboard, and browser-based WebUI"
 ---
 

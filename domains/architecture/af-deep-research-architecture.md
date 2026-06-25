@@ -1,6 +1,6 @@
 ---
 name: af-deep-research-architecture
-tags: [af-deep-research, architecture, typescript, deep-research, recursive-agents, research, ai-llm, automation, orchestration, cli, docker, git, optimization, plugin-sdk, security, webhook]
+tags: [af-deep-research, ai-llm, architecture, cli, container, deep-research, docker, orchestration, plugin-sdk, recursive-agents, research, security, typescript]
 description: Architecture of AF Deep Research — autonomous research backend with recursive agent spawning and self-correcting loops
 ---
 

@@ -1,6 +1,6 @@
 ---
 name: hermzner-architecture
-tags: [hermzner, architecture, terraform, ansible, infrastructure-as-code, hetzner, vps, deployment-automation, orchestration, networking, automation, ai-llm, container, dashboard, docker, plugin-sdk, quadlet, security, systemd]
+tags: [ansible, architecture, container, dashboard, deployment-automation, hermzner, hetzner, infrastructure-as-code, podman, quadlet, security, systemd, terraform, vps]
 description: Hermzner Architecture
 ---
 

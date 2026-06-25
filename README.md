@@ -1,7 +1,7 @@
 ---
 name: knowledge
 description: "Vault root: cross-linked knowledge base for AI agent infrastructure — OpenClaw, Hermes Agent, n8n, AgentField, and deployment patterns"
-tags: [shared, index, deployment, architecture, landscape, documentation, ai-llm, acp, ansible, cli, container, mcp, plugin-sdk, quadlet, systemd, terraform]
+tags: [acp, ai-llm, architecture, deployment, documentation, index, landscape, mcp, plugin-sdk, quadlet, shared, systemd]
 ---
 
 # Knowledge

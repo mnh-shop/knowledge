@@ -1,6 +1,6 @@
 ---
 name: n8n
-tags: [n8n, wiki, typescript, vue, workflow-automation, low-code, integration, fair-code, automation, webhook, ai-llm, cli, container, docker, event-bus, git, mcp, messaging, nix, orchestration, storage]
+tags: [automation, cli, docker, fair-code, git, integration, low-code, mcp, n8n, orchestration, storage, typescript, vue, webhook, wiki, workflow-automation]
 description: n8n
 ---
 

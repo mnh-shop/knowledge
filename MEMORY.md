@@ -1,7 +1,7 @@
 ---
 name: memory
 description: "Persistent index of cross-vault relationships: deployment mappings, cross-repo compatibility, and graph location notes"
-tags: [shared, index, deployment, architecture, landscape, documentation, ai-llm, acp, ansible, automation, bootc, cli, container, dashboard, desktop-app, docker, git, mcp, nix, orchestration, plugin-sdk, quadlet, security, systemd, terraform, virtualization, webhook]
+tags: [acp, ai-llm, ansible, architecture, container, dashboard, deployment, desktop-app, docker, git, index, landscape, mcp, nix, orchestration, plugin-sdk, podman, quadlet, shared, systemd, terraform, virtualization, webhook]
 ---
 
 # MEMORY.md

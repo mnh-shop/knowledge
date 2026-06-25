@@ -1,6 +1,6 @@
 ---
 name: af-deep-research
-tags: [af-deep-research, wiki, typescript, deep-research, recursive-agents, research, ai-llm, automation, orchestration, cli, docker, git, optimization, plugin-sdk, security, storage, webhook]
+tags: [af-deep-research, ai-llm, cli, container, deep-research, docker, git, orchestration, plugin-sdk, recursive-agents, research, security, typescript, wiki]
 description: Wiki entry for AF Deep Research — autonomous research backend with recursive agent spawning and self-correcting loops (Apache 2.0)
 ---
 

@@ -1,6 +1,6 @@
 ---
 name: hermzner-terraform-ansible
-tags: [hermzner, quadlet, terraform, ansible, infrastructure-as-code, hetzner, vps, deployment-automation, systemd, orchestration, networking, ai-llm, automation, container, dashboard, deployment, security]
+tags: [ansible, container, dashboard, deployment, deployment-automation, hermzner, hetzner, infrastructure-as-code, podman, quadlet, security, systemd, terraform, vps]
 description: Hermzner Terraform and Ansible Reference
 ---
 

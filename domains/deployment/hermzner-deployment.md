@@ -1,6 +1,6 @@
 ---
 name: hermzner-deployment
-tags: [hermzner, deployment, terraform, ansible, infrastructure-as-code, hetzner, vps, deployment-automation, orchestration, networking, automation, ai-llm, container, dashboard, quadlet, security, systemd]
+tags: [ansible, container, dashboard, deployment, deployment-automation, hermzner, hetzner, infrastructure-as-code, podman, quadlet, systemd, terraform, vps]
 description: Hermzner Deployment Guide
 ---
 

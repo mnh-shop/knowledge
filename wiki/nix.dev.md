@@ -1,6 +1,6 @@
 ---
 name: nix.dev
-tags: [nix, documentation, developer-tools, container, docker, git]
+tags: [developer-tools, documentation, git, nix]
 description: "Official documentation for getting things done with Nix"
 ---
 

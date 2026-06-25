@@ -1,6 +1,6 @@
 ---
 name: agentfield-mcp-server
-tags: [agentfield, mcp-server, golang, control-plane, identity, orchestration, harness, mcp, ai-llm, cli, container, docker, plugin-sdk, quadlet, security, systemd]
+tags: [agentfield, ai-llm, cli, control-plane, golang, harness, identity, mcp, mcp-server, orchestration, plugin-sdk, quadlet, security, systemd]
 description: MCP server reference for wrapping AgentField REST API as an MCP bridge server for Claude Code
 ---
 

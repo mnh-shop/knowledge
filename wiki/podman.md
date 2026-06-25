@@ -1,6 +1,6 @@
 ---
 name: podman
-tags: [podman, wiki, golang, container-engine, daemonless, rootless, oci, container, developer-tools, security, ai-llm, automation, bootc, cli, dashboard, docker, git, monitoring, nix, plugin-sdk, quadlet, storage, systemd, virtualization]
+tags: [container, container-engine, daemonless, docker, golang, oci, podman, quadlet, rootless, security, storage, systemd, virtualization, wiki]
 description: "Podman — Container Management Tool"
 ---
 # Podman — Container Management Tool

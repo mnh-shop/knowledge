@@ -1,6 +1,6 @@
 ---
 name: tank-os-deployment
-tags: [tank-os, deployment, bootc, fedora, immutable-os, container-os, image-based, container, security, automation, desktop-app, mcp, quadlet, systemd, virtualization]
+tags: [bootc, container, container-os, deployment, desktop-app, fedora, image-based, immutable-os, mcp, podman, quadlet, systemd, tank-os, virtualization]
 description: Tank OS Deployment
 ---
 

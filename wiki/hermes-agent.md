@@ -1,6 +1,6 @@
 ---
 name: hermes-agent
-tags: [hermes, wiki, typescript, agent-gateway, messaging, multi-platform, ai-llm, automation, orchestration, acp, bootc, cli, container, dashboard, desktop-app, docker, git, mcp, nix, plugin-sdk, quadlet, security, systemd, webhook]
+tags: [acp, agent-gateway, ai-llm, cli, container, dashboard, desktop-app, docker, git, hermes, mcp, messaging, multi-platform, nix, plugin-sdk, quadlet, systemd, typescript, webhook, wiki]
 description: "Wiki entry for Hermes Agent: self-improving AI agent by Nous Research with multi-platform messaging (MIT)"
 ---
 

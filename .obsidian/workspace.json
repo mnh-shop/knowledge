@@ -204,6 +204,7 @@
   },
   "active": "feefe7facd1329b6",
   "lastOpenFiles": [
+    "tests/refine-capability-tags.py",
     "assets/n8n-workflows/n8n-category-catalog.md",
     "wiki/nix.dev.md",
     "domains/architecture/nanobot-architecture.md",
@@ -239,7 +240,6 @@
     "graphs/alphaclaw/run-info.txt",
     "sources/alphaclaw/lib/setup/skills/gog-cli/tasks.md",
     "sources/alphaclaw/lib/setup/skills/gog-cli/sheets.md",
-    "sources/alphaclaw/lib/setup/skills/gog-cli/meet.md",
     "sources/alphaclaw/lib/public/assets/icons/slack.svg",
     "sources/alphaclaw/lib/public/assets/icons/whatsapp.svg",
     "sources/alphaclaw/lib/public/assets/icons/google_icon.svg",

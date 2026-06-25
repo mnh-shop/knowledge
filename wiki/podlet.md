@@ -1,6 +1,6 @@
 ---
 name: podlet
-tags: [podlet, wiki, rust, quadlet-generator, systemd, conversion, container, developer-tools, acp, ai-llm, bootc, cli, docker, event-bus, git, nix, quadlet, security, storage]
+tags: [cli, container, conversion, docker, nix, podlet, podman, quadlet, quadlet-generator, rust, security, systemd, wiki]
 description: "Podlet"
 ---
 

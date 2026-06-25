@@ -1,6 +1,6 @@
 ---
 name: openclaw-architecture
-tags: [openclaw, architecture, typescript, agent-gateway, messaging, personal-assistant, live-canvas, ai-llm, automation, orchestration, acp, cli, container, desktop-app, docker, event-bus, git, mcp, monitoring, plugin-sdk, quadlet, security, storage, systemd]
+tags: [acp, agent-gateway, ai-llm, architecture, cli, docker, live-canvas, mcp, messaging, monitoring, openclaw, orchestration, personal-assistant, plugin-sdk, quadlet, security, storage, systemd, typescript]
 description: OpenClaw Architecture
 ---
 

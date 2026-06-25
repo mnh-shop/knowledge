@@ -1,6 +1,6 @@
 ---
 name: nanobot-architecture
-tags: [nanobot, ai-llm, architecture, messaging, multi-platform, plugin-sdk, orchestration, mcp, cli, dashboard, event-bus, git, monitoring, security, webhook]
+tags: [ai-llm, architecture, cli, dashboard, event-bus, mcp, messaging, monitoring, multi-platform, nanobot, plugin-sdk, security, webhook]
 description: "Deep architecture of nanobot: MessageBus, agent loop, channel system, provider abstraction, and tool framework"
 ---
 

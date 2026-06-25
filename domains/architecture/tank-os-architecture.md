@@ -1,6 +1,6 @@
 ---
 name: tank-os-architecture
-tags: [tank-os, architecture, bootc, fedora, immutable-os, container-os, image-based, container, security, automation, ai-llm, cli, desktop-app, git, mcp, messaging, quadlet, systemd, virtualization]
+tags: [architecture, bootc, cli, container, container-os, fedora, git, image-based, immutable-os, mcp, messaging, podman, quadlet, systemd, tank-os]
 description: Tank OS Architecture
 ---
 

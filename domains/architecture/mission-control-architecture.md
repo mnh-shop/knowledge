@@ -1,6 +1,6 @@
 ---
 name: mission-control-architecture
-tags: [mission-control, architecture, typescript, nextjs, react, dashboard, orchestration, monitoring, ai-llm, automation, bootc, cli, container, docker, event-bus, git, mcp, messaging, optimization, plugin-sdk, quadlet, security, storage, systemd, virtualization, webhook]
+tags: [ai-llm, architecture, cli, dashboard, event-bus, git, mcp, messaging, mission-control, monitoring, nextjs, orchestration, plugin-sdk, quadlet, react, security, storage, systemd, typescript, webhook]
 description: Mission Control Architecture
 ---
 

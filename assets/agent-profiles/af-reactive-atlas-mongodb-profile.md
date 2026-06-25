@@ -1,6 +1,6 @@
 ---
 name: af-reactive-atlas-mongodb-profile
-tags: [af-reactive-atlas-mongodb, profile, python, mongodb, reactive, real-time, atlas-triggers, automation, monitoring, ai-llm, agent-profile, dashboard, docker, plugin-sdk, security, storage]
+tags: [af-reactive-atlas-mongodb, agent-profile, ai-llm, atlas-triggers, dashboard, docker, mongodb, monitoring, plugin-sdk, profile, python, reactive, real-time, storage]
 description: Agent profile for AF Reactive Atlas MongoDB — real-time intelligence layer turning MongoDB collections into self-assessing systems via Atlas Triggers
 ---
 

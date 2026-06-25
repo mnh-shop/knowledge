@@ -1,7 +1,7 @@
 ---
 name: agent-skills-catalog
 description: "Full catalog of all agent skills grouped by 12 capability domains, covering 66 skills"
-tags: [agent-skills, catalog, documentation, skills-platform, acp, ai-llm, automation, docker, git, mcp, optimization, orchestration, plugin-sdk, security, storage, webhook]
+tags: [acp, agent-skills, ai-llm, automation, catalog, documentation, mcp, optimization, orchestration, plugin-sdk, skills-platform, storage, webhook]
 ---
 
 # Agent Skills Catalog

@@ -1,7 +1,7 @@
 ---
 name: nix-podman-stacks-n8n
 type: integration
-tags: [nix-podman-stacks, integration, nix, home-manager, infrastructure-as-code, declarative, podman, self-hosted-stacks, automation, orchestration, container, architecture, dashboard, docker, monitoring, quadlet, storage, systemd, webhook]
+tags: [architecture, automation, container, dashboard, declarative, docker, home-manager, infrastructure-as-code, integration, monitoring, nix, nix-podman-stacks, podman, quadlet, self-hosted-stacks, storage, systemd, webhook]
 description: "Integration: nix-podman-stacks n8n Module"
 ---
 

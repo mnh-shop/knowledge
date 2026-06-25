@@ -1,6 +1,6 @@
 ---
 name: hermes-workspace-profile
-tags: [hermes, profile, typescript, agent-gateway, messaging, multi-platform, ai-llm, automation, orchestration, agent-profile, cli, container, dashboard, desktop-app, mcp, plugin-sdk, quadlet, security, systemd]
+tags: [agent-gateway, agent-profile, ai-llm, cli, dashboard, desktop-app, hermes, mcp, messaging, multi-platform, orchestration, profile, quadlet, systemd, typescript]
 description: "Agent profile for Hermes Workspace: quick reference profile for the web/desktop command center for Hermes Agent"
 ---
 

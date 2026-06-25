@@ -1,6 +1,6 @@
 ---
 name: agentfield-deployment
-tags: [agentfield, deployment, golang, control-plane, identity, orchestration, harness, container, automation, security, ai-llm, cli, dashboard, docker, git, mcp, monitoring, nix, plugin-sdk, quadlet, storage, systemd, webhook]
+tags: [agentfield, ai-llm, cli, container, control-plane, deployment, docker, git, golang, harness, identity, monitoring, orchestration, plugin-sdk, podman, quadlet, security, storage, systemd, webhook]
 description: "AgentField deployment guide: rootless Podman Quadlet setup with NixOS flake, Redis, and Postgres"
 ---
 

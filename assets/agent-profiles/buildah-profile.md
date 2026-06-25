@@ -1,7 +1,7 @@
 ---
 name: buildah-profile
 description: Buildah is a daemonless, rootless OCI image builder — the build-time layer for agent deployment pipelines
-tags: [buildah, profile, golang, image-builder, oci, daemonless, container, developer-tools, agent-profile, ai-llm, docker, git, plugin-sdk, quadlet, security, storage, systemd]
+tags: [agent-profile, ai-llm, buildah, container, daemonless, docker, golang, image-builder, oci, plugin-sdk, podman, profile, quadlet, security, storage, systemd]
 metadata:
   type: reference
 source: sources/buildah/

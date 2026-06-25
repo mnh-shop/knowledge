@@ -1,6 +1,6 @@
 ---
 name: sec-af-profile
-tags: [sec-af, profile, python, security, auditor, adversarial, ai-llm, automation, agent-profile, cli, docker, git, messaging, monitoring, optimization, orchestration, plugin-sdk]
+tags: [adversarial, agent-profile, ai-llm, auditor, automation, cli, container, git, monitoring, optimization, orchestration, plugin-sdk, profile, python, sec-af, security]
 description: Agent profile for SEC-AF — AI-native security auditor agent built on AgentField for adversarial security analysis
 ---
 

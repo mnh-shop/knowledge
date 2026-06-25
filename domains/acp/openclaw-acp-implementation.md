@@ -1,6 +1,6 @@
 ---
 name: openclaw-acp-implementation
-tags: [openclaw, acp, typescript, agent-gateway, messaging, personal-assistant, live-canvas, ai-llm, automation, orchestration, cli, container, git, mcp, plugin-sdk, quadlet, security, storage, systemd]
+tags: [acp, agent-gateway, ai-llm, cli, git, live-canvas, mcp, messaging, openclaw, personal-assistant, plugin-sdk, quadlet, security, systemd, typescript]
 description: OpenClaw ACP Implementation
 ---
 

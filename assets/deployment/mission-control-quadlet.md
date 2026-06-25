@@ -1,6 +1,6 @@
 ---
 name: mission-control-quadlet
-tags: [mission-control, quadlet, typescript, nextjs, react, dashboard, orchestration, monitoring, systemd, container, ai-llm, deployment, docker, git, security]
+tags: [container, dashboard, deployment, docker, mission-control, monitoring, nextjs, orchestration, podman, quadlet, react, systemd, typescript]
 description: Mission Control Quadlet Configuration
 ---
 

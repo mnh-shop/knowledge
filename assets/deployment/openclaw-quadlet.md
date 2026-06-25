@@ -1,6 +1,6 @@
 ---
 name: openclaw-quadlet
-tags: [openclaw, quadlet, typescript, agent-gateway, messaging, personal-assistant, live-canvas, systemd, container, acp, ai-llm, bootc, cli, deployment, docker, git, mcp, orchestration, security, storage]
+tags: [acp, agent-gateway, ai-llm, cli, container, deployment, docker, live-canvas, mcp, messaging, openclaw, orchestration, personal-assistant, podman, quadlet, security, storage, systemd, typescript]
 description: OpenClaw Quadlet Deployment (Rootless Podman)
 ---
 

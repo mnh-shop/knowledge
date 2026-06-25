@@ -1,7 +1,7 @@
 ---
 name: stack-reference-mission-control
 description: "Deployment reference: Mission Control dashboard monitoring agents"
-tags: [mission-control, openclaw, hermes, stack-reference, architecture, integration, ideas, dashboard, monitoring, ai-llm, cli, container, mcp, messaging, quadlet, systemd, webhook]
+tags: [ai-llm, architecture, container, dashboard, hermes, ideas, integration, mcp, messaging, mission-control, monitoring, openclaw, quadlet, stack-reference, systemd, webhook]
 ---
 
 # Mission Control Stack Reference

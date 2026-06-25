@@ -1,7 +1,7 @@
 ---
 name: n8n-workflow-integrations
 description: "Sub-index of 415 unique n8n node types (integrations) across 2,061 workflow files"
-tags: [n8n, integrations, catalog, documentation, integration, ai-llm, architecture, automation, git, mcp, messaging, storage, webhook, workflow]
+tags: [architecture, automation, catalog, documentation, integration, integrations, n8n, workflow]
 ---
 
 # Integrations Sub-Index

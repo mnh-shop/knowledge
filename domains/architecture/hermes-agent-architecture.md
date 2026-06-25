@@ -1,6 +1,6 @@
 ---
 name: hermes-agent-architecture
-tags: [hermes, architecture, typescript, agent-gateway, messaging, multi-platform, ai-llm, automation, orchestration, acp, cli, desktop-app, mcp, plugin-sdk, storage, webhook]
+tags: [acp, agent-gateway, ai-llm, architecture, cli, desktop-app, hermes, mcp, messaging, multi-platform, plugin-sdk, typescript]
 description: "Hermes Agent architecture: multi-platform personal AI agent by Nous Research with 3,726 files and 257 indexed symbols"
 ---
 

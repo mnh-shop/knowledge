@@ -1,6 +1,6 @@
 ---
 name: hermes-workspace-quadlet
-tags: [hermes, quadlet, typescript, agent-gateway, messaging, multi-platform, systemd, container, ai-llm, dashboard, deployment, docker, orchestration, security]
+tags: [agent-gateway, ai-llm, container, dashboard, deployment, docker, hermes, messaging, multi-platform, podman, quadlet, security, systemd, typescript]
 description: Rootless Podman Quadlet deployment configuration for Hermes Workspace with companion Hermes Agent as systemd services
 ---
 

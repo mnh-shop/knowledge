@@ -1,6 +1,6 @@
 ---
 name: awesome-openclaw-skills
-tags: [openclaw, skills-platform, documentation, ai-llm, developer-tools, automation, cli, git, plugin-sdk, security]
+tags: [ai-llm, cli, developer-tools, documentation, git, openclaw, plugin-sdk, skills-platform]
 description: "Curated list of 5300+ community-built OpenClaw skills organized by 30 categories"
 ---
 

@@ -1,7 +1,7 @@
 ---
 name: hermes-plugins
 description: "34 evey-* plugins extending hermes-agent with autonomous decision-making, observability, cost control, memory, safety guards, and external integrations"
-tags: [skills-platform, ai-llm, automation, monitoring, security, messaging, event-bus, orchestration, developer-tools, plugin-sdk, multi-platform, cli, container, dashboard, docker, git, nix, storage]
+tags: [ai-llm, cli, dashboard, developer-tools, docker, event-bus, git, messaging, monitoring, multi-platform, nix, orchestration, plugin-sdk, skills-platform, storage]
 ---
 
 # Hermes Plugins (evey-*)

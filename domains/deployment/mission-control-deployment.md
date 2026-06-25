@@ -1,6 +1,6 @@
 ---
 name: mission-control-deployment
-tags: [mission-control, deployment, typescript, nextjs, react, dashboard, orchestration, monitoring, ai-llm, automation, container, cli, docker, git, mcp, quadlet, security, storage, systemd, virtualization]
+tags: [ai-llm, cli, container, dashboard, deployment, docker, git, mission-control, monitoring, nextjs, orchestration, quadlet, react, security, storage, systemd, typescript]
 description: Mission Control Deployment
 ---
 

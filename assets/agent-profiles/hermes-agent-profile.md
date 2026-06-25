@@ -1,6 +1,6 @@
 ---
 name: hermes-agent-profile
-tags: [hermes, profile, typescript, agent-gateway, messaging, multi-platform, ai-llm, automation, orchestration, acp, agent-profile, cli, mcp, plugin-sdk]
+tags: [agent-gateway, agent-profile, ai-llm, cli, hermes, mcp, messaging, multi-platform, profile, typescript]
 description: "Agent profile for Hermes Agent: development guide for AI coding assistants and contributors to the Hermes Agent project"
 ---
 

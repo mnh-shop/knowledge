@@ -1,7 +1,7 @@
 ---
 name: n8n-agent-profile
 description: Engineering profile for the n8n monorepo — standards, patterns, architecture rules
-tags: [n8n, profile, typescript, vue, workflow-automation, low-code, integration, fair-code, automation, orchestration, webhook, agent-profile, ai-llm, cli, docker, event-bus, git, mcp, security]
+tags: [agent-profile, ai-llm, fair-code, integration, low-code, mcp, n8n, profile, security, typescript, vue, workflow-automation]
 metadata:
   type: reference
 source: sources/n8n/

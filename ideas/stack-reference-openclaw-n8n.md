@@ -1,7 +1,7 @@
 ---
 name: stack-reference-openclaw-n8n
 description: "Deployment reference: combining OpenClaw agent gateway with n8n workflow engine"
-tags: [openclaw, n8n, stack-reference, architecture, integration, ideas, automation, webhook, mcp, ai-llm, cli, container, docker, messaging, quadlet, storage, systemd]
+tags: [ai-llm, architecture, container, ideas, integration, mcp, messaging, n8n, openclaw, podman, quadlet, stack-reference, storage, systemd, webhook]
 ---
 
 # OpenClaw + n8n Stack Reference

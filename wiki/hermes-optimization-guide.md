@@ -1,7 +1,7 @@
 ---
 name: hermes-optimization-guide
 description: "26-part practical guide for the Nous Research Hermes Agent: setup, optimization, security, deployment, and local hardware across CLI, TUI, desktop, and 22+ chat platforms"
-tags: [documentation, optimization, ai-llm, container, systemd, automation, security, developer-tools, multi-platform, monitoring, orchestration, acp, cli, dashboard, desktop-app, docker, git, mcp, messaging, plugin-sdk, storage, webhook]
+tags: [acp, ai-llm, cli, dashboard, desktop-app, developer-tools, docker, documentation, mcp, messaging, monitoring, multi-platform, optimization, plugin-sdk, security, storage, systemd, webhook]
 ---
 
 # Hermes Optimization Guide

@@ -1,6 +1,6 @@
 ---
 name: n8n-mcp
-tags: [n8n, mcp, typescript, vue, workflow-automation, low-code, integration, fair-code, automation, ai-llm, cli, docker, event-bus, orchestration, security]
+tags: [automation, cli, fair-code, integration, low-code, mcp, n8n, security, typescript, vue, workflow-automation]
 description: n8n — MCP Integration
 ---
 

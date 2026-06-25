@@ -1,6 +1,6 @@
 ---
 name: n8n-deployment
-tags: [n8n, deployment, typescript, vue, workflow-automation, low-code, integration, fair-code, automation, webhook, ai-llm, cli, docker, event-bus, mcp, orchestration, security, storage, virtualization]
+tags: [cli, deployment, docker, fair-code, integration, low-code, mcp, n8n, storage, typescript, vue, webhook, workflow-automation]
 description: n8n — Deployment
 ---
 
