@@ -1,7 +1,8 @@
 ---
 name: stack-landscape
+description: "Full system landscape mapping across 23 repositories organized in 6 functional layers with compatibility matrix"
+source: sources/nix-podman-stacks/
 tags: [acp, ai-llm, architecture, bootc, cli, container, dashboard, deployment, desktop-app, docker, git, integration, landscape, mcp, nix, orchestration, plugin-sdk, podman, quadlet, security, shared, systemd, virtualization, webhook]
-description: Full system landscape mapping across 23 repositories organized in 6 functional layers with compatibility matrix
 ---
 
 # Stack Landscape — 23 Repos Across 6 Layers

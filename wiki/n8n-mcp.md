@@ -1,6 +1,11 @@
-# n8n-MCP
+---
+name: n8n-mcp
+description: "n8n-MCP server — 1,845+ nodes indexed, MCP tools for AI-assisted n8n workflow authoring"
+source: sources/n8n-mcp/
+tags: [cli, docker, fair-code, integration, mcp, n8n, storage, typescript, workflow-automation]
+---
 
-**Version**: 2.60.0 | **Source**: `/Users/admin1/Documents/knowledge/sources/n8n-mcp`
+# n8n-MCP
 
 ## Overview
 
@@ -198,4 +203,4 @@ npm run dev            # Build + rebuild + validate pipeline
 - [[n8n-nodes]] — n8n node reference
 - [[../sources/n8n-mcp/CLAUDE.md]] — Project CLAUDE.md with development instructions
 
-> **Source**: `/Users/admin1/Documents/knowledge/sources/n8n-mcp` — commit `02d5615`
+> **Source**: `sources/n8n-mcp/`

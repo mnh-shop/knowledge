@@ -1,6 +1,11 @@
-# podman-compose
+---
+name: podman-compose
+description: "Podman-compose — docker-compose compatible orchestration for Podman, daemon-less rootless containers"
+source: sources/podman-compose/
+tags: [cli, container, docker, docker-compatible, git, orchestration, podman, python]
+---
 
-**Version:** 1.6.0 | **License:** GPL-2.0-only | **Author:** Muayyad Alsadi (alsadi@gmail.com)
+# podman-compose
 
 **Repository:** containers/podman-compose -- <https://github.com/containers/podman-compose>
 

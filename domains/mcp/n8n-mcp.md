@@ -1,7 +1,8 @@
 ---
 name: n8n-mcp
+description: "n8n — MCP Integration"
+source: sources/n8n-mcp/
 tags: [automation, cli, fair-code, integration, low-code, mcp, n8n, security, typescript, vue, workflow-automation]
-description: n8n — MCP Integration
 ---
 
 # n8n — MCP Integration

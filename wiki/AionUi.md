@@ -1,6 +1,11 @@
-# AionUi
+---
+name: aion-ui
+description: "AionUi — open-source AI cowork desktop app with multi-agent support, MCP tools, and web UI mode"
+source: sources/AionUi/
+tags: [ai-llm, automation, cli, desktop-app, electron, mcp, react, typescript]
+---
 
-**Source repo:** `/Users/admin1/Documents/knowledge/sources/AionUi`
+# AionUi
 **License:** Apache-2.0
 **Current version:** 2.1.24
 

@@ -1,9 +1,8 @@
 ---
-title: Open Design
-version: 0.11.1
-license: Apache-2.0
-organization: nexu-io
-topics:
+name: open-design
+description: "Open Design system — build once, reuse everywhere: cross-agent design token and component framework"
+source: sources/open-design/
+tags: [acp, ai-llm, cli, design, desktop-app, documentation, mcp, plugin-sdk]
   - design-system
   - agentic-design
   - local-first

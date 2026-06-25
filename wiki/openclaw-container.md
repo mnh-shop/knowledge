@@ -1,9 +1,8 @@
 ---
-title: OpenClaw Container Deployment
-author: Claude Code
-date: 2026-06-25
-project: openclaw-container
-tags: [ai-llm, cli, container, containerization, containers, docker, git, messaging, monitoring, openclaw, plugin-sdk, podman, security, storage, virtualization, whisper.cpp]
+name: openclaw-container
+description: "OpenClaw container deployment templates and patterns for AI agent infrastructure"
+source: sources/openclaw-container/
+tags: [ai-llm, cli, container, containerization, docker, git, messaging, monitoring, openclaw, plugin-sdk, podman, security, storage, virtualization]
 status: active
 last_updated: 2026-06-25
 ---

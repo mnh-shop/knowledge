@@ -1,6 +1,11 @@
-# cockpit-podman
+---
+name: cockpit-podman
+description: "Cockpit web UI module for managing Podman containers, images, pods, and quadlets"
+source: sources/cockpit-podman/
+tags: [cli, cockpit, container, docker, git, javascript, monitoring, plugin-sdk, podman, quadlet, react, systemd, ui, virtualization]
+---
 
-**Source**: `sources/cockpit-podman/`
+# cockpit-podman
 **License**: LGPL-2.1-or-later (c) 2017 Red Hat, Inc.
 
 ## Overview

@@ -1,7 +1,8 @@
 ---
 name: n8n-instance-ai
-tags: [ai-llm, architecture, cli, container, event-bus, fair-code, integration, low-code, mcp, n8n, orchestration, security, typescript, vue, workflow-automation]
-description: n8n — Instance AI Architecture
+description: "n8n Instance AI Architecture — agentic workflow automation with MCP integration and LLM orchestration"
+source: sources/n8n/
+tags: [ai-llm, architecture, automation, cli, container, event-bus, fair-code, integration, low-code, mcp, n8n, orchestration, security, typescript, vue, workflow-automation]
 ---
 
 # n8n — Instance AI Architecture

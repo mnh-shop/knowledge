@@ -1,6 +1,7 @@
 ---
 name: hermes-incident-commander-architecture
 description: "RL training environment design for Hermes Incident Commander: reward function, incident scenarios, Atropos integration, and sandboxed execution"
+source: sources/hermes-incident-commander/
 tags: [architecture, docker, messaging, monitoring, optimization, plugin-sdk, skills-platform]
 ---
 

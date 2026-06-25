@@ -1,16 +1,15 @@
 ---
-title: hermes-agent-acp-skill
+name: hermes-agent-acp-skill
+description: "Hermes agent ACP skill: agent-to-agent delegation via Agent Communication Protocol"
+source: sources/hermes-agent-acp-skill/
 tags: [acp, ai-llm, plugin-sdk]
-  - hermes
-  - acp
-  - delegation
   - orchestration
   - codex
   - claude-code
 ---
 # Hermes ACP Agent Skill
 
-A production-oriented [[hermes]] skill for ACP-style multi-agent delegation. Standardizes how work is delegated across Hermes internal subagents, Codex, and Claude Code.
+A production-oriented [[hermes-agent]] skill for ACP-style multi-agent delegation. Standardizes how work is delegated across Hermes internal subagents, Codex, and Claude Code.
 
 ## Overview
 
@@ -84,4 +83,4 @@ delegation:
 
 ## See Also
 
-- [[hermes]] — the Hermes agent orchestration platform
+- [[hermes-agent]] — the Hermes agent orchestration platform

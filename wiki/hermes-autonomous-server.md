@@ -1,8 +1,7 @@
 ---
-title: Hermes Autonomous Server
-type: wiki
-wiki: hermes-autonomous-server
-created: 2026-06-25
+name: hermes-autonomous-server
+description: "Autonomous Hermes server agent with self-healing and adaptive runtime capabilities"
+source: sources/hermes-autonomous-server/
 tags: [ai-llm, monitoring, security]
   - hermes
   - autonomous-server

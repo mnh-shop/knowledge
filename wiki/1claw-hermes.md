@@ -1,6 +1,11 @@
-# 1claw-hermes
+---
+name: 1claw-hermes
+description: "1Claw secrets management integration for Hermes Agent — MCP vault, Shroud TEE proxy, subagent identities, and Intents API"
+source: sources/1claw-hermes/
+tags: [ai-llm, blockchain, cli, git, hermes, mcp, messaging, plugin-sdk, typescript]
+---
 
-**Package name:** `@workspace/1claw-hermes` (internal workspace package)
+# 1claw-hermes
 **Version:** 0.1.0
 **Type:** TypeScript (ESM)
 **Source:** `sources/1claw-hermes`

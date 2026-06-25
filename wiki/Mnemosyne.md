@@ -1,9 +1,8 @@
 ---
+name: mnemosyne
+description: "Mnemosyne memory server with MCP integration for AI agent persistent storage"
+source: sources/Mnemosyne/
 tags: [ai-llm, cli, mcp, plugin-sdk, storage]
-  - repo
-  - memory-layer
-  - ai-agents
-  - python
   - sqlite
   - mcp
   - hermes
