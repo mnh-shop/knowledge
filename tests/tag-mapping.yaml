@@ -5,7 +5,7 @@
 # ---- Hermes ecosystem ----
 hermes:
   project: hermes
-  tech: [typescript]
+  tech: [python, typescript, rust]
   features: [agent-gateway, messaging, multi-platform]
   # Files: 26 total
 
@@ -18,7 +18,7 @@ hermes-agent-docker:
 # ---- OpenClaw ecosystem ----
 openclaw:
   project: openclaw
-  tech: [typescript]
+  tech: [typescript, swift]
   features: [agent-gateway, messaging, personal-assistant, live-canvas]
   # Files: 11 total
 
@@ -62,25 +62,25 @@ agentfield:
 
 swe-af:
   project: agentfield
-  tech: [typescript]
+  tech: [python]
   features: [swe, engineering-factory, multi-agent]
   # Files: 3
 
 sec-af:
   project: agentfield
-  tech: [typescript]
+  tech: [python]
   features: [security, auditor, adversarial]
   # Files: 3
 
 af-deep-research:
   project: agentfield
-  tech: [typescript]
+  tech: [python]
   features: [deep-research, recursive-agents, research]
   # Files: 3
 
 af-reactive-atlas-mongodb:
   project: agentfield
-  tech: [typescript, mongodb]
+  tech: [python, mongodb]
   features: [reactive, real-time, atlas-triggers]
   # Files: 3
 
