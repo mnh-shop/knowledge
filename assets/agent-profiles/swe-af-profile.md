@@ -6,6 +6,10 @@ description: Agent profile for SWE-AF — autonomous software engineering factor
 
 # SWE-AF Agent Profile
 
+**Source:** `sources/swe-af/`
+**Raw:** `raw/swe-af/SWE-AF.xml` (18M)
+**Codegraph:** `graphs/swe-af/` (16M)
+
 ## Overview
 
 SWE-AF agents are autonomous software engineering agents that operate within the SWE-AF (Autonomous Software Engineering Factory) runtime on AgentField. They specialize in collaborative, adaptive software development with coordination across multiple agents, git worktrees, and self-healing capabilities.

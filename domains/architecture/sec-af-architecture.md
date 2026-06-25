@@ -6,6 +6,10 @@ description: Architecture of SEC-AF — AI-native security auditor extending Age
 
 # SEC-AF Architecture Documentation
 
+**Source:** `sources/sec-af/`
+**Raw:** `raw/sec-af/sec-af.xml` (1.3M)
+**Codegraph:** `graphs/sec-af/` (3.2M)
+
 ## Overview
 
 SEC-AF (Security Auditing with AgentField) is an AI-native security auditor built as a sub-repo within the AgentField platform. It extends the AgentField multi-reasoner architecture specifically for adversarial security analysis that goes beyond pattern detection to prove actual exploitability.

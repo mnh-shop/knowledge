@@ -6,6 +6,10 @@ description: OpenClaw Deployment Guide
 
 # OpenClaw Deployment Guide
 
+**Source:** `sources/openclaw/`
+**Raw:** `raw/openclaw/openclaw.xml` (49M)
+**Codegraph:** `graphs/openclaw/` (1.0G DB)
+
 Comprehensive deployment and operations guide for OpenClaw -- a self-hosted AI agent gateway and runtime, written in TypeScript on Node.js.
 
 ## Table of Contents

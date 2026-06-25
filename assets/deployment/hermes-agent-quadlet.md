@@ -6,6 +6,10 @@ description: Production-ready rootless Podman Quadlet configuration for deployin
 
 # Hermes Agent -- Rootless Podman Quadlet Deployment
 
+**Source:** `sources/hermes-agent/`
+**Raw:** `raw/hermes-agent/hermes-agent.xml` (35M)
+**Codegraph:** `graphs/hermes-agent/` (234M DB)
+
 **Type:** Deployment asset (rootless Podman Quadlet)  
 **Status:** Reference configuration for production deployment  
 

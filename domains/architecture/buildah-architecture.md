@@ -6,6 +6,10 @@ description: Buildah Architecture
 
 # Buildah Architecture
 
+**Source:** `sources/buildah/`
+**Raw:** `raw/buildah/buildah.xml` (3.0M)
+**Codegraph:** `graphs/buildah/` (9.7M)
+
 ## Overview
 
 Buildah is a **daemonless, rootless OCI image builder** written in Go. Unlike Docker build which requires a daemon or BuildKit daemon, Buildah uses a simple fork-exec model where each invocation re-executes itself inside a user namespace for rootless operation. The codebase lives at `github.com/containers/buildah` and vendors the `containers/storage` and `containers/image` libraries for storage and image handling.

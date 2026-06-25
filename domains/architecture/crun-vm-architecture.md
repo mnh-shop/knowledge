@@ -6,6 +6,10 @@ description: crun-vm Architecture
 
 # crun-vm Architecture
 
+**Source:** `sources/crun-vm/`
+**Raw:** `raw/crun-vm/crun-vm.xml` (140K)
+**Codegraph:** `graphs/crun-vm/` (848K)
+
 **Version**: 0.3.0  
 **Language**: Rust  
 **License**: GPL-2.0-or-later  

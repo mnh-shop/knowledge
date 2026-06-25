@@ -6,6 +6,10 @@ description: Sablier Deployment Guide
 
 # Sablier Deployment Guide
 
+**Source:** `sources/sablier/`
+**Raw:** `raw/sablier/sablier.xml` (1.1M)
+**Codegraph:** `graphs/sablier/` (6.5M)
+
 Guide for deploying Sablier as a scale-to-zero daemon with Podman, Docker, or Kubernetes, including reverse proxy integration.
 
 ---

@@ -6,6 +6,10 @@ description: Architecture of SWE-AF — autonomous software engineering factory 
 
 # SWE-AF Architecture Documentation
 
+**Source:** `sources/swe-af/`
+**Raw:** `raw/swe-af/SWE-AF.xml` (18M)
+**Codegraph:** `graphs/swe-af/` (16M)
+
 ## Overview
 
 SWE-AF (Autonomous Software Engineering Factory) is an autonomous engineering team runtime built on AgentField. It transforms a single API call into a coordinated factory of specialized agents that plan, code, test, and ship complex software end-to-end.

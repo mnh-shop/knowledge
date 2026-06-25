@@ -6,6 +6,10 @@ description: Agent profile for SEC-AF — AI-native security auditor agent built
 
 # SEC-AF Agent Profile
 
+**Source:** `sources/sec-af/`
+**Raw:** `raw/sec-af/sec-af.xml` (1.3M)
+**Codegraph:** `graphs/sec-af/` (3.2M)
+
 ## What SEC-AF Is
 
 SEC-AF is an **AI-native security auditor agent** built on the AgentField platform that performs adversarial security analysis to prove actual exploitability rather than just detecting patterns. It represents the security analysis specialization within the broader AgentField ecosystem.

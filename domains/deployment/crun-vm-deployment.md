@@ -6,6 +6,10 @@ description: crun-vm Deployment Guide
 
 # crun-vm Deployment Guide
 
+**Source:** `sources/crun-vm/`
+**Raw:** `raw/crun-vm/crun-vm.xml` (140K)
+**Codegraph:** `graphs/crun-vm/` (848K)
+
 Comprehensive deployment and operations guide for crun-vm -- an OCI runtime shim that runs QEMU/KVM virtual machines as OCI containers.
 
 ## Table of Contents

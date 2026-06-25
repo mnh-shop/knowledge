@@ -6,6 +6,10 @@ description: Sablier Quadlet Deployment (Rootless Podman)
 
 # Sablier Quadlet Deployment (Rootless Podman)
 
+**Source:** `sources/sablier/`
+**Raw:** `raw/sablier/sablier.xml` (1.1M)
+**Codegraph:** `graphs/sablier/` (6.5M)
+
 This document provides Quadlet `.container` files for deploying Sablier as a rootless Podman service via systemd user units, along with integrated reverse proxy and agent service examples.
 
 ---

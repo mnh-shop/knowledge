@@ -6,6 +6,10 @@ description: Agent profile for AF Reactive Atlas MongoDB — real-time intellige
 
 # AF Reactive Atlas MongoDB Agent Profile
 
+**Source:** `sources/af-reactive-atlas-mongodb/`
+**Raw:** `raw/af-reactive-atlas-mongodb/af-reactive-atlas-mongodb.xml` (192K)
+**Codegraph:** `graphs/af-reactive-atlas-mongodb/` (456K)
+
 **This agent profile describes the Reactive Atlas MongoDB intelligence layer — an AgentField-based AI agent that turns MongoDB collections into intelligent, self-assessing systems through real-time change-triggered reasoning.**
 
 ## Agent Identity
