@@ -1,6 +1,7 @@
 ---
 name: swe-af-profile
 tags: [agentfield, engineering, swe, profile]
+description: Agent profile for SWE-AF — autonomous software engineering factory agents with multi-agent coordination and self-healing capabilities
 ---
 
 # SWE-AF Agent Profile

@@ -1,6 +1,7 @@
 ---
 name: af-reactive-atlas-mongodb-profile
 tags: [agentfield, mongodb, reactive, profile]
+description: Agent profile for AF Reactive Atlas MongoDB — real-time intelligence layer turning MongoDB collections into self-assessing systems via Atlas Triggers
 ---
 
 # AF Reactive Atlas MongoDB Agent Profile

@@ -1,6 +1,7 @@
 ---
 name: agentfield-mcp-server
 tags: [agentfield, mcp, bridge, server]
+description: MCP server reference for wrapping AgentField REST API as an MCP bridge server for Claude Code
 ---
 
 # AgentField MCP Server

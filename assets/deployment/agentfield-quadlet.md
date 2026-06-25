@@ -1,6 +1,7 @@
 ---
 name: agentfield-quadlet
 tags: [agentfield, quadlet, podman, deployment]
+description: Rootless Podman Quadlet deployment configuration for AgentField control plane with PostgreSQL, volume, and network units
 ---
 
 # AgentField Quadlet Deployment

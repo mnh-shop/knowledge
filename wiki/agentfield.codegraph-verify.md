@@ -1,6 +1,7 @@
 ---
 name: agentfield-codegraph-verify
 tags: [agentfield, codegraph, verification, routes]
+description: Codegraph verification for agentfield — validating route group claims against indexed source code symbols
 ---
 
 # Codegraph Verification: agentfield

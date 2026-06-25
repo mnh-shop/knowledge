@@ -1,6 +1,7 @@
 ---
 name: sec-af-architecture
 tags: [agentfield, security, auditor, architecture]
+description: Architecture of SEC-AF — AI-native security auditor extending AgentField multi-reasoner for adversarial security analysis
 ---
 
 # SEC-AF Architecture Documentation

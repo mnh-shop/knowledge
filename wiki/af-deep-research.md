@@ -1,6 +1,7 @@
 ---
 name: af-deep-research
 tags: [agentfield, deep-research, research, engine]
+description: Wiki entry for AF Deep Research — autonomous research backend with recursive agent spawning and self-correcting loops (Apache 2.0)
 ---
 
 # AF Deep Research

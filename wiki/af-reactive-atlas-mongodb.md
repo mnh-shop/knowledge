@@ -1,6 +1,7 @@
 ---
 name: af-reactive-atlas-mongodb
 tags: [agentfield, mongodb, reactive, intelligence]
+description: Wiki entry for AF Reactive Atlas MongoDB — real-time intelligence layer for MongoDB via Atlas Triggers (Apache 2.0)
 ---
 
 # AF Reactive Atlas MongoDB

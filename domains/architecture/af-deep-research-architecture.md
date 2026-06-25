@@ -1,6 +1,7 @@
 ---
 name: af-deep-research-architecture
 tags: [agentfield, deep-research, architecture]
+description: Architecture of AF Deep Research — autonomous research backend with recursive agent spawning and self-correcting loops
 ---
 
 # AF Deep Research Architecture

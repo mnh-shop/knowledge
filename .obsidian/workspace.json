@@ -175,8 +175,11 @@
       "bases:Create new base": false
     }
   },
-  "active": "bfc3e027f1f8d1cc",
+  "active": "be5c35bd7dbe689d",
   "lastOpenFiles": [
+    "tests/_checks_runner.sh",
+    "tests/_run_checks",
+    "tests/_run_checks.py",
     "tests/_run_validation.py",
     "tests/validate-wikilinks.py",
     "tests/validate_wikilinks.py",
