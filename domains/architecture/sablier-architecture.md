@@ -1,6 +1,6 @@
 ---
 name: sablier-architecture
-tags: [sablier, architecture, golang, scale-to-zero, reverse-proxy, lifecycle]
+tags: [sablier, architecture, golang, scale-to-zero, reverse-proxy, lifecycle, container, automation, monitoring, acp, ai-llm, cli, docker, event-bus, git, orchestration, plugin-sdk, quadlet, security, storage, systemd, virtualization, webhook]
 description: Sablier Architecture
 ---
 

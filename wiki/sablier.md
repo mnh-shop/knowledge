@@ -1,6 +1,6 @@
 ---
 name: sablier
-tags: [sablier, wiki, golang, scale-to-zero, reverse-proxy, lifecycle]
+tags: [sablier, wiki, golang, scale-to-zero, reverse-proxy, lifecycle, container, automation, monitoring, ai-llm, cli, dashboard, docker, git, nix, orchestration, plugin-sdk, quadlet, systemd, webhook]
 description: Sablier
 ---
 

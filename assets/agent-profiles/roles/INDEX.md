@@ -1,7 +1,7 @@
 ---
 name: openclaw-use-case-patterns
 description: "Catalog of 42 OpenClaw use case patterns across 9 domains: AI agents, MCP tools, automation, system management, and DevOps"
-tags: [use-cases, agent-profiles]
+tags: [use-cases, agent-profiles, documentation, agent-profile, ai-llm, ansible, automation, cli, dashboard, desktop-app, docker, event-bus, git, mcp, messaging, monitoring, orchestration, plugin-sdk, security, storage, terraform, webhook]
 ---
 
 # OpenClaw Use Case Patterns Catalog

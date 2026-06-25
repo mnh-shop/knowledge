@@ -1,6 +1,6 @@
 ---
 name: agentfield-codegraph-verify
-tags: [agentfield, wiki, golang, control-plane, identity, orchestration, harness]
+tags: [agentfield, wiki, golang, control-plane, identity, orchestration, harness, security, automation, networking, ai-llm, cli, container, docker, plugin-sdk, storage]
 description: Codegraph verification for agentfield — validating route group claims against indexed source code symbols
 ---
 

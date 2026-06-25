@@ -1,6 +1,6 @@
 ---
 name: crun-vm
-tags: [crun-vm, wiki, rust, qemu, oci-runtime, vm, container-runtime]
+tags: [crun-vm, wiki, rust, qemu, oci-runtime, vm, container-runtime, container, security, automation, acp, ai-llm, ansible, bootc, docker, git, nix, storage, terraform, virtualization]
 description: CRUN-VM — OCI Runtime for Running VMs as Containers
 ---
 

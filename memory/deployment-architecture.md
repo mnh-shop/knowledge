@@ -1,7 +1,7 @@
 ---
 name: deployment-architecture
 description: Autonomous AI agents NEVER run on the host OS — always inside a VM with rootless Podman. macOS dev, Linux VPS prod.
-tags: [shared, memory, deployment, architecture, landscape]
+tags: [shared, memory, deployment, architecture, landscape, ai-llm, documentation, container, git, quadlet, systemd, virtualization]
 metadata:
   type: reference
 ---

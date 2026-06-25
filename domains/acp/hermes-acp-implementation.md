@@ -1,6 +1,6 @@
 ---
 name: hermes-acp-implementation
-tags: [hermes, acp, typescript, agent-gateway, messaging, multi-platform]
+tags: [hermes, acp, typescript, agent-gateway, messaging, multi-platform, ai-llm, automation, orchestration, cli, git, mcp, storage]
 description: "Deep dive into Hermes ACP implementation: server mode for ACP clients and client mode for connecting to external ACP agents"
 ---
 

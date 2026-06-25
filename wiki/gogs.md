@@ -1,7 +1,7 @@
 ---
 name: gogs
 description: Gogs — Self-Hosted Git Service
-tags: [gogs, wiki, golang, git, self-hosted, version-control, ssh]
+tags: [gogs, wiki, golang, git, self-hosted, version-control, ssh, developer-tools, security, container, ai-llm, automation, bootc, cli, docker, messaging, nix, plugin-sdk, quadlet, storage, systemd, webhook]
 ---
 
 # Gogs — Self-Hosted Git Service

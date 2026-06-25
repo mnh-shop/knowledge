@@ -1,6 +1,6 @@
 ---
 name: openclaw-acp-agent
-tags: [openclaw, acp-agent, typescript, agent-gateway, messaging, personal-assistant, live-canvas]
+tags: [openclaw, acp-agent, typescript, agent-gateway, messaging, personal-assistant, live-canvas, acp, ai-llm, automation, cli, container, git, mcp, plugin-sdk, quadlet, security, storage, systemd]
 description: OpenClaw ACP Agent
 ---
 

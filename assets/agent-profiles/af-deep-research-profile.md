@@ -1,7 +1,7 @@
 ---
 name: af-deep-research-profile
 description: AF Deep Research — Agent Profile
-tags: [af-deep-research, profile, typescript, deep-research, recursive-agents, research]
+tags: [af-deep-research, profile, typescript, deep-research, recursive-agents, research, ai-llm, automation, orchestration, agent-profile, cli, docker, git, messaging, monitoring, optimization, security, storage, virtualization, webhook]
 ---
 
 # ---

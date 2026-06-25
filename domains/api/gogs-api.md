@@ -1,7 +1,7 @@
 ---
 name: gogs-api
 description: Gogs API
-tags: [gogs, api, golang, git, self-hosted, version-control, ssh]
+tags: [gogs, api, golang, git, self-hosted, version-control, ssh, rest-api, developer-tools, webhook]
 ---
 
 # Gogs API

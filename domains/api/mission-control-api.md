@@ -1,6 +1,6 @@
 ---
 name: mission-control-api
-tags: [mission-control, api, typescript, nextjs, react, dashboard, orchestration, monitoring]
+tags: [mission-control, api, typescript, nextjs, react, dashboard, orchestration, monitoring, rest-api, acp, ai-llm, automation, event-bus, git, mcp, messaging, optimization, plugin-sdk, security, storage, webhook]
 description: Mission Control API
 ---
 

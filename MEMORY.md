@@ -1,7 +1,7 @@
 ---
 name: memory
 description: "Persistent index of cross-vault relationships: deployment mappings, cross-repo compatibility, and graph location notes"
-tags: [shared, index, deployment, architecture, landscape]
+tags: [shared, index, deployment, architecture, landscape, documentation, ai-llm, acp, ansible, automation, bootc, cli, container, dashboard, desktop-app, docker, git, mcp, nix, orchestration, plugin-sdk, quadlet, security, systemd, terraform, virtualization, webhook]
 ---
 
 # MEMORY.md
@@ -134,10 +134,15 @@ Everything else should remain evidence-grounded.
 | [[gogs]] (NEW) | ✅ | — | ✅ | ✅ | ❌ |
 | [[hermes-agent-docker]] (NEW) | ❌ | — | — | ✅ | ❌ |
 | [[hermes-suite]] (NEW) | ✅ | — | — | ✅ | ❌ |
+| [[awesome-openclaw-skills]] (NEW) | ❌ | — | — | ❌ | ❌ |
+| [[llmtrim]] (NEW) | ✅ | — | — | ❌ | ❌ |
+| [[nanobot]] (NEW) | ✅ | — | — | ❌ | ❌ |
+| [[nix.dev]] (NEW) | ❌ | — | — | ❌ | ❌ |
+| [[opencode-hermes-multiagent]] (NEW) | ❌ | — | — | ❌ | ❌ |
 
 ❌ = not yet done  ·  (N) = multiple architecture docs ·  — = N/A
 
-**23 repos total — all have wiki entries.**
+**28 repos total — all have wiki entries.**
 
 ## Cross-repo compatibility
 
@@ -168,6 +173,11 @@ Each repo is checked against the 4 core systems ([[hermes-agent]], [[openclaw]],
 | [[podlet]] | Dev tool | Dev tool | Dev tool | Dev tool | Quadlet file generator |
 | [[nix-podman-stacks]] | Nix mgmt | Nix mgmt | Nix mgmt | ✅ has n8n module | Nix/Home Manager stacks |
 | [[gogs]] | Git backend | Git backend | Git backend | ✅ webhooks | Git service for all |
+| [[awesome-openclaw-skills]] | Reference | Skills listed | — | — | Skill marketplace for OpenClaw |
+| [[llmtrim]] | ✅ proxy | ✅ proxy | — | — | Compresses Hermes, n8n, OpenClaw LLM calls |
+| [[nanobot]] | Similar arch | Similar arch | ✅ MCP bridge | ✅ Webhook triggers | Competing Python agent framework |
+| [[nix.dev]] | — | — | — | ✅ nix module | Nix documentation reference |
+| [[opencode-hermes-multiagent]] | Direct config | — | — | — | Multi-agent pipeline for Hermes |
 
 — = likely not applicable or not yet known · ? = hypothetical, needs verification
 
@@ -225,6 +235,11 @@ knowledge/
 - [gogs](wiki/gogs.md) (NEW) — Gogs: self-hosted Git service (Go, MIT)
 - [hermes-agent-docker](wiki/hermes-agent-docker.md) (NEW) — Minimal Docker image for Hermes Agent
 - [hermes-suite](wiki/hermes-suite.md) (NEW) — All-in-one Hermes container (gateway + dashboard + webui)
+- [awesome-openclaw-skills](wiki/awesome-openclaw-skills.md) (NEW) — Curated list of 5300+ community-built OpenClaw skills
+- [llmtrim](wiki/llmtrim.md) (NEW) — Local LLM request compression proxy (Rust)
+- [nanobot](wiki/nanobot.md) (NEW) — Ultra-lightweight open-source AI agent (Python)
+- [nix.dev](wiki/nix.dev.md) (NEW) — Official Nix documentation site
+- [opencode-hermes-multiagent](wiki/opencode-hermes-multiagent.md) (NEW) — Multi-agent pipeline for Hermes/OpenCode
 
 ## Related
 

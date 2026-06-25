@@ -1,6 +1,6 @@
 ---
 name: buildah
-tags: [buildah, wiki, golang, image-builder, oci, daemonless]
+tags: [buildah, wiki, golang, image-builder, oci, daemonless, container, developer-tools, ai-llm, bootc, cli, docker, git, nix, optimization, orchestration, plugin-sdk, quadlet, security, storage, systemd]
 description: Buildah — OCI Image Builder
 ---
 

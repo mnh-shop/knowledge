@@ -1,6 +1,6 @@
 ---
 name: hermes-mcp-implementation
-tags: [hermes, mcp, typescript, agent-gateway, messaging, multi-platform]
+tags: [hermes, mcp, typescript, agent-gateway, messaging, multi-platform, ai-llm, automation, orchestration, acp, cli, storage]
 description: "Hermes MCP implementation: MCP client consuming external tools and MCP server exposing Hermes capabilities"
 ---
 

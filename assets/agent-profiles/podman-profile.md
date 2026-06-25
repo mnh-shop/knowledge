@@ -2,7 +2,7 @@
 name: podman-profile
 title: Podman
 category: container-engine
-tags: [podman, profile, golang, container-engine, daemonless, rootless, oci]
+tags: [podman, profile, golang, container-engine, daemonless, rootless, oci, container, developer-tools, agent-profile, ai-llm, ansible, automation, bootc, cli, docker, git, monitoring, orchestration, plugin-sdk, quadlet, storage, systemd, terraform, virtualization]
 repo: https://github.com/containers/podman
 license: Apache-2.0
 maturity: stable

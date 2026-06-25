@@ -1,6 +1,6 @@
 ---
 name: podlet-architecture
-tags: [podlet, architecture, rust, quadlet-generator, systemd, conversion]
+tags: [podlet, architecture, rust, quadlet-generator, systemd, conversion, container, developer-tools, cli, desktop-app, event-bus, quadlet, security]
 description: "Podlet Architecture"
 ---
 

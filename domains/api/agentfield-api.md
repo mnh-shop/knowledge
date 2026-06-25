@@ -1,6 +1,6 @@
 ---
 name: agentfield-api
-tags: [agentfield, api, golang, control-plane, identity, orchestration, harness]
+tags: [agentfield, api, golang, control-plane, identity, orchestration, harness, rest-api, ai-llm, automation, container, event-bus, git, mcp, messaging, monitoring, plugin-sdk, quadlet, security, storage, systemd, webhook]
 description: "AgentField API reference: REST and gRPC endpoints for sandbox management, pipeline orchestration, and identity"
 ---
 

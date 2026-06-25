@@ -1,6 +1,6 @@
 ---
 name: mission-control
-tags: [mission-control, wiki, typescript, nextjs, react, dashboard, orchestration, monitoring]
+tags: [mission-control, wiki, typescript, nextjs, react, dashboard, orchestration, monitoring, ai-llm, automation, container, cli, desktop-app, docker, git, mcp, nix, plugin-sdk, quadlet, security, storage, systemd, webhook]
 description: Mission Control — AI Agent Orchestration Dashboard
 ---
 

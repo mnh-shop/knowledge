@@ -1,6 +1,6 @@
 ---
 name: crun-vm-deployment
-tags: [crun-vm, deployment, rust, qemu, oci-runtime, vm, container-runtime]
+tags: [crun-vm, deployment, rust, qemu, oci-runtime, vm, container-runtime, container, security, automation, acp, ai-llm, ansible, bootc, cli, docker, git, monitoring, quadlet, storage, systemd, terraform, virtualization]
 description: crun-vm Deployment Guide
 ---
 

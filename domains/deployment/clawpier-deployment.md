@@ -1,6 +1,6 @@
 ---
 name: clawpier-deployment
-tags: [clawpier, deployment, rust, tauri, desktop, agent-manager, gui]
+tags: [clawpier, deployment, rust, tauri, desktop, agent-manager, gui, desktop-app, container, developer-tools, ai-llm, cli, dashboard, docker, git, monitoring, plugin-sdk, security]
 description: "ClawPier Deployment"
 ---
 # ClawPier Deployment

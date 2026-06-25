@@ -1,7 +1,7 @@
 ---
 name: quadlet-patterns
 description: General Quadlet deployment patterns for rootless Podman -- systemd-native container lifecycle
-tags: [podman, deployment, golang, container-engine, daemonless, rootless, oci]
+tags: [podman, deployment, golang, container-engine, daemonless, rootless, oci, quadlet, systemd, ai-llm, bootc, cli, container, docker, orchestration, storage, virtualization]
 ---
 
 # Quadlet Deployment Patterns

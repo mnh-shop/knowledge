@@ -1,6 +1,6 @@
 ---
 name: buildah-architecture
-tags: [buildah, architecture, golang, image-builder, oci, daemonless]
+tags: [buildah, architecture, golang, image-builder, oci, daemonless, container, developer-tools, ai-llm, cli, docker, git, storage]
 description: Buildah Architecture
 ---
 

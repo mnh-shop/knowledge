@@ -1,6 +1,6 @@
 ---
 name: openclaw-deployment
-tags: [openclaw, deployment, typescript, agent-gateway, messaging, personal-assistant, live-canvas]
+tags: [openclaw, deployment, typescript, agent-gateway, messaging, personal-assistant, live-canvas, ai-llm, automation, container, acp, cli, desktop-app, docker, git, mcp, orchestration, plugin-sdk, quadlet, security, storage, systemd, virtualization]
 description: OpenClaw Deployment Guide
 ---
 

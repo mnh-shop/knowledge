@@ -1,6 +1,6 @@
 ---
 name: hermes-suite-deployment
-tags: [hermes, deployment, typescript, agent-gateway, messaging, multi-platform]
+tags: [hermes, deployment, typescript, agent-gateway, messaging, multi-platform, container, ai-llm, automation, cli, dashboard, desktop-app, docker, git, monitoring, plugin-sdk, security]
 description: Hermes Suite deployment guide for the all-in-one Hermes container image combining gateway, dashboard, and WebUI
 ---
 

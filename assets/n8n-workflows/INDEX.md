@@ -1,7 +1,7 @@
 ---
 name: n8n-workflow-catalog
 description: "Master catalog of 2,061 n8n workflows across 415 integrations and 87 trigger types"
-tags: [n8n, workflow-patterns, automation, catalog]
+tags: [n8n, workflow-patterns, automation, catalog, documentation, integration, ai-llm, cli, git, mcp, messaging, monitoring, orchestration, storage, webhook, workflow]
 ---
 
 # n8n Workflow Catalog
@@ -49,14 +49,14 @@ Directories focused on how workflows start, respond, and route:
 
 | Category | Workflows | Primary Triggers |
 |---|---|---|
-| [[Manual]] | 391 | manualTrigger, scheduleTrigger, webhook |
-| [[Http]] | 176 | manualTrigger, webhook, scheduleTrigger, many integration-specific triggers |
-| [[Webhook]] | 65 | webhook, respondToWebhook, scheduleTrigger |
-| [[Schedule]] | 52 | scheduleTrigger, manualTrigger |
-| [[Respondtowebhook]] | 26 | respondToWebhook, webhook |
-| [[Form]] | 23 | formTrigger, respondToWebhook |
-| [[Error]] | 17 | errorTrigger, scheduleTrigger, manualTrigger |
-| [[Cron]] | 1 | cron |
+| [[n8n-category-catalog#Manual|Manual]] | 391 | manualTrigger, scheduleTrigger, webhook |
+| [[n8n-category-catalog#Http|Http]] | 176 | manualTrigger, webhook, scheduleTrigger, many integration-specific triggers |
+| [[n8n-category-catalog#Webhook|Webhook]] | 65 | webhook, respondToWebhook, scheduleTrigger |
+| [[n8n-category-catalog#Schedule|Schedule]] | 52 | scheduleTrigger, manualTrigger |
+| [[n8n-category-catalog#Respondtowebhook|Respondtowebhook]] | 26 | respondToWebhook, webhook |
+| [[n8n-category-catalog#Form|Form]] | 23 | formTrigger, respondToWebhook |
+| [[n8n-category-catalog#Error|Error]] | 17 | errorTrigger, scheduleTrigger, manualTrigger |
+| [[n8n-category-catalog#Cron|Cron]] | 1 | cron |
 
 ### Core n8n Nodes: Data Flow (683 workflows)
 
@@ -64,95 +64,95 @@ Workflows demonstrating n8n's built-in processing nodes:
 
 | Category | Workflows | Key Nodes |
 |---|---|---|
-| [[Splitout]] | 194 | splitOut, aggregate, if, merge, code |
-| [[Code]] | 183 | code, function, if, merge, httpRequest |
-| [[Wait]] | 104 | wait, scheduleTrigger, if, merge |
-| [[Stickynote]] | 57 | stickyNote, code, gmail, webhook |
-| [[Noop]] | 24 | noop, function, httpRequest, webhook |
-| [[Stopanderror]] | 24 | stopAndError, if, set, code |
-| [[Filter]] | 23 | filter, if, merge, httpRequest |
-| [[Limit]] | 22 | limit, merge, code, if |
-| [[Datetime]] | 18 | dateTime, cron, if, merge |
-| [[Aggregate]] | 16 | aggregate, if, merge, httpRequest |
-| [[Functionitem]] | 13 | functionItem, function, httpRequest |
-| [[Comparedatasets]] | 1 | compareDatasets |
-| [[Removeduplicates]] | 1 | removeDuplicates |
-| [[Splitinbatches]] | 1 | splitInBatches |
+| [[n8n-category-catalog#Splitout|Splitout]] | 194 | splitOut, aggregate, if, merge, code |
+| [[n8n-category-catalog#Code|Code]] | 183 | code, function, if, merge, httpRequest |
+| [[n8n-category-catalog#Wait|Wait]] | 104 | wait, scheduleTrigger, if, merge |
+| [[n8n-category-catalog#Stickynote|Stickynote]] | 57 | stickyNote, code, gmail, webhook |
+| [[n8n-category-catalog#Noop|Noop]] | 24 | noop, function, httpRequest, webhook |
+| [[n8n-category-catalog#Stopanderror|Stopanderror]] | 24 | stopAndError, if, set, code |
+| [[n8n-category-catalog#Filter|Filter]] | 23 | filter, if, merge, httpRequest |
+| [[n8n-category-catalog#Limit|Limit]] | 22 | limit, merge, code, if |
+| [[n8n-category-catalog#Datetime|Datetime]] | 18 | dateTime, cron, if, merge |
+| [[n8n-category-catalog#Aggregate|Aggregate]] | 16 | aggregate, if, merge, httpRequest |
+| [[n8n-category-catalog#Functionitem|Functionitem]] | 13 | functionItem, function, httpRequest |
+| [[n8n-category-catalog#Comparedatasets|Comparedatasets]] | 1 | compareDatasets |
+| [[n8n-category-catalog#Removeduplicates|Removeduplicates]] | 1 | removeDuplicates |
+| [[n8n-category-catalog#Splitinbatches|Splitinbatches]] | 1 | splitInBatches |
 
 ### Messaging & Communication (170 workflows)
 
 | Category | Workflows | Primary Triggers |
 |---|---|---|
-| [[Telegram]] | 119 | telegramTrigger, manualTrigger, scheduleTrigger |
-| [[Mattermost]] | 24 | webhook, typeFormTrigger, manualTrigger |
-| [[Slack]] | 18 | webhook, slackTrigger, manualTrigger |
-| [[Twilio]] | 4 | twilioTrigger, typeFormTrigger |
-| [[Discord]] | 2 | formTrigger |
-| [[Whatsapp]] | 2 | whatsappTrigger, webhook, respondToWebhook |
-| [[Matrix]] | 1 | cron |
+| [[n8n-category-catalog#Telegram|Telegram]] | 119 | telegramTrigger, manualTrigger, scheduleTrigger |
+| [[n8n-category-catalog#Mattermost|Mattermost]] | 24 | webhook, typeFormTrigger, manualTrigger |
+| [[n8n-category-catalog#Slack|Slack]] | 18 | webhook, slackTrigger, manualTrigger |
+| [[n8n-category-catalog#Twilio|Twilio]] | 4 | twilioTrigger, typeFormTrigger |
+| [[n8n-category-catalog#Discord|Discord]] | 2 | formTrigger |
+| [[n8n-category-catalog#Whatsapp|Whatsapp]] | 2 | whatsappTrigger, webhook, respondToWebhook |
+| [[n8n-category-catalog#Matrix|Matrix]] | 1 | cron |
 
 ### Google Services (55 workflows)
 
 | Category | Workflows | Key Nodes |
 |---|---|---|
-| [[Googlesheets]] | 26 | googleSheets, code, webhook, gmail |
-| [[Googlecalendar]] | 8 | googleCalendar, gmail, webhook |
-| [[Googledocs]] | 6 | googleDocs, googleDrive, gmail |
-| [[Googleanalytics]] | 4 | googleAnalytics, code |
-| [[Googledrive]] | 3 | googleDrive, googleDocs |
-| [[Googleslides]] | 3 | googleSlides, hubSpot |
-| [[Googletasks]] | 2 | googleTasks, gmail |
-| [[Googlebigquery]] | 1 | googleBigQuery |
-| [[Googlecontacts]] | 1 | googleContacts |
-| [[Googletranslate]] | 1 | googleTranslate |
+| [[n8n-category-catalog#Googlesheets|Googlesheets]] | 26 | googleSheets, code, webhook, gmail |
+| [[n8n-category-catalog#Googlecalendar|Googlecalendar]] | 8 | googleCalendar, gmail, webhook |
+| [[n8n-category-catalog#Googledocs|Googledocs]] | 6 | googleDocs, googleDrive, gmail |
+| [[n8n-category-catalog#Googleanalytics|Googleanalytics]] | 4 | googleAnalytics, code |
+| [[n8n-category-catalog#Googledrive|Googledrive]] | 3 | googleDrive, googleDocs |
+| [[n8n-category-catalog#Googleslides|Googleslides]] | 3 | googleSlides, hubSpot |
+| [[n8n-category-catalog#Googletasks|Googletasks]] | 2 | googleTasks, gmail |
+| [[n8n-category-catalog#Googlebigquery|Googlebigquery]] | 1 | googleBigQuery |
+| [[n8n-category-catalog#Googlecontacts|Googlecontacts]] | 1 | googleContacts |
+| [[n8n-category-catalog#Googletranslate|Googletranslate]] | 1 | googleTranslate |
 
 ### File Processing (41 workflows)
 
 | Category | Workflows | Key Nodes |
 |---|---|---|
-| [[Extractfromfile]] | 21 | extractFromFile, code, gmail, formTrigger |
-| [[Localfile]] | 6 | localFileTrigger, code |
-| [[Readbinaryfile]] | 5 | readBinaryFile, postgres |
-| [[Converttofile]] | 3 | convertToFile, gmail |
-| [[Compression]]| 2 | compression, httpRequest |
-| [[Editimage]] | 2 | editImage, googleDrive |
-| [[Writebinaryfile]] | 2 | writeBinaryFile |
+| [[n8n-category-catalog#Extractfromfile|Extractfromfile]] | 21 | extractFromFile, code, gmail, formTrigger |
+| [[n8n-category-catalog#Localfile|Localfile]] | 6 | localFileTrigger, code |
+| [[n8n-category-catalog#Readbinaryfile|Readbinaryfile]] | 5 | readBinaryFile, postgres |
+| [[n8n-category-catalog#Converttofile|Converttofile]] | 3 | convertToFile, gmail |
+| [[n8n-category-catalog#Compression|Compression]]| 2 | compression, httpRequest |
+| [[n8n-category-catalog#Editimage|Editimage]] | 2 | editImage, googleDrive |
+| [[n8n-category-catalog#Writebinaryfile|Writebinaryfile]] | 2 | writeBinaryFile |
 
 ### Email (36 workflows)
 
 | Category | Workflows | Key Nodes |
 |---|---|---|
-| [[Emailreadimap]] | 8 | emailReadImap, gmail, httpRequest |
-| [[Gmail]] | 8 | gmail, googleSheets, googleDrive |
-| [[Send]] | 3 | mcpClientTool |
-| [[Emailsend]] | 2 | emailSend, hubspot |
-| [[Mailchimp]] | 2 | mailchimp |
-| [[Mailjet]] | 2 | mailjet |
-| [[Autopilot]] | 2 | autopilot |
-| [[Activecampaign]] | 1 | activeCampaign |
-| [[Convertkit]]| 1 | convertKit |
-| [[Customerio]] | 1 | customerIo |
-| [[Getresponse]] | 1 | getResponse |
-| [[Keap]] | 1 | keap |
-| [[Mailcheck]] | 1 | mailcheck |
-| [[Mailerlite]]| 1 | mailerLite |
-| [[Postmark]] | 1 | postmark |
-| [[Emelia]] | 1 | emelia |
+| [[n8n-category-catalog#Emailreadimap|Emailreadimap]] | 8 | emailReadImap, gmail, httpRequest |
+| [[n8n-category-catalog#Gmail|Gmail]] | 8 | gmail, googleSheets, googleDrive |
+| [[n8n-category-catalog#Send|Send]] | 3 | mcpClientTool |
+| [[n8n-category-catalog#Emailsend|Emailsend]] | 2 | emailSend, hubspot |
+| [[n8n-category-catalog#Mailchimp|Mailchimp]] | 2 | mailchimp |
+| [[n8n-category-catalog#Mailjet|Mailjet]] | 2 | mailjet |
+| [[n8n-category-catalog#Autopilot|Autopilot]] | 2 | autopilot |
+| [[n8n-category-catalog#Activecampaign|Activecampaign]] | 1 | activeCampaign |
+| [[n8n-category-catalog#Convertkit|Convertkit]]| 1 | convertKit |
+| [[n8n-category-catalog#Customerio|Customerio]] | 1 | customerIo |
+| [[n8n-category-catalog#Getresponse|Getresponse]] | 1 | getResponse |
+| [[n8n-category-catalog#Keap|Keap]] | 1 | keap |
+| [[n8n-category-catalog#Mailcheck|Mailcheck]] | 1 | mailcheck |
+| [[n8n-category-catalog#Mailerlite|Mailerlite]]| 1 | mailerLite |
+| [[n8n-category-catalog#Postmark|Postmark]] | 1 | postmark |
+| [[n8n-category-catalog#Emelia|Emelia]] | 1 | emelia |
 
 ### Databases (32 workflows)
 
 | Category | Workflows | Key Nodes |
 |---|---|---|
-| [[Postgres]] | 12 | postgres, code, gmail |
-| [[Airtable]] | 4 | airtable, cron |
-| [[Strapi]] | 4 | strapi, code |
-| [[Redis]] | 3 | redis, code |
-| [[Supabase]] | 3 | supabase |
-| [[Graphql]] | 2 | graphql, cron |
-| [[Baserow]] | 1 | baserow |
-| [[Elasticsearch]] | 1 | elasticSearch |
-| [[Grist]] | 1 | grist |
-| [[Nocodb]] | 1 | nocoDb |
+| [[n8n-category-catalog#Postgres|Postgres]] | 12 | postgres, code, gmail |
+| [[n8n-category-catalog#Airtable|Airtable]] | 4 | airtable, cron |
+| [[n8n-category-catalog#Strapi|Strapi]] | 4 | strapi, code |
+| [[n8n-category-catalog#Redis|Redis]] | 3 | redis, code |
+| [[n8n-category-catalog#Supabase|Supabase]] | 3 | supabase |
+| [[n8n-category-catalog#Graphql|Graphql]] | 2 | graphql, cron |
+| [[n8n-category-catalog#Baserow|Baserow]] | 1 | baserow |
+| [[n8n-category-catalog#Elasticsearch|Elasticsearch]] | 1 | elasticSearch |
+| [[n8n-category-catalog#Grist|Grist]] | 1 | grist |
+| [[n8n-category-catalog#Nocodb|Nocodb]] | 1 | nocoDb |
 
 ### AI Tools / MCP (32 workflows)
 
@@ -160,159 +160,159 @@ n8n's AI Agent tool nodes for natural-language-driven automation:
 
 | Category | Workflows | Key Nodes |
 |---|---|---|
-| [[Gmailtool]] | 6 | gmailTool, mcpClientTool |
-| [[Googlecalendartool]] | 5 | googleCalendarTool |
-| [[Postgrestool]] | 5 | postgresTool |
-| [[Airtabletool]] | 2 | airtableTool |
-| [[Discordtool]] | 2 | discordTool |
-| [[Jiratool]] | 2 | jiraTool |
-| [[Mongodbtool]] | 2 | mongoDbTool |
-| [[Mysqltool]] | 2 | mySqlTool |
-| [[Airtoptool]] | 1 | airtopTool |
-| [[Googledrivetool]] | 1 | googleDriveTool |
-| [[Googlesheetstool]] | 1 | googleSheetsTool |
-| [[Googletaskstool]] | 1 | googleTasksTool |
-| [[Telegramtool]] | 1 | telegramTool |
-| [[Twittertool]] | 1 | twitterTool |
+| [[n8n-category-catalog#Gmailtool|Gmailtool]] | 6 | gmailTool, mcpClientTool |
+| [[n8n-category-catalog#Googlecalendartool|Googlecalendartool]] | 5 | googleCalendarTool |
+| [[n8n-category-catalog#Postgrestool|Postgrestool]] | 5 | postgresTool |
+| [[n8n-category-catalog#Airtabletool|Airtabletool]] | 2 | airtableTool |
+| [[n8n-category-catalog#Discordtool|Discordtool]] | 2 | discordTool |
+| [[n8n-category-catalog#Jiratool|Jiratool]] | 2 | jiraTool |
+| [[n8n-category-catalog#Mongodbtool|Mongodbtool]] | 2 | mongoDbTool |
+| [[n8n-category-catalog#Mysqltool|Mysqltool]] | 2 | mySqlTool |
+| [[n8n-category-catalog#Airtoptool|Airtoptool]] | 1 | airtopTool |
+| [[n8n-category-catalog#Googledrivetool|Googledrivetool]] | 1 | googleDriveTool |
+| [[n8n-category-catalog#Googlesheetstool|Googlesheetstool]] | 1 | googleSheetsTool |
+| [[n8n-category-catalog#Googletaskstool|Googletaskstool]] | 1 | googleTasksTool |
+| [[n8n-category-catalog#Telegramtool|Telegramtool]] | 1 | telegramTool |
+| [[n8n-category-catalog#Twittertool|Twittertool]] | 1 | twitterTool |
 
 ### CRM (28 workflows)
 
 | Category | Workflows | Key Nodes |
 |---|---|---|
-| [[Mautic]] | 8 | mautic, gmail, webhook |
-| [[Hubspot]] | 7 | hubspot, httpRequest, gmail |
-| [[Zendesk]] | 6 | zendesk, code |
-| [[Pipedrive]] | 3 | pipedrive |
-| [[Odoo]] | 2 | odoo |
-| [[Copper]] | 1 | copper |
-| [[Zohocrm]] | 1 | zohoCrm |
+| [[n8n-category-catalog#Mautic|Mautic]] | 8 | mautic, gmail, webhook |
+| [[n8n-category-catalog#Hubspot|Hubspot]] | 7 | hubspot, httpRequest, gmail |
+| [[n8n-category-catalog#Zendesk|Zendesk]] | 6 | zendesk, code |
+| [[n8n-category-catalog#Pipedrive|Pipedrive]] | 3 | pipedrive |
+| [[n8n-category-catalog#Odoo|Odoo]] | 2 | odoo |
+| [[n8n-category-catalog#Copper|Copper]] | 1 | copper |
+| [[n8n-category-catalog#Zohocrm|Zohocrm]] | 1 | zohoCrm |
 
 ### DevOps & Monitoring (22 workflows)
 
 | Category | Workflows | Key Nodes |
 |---|---|---|
-| [[Github]] | 9 | github, cron, slack |
-| [[Gitlab]] | 4 | gitlab, code |
-| [[Netlify]] | 3 | netlify, slack |
-| [[Bitbucket]] | 1 | bitbucket |
-| [[Onfleet]] | 1 | onfleet |
-| [[Posthog]] | 1 | posthog |
-| [[Signl4]] | 1 | signl4 |
-| [[Travisci]] | 1 | travisCi |
-| [[Uptimerobot]] | 1 | uptimeRobot |
+| [[n8n-category-catalog#Github|Github]] | 9 | github, cron, slack |
+| [[n8n-category-catalog#Gitlab|Gitlab]] | 4 | gitlab, code |
+| [[n8n-category-catalog#Netlify|Netlify]] | 3 | netlify, slack |
+| [[n8n-category-catalog#Bitbucket|Bitbucket]] | 1 | bitbucket |
+| [[n8n-category-catalog#Onfleet|Onfleet]] | 1 | onfleet |
+| [[n8n-category-catalog#Posthog|Posthog]] | 1 | posthog |
+| [[n8n-category-catalog#Signl4|Signl4]] | 1 | signl4 |
+| [[n8n-category-catalog#Travisci|Travisci]] | 1 | travisCi |
+| [[n8n-category-catalog#Uptimerobot|Uptimerobot]] | 1 | uptimeRobot |
 
 ### Productivity & Project Management (21 workflows)
 
 | Category | Workflows | Key Nodes |
 |---|---|---|
-| [[Trello]] | 5 | trello, code |
-| [[Mondaycom]] | 4 | mondayCom, code |
-| [[Asana]] | 3 | asana |
-| [[Clickup]] | 3 | clickUp |
-| [[Notion]] | 3 | notion |
-| [[Jira]] | 2 | jira |
-| [[Todoist]] | 1 | todoist |
+| [[n8n-category-catalog#Trello|Trello]] | 5 | trello, code |
+| [[n8n-category-catalog#Mondaycom|Mondaycom]] | 4 | mondayCom, code |
+| [[n8n-category-catalog#Asana|Asana]] | 3 | asana |
+| [[n8n-category-catalog#Clickup|Clickup]] | 3 | clickUp |
+| [[n8n-category-catalog#Notion|Notion]] | 3 | notion |
+| [[n8n-category-catalog#Jira|Jira]] | 2 | jira |
+| [[n8n-category-catalog#Todoist|Todoist]] | 1 | todoist |
 
 ### Social Media (19 workflows)
 
 | Category | Workflows | Key Nodes |
 |---|---|---|
-| [[Linkedin]] | 13 | linkedIn, gmail, twitter |
-| [[Twitter]] | 3 | twitter, cron |
-| [[Facebook]]| 1 | facebook |
-| [[Facebookleadads]] | 1 | facebookLeadAds |
-| [[Youtube]] | 1 | youtube |
+| [[n8n-category-catalog#Linkedin|Linkedin]] | 13 | linkedIn, gmail, twitter |
+| [[n8n-category-catalog#Twitter|Twitter]] | 3 | twitter, cron |
+| [[n8n-category-catalog#Facebook|Facebook]]| 1 | facebook |
+| [[n8n-category-catalog#Facebookleadads|Facebookleadads]] | 1 | facebookLeadAds |
+| [[n8n-category-catalog#Youtube|Youtube]] | 1 | youtube |
 
 ### E-Commerce (19 workflows)
 
 | Category | Workflows | Key Nodes |
 |---|---|---|
-| [[Shopify]] | 10 | shopify, code |
-| [[Woocommerce]] | 3 | woocommerce |
-| [[Quickbooks]] | 2 | quickbooks |
-| [[Chargebee]] | 1 | chargebee |
-| [[Gumroad]] | 1 | gumroad |
-| [[Invoiceninja]] | 1 | invoiceNinja |
-| [[Paypal]] | 1 | paypal |
+| [[n8n-category-catalog#Shopify|Shopify]] | 10 | shopify, code |
+| [[n8n-category-catalog#Woocommerce|Woocommerce]] | 3 | woocommerce |
+| [[n8n-category-catalog#Quickbooks|Quickbooks]] | 2 | quickbooks |
+| [[n8n-category-catalog#Chargebee|Chargebee]] | 1 | chargebee |
+| [[n8n-category-catalog#Gumroad|Gumroad]] | 1 | gumroad |
+| [[n8n-category-catalog#Invoiceninja|Invoiceninja]] | 1 | invoiceNinja |
+| [[n8n-category-catalog#Paypal|Paypal]] | 1 | paypal |
 
 ### AI & LLM (15 workflows)
 
 | Category | Workflows | Key Nodes |
 |---|---|---|
-| [[Openai]] | 8 | openAi, googleSheets, telegram |
-| [[Summarize]] | 3 | summarize, code |
-| [[Deep]] | 2 | openai, code, notion |
-| [[Cortex]] | 1 | cortex |
-| [[Humanticai]] | 1 | humanticAi |
+| [[n8n-category-catalog#Openai|Openai]] | 8 | openAi, googleSheets, telegram |
+| [[n8n-category-catalog#Summarize|Summarize]] | 3 | summarize, code |
+| [[n8n-category-catalog#Deep|Deep]] | 2 | openai, code, notion |
+| [[n8n-category-catalog#Cortex|Cortex]] | 1 | cortex |
+| [[n8n-category-catalog#Humanticai|Humanticai]] | 1 | humanticAi |
 
 ### Forms & Scheduling (15 workflows)
 
 | Category | Workflows | Key Nodes |
 |---|---|---|
-| [[Calendly]] | 7 | calendlyTrigger, hubspot |
-| [[Typeform]] | 4 | typeformTrigger, airtable |
-| [[Acuityscheduling]] | 1 | acuityScheduling |
-| [[Jotform]] | 1 | jotform |
-| [[Surveymonkey]] | 1 | surveyMonkey |
-| [[Wufoo]] | 1 | wufoo |
+| [[n8n-category-catalog#Calendly|Calendly]] | 7 | calendlyTrigger, hubspot |
+| [[n8n-category-catalog#Typeform|Typeform]] | 4 | typeformTrigger, airtable |
+| [[n8n-category-catalog#Acuityscheduling|Acuityscheduling]] | 1 | acuityScheduling |
+| [[n8n-category-catalog#Jotform|Jotform]] | 1 | jotform |
+| [[n8n-category-catalog#Surveymonkey|Surveymonkey]] | 1 | surveyMonkey |
+| [[n8n-category-catalog#Wufoo|Wufoo]] | 1 | wufoo |
 
 ### Content & Formatting (10 workflows)
 
 | Category | Workflows | Key Nodes |
 |---|---|---|
-| [[Rssfeedread]] | 6 | rssFeedRead, cron, telegram |
-| [[Markdown]] | 3 | markdown, email |
-| [[Xml]] | 1 | xml |
+| [[n8n-category-catalog#Rssfeedread|Rssfeedread]] | 6 | rssFeedRead, cron, telegram |
+| [[n8n-category-catalog#Markdown|Markdown]] | 3 | markdown, email |
+| [[n8n-category-catalog#Xml|Xml]] | 1 | xml |
 
 ### Microsoft Services (7 workflows)
 
 | Category | Workflows | Key Nodes |
 |---|---|---|
-| [[Microsoftoutlook]] | 4 | microsoftOutlook |
-| [[Microsoftexcel]] | 1 | microsoftExcel |
-| [[Microsoftonedrive]] | 1 | microsoftOneDrive |
-| [[Microsofttodo]] | 1 | microsoftToDo |
+| [[n8n-category-catalog#Microsoftoutlook|Microsoftoutlook]] | 4 | microsoftOutlook |
+| [[n8n-category-catalog#Microsoftexcel|Microsoftexcel]] | 1 | microsoftExcel |
+| [[n8n-category-catalog#Microsoftonedrive|Microsoftonedrive]] | 1 | microsoftOneDrive |
+| [[n8n-category-catalog#Microsofttodo|Microsofttodo]] | 1 | microsoftToDo |
 
 ### AWS Services (6 workflows)
 
 | Category | Workflows | Key Nodes |
 |---|---|---|
-| [[Awss3]] | 3 | awsS3 |
-| [[Awsrekognition]] | 1 | awsRekognition |
-| [[Awssns]] | 1 | awsSns |
-| [[Awstextract]] | 1 | awsTextract |
+| [[n8n-category-catalog#Awss3|Awss3]] | 3 | awsS3 |
+| [[n8n-category-catalog#Awsrekognition|Awsrekognition]] | 1 | awsRekognition |
+| [[n8n-category-catalog#Awssns|Awssns]] | 1 | awsSns |
+| [[n8n-category-catalog#Awstextract|Awstextract]] | 1 | awsTextract |
 
 ### Infrastructure (2 workflows)
 
 | Category | Workflows | Key Nodes |
 |---|---|---|
-| [[Amqp]] | 1 | amqp |
-| [[Mqtt]] | 1 | mqtt |
+| [[n8n-category-catalog#Amqp|Amqp]] | 1 | amqp |
+| [[n8n-category-catalog#Mqtt|Mqtt]] | 1 | mqtt |
 
 ### Local Execution (5 workflows)
 
 | Category | Workflows | Key Nodes |
 |---|---|---|
-| [[Executecommand]] | 5 | executeCommand, function |
+| [[n8n-category-catalog#Executecommand|Executecommand]] | 5 | executeCommand, function |
 
 ### Other / Uncategorized (92 workflows)
 
 | Category | Workflows |
 |---|---|
-| [[Openweathermap]] | 13 |
-| [[Executeworkflow]] | 9 |
-| [[Automation]] | 6 |
-| [[Automate]] | 5 |
-| [[Hunter]] | 5 |
-| [[Wordpress]] | 5 |
-| [[Templates]] | 4 |
-| [[Lemlist]] | 3 |
-| [[Clockify]] | 3 |
-| [[Readbinaryfiles]] | 3 |
-| [[Bannerbear]] | 2 |
-| [[Crypto]] | 2 |
-| [[Wise]] | 2 |
-| [[Woocommercetool]] | 2 |
+| [[n8n-category-catalog#Openweathermap|Openweathermap]] | 13 |
+| [[n8n-category-catalog#Executeworkflow|Executeworkflow]] | 9 |
+| [[n8n-category-catalog#Automation|Automation]] | 6 |
+| [[n8n-category-catalog#Automate|Automate]] | 5 |
+| [[n8n-category-catalog#Hunter|Hunter]] | 5 |
+| [[n8n-category-catalog#Wordpress|Wordpress]] | 5 |
+| [[n8n-category-catalog#Templates|Templates]] | 4 |
+| [[n8n-category-catalog#Lemlist|Lemlist]] | 3 |
+| [[n8n-category-catalog#Clockify|Clockify]] | 3 |
+| [[n8n-category-catalog#Readbinaryfiles|Readbinaryfiles]] | 3 |
+| [[n8n-category-catalog#Bannerbear|Bannerbear]] | 2 |
+| [[n8n-category-catalog#Crypto|Crypto]] | 2 |
+| [[n8n-category-catalog#Wise|Wise]] | 2 |
+| [[n8n-category-catalog#Woocommercetool|Woocommercetool]] | 2 |
 | And 18 more single-workflow categories | 1 each |
 
 ---
@@ -340,7 +340,7 @@ The 87 trigger types found across all workflows, grouped by frequency:
 ## How to Use This Catalog
 
 ### Browsing
-Each category directory in `sources/n8n-workflows/workflows/` maps to an integration or node type. The section headers above link to [[wikilinks]] that describe each category's role and patterns.
+Each category directory in `sources/n8n-workflows/workflows/` maps to an integration or node type. The section headers above link to [[n8n-category-catalog#wikilinks|wikilinks]] that describe each category's role and patterns.
 
 ### Searching for patterns
 To find all workflows that use a specific integration, search the workflow JSON files for the node type string (e.g., `n8n-nodes-base.telegram` or `@n8n/n8n-nodes-langchain.openAi`).

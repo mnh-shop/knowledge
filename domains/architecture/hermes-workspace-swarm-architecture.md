@@ -1,6 +1,6 @@
 ---
 name: hermes-workspace-swarm-architecture
-tags: [hermes, architecture, typescript, agent-gateway, messaging, multi-platform]
+tags: [hermes, architecture, typescript, agent-gateway, messaging, multi-platform, ai-llm, automation, orchestration, cli, mcp, plugin-sdk]
 description: "Hermes Workspace swarm architecture: multi-agent orchestration via swarm.yaml and swarm-* server modules"
 ---
 

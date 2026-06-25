@@ -1,6 +1,6 @@
 ---
 name: sablier-deployment
-tags: [sablier, deployment, golang, scale-to-zero, reverse-proxy, lifecycle]
+tags: [sablier, deployment, golang, scale-to-zero, reverse-proxy, lifecycle, container, automation, monitoring, acp, ai-llm, cli, docker, event-bus, git, plugin-sdk, quadlet, storage, systemd, virtualization, webhook]
 description: Sablier Deployment Guide
 ---
 

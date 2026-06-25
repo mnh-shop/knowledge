@@ -1,6 +1,6 @@
 ---
 name: hermzner
-tags: [hermzner, wiki, terraform, ansible, infrastructure-as-code, hetzner, vps, deployment-automation]
+tags: [hermzner, wiki, terraform, ansible, infrastructure-as-code, hetzner, vps, deployment-automation, orchestration, networking, automation, ai-llm, bootc, container, dashboard, desktop-app, docker, git, monitoring, quadlet, security, systemd]
 description: "Hermzner — Hardened Hermes on Hetzner"
 ---
 

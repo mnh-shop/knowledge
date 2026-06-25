@@ -1,7 +1,7 @@
 ---
 name: nix-podman-stacks
 type: wiki
-tags: [nix-podman-stacks, wiki, nix, home-manager, infrastructure-as-code, declarative, podman, self-hosted-stacks]
+tags: [nix-podman-stacks, wiki, nix, home-manager, infrastructure-as-code, declarative, podman, self-hosted-stacks, container, orchestration, automation, ai-llm, bootc, cli, dashboard, docker, git, monitoring, plugin-sdk, quadlet, security, storage, systemd, virtualization]
 description: nix-podman-stacks
 ---
 

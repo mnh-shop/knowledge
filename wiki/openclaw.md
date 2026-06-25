@@ -1,6 +1,6 @@
 ---
 name: openclaw
-tags: [openclaw, wiki, typescript, agent-gateway, messaging, personal-assistant, live-canvas]
+tags: [openclaw, wiki, typescript, agent-gateway, messaging, personal-assistant, live-canvas, ai-llm, automation, orchestration, acp, bootc, cli, container, dashboard, desktop-app, docker, git, mcp, monitoring, nix, plugin-sdk, quadlet, security, storage, systemd, virtualization, webhook]
 description: OpenClaw — Personal AI Assistant
 ---
 

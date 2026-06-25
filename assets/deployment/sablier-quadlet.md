@@ -1,6 +1,6 @@
 ---
 name: sablier-quadlet
-tags: [sablier, quadlet, golang, scale-to-zero, reverse-proxy, lifecycle]
+tags: [sablier, quadlet, golang, scale-to-zero, reverse-proxy, lifecycle, systemd, container, automation, acp, ai-llm, cli, dashboard, deployment, docker, event-bus, git, monitoring, plugin-sdk, security, storage, webhook]
 description: Sablier Quadlet Deployment (Rootless Podman)
 ---
 

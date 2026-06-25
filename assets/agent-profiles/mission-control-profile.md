@@ -1,6 +1,6 @@
 ---
 name: mission-control-profile
-tags: [mission-control, profile, typescript, nextjs, react, dashboard, orchestration, monitoring]
+tags: [mission-control, profile, typescript, nextjs, react, dashboard, orchestration, monitoring, ai-llm, automation, container, acp, agent-profile, cli, docker, mcp, quadlet, security, systemd, webhook]
 description: Mission Control -- Quick Reference Profile
 ---
 

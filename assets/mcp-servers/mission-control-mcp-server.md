@@ -1,6 +1,6 @@
 ---
 name: mission-control-mcp-server
-tags: [mission-control, mcp-server, typescript, nextjs, react, dashboard, orchestration, monitoring]
+tags: [mission-control, mcp-server, typescript, nextjs, react, dashboard, orchestration, monitoring, mcp, ai-llm, cli, plugin-sdk]
 description: Mission Control MCP Server
 ---
 

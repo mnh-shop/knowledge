@@ -1,6 +1,6 @@
 ---
 name: clawpier-profile
-tags: [clawpier, profile, rust, tauri, desktop, agent-manager, gui]
+tags: [clawpier, profile, rust, tauri, desktop, agent-manager, gui, desktop-app, developer-tools, agent-profile, ai-llm, cli, docker, monitoring, plugin-sdk, security]
 description: "Agent Profile: ClawPier"
 ---
 # Agent Profile: ClawPier

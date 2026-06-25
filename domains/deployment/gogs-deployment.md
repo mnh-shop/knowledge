@@ -1,7 +1,7 @@
 ---
 name: gogs-deployment
 description: Gogs Deployment
-tags: [gogs, deployment, golang, git, self-hosted, version-control, ssh]
+tags: [gogs, deployment, golang, git, self-hosted, version-control, ssh, container, developer-tools, security, ai-llm, docker, orchestration, plugin-sdk, quadlet, storage, systemd, webhook]
 ---
 
 # Gogs Deployment

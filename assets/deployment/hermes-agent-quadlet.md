@@ -1,6 +1,6 @@
 ---
 name: hermes-agent-quadlet
-tags: [hermes, quadlet, typescript, agent-gateway, messaging, multi-platform]
+tags: [hermes, quadlet, typescript, agent-gateway, messaging, multi-platform, systemd, container, acp, ai-llm, ansible, cli, dashboard, deployment, docker, git, mcp, monitoring, storage, terraform]
 description: Production-ready rootless Podman Quadlet configuration for deploying Hermes Agent with systemd-native lifecycle management
 ---
 

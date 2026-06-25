@@ -1,6 +1,6 @@
 ---
 name: af-reactive-atlas-mongodb
-tags: [af-reactive-atlas-mongodb, wiki, python, mongodb, reactive, real-time, atlas-triggers]
+tags: [af-reactive-atlas-mongodb, wiki, python, mongodb, reactive, real-time, atlas-triggers, automation, monitoring, ai-llm, dashboard, docker, event-bus, git, plugin-sdk, security, storage]
 description: Wiki entry for AF Reactive Atlas MongoDB — real-time intelligence layer for MongoDB via Atlas Triggers (Apache 2.0)
 ---
 

@@ -1,6 +1,6 @@
 ---
 name: openclaw-mcp-server
-tags: [openclaw, mcp-server, typescript, agent-gateway, messaging, personal-assistant, live-canvas]
+tags: [openclaw, mcp-server, typescript, agent-gateway, messaging, personal-assistant, live-canvas, mcp, acp, ai-llm, cli, container, plugin-sdk, quadlet, systemd]
 description: OpenClaw MCP Server
 ---
 

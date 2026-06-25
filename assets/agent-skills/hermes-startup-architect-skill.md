@@ -1,6 +1,6 @@
 ---
 name: hermes-startup-architect-skill
-tags: [hermes, skill, typescript, agent-gateway, messaging, multi-platform]
+tags: [hermes, skill, typescript, agent-gateway, messaging, multi-platform, skills-platform, ai-llm, cli, desktop-app, git, plugin-sdk]
 description: Hermes Agent skill that transforms a raw startup idea into a comprehensive research-backed startup kit with 8 files
 ---
 

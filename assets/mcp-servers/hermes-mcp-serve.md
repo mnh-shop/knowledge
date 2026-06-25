@@ -1,6 +1,6 @@
 ---
 name: hermes-mcp-serve
-tags: [hermes, mcp-server, typescript, agent-gateway, messaging, multi-platform]
+tags: [hermes, mcp-server, typescript, agent-gateway, messaging, multi-platform, mcp, ai-llm, cli]
 description: "MCP server configuration for Hermes Agent mcp_serve.py: a messaging bridge server using FastMCP over stdio transport"
 ---
 

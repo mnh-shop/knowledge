@@ -1,6 +1,6 @@
 ---
 name: agentfield-architecture
-tags: [agentfield, architecture, golang, control-plane, identity, orchestration, harness]
+tags: [agentfield, architecture, golang, control-plane, identity, orchestration, harness, security, automation, networking, ai-llm, cli, container, dashboard, docker, git, mcp, monitoring, plugin-sdk, quadlet, storage, systemd, virtualization, webhook]
 description: "AgentField architecture: AI control plane with micro-VM sandboxing, identity management, and pipeline orchestration"
 ---
 
