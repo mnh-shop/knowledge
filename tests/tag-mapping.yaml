@@ -1,141 +1,142 @@
-# Master Tag Mapping — Tech & Feature Focused
-# Each project as a set of tags applied to ALL its files
-# Format: project-slug: [project-tag, type-tag?, tech-tags..., feature-tags...]
+# Master Tag Mapping — Capability & Project Focused
+# Tags are applied as: [project-group, type, capabilities..., domains...]
+# Languages are tracked in frontmatter metadata (not as Obsidian tags)
+# Graph coloring: by project-group for repo identity, by capability for discovery
 
 # ---- Hermes ecosystem ----
 hermes:
   project: hermes
-  tech: [python, typescript, rust]
   features: [agent-gateway, messaging, multi-platform]
+  languages: [python, typescript, rust]
   # Files: 26 total
 
 hermes-agent-docker:
   project: hermes
-  tech: [docker]
   features: [packaging, container-deployment]
+  languages: [docker]
   # Files: 2 (wiki, deployment)
 
 # ---- OpenClaw ecosystem ----
 openclaw:
   project: openclaw
-  tech: [typescript, swift]
   features: [agent-gateway, messaging, personal-assistant, live-canvas]
+  languages: [typescript, swift]
   # Files: 11 total
 
 # ---- Podman ecosystem ----
 podman:
   project: podman
-  tech: [golang]
   features: [container-engine, daemonless, rootless, oci]
+  languages: [golang]
   # Files: 6 total
 
 buildah:
   project: buildah
-  tech: [golang]
   features: [image-builder, oci, daemonless]
+  languages: [golang]
   # Files: 4 total
 
 podlet:
   project: podlet
-  tech: [rust]
-  features: [quadlet-generator, systemd, conversion]
+  features: [quadlet-generator, systemd, oci-conversion]
+  languages: [rust]
   # Files: 4 total
 
 crun-vm:
   project: crun-vm
-  tech: [rust, qemu]
-  features: [oci-runtime, vm, container-runtime]
+  features: [oci-runtime, vm, container-runtime, qemu]
+  languages: [rust]
   # Files: 3 total
 
 sablier:
   project: sablier
-  tech: [golang]
-  features: [scale-to-zero, reverse-proxy, lifecycle]
+  features: [scale-to-zero, reverse-proxy, lifecycle, daemon]
+  languages: [golang]
   # Files: 4 total
 
 # ---- AgentField ecosystem ----
 agentfield:
   project: agentfield
-  tech: [golang]
   features: [control-plane, identity, orchestration, harness]
+  languages: [golang]
   # Files: 6 core + 4 sub-repos
 
 swe-af:
   project: agentfield
-  tech: [python]
-  features: [swe, engineering-factory, multi-agent]
+  features: [swe, engineering-factory, multi-agent, code-generation]
+  languages: [python]
   # Files: 3
 
 sec-af:
   project: agentfield
-  tech: [python]
-  features: [security, auditor, adversarial]
+  features: [security, auditor, adversarial, vulnerability-hunting]
+  languages: [python]
   # Files: 3
 
 af-deep-research:
   project: agentfield
-  tech: [python]
   features: [deep-research, recursive-agents, research]
+  languages: [python]
   # Files: 3
 
 af-reactive-atlas-mongodb:
   project: agentfield
-  tech: [python, mongodb]
-  features: [reactive, real-time, atlas-triggers]
+  features: [reactive, real-time, atlas-triggers, mongodb]
+  languages: [python]
   # Files: 3
 
 # ---- Mission Control ----
 mission-control:
   project: mission-control
-  tech: [typescript, nextjs, react]
   features: [dashboard, orchestration, monitoring]
+  languages: [typescript, nextjs, react]
   # Files: 7 total
 
 # ---- n8n ----
 n8n:
   project: n8n
-  tech: [typescript, vue]
   features: [workflow-automation, low-code, integration, fair-code]
+  languages: [typescript, vue]
   # Files: 7 total
 
 # ---- Gogs ----
 gogs:
   project: gogs
-  tech: [golang]
   features: [git, self-hosted, version-control, ssh]
+  languages: [golang]
   # Files: 4 total
 
 # ---- Hermzner ----
 hermzner:
   project: hermzner
-  tech: [terraform, ansible]
   features: [infrastructure-as-code, hetzner, vps, deployment-automation]
+  languages: [terraform, ansible]
   # Files: 4 total
 
 # ---- Tank OS ----
 tank-os:
   project: tank-os
-  tech: [bootc, fedora]
-  features: [immutable-os, container-os, image-based]
+  features: [immutable-os, container-os, image-based, bootc]
+  languages: [bootc, fedora]
   # Files: 4 total
 
 # ---- Nix Podman Stacks ----
 nix-podman-stacks:
   project: nix-podman-stacks
-  tech: [nix, home-manager]
   features: [infrastructure-as-code, declarative, podman, self-hosted-stacks]
+  languages: [nix, home-manager]
   # Files: 3 total
 
 # ---- ClawPier ----
 clawpier:
   project: clawpier
-  tech: [rust, tauri]
-  features: [desktop, agent-manager, gui]
+  features: [desktop, agent-manager, gui, cross-platform]
+  languages: [rust, tauri]
   # Files: 4 total
 
 # ---- Shared / cross-cutting ----
 shared:
   project: shared
-  tech: []
-  features: [deployment, architecture, landscape]
+  features: [deployment, architecture, landscape, knowledge-base]
+  languages: []
   # Files: 5 total

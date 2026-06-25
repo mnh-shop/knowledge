@@ -55,11 +55,19 @@ blueprint for deployment stacks.
 ## Structure
 
 ```text
-sources/       full cloned GitHub repositories
+sources/       full cloned GitHub repositories (gitignored, 54 repos)
 raw/           Repomix XML generated from repositories
 graphs/        CodeGraph output generated from repositories
 wiki/          generated documentation per repository
 assets/        reusable concrete things extracted from repos
+  n8n-workflows/      extracted workflow patterns and catalogs
+  agent-skills/        extracted agent skill definitions
+  agent-profiles/      repo profiles + role-based personas (roles/)
+  cross-refs/          integration cross-reference links
+  deployment/          quadlet configs, infra templates
+  mcp-servers/         MCP server references
+  acp-agents/          ACP agent references
+  api-clients/         API client references
 domains/       cross-repo concept knowledge
 integrations/  concrete system-to-system integration knowledge
 ```

@@ -17,6 +17,10 @@ __pycache__/
 # External source clones (full repos cloned for analysis - 6.7GB)
 sources/
 
+# Generated analysis artifacts (regeneratable from sources/)
+raw/
+graphs/
+
 # Large generated binaries
 *.log
 *.tmp
