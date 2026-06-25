@@ -295,7 +295,7 @@ RestartSec=10
 WantedBy=default.target
 ```
 
-A full Quadlet `.container` file for this project is available at `/Users/admin1/Documents/knowledge/assets/deployment/mission-control-quadlet.md`.
+A full Quadlet `.container` file for this project is available at `assets/deployment/mission-control-quadlet.md`.
 
 ## Related
 

@@ -109,7 +109,7 @@ gogs:
 hermzner:
   project: hermzner
   tech: [terraform, ansible]
-  features: [iac, hetzner, vps, deployment-automation]
+  features: [infrastructure-as-code, hetzner, vps, deployment-automation]
   # Files: 4 total
 
 # ---- Tank OS ----
@@ -123,7 +123,7 @@ tank-os:
 nix-podman-stacks:
   project: nix-podman-stacks
   tech: [nix, home-manager]
-  features: [iac, declarative, podman, self-hosted-stacks]
+  features: [infrastructure-as-code, declarative, podman, self-hosted-stacks]
   # Files: 3 total
 
 # ---- ClawPier ----

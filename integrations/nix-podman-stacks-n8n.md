@@ -1,13 +1,13 @@
 ---
 name: nix-podman-stacks-n8n
 type: integration
-tags: [nix-podman-stacks, integration, nix, home-manager, iac, declarative, podman, self-hosted-stacks]
+tags: [nix-podman-stacks, integration, nix, home-manager, infrastructure-as-code, declarative, podman, self-hosted-stacks]
 description: Integration: nix-podman-stacks n8n Module
 ---
 
 # Integration: nix-podman-stacks n8n Module
 
-**Source**: `/Users/admin1/Documents/knowledge/sources/nix-podman-stacks/modules/n8n/default.nix`
+**Source**: `sources/nix-podman-stacks/modules/n8n/default.nix`
 
 ## Overview
 
@@ -15,7 +15,7 @@ nix-podman-stacks ships a dedicated **n8n module** (`modules/n8n/`) that provide
 
 ## Module Definition
 
-**File**: `/Users/admin1/Documents/knowledge/sources/nix-podman-stacks/modules/n8n/default.nix`
+**File**: `sources/nix-podman-stacks/modules/n8n/default.nix`
 
 The module is minimal (48 lines), reflecting n8n's simple deployment model (single container, SQLite database, env-var configuration):
 

@@ -16,7 +16,7 @@ Mission Control does not ship native Quadlet `.container` files, but the existin
 - Podman 4.0+ with Quadlet support (enabled by default in most distributions)
 - Rootless Podman for the `nextjs` user (uid 1001 inside container, mapped to host user)
 - An OCI image (build from Dockerfile or pull from GHCR)
-- `.env` file with required configuration (see `/Users/admin1/Documents/knowledge/domains/deployment/mission-control-deployment.md`)
+- `.env` file with required configuration (see `domains/deployment/mission-control-deployment.md`)
 
 ## .container Unit
 

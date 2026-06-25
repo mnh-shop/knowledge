@@ -8,7 +8,7 @@ description: Sablier Architecture
 
 **Language**: Go  
 **Source**: https://github.com/sablierapp/sablier  
-**Entrypoint**: `/Users/admin1/Documents/knowledge/sources/sablier/cmd/sablier/cmd.go`  
+**Entrypoint**: `sources/sablier/cmd/sablier/cmd.go`  
 **Root command**: `pkg/sabliercmd/root.go` with `start` subcommand at `pkg/sabliercmd/start.go`
 
 ---

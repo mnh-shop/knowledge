@@ -1,6 +1,6 @@
 ---
 name: hermzner
-tags: [hermzner, wiki, terraform, ansible, iac, hetzner, vps, deployment-automation]
+tags: [hermzner, wiki, terraform, ansible, infrastructure-as-code, hetzner, vps, deployment-automation]
 description: "Hermzner — Hardened Hermes on Hetzner"
 ---
 

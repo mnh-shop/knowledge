@@ -11,7 +11,7 @@ description: "Podlet"
 | Origin | <https://github.com/containers/podlet> |
 | License | Apache 2.0 |
 | Stack | Rust |
-| Source | `/Users/admin1/Documents/knowledge/sources/podlet/` |
+| Source | `sources/podlet/` |
 | Wanted | Critical dev tool for converting ad-hoc container commands to persistent systemd-managed Quadlet services |
 
 ## Overview

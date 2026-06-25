@@ -1,6 +1,6 @@
 ---
 name: hermzner-terraform-ansible
-tags: [hermzner, quadlet, terraform, ansible, iac, hetzner, vps, deployment-automation]
+tags: [hermzner, quadlet, terraform, ansible, infrastructure-as-code, hetzner, vps, deployment-automation]
 description: Hermzner Terraform and Ansible Reference
 ---
 

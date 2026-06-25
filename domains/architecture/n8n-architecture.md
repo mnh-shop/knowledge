@@ -6,7 +6,7 @@ description: n8n — Architecture
 
 # n8n — Architecture
 
-**Source:** `/Users/admin1/Documents/knowledge/sources/n8n/`
+**Source:** `sources/n8n/`
 **Raw:** `raw/n8n/n8n.xml` (62MB)
 **Codegraph:** `graphs/n8n/` (774MB DB — 16,057 files, 219+ symbols indexed)
 

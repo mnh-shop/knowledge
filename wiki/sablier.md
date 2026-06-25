@@ -17,7 +17,7 @@ Scale-to-zero daemon for containerized workloads. Manages container lifecycle ba
 | Origin | [sablierapp/sablier](https://github.com/sablierapp/sablier) |
 | License | Apache 2.0 |
 | Stack | Go 1.23+, Gin HTTP framework, Cobra/Viper CLI |
-| Source | `/Users/admin1/Documents/knowledge/sources/sablier/` |
+| Source | `sources/sablier/` |
 | Wanted | Scale-to-zero for agent services (Hermes, OpenClaw, n8n) on constrained VPS |
 
 ## Overview

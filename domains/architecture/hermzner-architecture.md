@@ -1,6 +1,6 @@
 ---
 name: hermzner-architecture
-tags: [hermzner, architecture, terraform, ansible, iac, hetzner, vps, deployment-automation]
+tags: [hermzner, architecture, terraform, ansible, infrastructure-as-code, hetzner, vps, deployment-automation]
 description: Hermzner Architecture
 ---
 

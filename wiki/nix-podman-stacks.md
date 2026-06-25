@@ -1,14 +1,14 @@
 ---
 name: nix-podman-stacks
 type: wiki
-tags: [nix-podman-stacks, wiki, nix, home-manager, iac, declarative, podman, self-hosted-stacks]
+tags: [nix-podman-stacks, wiki, nix, home-manager, infrastructure-as-code, declarative, podman, self-hosted-stacks]
 description: nix-podman-stacks
 ---
 
 # nix-podman-stacks
 
 **Source**: `tarow/nix-podman-stacks` on GitHub
-**Repository path**: `/Users/admin1/Documents/knowledge/sources/nix-podman-stacks/`
+**Repository path**: `sources/nix-podman-stacks/`
 **Type**: Declarative Podman Quadlet management via Nix / Home Manager
 **License**: MIT
 

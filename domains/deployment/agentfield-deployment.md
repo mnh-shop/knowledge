@@ -118,7 +118,7 @@ The Vite dev server proxies API calls to the Go backend. Production embeds the b
 
 ### File Location
 
-`/Users/admin1/Documents/knowledge/sources/agentfield/deployments/docker/docker-compose.yml`
+`sources/agentfield/deployments/docker/docker-compose.yml`
 
 ### Services
 
@@ -289,7 +289,7 @@ AgentField in local mode with PostgreSQL disabled starts instantly with no crede
 
 ## 6. Quadlet Deployment (Rootless Podman)
 
-See `/Users/admin1/Documents/knowledge/assets/deployment/agentfield-quadlet.md` for a dedicated Quadlet deployment guide.
+See `assets/deployment/agentfield-quadlet.md` for a dedicated Quadlet deployment guide.
 
 Key points for AgentField with Quadlet:
 - The single Go binary (no dependencies) maps cleanly to a single `.container` Quadlet unit

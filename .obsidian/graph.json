@@ -18,7 +18,7 @@
     {"query": "tag:#typescript", "color": {"a": 1, "rgb": [0.164706, 0.513725, 0.858824]}},
     {"query": "tag:#golang", "color": {"a": 1, "rgb": [0.266667, 0.690196, 0.764706]}},
     {"query": "tag:#rust", "color": {"a": 1, "rgb": [0.866667, 0.329412, 0.447059]}},
-    {"query": "tag:#iac", "color": {"a": 1, "rgb": [0.372549, 0.709804, 0.298039]}},
+    {"query": "tag:#infrastructure-as-code", "color": {"a": 1, "rgb": [0.372549, 0.709804, 0.298039]}},
     {"query": "tag:#agent-gateway", "color": {"a": 1, "rgb": [0.549020, 0.752941, 0.921569]}},
     {"query": "tag:#container-engine", "color": {"a": 1, "rgb": [0.564706, 0.933333, 0.564706]}},
     {"query": "tag:#workflow-automation", "color": {"a": 1, "rgb": [0.941176, 0.764706, 0.098039]}}

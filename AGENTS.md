@@ -29,6 +29,16 @@ Do not create folders unless the user asks or confirms when you ask.
 Do not sort repositories by domain.
 Do not duplicate repositories.
 
+## Read-only directories
+
+The following directories are **READ ONLY** — never modify, delete, or rename any file inside them:
+
+- `sources/` — full cloned GitHub repositories (23 repos, 1.3GB)
+- `raw/` — Repomix XML exports generated from repositories
+- `graphs/` — CodeGraph database output from repositories
+
+These directories contain reference data for analysis only. All editing happens in `wiki/`, `domains/`, `assets/`, `integrations/`, `memory/`, `ideas/`, and root files (AGENTS.md, MEMORY.md, README.md).
+
 ## Compatibility-first analysis
 
 The long-term goal is reproducible deployment stacks combining Hermes, OpenClaw,
