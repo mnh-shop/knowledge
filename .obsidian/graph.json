@@ -7,22 +7,118 @@
   "showOrphans": false,
   "collapse-color-groups": false,
   "colorGroups": [
-    {"query": "tag:#hermes", "color": {"a": 1, "rgb": [0.290196, 0.564706, 0.850980]}},
-    {"query": "tag:#openclaw", "color": {"a": 1, "rgb": [0.482353, 0.407843, 0.933333]}},
-    {"query": "tag:#podman", "color": {"a": 1, "rgb": [0.180392, 0.8, 0.443137]}},
-    {"query": "tag:#agentfield", "color": {"a": 1, "rgb": [0.905882, 0.298039, 0.235294]}},
-    {"query": "tag:#n8n", "color": {"a": 1, "rgb": [0.952941, 0.611765, 0.070588]}},
-    {"query": "tag:#mission-control", "color": {"a": 1, "rgb": [0.607843, 0.349020, 0.713725]}},
-    {"query": "tag:#gogs", "color": {"a": 1, "rgb": [0.101961, 0.737255, 0.611765]}},
-    {"query": "tag:#nix-podman-stacks", "color": {"a": 1, "rgb": [0.901961, 0.494118, 0.133333]}},
-    {"query": "tag:#typescript", "color": {"a": 1, "rgb": [0.164706, 0.513725, 0.858824]}},
-    {"query": "tag:#python", "color": {"a": 1, "rgb": [0.952941, 0.819608, 0.121569]}},
-    {"query": "tag:#golang", "color": {"a": 1, "rgb": [0.266667, 0.690196, 0.764706]}},
-    {"query": "tag:#rust", "color": {"a": 1, "rgb": [0.866667, 0.329412, 0.447059]}},
-    {"query": "tag:#infrastructure-as-code", "color": {"a": 1, "rgb": [0.372549, 0.709804, 0.298039]}},
-    {"query": "tag:#agent-gateway", "color": {"a": 1, "rgb": [0.549020, 0.752941, 0.921569]}},
-    {"query": "tag:#container-engine", "color": {"a": 1, "rgb": [0.564706, 0.933333, 0.564706]}},
-    {"query": "tag:#workflow-automation", "color": {"a": 1, "rgb": [0.941176, 0.764706, 0.098039]}}
+    {
+      "query": "tag:#hermes",
+      "color": {
+        "a": 1,
+        "rgb": 0
+      }
+    },
+    {
+      "query": "tag:#openclaw",
+      "color": {
+        "a": 1,
+        "rgb": 0
+      }
+    },
+    {
+      "query": "tag:#podman",
+      "color": {
+        "a": 1,
+        "rgb": 0
+      }
+    },
+    {
+      "query": "tag:#agentfield",
+      "color": {
+        "a": 1,
+        "rgb": 0
+      }
+    },
+    {
+      "query": "tag:#n8n",
+      "color": {
+        "a": 1,
+        "rgb": 0
+      }
+    },
+    {
+      "query": "tag:#mission-control",
+      "color": {
+        "a": 1,
+        "rgb": 0
+      }
+    },
+    {
+      "query": "tag:#gogs",
+      "color": {
+        "a": 1,
+        "rgb": 0
+      }
+    },
+    {
+      "query": "tag:#nix-podman-stacks",
+      "color": {
+        "a": 1,
+        "rgb": 0
+      }
+    },
+    {
+      "query": "tag:#typescript",
+      "color": {
+        "a": 1,
+        "rgb": 0
+      }
+    },
+    {
+      "query": "tag:#python",
+      "color": {
+        "a": 1,
+        "rgb": 0
+      }
+    },
+    {
+      "query": "tag:#golang",
+      "color": {
+        "a": 1,
+        "rgb": 0
+      }
+    },
+    {
+      "query": "tag:#rust",
+      "color": {
+        "a": 1,
+        "rgb": 0
+      }
+    },
+    {
+      "query": "tag:#infrastructure-as-code",
+      "color": {
+        "a": 1,
+        "rgb": 0
+      }
+    },
+    {
+      "query": "tag:#agent-gateway",
+      "color": {
+        "a": 1,
+        "rgb": 0
+      }
+    },
+    {
+      "query": "tag:#container-engine",
+      "color": {
+        "a": 1,
+        "rgb": 0
+      }
+    },
+    {
+      "query": "tag:#workflow-automation",
+      "color": {
+        "a": 1,
+        "rgb": 0
+      }
+    }
   ],
   "collapse-display": false,
   "showArrow": true,
@@ -34,6 +130,6 @@
   "repelStrength": 10,
   "linkStrength": 1,
   "linkDistance": 250,
-  "scale": 0.02185798562103696,
-  "close": false
+  "scale": 0.0414179773788811,
+  "close": true
 }

@@ -25,7 +25,7 @@ echo "--- Check 1: Unclosed code fences ---"
 echo ""
 FENCE_ERRORS=0
 while IFS= read -r -d '' md_file; do
-    count=$(grep -c '^```' "$md_file" 2>/dev/null || echo 0)
+    count=$(grep -sc '^```' "$md_file" 2>/dev/null || true)
     if (( count % 2 != 0 )); then
         echo "  UNCLOSED: ${md_file#${KNOWLEDGE_ROOT}/} (${count} fence markers, expected even number)"
         FENCE_ERRORS=$((FENCE_ERRORS + 1))

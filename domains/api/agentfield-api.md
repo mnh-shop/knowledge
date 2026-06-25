@@ -1,6 +1,7 @@
 ---
 name: agentfield-api
 tags: [agentfield, api, golang, control-plane, identity, orchestration, harness]
+description: "AgentField API reference: REST and gRPC endpoints for sandbox management, pipeline orchestration, and identity"
 ---
 
 # AgentField API Reference

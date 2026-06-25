@@ -1,1 +1,9 @@
-{}
+{
+  "userIgnoreFilters": [
+    "sources/**",
+    "raw/**",
+    "graphs/**",
+    ".smart-env/**",
+    ".claude/**"
+  ]
+}

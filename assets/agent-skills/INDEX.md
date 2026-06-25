@@ -1,3 +1,9 @@
+---
+name: agent-skills-catalog
+description: "Full catalog of all agent skills grouped by 12 capability domains, covering 66 skills"
+tags: [agent-skills, catalog]
+---
+
 # Agent Skills Catalog
 
 > Full catalog of all agent skills grouped by capability domain.

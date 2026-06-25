@@ -1,5 +1,6 @@
 ---
 name: agents
+description: "Agent implementation index: deployment targets, implementation status, and codegraph verification for all agent projects"
 tags: [shared, index, deployment, architecture, landscape]
 ---
 

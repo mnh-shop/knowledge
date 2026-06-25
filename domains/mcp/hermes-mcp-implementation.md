@@ -1,7 +1,7 @@
 ---
 name: hermes-mcp-implementation
 tags: [hermes, mcp, typescript, agent-gateway, messaging, multi-platform]
-description: Hermes MCP implementation: MCP client consuming external tools and MCP server exposing Hermes capabilities
+description: "Hermes MCP implementation: MCP client consuming external tools and MCP server exposing Hermes capabilities"
 ---
 
 # Hermes MCP Implementation — Two Modes

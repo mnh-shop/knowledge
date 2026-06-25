@@ -1,7 +1,7 @@
 ---
 name: hermes-suite
 tags: [hermes, wiki, typescript, agent-gateway, messaging, multi-platform]
-description: Wiki entry for Hermes Suite: all-in-one Hermes container combining gateway, built-in dashboard, and browser-based WebUI (MIT)
+description: "Wiki entry for Hermes Suite: all-in-one Hermes container combining gateway, built-in dashboard, and browser-based WebUI (MIT)"
 ---
 
 # Hermes Suite — All-in-One Hermes Container Image

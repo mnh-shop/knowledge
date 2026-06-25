@@ -1,7 +1,7 @@
 ---
 name: hermes-agent
 tags: [hermes, wiki, typescript, agent-gateway, messaging, multi-platform]
-description: Wiki entry for Hermes Agent: self-improving AI agent by Nous Research with multi-platform messaging (MIT)
+description: "Wiki entry for Hermes Agent: self-improving AI agent by Nous Research with multi-platform messaging (MIT)"
 ---
 
 # Hermes Agent

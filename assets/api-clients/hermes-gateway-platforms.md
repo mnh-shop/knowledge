@@ -1,7 +1,7 @@
 ---
 name: hermes-gateway-platforms
 tags: [hermes, api-client, typescript, agent-gateway, messaging, multi-platform]
-description: Gateway platform adapter reference for Hermes Agent: 20+ messaging platforms through the BasePlatformAdapter pattern
+description: "Gateway platform adapter reference for Hermes Agent: 20+ messaging platforms through the BasePlatformAdapter pattern"
 ---
 
 # Gateway Platforms — Platform Adapter Reference

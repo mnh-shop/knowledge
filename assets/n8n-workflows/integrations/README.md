@@ -1,3 +1,9 @@
+---
+name: n8n-workflow-integrations
+description: "Sub-index of 415 unique n8n node types (integrations) across 2,061 workflow files"
+tags: [n8n, integrations, catalog]
+---
+
 # Integrations Sub-Index
 
 This directory catalogs the **415 unique node types** (integrations) used across the 2,061 n8n workflow files.

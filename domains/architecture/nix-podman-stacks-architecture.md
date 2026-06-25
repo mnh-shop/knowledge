@@ -2,7 +2,7 @@
 name: nix-podman-stacks-architecture
 type: architecture
 tags: [nix-podman-stacks, architecture, nix, home-manager, infrastructure-as-code, declarative, podman, self-hosted-stacks]
-description: Architecture: nix-podman-stacks
+description: "Architecture: nix-podman-stacks"
 ---
 
 # Architecture: nix-podman-stacks

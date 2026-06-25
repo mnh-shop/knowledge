@@ -1,5 +1,6 @@
 ---
 name: memory
+description: "Persistent index of cross-vault relationships: deployment mappings, cross-repo compatibility, and graph location notes"
 tags: [shared, index, deployment, architecture, landscape]
 ---
 
@@ -140,7 +141,7 @@ Everything else should remain evidence-grounded.
 
 ## Cross-repo compatibility
 
-Each repo is checked against the 4 core systems ([[hermes-agent]], [[openclaw]], [[agentfield]], [[n8n]]) to see what can combine. This section grows as we analyze more repos — compatibility is noted in each repo's wiki entry via [[links]].
+Each repo is checked against the 4 core systems ([[hermes-agent]], [[openclaw]], [[agentfield]], [[n8n]]) to see what can combine. This section grows as we analyze more repos — compatibility is noted in each repo's wiki entry via internal links.
 
 | Repo | Hermes | OpenClaw | Agentfield | n8n | Notes |
 |---|---|---|---|---|---|

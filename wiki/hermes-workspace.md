@@ -1,7 +1,7 @@
 ---
 name: hermes-workspace
 tags: [hermes, wiki, typescript, agent-gateway, messaging, multi-platform]
-description: Wiki entry for Hermes Workspace: web/desktop command center for Hermes Agent with swarm orchestration and MCP hub (MIT)
+description: "Wiki entry for Hermes Workspace: web/desktop command center for Hermes Agent with swarm orchestration and MCP hub (MIT)"
 ---
 
 # Hermes Workspace

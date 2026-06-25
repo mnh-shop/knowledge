@@ -1,7 +1,7 @@
 ---
 name: openclaw-codegraph-verify
 tags: [openclaw, wiki, typescript, agent-gateway, messaging, personal-assistant, live-canvas]
-description: Codegraph Verification: openclaw
+description: "Codegraph Verification: openclaw"
 ---
 
 # Codegraph Verification: openclaw

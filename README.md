@@ -1,5 +1,6 @@
 ---
 name: knowledge
+description: "Vault root: cross-linked knowledge base for AI agent infrastructure — OpenClaw, Hermes Agent, n8n, AgentField, and deployment patterns"
 tags: [shared, index, deployment, architecture, landscape]
 ---
 

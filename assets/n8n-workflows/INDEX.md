@@ -1,3 +1,9 @@
+---
+name: n8n-workflow-catalog
+description: "Master catalog of 2,061 n8n workflows across 415 integrations and 87 trigger types"
+tags: [n8n, workflow-patterns, automation, catalog]
+---
+
 # n8n Workflow Catalog
 
 Tags: [n8n, workflow-patterns, automation]

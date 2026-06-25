@@ -1,6 +1,7 @@
 ---
 name: agentfield
 tags: [agentfield, wiki, golang, control-plane, identity, orchestration, harness]
+description: "Wiki entry for AgentField: AI control plane for sandboxed agents, micro-VMs, and pipeline orchestration"
 ---
 
 # AgentField

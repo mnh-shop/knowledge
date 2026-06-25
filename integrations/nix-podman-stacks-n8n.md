@@ -2,7 +2,7 @@
 name: nix-podman-stacks-n8n
 type: integration
 tags: [nix-podman-stacks, integration, nix, home-manager, infrastructure-as-code, declarative, podman, self-hosted-stacks]
-description: Integration: nix-podman-stacks n8n Module
+description: "Integration: nix-podman-stacks n8n Module"
 ---
 
 # Integration: nix-podman-stacks n8n Module

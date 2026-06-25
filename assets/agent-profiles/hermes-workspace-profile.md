@@ -1,7 +1,7 @@
 ---
 name: hermes-workspace-profile
 tags: [hermes, profile, typescript, agent-gateway, messaging, multi-platform]
-description: Agent profile for Hermes Workspace: quick reference profile for the web/desktop command center for Hermes Agent
+description: "Agent profile for Hermes Workspace: quick reference profile for the web/desktop command center for Hermes Agent"
 ---
 
 # Hermes Workspace — Quick Reference Profile
