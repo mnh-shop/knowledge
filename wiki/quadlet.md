@@ -2,7 +2,7 @@
 name: quadlet
 description: "Quadlet — systemd-native container management for Podman"
 source: sources/podman/
-tags: [container, podman, quadlet, systemd, deployment]
+tags: [container, podman, systemd, deployment]
 ---
 
 # Quadlet

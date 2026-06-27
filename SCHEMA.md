@@ -102,21 +102,19 @@ Every source repo directory name is a valid ecosystem tag. Always include the re
 ```
 1claw-hermes, AionUi, ECC, Hermes-caduceus, Mnemosyne, OpenViking,
 SWE-AF, abvx-agent-skills, af-deep-research, af-reactive-atlas-mongodb,
-agent-rules-books, agentfield, agentfield.codegraph-verify, alphaclaw,
-awesome-n8n-templates, awesome-openclaw-skills, awesome-openclaw-usecases,
-bootc, buildah, camofox-browser, clawpier, cockpit, cockpit-podman,
-crun-vm, drawio-skill, ecc, fedora-coreos-config, free-claude-code, goclaw,
-gogs, graphify, hermes-agent, hermes-agent-acp-skill, hermes-agent-docker,
-hermes-agent-template, hermes-autonomous-server, hermes-bus,
-hermes-incident-commander, hermes-optimization-guide, hermes-plugins,
-hermes-startup-architect, hermes-suite, hermes-workspace, hermzner, llmtrim,
-materia, mission-control, n8n, n8n-mcp, n8n-nodes, n8n-skills,
-n8n-workflow-catalog, n8n-workflows, nanobot, nix-podman-stacks, nix.dev,
+agent-rules-books, agentfield, alphaclaw, awesome-n8n-templates,
+awesome-openclaw-skills, awesome-openclaw-usecases, bootc, buildah,
+camofox-browser, clawpier, cockpit-podman, crun-vm, drawio-skill, ecc,
+fedora-coreos-config, free-claude-code, goclaw, gogs, graphify, hermes-agent,
+hermes-agent-acp-skill, hermes-agent-docker, hermes-agent-template,
+hermes-autonomous-server, hermes-bus, hermes-incident-commander,
+hermes-optimization-guide, hermes-plugins, hermes-startup-architect,
+hermes-suite, hermes-workspace, hermzner, llmtrim, materia, mission-control,
+n8n, n8n-mcp, n8n-skills, n8n-workflows, nanobot, nix-podman-stacks, nix.dev,
 obsidian-skills, oh-my-hermes, oh-my-openagent, oh-my-opencode-slim, oh-my-pi,
 open-design, openclaw, openclaw-container, openclaw-plugin-claude-code,
-openclaw.codegraph-verify, opencode, opencode-hermes-multiagent, openviking,
-outreachmagic, pi, podlet, podman, podman-compose, podman.codegraph-verify,
-pydantic-ai-skills, quadlet, sablier, sec-af, skills, tank-os, zot
+opencode, opencode-hermes-multiagent, openviking, outreachmagic, pi, podlet,
+podman, podman-compose, pydantic-ai-skills, sablier, sec-af, skills, tank-os, zot
 ```
 
 ## Domain-dimension tags
@@ -168,11 +166,12 @@ General purpose — describe what the project IS or DOES:
 `webhook`, `wiki`, `workflow-automation`, `workflows`
 
 ### Tag rules
-1. Every page MUST include its own repo name as a tag (e.g., `podman` on podman.md)
-2. Ecosystem tags are preferred over classification tags where both fit
-3. Do NOT add redundant per-repo tags (e.g., `agentfield-architecture`) — use the standard ecosystem tag
-4. Do NOT add single-use, overly specific tags like `cron`, `loom`, `atlas-triggers` — prefer broader classification
-5. When in doubt, fewer tags is better than more
+1. Every page MUST include its own repo name as a tag (e.g., `podman` on podman.md) — **exception:** companion pages (rule #2)
+2. **Companion pages** (no source directory of their own, `source:` points to a parent repo) use their **parent repo's ecosystem tag** instead of their own page name — e.g., `n8n-nodes.md` and `n8n-workflow-catalog.md` use `n8n` / `n8n-workflows`, not their page name; `quadlet.md` uses `podman`
+3. Ecosystem tags are preferred over classification tags where both fit
+4. Do NOT add redundant per-repo tags (e.g., `agentfield-architecture`) — use the standard ecosystem tag
+5. Do NOT add single-use, overly specific tags like `cron`, `loom`, `atlas-triggers` — prefer broader classification
+6. When in doubt, fewer tags is better than more
 
 ## Page Thresholds
 

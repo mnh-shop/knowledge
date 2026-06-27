@@ -1,6 +1,6 @@
 ---
 name: openclaw-codegraph-verify
-tags: [acp, agent-gateway, live-canvas, mcp, messaging, openclaw, personal-assistant, plugin-sdk, typescript, wiki, openclaw.codegraph-verify]
+tags: [acp, agent-gateway, live-canvas, mcp, messaging, openclaw, personal-assistant, plugin-sdk, typescript, wiki]
 description: "Codegraph Verification: openclaw"
 source: sources/openclaw/
 ---

@@ -2,7 +2,7 @@
 name: n8n-workflow-catalog
 description: "Catalog of n8n workflow templates organized by integration and use case"
 source: sources/n8n-workflows/
-tags: [fair-code, integration, n8n, n8n-workflows, templates, workflow-automation, n8n-workflow-catalog]
+tags: [fair-code, integration, n8n, n8n-workflows, templates, workflow-automation]
 ---
 
 # n8n Workflow Catalog
