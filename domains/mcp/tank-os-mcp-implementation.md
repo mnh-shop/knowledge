@@ -2,7 +2,7 @@
 name: tank-os-mcp-implementation
 description: "Tank OS — deploys service-gator MCP server as a sidecar (no native MCP implementation)"
 source: sources/tank-os/
-tags: [container-os, deployment, mcp, quadlet, tank-os]
+tags: [container, deployment, mcp, quadlet, tank-os]
 ---
 
 # Tank OS — MCP Implementation

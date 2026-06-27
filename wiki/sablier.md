@@ -1,7 +1,7 @@
 ---
 name: sablier
-tags: [container, docker, golang, lifecycle, plugin-sdk, podman, quadlet, reverse-proxy, sablier, scale-to-zero, systemd, webhook, wiki]
-description: Sablier
+tags: [container, docker, podman, quadlet, reverse-proxy, sablier, scale-to-zero, systemd, webhook, wiki, golang]
+description: "Scale-to-zero reverse proxy for containerized services"
 source: sources/sablier/
 ---
 

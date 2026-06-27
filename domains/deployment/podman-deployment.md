@@ -1,6 +1,6 @@
 ---
 name: podman-deployment
-tags: [automation, container, container-engine, daemonless, deployment, docker, event-bus, golang, monitoring, oci, podman, quadlet, rootless, security, storage, systemd, virtualization]
+tags: [automation, container, daemonless, deployment, docker, event-bus, golang, monitoring, oci, podman, quadlet, rootless, security, storage, systemd, virtualization]
 description: "Podman Deployment"
 source: sources/podman/
 ---

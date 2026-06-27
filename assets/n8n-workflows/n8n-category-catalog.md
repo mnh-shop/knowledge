@@ -1,6 +1,6 @@
 ---
 name: n8n-category-catalog
-tags: [n8n, catalog, documentation, automation, workflow]
+tags: [n8n, catalog, documentation, automation, workflows]
 description: "Catalog of all 188 n8n workflow category directories referenced in the INDEX"
 ---
 

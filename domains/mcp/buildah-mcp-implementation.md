@@ -129,3 +129,9 @@ buildah rpc --env LISTENER /usr/bin/buildah-grpcnoop --env LISTENER first-arg se
 ## Conclusion
 
 Buildah is a container image building tool. Its only server-like capability is a **gRPC-based RPC server** (hidden `buildah rpc` command), which is unrelated to MCP. The repository does not implement the Model Context Protocol in any form. If MCP-based container management is desired, it would need to be built as a separate adapter or tool wrapping Buildah's Go API.
+
+## Related
+
+- [[buildah]]
+- [[mcp]]
+- [[podman]]

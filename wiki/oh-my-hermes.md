@@ -1,7 +1,8 @@
 ---
+name: oh-my-hermes
 title: Oh My Hermes (OMH)
 description: Multi-agent orchestration skills for Hermes Agent with consensus planning, requirements interviewing, and verified execution
-tags: [ai-llm, consensus, hermes-agent, multi-agent, orchestration, planning, plugin, plugin-sdk, research]
+tags: [hermes-agent, multi-agent, orchestration, planning, plugin, plugin-sdk, research, python]
 source: sources/oh-my-hermes/
 ---
 
@@ -141,5 +142,12 @@ hermes skills install omh-deep-research omh-ralplan omh-ralplan-driver omh-deep-
 Or copy `skills/<name>/` to `~/.hermes/skills/omh/` manually. Plugin: install `plugins/omh/` to `~/.hermes/plugins/omh/`.
 
 ## Source
+
+## Related
+
+- [[hermes-agent]] — Core Hermes agent
+- [[plugin-sdk]] — Plugin development framework
+- [[multi-agent]] — Multi-agent orchestration
+
 
 `/Users/admin1/Documents/knowledge/sources/oh-my-hermes`

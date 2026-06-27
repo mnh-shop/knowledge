@@ -2,10 +2,7 @@
 name: mnemosyne
 description: "Mnemosyne memory server with MCP integration for AI agent persistent storage"
 source: sources/Mnemosyne/
-tags: [ai-llm, cli, mcp, plugin-sdk, storage]
-  - sqlite
-  - mcp
-  - hermes
+tags: [cli, mcp, storage, sqlite, python]
 ---
 
 # Mnemosyne
@@ -229,6 +226,13 @@ Over 60 test files covering:
 ---
 
 ## Key Dependencies
+
+## Related
+
+- [[hermes-agent]] — Consumes Mnemosyne as memory backend
+- [[mcp]] — MCP server interface for memory operations
+- [[sqlite]] — Underlying storage engine
+
 
 - **Zero hard dependencies** — core works with stdlib only.
 - **Optional**: `fastembed`, `sqlite-vec` for vector search.

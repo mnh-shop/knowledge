@@ -1,6 +1,6 @@
 ---
 name: af-reactive-atlas-mongodb-architecture
-tags: [af-reactive-atlas-mongodb, ai-llm, architecture, atlas-triggers, dashboard, docker, mongodb, monitoring, plugin-sdk, python, reactive, real-time, storage]
+tags: [af-reactive-atlas-mongodb, architecture, dashboard, docker, monitoring, plugin-sdk, python, storage]
 description: Architecture of AF Reactive Atlas MongoDB — intelligence layer turning MongoDB collections into self-assessing systems via Atlas Triggers
 source: sources/af-reactive-atlas-mongodb/
 ---

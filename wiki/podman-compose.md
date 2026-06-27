@@ -2,7 +2,7 @@
 name: podman-compose
 description: "Podman-compose — docker-compose compatible orchestration for Podman, daemon-less rootless containers"
 source: sources/podman-compose/
-tags: [cli, container, docker, docker-compatible, git, orchestration, podman, python]
+tags: [cli, container, docker, git, orchestration, podman, python]
 ---
 
 # podman-compose
@@ -343,6 +343,13 @@ chmod +x /usr/local/bin/podman-compose
 ---
 
 ## Source file
+
+## Related
+
+- [[podman]] — Core Podman platform
+- [[docker]] — Docker-compose compatibility
+- [[orchestration]] — Container orchestration
+
 
 `/Users/admin1/Documents/knowledge/sources/podman-compose/podman_compose.py`
 

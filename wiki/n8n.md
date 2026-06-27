@@ -1,7 +1,7 @@
 ---
 name: n8n
 tags: [automation, cli, docker, fair-code, git, integration, low-code, mcp, n8n, orchestration, storage, typescript, vue, webhook, wiki, workflow-automation]
-description: n8n
+description: "Low-code automation platform with 400+ integrations and AI agent capabilities"
 source: sources/n8n/
 ---
 
@@ -33,7 +33,7 @@ A workflow automation platform with 400+ integrations, AI-native workflow buildi
 | API architecture | [[n8n-api]] (`domains/api/`) |
 | MCP integration | [[n8n-mcp]] (`domains/mcp/`) |
 | Deployment guides | [[n8n-deployment]] (`domains/deployment/`) |
-| Agent profile (standards) | [[n8n-agent-profile]] (`assets/agent-profiles/`) |
+| Agent profile (standards) | [[n8n-agent-profile]] (`assets/profiles/`) |
 | AGENTS.md (agent instructions) | `sources/n8n/AGENTS.md` |
 | README | `sources/n8n/README.md` |
 

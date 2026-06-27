@@ -1,6 +1,6 @@
 ---
 name: hermes-startup-architect
-tags: [agent-gateway, ai-llm, hermes, messaging, multi-platform, plugin-sdk, typescript, wiki]
+tags: [agent, hermes-agent, agent-gateway, messaging, multi-platform, wiki]
 description: "Wiki entry for Hermes Startup Architect: Hermes Agent skill for turning startup ideas into research-backed kits (MIT)"
 source: sources/hermes-startup-architect/
 ---
@@ -29,7 +29,7 @@ landing page).
 |---|---|
 | Skill definition | `skills/business/startup-architect/SKILL.md` |
 | Trigger phrases | "startup idea:", "analyze this startup:", "create a startup kit for" |
-| Workflow steps | See [[hermes-startup-architect-skill]] (`assets/agent-skills/`) |
+| Workflow steps | See [[hermes-startup-architect-skill]] (`assets/skills/`) |
 | Example output | `examples/forge-kit/` (8 complete files) |
 | Setup guide | `SETUP.md` |
 | Optional dependency | hermes-tweet plugin for X/Twitter market signals |

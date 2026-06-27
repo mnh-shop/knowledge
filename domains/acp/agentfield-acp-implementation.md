@@ -1,6 +1,6 @@
 ---
 name: agentfield-acp-implementation
-tags: [acp, agent-communication, agentfield, ai-llm, cli, did-vc, plugin-sdk, webhook]
+tags: [acp, agentfield, cli, plugin-sdk, webhook]
 description: "AgentField's agent-to-agent communication system: routing, identity, authorization, and execution model"
 source: sources/agentfield/
 ---

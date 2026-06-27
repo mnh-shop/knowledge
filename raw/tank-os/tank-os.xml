@@ -24,7 +24,9 @@ or other automated processes.</purpose><file_format>The content is organized as 
 - Content has been formatted for parsing in xml style
 - Content has been compressed - code blocks are separated by ⋮---- delimiter
 - Security check has been disabled - content may contain sensitive information
-- Files are sorted by Git change count (files with more changes are at the bottom)</notes></file_summary><user_provided_header>Repository: tank-os | Generated from knowledge/sources | Generated: 2026-06-24 15:39:32</user_provided_header><directory_structure>.github/
+- Files are sorted by Git change count (files with more changes are at the bottom)</notes></file_summary><user_provided_header>Repository: tank-os | Generated from knowledge/sources | Generated: 2026-06-26 16:52:59</user_provided_header><directory_structure>.codegraph/
+  .gitignore
+.github/
   workflows/
     build-release.yml
     commitlint.yml
@@ -76,10 +78,421 @@ LICENSE
 Makefile
 pyproject.toml
 README.md
-VERSION</directory_structure><files>This section contains the contents of the repository&apos;s files.<file path="examples/bootc-config.toml">[[customizations.user]]
-name = &quot;openclaw&quot;
-key = &quot;ssh-ed25519 REPLACE_WITH_YOUR_PUBLIC_KEY tank-os&quot;
-groups = [&quot;wheel&quot;]</file><file path=".github/dependabot.yml">version: 2
+VERSION</directory_structure><files>This section contains the contents of the repository&apos;s files.<file path=".codegraph/.gitignore"># CodeGraph data files — local to each machine, not for committing.
+# Ignore everything in .codegraph/ except this file itself, so transient
+# files (the database, daemon.pid, sockets, logs) never show up in git.
+*
+!.gitignore</file><file path=".github/workflows/build-release.yml">name: Build and Release Container Image
+on:
+  push:
+    tags:
+    - v*
+env:
+  IMAGE_REGISTRY: ${{ vars.IMAGE_REGISTRY }}
+  IMAGE_NAMESPACE: ${{ vars.IMAGE_NAMESPACE }}
+  IMAGE: tank-os
+  COSIGN_PUBLIC_KEY: ${{ vars.COSIGN_PUBLIC_KEY }}
+  RELEASE_REGISTRY: ${{ vars.RELEASE_REGISTRY }}
+permissions: read-all
+jobs:
+  build:
+    name: Build ${{ matrix.platform }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: linux/amd64
+            runner: ubuntu-latest
+          - platform: linux/arm64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
+    permissions:
+      contents: read
+      packages: write
+    steps:
+    - name: Prepare platform pair
+      run: |
+        platform=${{ matrix.platform }}
+        echo &quot;PLATFORM_PAIR=${platform//\//-}&quot; &gt;&gt; $GITHUB_ENV
+    - name: Checkout repository
+      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+      with:
+        persist-credentials: false
+    - name: Parse version
+      id: parse_version
+      run: |
+        VERSION=${GITHUB_REF
+        echo &quot;VERSION=$VERSION&quot; &gt;&gt; $GITHUB_OUTPUT
+    - name: Log in to Container Registry
+      uses: redhat-actions/podman-login@4934294ad0449894bcd1e9f191899d7292469603
+      with:
+        username: ${{ secrets.REGISTRY_USER }}
+        password: ${{ secrets.REGISTRY_PASSWORD }}
+        registry: ${{ env.IMAGE_REGISTRY }}
+    - name: Build Image
+      id: build-image
+      uses: redhat-actions/buildah-build@7a95fa7ee0f02d552a32753e7414641a04307056
+      with:
+        image: ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/${{ env.IMAGE }}
+        tags: ${{ env.PLATFORM_PAIR }}-${{ github.sha }}
+        context: bootc
+        containerfiles: |
+          bootc/Containerfile
+    - name: Push image by digest
+      id: push
+      run: |
+        buildah push --digestfile /tmp/digest \
+          ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/${{ env.IMAGE }}:${{ env.PLATFORM_PAIR }}-${{ github.sha }} \
+          docker://${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/${{ env.IMAGE }}:${{ env.PLATFORM_PAIR }}-${{ github.sha }}
+        echo &quot;digest=$(cat /tmp/digest)&quot; &gt;&gt; $GITHUB_OUTPUT
+    - name: Export digest
+      run: |
+        mkdir -p /tmp/digests
+        digest=&quot;${{ steps.push.outputs.digest }}&quot;
+        touch &quot;/tmp/digests/${digest#sha256:}&quot;
+    - name: Upload digest
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+      with:
+        name: digests-${{ env.PLATFORM_PAIR }}
+        path: /tmp/digests/*
+        if-no-files-found: error
+        retention-days: 1
+  merge:
+    name: Create multi-arch manifest and sign
+    outputs:
+      digest: ${{ steps.manifest_digest.outputs.digest }}
+      version: ${{ steps.parse_version.outputs.VERSION }}
+    runs-on: ubuntu-latest
+    needs: build
+    permissions:
+      contents: read
+      packages: write
+    steps:
+    - name: Install container tools
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y podman buildah skopeo
+    - name: Download digests
+      uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+      with:
+        path: /tmp/digests
+        pattern: digests-*
+        merge-multiple: true
+    - name: Parse version
+      id: parse_version
+      run: |
+        VERSION=${GITHUB_REF
+        echo &quot;VERSION=$VERSION&quot; &gt;&gt; $GITHUB_OUTPUT
+    - name: Log in to Container Registry
+      uses: redhat-actions/podman-login@4934294ad0449894bcd1e9f191899d7292469603
+      with:
+        username: ${{ secrets.REGISTRY_USER }}
+        password: ${{ secrets.REGISTRY_PASSWORD }}
+        registry: ${{ env.IMAGE_REGISTRY }}
+    - name: Create and push manifest
+      run: |
+        IMAGE_URI=&quot;${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/${{ env.IMAGE }}&quot;
+        VERSION=&quot;${{ steps.parse_version.outputs.VERSION }}&quot;
+        for TAG in latest $VERSION ${{ github.sha }}; do
+          buildah manifest create ${IMAGE_URI}:${TAG}
+          for digest in /tmp/digests/*; do
+            digest_hash=$(basename $digest)
+            buildah manifest add ${IMAGE_URI}:${TAG} docker://${IMAGE_URI}@sha256:${digest_hash}
+          done
+          buildah manifest push --all ${IMAGE_URI}:${TAG} docker://${IMAGE_URI}:${TAG}
+        done
+    - name: Inspect manifest
+      run: |
+        IMAGE_URI=&quot;${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/${{ env.IMAGE }}&quot;
+        buildah manifest inspect ${IMAGE_URI}:latest
+    - name: Check signing secrets
+      id: check_signing
+      env:
+        COSIGN_PRIVATE_KEY: ${{ secrets.COSIGN_PRIVATE_KEY }}
+        COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
+      run: |
+        if [ -n &quot;$COSIGN_PRIVATE_KEY&quot; ] &amp;&amp; [ -n &quot;$COSIGN_PASSWORD&quot; ]; then
+          echo &quot;available=true&quot; &gt;&gt; $GITHUB_OUTPUT
+        else
+          echo &quot;available=false&quot; &gt;&gt; $GITHUB_OUTPUT
+        fi
+    - name: Install Cosign
+      if: ${{ env.COSIGN_PUBLIC_KEY != &apos;&apos; &amp;&amp; steps.check_signing.outputs.available == &apos;true&apos; }}
+      uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6
+      with:
+        cosign-release: &apos;v2.2.4&apos;
+    - name: Sign image recursively
+      if: ${{ env.COSIGN_PUBLIC_KEY != &apos;&apos; &amp;&amp; steps.check_signing.outputs.available == &apos;true&apos; }}
+      env:
+        COSIGN_PRIVATE_KEY: ${{ secrets.COSIGN_PRIVATE_KEY }}
+        COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
+      run: |
+        IMAGE_URI=&quot;${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/${{ env.IMAGE }}&quot;
+        VERSION=&quot;${{ steps.parse_version.outputs.VERSION }}&quot;
+        cosign sign --yes --recursive \
+          --registry-referrers-mode=legacy \
+          --key env://COSIGN_PRIVATE_KEY \
+          -a tag=$VERSION \
+          -a tag=latest \
+          -a sha=${{ github.sha }} \
+          -a run_id=${{ github.run_id }} \
+          -a run_attempt=&quot;$GITHUB_RUN_ATTEMPT&quot; \
+          ${IMAGE_URI}:latest
+    - name: Verify image signature
+      if: ${{ env.COSIGN_PUBLIC_KEY != &apos;&apos; &amp;&amp; steps.check_signing.outputs.available == &apos;true&apos; }}
+      run: |
+        IMAGE_URI=&quot;${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/${{ env.IMAGE }}&quot;
+        echo &quot;${{ env.COSIGN_PUBLIC_KEY }}&quot; &gt; /tmp/cosign.pub
+        cosign verify \
+          --key /tmp/cosign.pub \
+          ${IMAGE_URI}:latest
+    - name: Cleanup signing keys
+      if: ${{ always() &amp;&amp; steps.check_signing.outputs.available == &apos;true&apos; }}
+      run: |
+        rm -f /tmp/cosign.pub
+        rm -rf ~/.sigstore
+        rm -rf ~/.cosign
+        unset COSIGN_PRIVATE_KEY
+        unset COSIGN_PASSWORD
+        sync
+    - name: Get manifest digest
+      id: manifest_digest
+      run: |
+        IMAGE_URI=&quot;${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/${{ env.IMAGE }}&quot;
+        DIGEST=$(skopeo inspect --format &apos;{{.Digest}}&apos; docker://${IMAGE_URI}:latest)
+        echo &quot;digest=${DIGEST}&quot; &gt;&gt; $GITHUB_OUTPUT
+  attest:
+    name: Attest, scan, and generate SBOM
+    runs-on: ubuntu-latest
+    needs: merge
+    env:
+      IMAGE_REGISTRY: ${{ vars.IMAGE_REGISTRY }}
+      IMAGE_NAMESPACE: ${{ vars.IMAGE_NAMESPACE }}
+      IMAGE: tank-os
+    permissions:
+      contents: write
+      packages: write
+      id-token: write
+      attestations: write
+      security-events: write
+    steps:
+    - name: Harden runner
+      uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411
+      with:
+        egress-policy: audit
+    - name: Checkout code
+      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+      with:
+        persist-credentials: false
+    - name: Log in to Container Registry
+      uses: docker/login-action@650006c6eb7dba73a995cc03b0b2d7f5ca915bee
+      with:
+        registry: ${{ env.IMAGE_REGISTRY }}
+        username: ${{ secrets.REGISTRY_USER }}
+        password: ${{ secrets.REGISTRY_PASSWORD }}
+    - name: Generate SBOM
+      uses: anchore/sbom-action@e22c389904149dbc22b58101806040fa8d37a610
+      env:
+        SYFT_SELECT_CATALOGERS: &quot;-file&quot;
+        SYFT_FILE_METADATA_SELECTION: &quot;none&quot;
+      with:
+        image: ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/${{ env.IMAGE }}@${{ needs.merge.outputs.digest }}
+        format: cyclonedx-json
+        output-file: sbom.cdx.json
+    - name: Attest build provenance
+      uses: actions/attest-build-provenance@a2bbfa25375fe432b6a289bc6b6cd05ecd0c4c32
+      with:
+        subject-name: ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/${{ env.IMAGE }}
+        subject-digest: ${{ needs.merge.outputs.digest }}
+        push-to-registry: true
+    - name: Attest SBOM
+      uses: actions/attest-sbom@c604332985a26aa8cf1bdc465b92731239ec6b9e
+      with:
+        subject-name: ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/${{ env.IMAGE }}
+        subject-digest: ${{ needs.merge.outputs.digest }}
+        sbom-path: sbom.cdx.json
+        push-to-registry: true
+    - name: Run Trivy vulnerability scanner
+      uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25
+      with:
+        image-ref: ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/${{ env.IMAGE }}@${{ needs.merge.outputs.digest }}
+        format: sarif
+        output: trivy-results.sarif
+        severity: CRITICAL,HIGH
+    - name: Upload Trivy results to GitHub Security
+      uses: github/codeql-action/upload-sarif@8aad20d150bbac5944a9f9d289da16a4b0d87c1e
+      with:
+        sarif_file: trivy-results.sarif</file><file path=".github/workflows/commitlint.yml">name: Lint PR Title
+on:
+  pull_request_target:
+    types:
+      - opened
+      - edited
+      - synchronize
+    branches:
+      - main
+permissions: read-all
+jobs:
+  lint:
+    permissions:
+      contents: read
+    if: ${{ github.head_ref != &apos;main&apos; }}
+    runs-on: ubuntu-latest
+    steps:
+    - name: Harden runner
+      uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411
+      with:
+        egress-policy: audit
+    - name: Checkout base branch
+      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+      with:
+        ref: ${{ github.event.pull_request.base.sha }}
+        persist-credentials: false
+    - name: Install dependencies
+      run: npm install @commitlint/cli @commitlint/config-conventional
+    - name: Validate PR title
+      run: |
+        PR_TITLE=$(jq -r &apos;.pull_request.title&apos; &quot;$GITHUB_EVENT_PATH&quot;)
+        echo &quot;$PR_TITLE&quot; | npx commitlint --config commitlint.config.js</file><file path=".github/workflows/create-release.yml">name: Validate Build and Create Release
+on:
+  push:
+    branches:
+      - main
+permissions: read-all
+jobs:
+  build:
+    name: Build linux/${{ matrix.arch }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: amd64
+            runner: ubuntu-latest
+          - arch: arm64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
+    permissions:
+      contents: read
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+      with:
+        persist-credentials: false
+    - name: Install Podman
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y podman
+    - name: Build image
+      run: make build ARCH=${{ matrix.arch }}
+    - name: Validate image
+      run: podman image inspect localhost/tank-os:latest
+  release:
+    runs-on: ubuntu-latest
+    needs: build
+    permissions:
+      contents: write
+      id-token: write
+    steps:
+    - name: Harden runner
+      uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411
+      with:
+        egress-policy: audit
+    - name: Check release token
+      id: check_release_token
+      env:
+        FG_PAT: ${{ secrets.FG_PAT }}
+      run: |
+        if [ -n &quot;$FG_PAT&quot; ]; then
+          echo &quot;available=true&quot; &gt;&gt; &quot;$GITHUB_OUTPUT&quot;
+        else
+          echo &quot;available=false&quot; &gt;&gt; &quot;$GITHUB_OUTPUT&quot;
+          echo &quot;FG_PAT is not set; skipping semantic release.&quot;
+        fi
+    - name: Checkout repository
+      if: ${{ steps.check_release_token.outputs.available == &apos;true&apos; }}
+      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+      with:
+        fetch-depth: 0
+        token: ${{ secrets.FG_PAT }}
+    - name: Python Semantic Release
+      if: ${{ steps.check_release_token.outputs.available == &apos;true&apos; }}
+      id: release
+      uses: python-semantic-release/python-semantic-release@350c48fcb3ffcdfd2e0a235206bc2ecea6b69df0
+      with:
+        github_token: ${{ secrets.FG_PAT }}</file><file path=".github/workflows/pr.yaml">name: PR Build Validation
+on:
+  pull_request:
+    branches:
+      - main
+permissions: read-all
+jobs:
+  build:
+    name: Build ${{ matrix.platform }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: linux/amd64
+            runner: ubuntu-latest
+          - platform: linux/arm64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
+    permissions:
+      contents: read
+    steps:
+    - name: Prepare platform pair
+      run: |
+        platform=${{ matrix.platform }}
+        echo &quot;PLATFORM_PAIR=${platform//\//-}&quot; &gt;&gt; $GITHUB_ENV
+    - name: Checkout repository
+      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+      with:
+        persist-credentials: false
+    - name: Build Image
+      id: build-image
+      uses: redhat-actions/buildah-build@7a95fa7ee0f02d552a32753e7414641a04307056
+      with:
+        image: localhost/tank-os
+        tags: ${{ env.PLATFORM_PAIR }}-${{ github.sha }}
+        context: bootc
+        containerfiles: |
+          bootc/Containerfile
+    - name: Validate image
+      run: |
+        buildah inspect localhost/tank-os:${{ env.PLATFORM_PAIR }}-${{ github.sha }}</file><file path=".github/workflows/scorecard.yml">name: OpenSSF Scorecard
+on:
+  push:
+    branches:
+      - main
+  schedule:
+    - cron: &apos;0 6 * * 1&apos;
+permissions: read-all
+jobs:
+  analysis:
+    name: Scorecard analysis
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      id-token: write
+    steps:
+    - name: Harden runner
+      uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411
+      with:
+        egress-policy: audit
+    - name: Checkout code
+      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+      with:
+        persist-credentials: false
+    - name: Run Scorecard
+      uses: ossf/scorecard-action@4eaacf0543bb3f2c246792bd56e8cdeffafb205a
+      with:
+        results_file: results.sarif
+        results_format: sarif
+        publish_results: true
+    - name: Upload SARIF results
+      uses: github/codeql-action/upload-sarif@8aad20d150bbac5944a9f9d289da16a4b0d87c1e
+      with:
+        sarif_file: results.sarif</file><file path=".github/dependabot.yml">version: 2
 updates:
   - package-ecosystem: &quot;github-actions&quot;
     directory: &quot;/&quot;
@@ -211,507 +624,7 @@ if [[ ! -f &quot;$scope_file&quot; ]]; then
   }
 }
 JSON
-fi</file><file path="bootc/rootfs/usr/local/bin/openclaw">#!/usr/bin/env bash
-set -euo pipefail
-
-container_name=&quot;${OPENCLAW_CONTAINER:-openclaw}&quot;
-args=()
-
-while (($# &gt; 0)); do
-  case &quot;$1&quot; in
-    --container)
-      if (($# &lt; 2)); then
-        echo &quot;Missing value for --container.&quot; &gt;&amp;2
-        exit 2
-      fi
-      container_name=&quot;$2&quot;
-      shift 2
-      ;;
-    --container=*)
-      container_name=&quot;${1#--container=}&quot;
-      shift
-      ;;
-    *)
-      args+=(&quot;$1&quot;)
-      shift
-      ;;
-  esac
-done
-
-if [[ &quot;$(id -un)&quot; != &quot;openclaw&quot; ]]; then
-  if ! command -v sudo &gt;/dev/null 2&gt;&amp;1; then
-    echo &quot;Run as openclaw, or install sudo so this wrapper can delegate to the openclaw user.&quot; &gt;&amp;2
-    exit 1
-  fi
-  exec sudo -iu openclaw -- /usr/local/bin/openclaw --container &quot;$container_name&quot; &quot;${args[@]}&quot;
-fi
-
-if ! podman inspect --format &apos;{{.State.Running}}&apos; &quot;$container_name&quot; 2&gt;/dev/null | grep -qx true; then
-  echo &quot;OpenClaw container &apos;$container_name&apos; is not running.&quot; &gt;&amp;2
-  echo &quot;Try: systemctl --user start openclaw.service&quot; &gt;&amp;2
-  exit 1
-fi
-
-exec_args=(exec)
-if [[ -t 0 &amp;&amp; -t 1 ]]; then
-  exec_args+=(-it)
-else
-  exec_args+=(-i)
-fi
-
-exec podman &quot;${exec_args[@]}&quot; &quot;$container_name&quot; openclaw &quot;${args[@]}&quot;</file><file path="bootc/rootfs/usr/local/bin/tank-openclaw-secrets">#!/usr/bin/env bash
-set -euo pipefail
-
-if [[ &quot;$(id -un)&quot; == &quot;openclaw&quot; ]]; then
-  exec /usr/libexec/tank-os/sync-podman-secrets &quot;$@&quot;
-fi
-
-if ! command -v sudo &gt;/dev/null 2&gt;&amp;1; then
-  echo &quot;Run as openclaw, or install sudo so this wrapper can delegate to the openclaw user.&quot; &gt;&amp;2
-  exit 1
-fi
-
-exec sudo -iu openclaw -- /usr/libexec/tank-os/sync-podman-secrets &quot;$@&quot;</file><file path="bootc/rootfs/usr/local/bin/tank-os-version">#!/usr/bin/env bash
-set -euo pipefail
-
-cat /etc/tank-os-release</file><file path="bootc/.gitkeep"></file><file path="docs/.gitkeep"></file><file path="docs/service-gator.md"># service-gator
-
-`service-gator` is an MCP server that gives sandboxed agents scoped access to external services such as GitHub, GitLab, Forgejo/Gitea, and JIRA. It should run outside the OpenClaw gateway container so OpenClaw agents can use it without receiving raw PATs.
-
-tank-os runs it as a second rootless Podman Quadlet owned by the `openclaw` user:
-
-```text
-/etc/containers/systemd/users/1000/service-gator.container
-```
-
-The service listens on loopback only:
-
-```text
-http://127.0.0.1:8080/mcp
-```
-
-## Configure Scopes
-
-The first boot helper creates an empty scope file:
-
-```text
-~/.config/service-gator/scopes.json
-```
-
-Edit it as the `openclaw` user:
-
-```bash
-sudo -iu openclaw
-$EDITOR ~/.config/service-gator/scopes.json
-```
-
-Example:
-
-```json
-{
-  &quot;scopes&quot;: {
-    &quot;gh&quot;: {
-      &quot;repos&quot;: {
-        &quot;myorg/myrepo&quot;: {
-          &quot;read&quot;: true,
-          &quot;push-new-branch&quot;: true,
-          &quot;create-draft&quot;: true
-        }
-      }
-    }
-  }
-}
-```
-
-service-gator watches the scope file and can reload it without restarting.
-
-## Create Secrets
-
-Create secrets in the `openclaw` user&apos;s rootless Podman store before starting or restarting `service-gator.service`:
-
-```bash
-sudo -iu openclaw
-printf &apos;%s&apos; &quot;$GH_TOKEN&quot; | podman secret create gh_token -
-printf &apos;%s&apos; &quot;$GITLAB_TOKEN&quot; | podman secret create gitlab_token -
-printf &apos;%s&apos; &quot;$FORGEJO_TOKEN&quot; | podman secret create forgejo_token -
-printf &apos;%s&apos; &quot;$JIRA_API_TOKEN&quot; | podman secret create jira_api_token -
-```
-
-Then sync drop-ins and restart:
-
-```bash
-tank-openclaw-secrets
-systemctl --user restart service-gator.service
-```
-
-service-gator receives secrets as files through Podman secrets and reads them via `*_FILE` variables such as `GH_TOKEN_FILE=/run/secrets/gh_token`.
-The base Quadlet does not reference any secrets directly, so the service can start before credentials exist. `tank-openclaw-secrets` adds a user drop-in containing only the Podman secrets that exist in the `openclaw` user&apos;s rootless secret store.
-
-## Connect OpenClaw
-
-The exact OpenClaw MCP config shape should be finalized against the OpenClaw MCP config docs before baking a default into the image. The intended endpoint is:
-
-```text
-http://127.0.0.1:8080/mcp
-```
-
-Keep service-gator on loopback unless you intentionally put it behind gateway auth or another trusted edge.
-
-For tools such as `git_push_local`, service-gator sees OpenClaw state mounted at `/workspaces`. Agent workspaces under `~/.openclaw/workspace-*` appear as `/workspaces/workspace-*` in the service-gator container.</file><file path="examples/cloud-init/meta-data">instance-id: tank-os-local
-local-hostname: tank-os</file><file path="examples/cloud-init/openclaw-user-data.yaml">users:
-  - name: openclaw
-    gecos: OpenClaw
-    groups:
-      - wheel
-    sudo:
-      - ALL=(ALL) NOPASSWD:ALL
-    shell: /bin/bash
-    lock_passwd: true
-    ssh_authorized_keys:
-      - ssh-ed25519 REPLACE_WITH_YOUR_PUBLIC_KEY tank-os
-runcmd:
-  - [loginctl, enable-linger, openclaw]</file><file path="examples/boot-tank-os-qemu.sh">set -euo pipefail
-DISK_IMAGE=&quot;${1:-.}&quot;
-DISK_PATH=&quot;&quot;
-QEMU_BIN=&quot;${QEMU_BIN:-qemu-system-x86_64}&quot;
-SSH_PORT=&quot;${SSH_PORT:-2222}&quot;
-QEMU_MEM=&quot;${QEMU_MEM:-4096}&quot;
-QEMU_SMP=&quot;${QEMU_SMP:-2}&quot;
-OVMF_CODE=&quot;${OVMF_CODE:-}&quot;
-OVMF_VARS=&quot;${OVMF_VARS:-}&quot;
-# Colors for output
-GREEN=&apos;\033[0;32m&apos;
-YELLOW=&apos;\033[1;33m&apos;
-RED=&apos;\033[0;31m&apos;
-NC=&apos;\033[0m&apos; # No Color
-# Resolve disk image path
-if [[ -d &quot;$DISK_IMAGE&quot; ]]; then
-    DISK_PATH=&quot;$DISK_IMAGE/qcow2/disk.qcow2&quot;
-elif [[ -f &quot;$DISK_IMAGE&quot; ]]; then
-    DISK_PATH=&quot;$DISK_IMAGE&quot;
-else
-    echo -e &quot;${RED}ERROR: Disk image not found: $DISK_IMAGE${NC}&quot;
-    echo &quot;Usage: $0 &lt;path-to-disk-image-or-output-dir&gt;&quot;
-    exit 1
-fi
-if [[ ! -f &quot;$DISK_PATH&quot; ]]; then
-    echo -e &quot;${RED}ERROR: Disk image not found: $DISK_PATH${NC}&quot;
-    exit 1
-fi
-echo -e &quot;${GREEN}tank-os QEMU Launcher${NC}&quot;
-echo &quot;-----------------------------------------------&quot;
-echo &quot;Disk Image: $DISK_PATH&quot;
-echo &quot;Memory: ${QEMU_MEM}M&quot;
-echo &quot;CPU Cores: $QEMU_SMP&quot;
-echo &quot;SSH Port: localhost:$SSH_PORT&quot;
-echo &quot;&quot;
-# Check QEMU availability
-if ! command -v &quot;$QEMU_BIN&quot; &amp;&gt; /dev/null; then
-    echo -e &quot;${RED}ERROR: $QEMU_BIN not found. Install QEMU and retry.${NC}&quot;
-    exit 1
-fi
-detect_ovmf() {
-    local code_fd=&quot;&quot;
-    local vars_fd=&quot;&quot;
-    # Prefer 4M variants (most common on modern systems)
-    for path in /usr/share/OVMF /usr/share/ovmf /usr/share/edk2-ovmf; do
-        if [[ -f &quot;$path/OVMF_CODE_4M.fd&quot; ]]; then
-            code_fd=&quot;$path/OVMF_CODE_4M.fd&quot;
-            [[ -f &quot;$path/OVMF_VARS_4M.fd&quot; ]] &amp;&amp; vars_fd=&quot;$path/OVMF_VARS_4M.fd&quot;
-            break
-        elif [[ -f &quot;$path/OVMF_CODE.fd&quot; ]]; then
-            code_fd=&quot;$path/OVMF_CODE.fd&quot;
-            [[ -f &quot;$path/OVMF_VARS.fd&quot; ]] &amp;&amp; vars_fd=&quot;$path/OVMF_VARS.fd&quot;
-            break
-        fi
-    done
-    if [[ -z &quot;$code_fd&quot; ]]; then
-        echo -e &quot;${RED}ERROR: OVMF firmware not found in standard locations${NC}&quot;
-        echo &quot;Install OVMF (apt install ovmf or pacman -S edk2-ovmf) and retry.&quot;
-        exit 1
-    fi
-    echo &quot;$code_fd&quot;
-    echo &quot;$vars_fd&quot;
-}
-detect_kvm() {
-    if [[ -e /dev/kvm ]] &amp;&amp; [[ -r /dev/kvm ]] &amp;&amp; [[ -w /dev/kvm ]]; then
-        return 0
-    fi
-    return 1
-}
-if [[ -z &quot;$OVMF_CODE&quot; ]]; then
-    mapfile -t _ovmf_paths &lt; &lt;(detect_ovmf)
-    OVMF_CODE=&quot;${_ovmf_paths[0]}&quot;
-    OVMF_VARS=&quot;${_ovmf_paths[1]:-}&quot;
-fi
-if [[ -z &quot;$OVMF_VARS&quot; ]]; then
-    echo -e &quot;${RED}ERROR: OVMF variables file not found. Set OVMF_VARS=/path/to/OVMF_VARS.fd and retry.${NC}&quot;
-    exit 1
-fi
-echo -e &quot;${GREEN}OK: OVMF firmware: $(basename &quot;$OVMF_CODE&quot;)${NC}&quot;
-# Determine acceleration
-ACCEL=&quot;tcg&quot;
-if detect_kvm; then
-    ACCEL=&quot;kvm&quot;
-    echo -e &quot;${GREEN}OK: KVM available - using hardware acceleration${NC}&quot;
-else
-    echo -e &quot;${YELLOW}WARN: KVM unavailable - using TCG (software emulation)${NC}&quot;
-    echo &quot;   Performance will be reduced. For production, use KVM-enabled host.&quot;
-fi
-WORK_DIR=$(dirname &quot;$DISK_PATH&quot;)
-OVMF_VARS_COPY=&quot;$WORK_DIR/$(basename &quot;$OVMF_VARS&quot;)&quot;
-if [[ ! -f &quot;$OVMF_VARS_COPY&quot; ]]; then
-    echo -e &quot;${YELLOW}-&gt; Copying OVMF variables to work directory${NC}&quot;
-    cp &quot;$OVMF_VARS&quot; &quot;$OVMF_VARS_COPY&quot;
-fi
-echo &quot;&quot;
-echo -e &quot;${GREEN}Launching QEMU...${NC}&quot;
-echo &quot;-----------------------------------------------&quot;
-echo &quot;&quot;
-echo &quot;To access the VM:&quot;
-echo &quot;  ssh -i ~/.ssh/id_ed25519 -p $SSH_PORT openclaw@localhost&quot;
-echo &quot;&quot;
-echo &quot;To view the dashboard from host:&quot;
-echo &quot;  ssh -L 18789:127.0.0.1:18789 -p $SSH_PORT openclaw@localhost&quot;
-echo &quot;  Then: http://127.0.0.1:18789&quot;
-echo &quot;&quot;
-echo &quot;Press Ctrl+A X to quit QEMU (or &apos;quit&apos; in QEMU monitor)&quot;
-echo &quot;&quot;
-# Launch QEMU
-exec &quot;$QEMU_BIN&quot; \
-    -machine q35,accel=&quot;$ACCEL&quot; \
-    -cpu max \
-    -smp &quot;$QEMU_SMP&quot; \
-    -m &quot;$QEMU_MEM&quot; \
-    -drive file=&quot;$DISK_PATH&quot;,format=qcow2,if=virtio \
-    -drive if=pflash,format=raw,readonly=on,file=&quot;$OVMF_CODE&quot; \
-    -drive if=pflash,format=raw,file=&quot;$OVMF_VARS_COPY&quot; \
-    -device virtio-net-pci,netdev=net0 \
-    -netdev user,id=net0,hostfwd=tcp::&quot;$SSH_PORT&quot;-:22 \
-    -nographic</file><file path="commitlint.config.js"></file><file path="LICENSE">MIT License
-
-Copyright (c) 2026 Lobster Trap
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the &quot;Software&quot;), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.</file><file path="pyproject.toml">[tool.semantic_release]
-allow_zero_version = true
-commit_parser = &quot;conventional&quot;
-tag_format = &quot;v{version}&quot;
-version_variables = [
-  &quot;VERSION:*:nf&quot;,
-]</file><file path="VERSION">0.0.0</file><file path="docs/cli.md"># OpenClaw CLI
-
-tank-os provides a host-side `openclaw` wrapper at `/usr/local/bin/openclaw`.
-It delegates into the running OpenClaw container, so users do not need to install
-a separate Node.js/OpenClaw CLI on the host and do not need to open an
-interactive shell inside the container for normal operations.
-
-For the default instance:
-
-```bash
-openclaw gateway status --deep
-openclaw doctor
-openclaw dashboard --no-open
-openclaw devices list
-openclaw devices approve &lt;request-id&gt;
-```
-
-## Dashboard URL
-
-To print the OpenClaw dashboard URL from the VM:
-
-```bash
-openclaw dashboard --no-open
-```
-
-If `gateway.auth.token` is configured as a plain token, the URL includes it as a
-fragment, for example `http://127.0.0.1:18789/#token=...`. If the token is
-SecretRef-managed, OpenClaw intentionally prints a non-tokenized URL and asks you
-to use the external token source instead.
-
-The wrapper targets the `openclaw` container by default. To target another
-container, either use `--container`:
-
-```bash
-openclaw --container openclaw-research doctor
-```
-
-or set `OPENCLAW_CONTAINER`:
-
-```bash
-export OPENCLAW_CONTAINER=openclaw-research
-openclaw doctor
-```
-
-For low-level debugging, use Podman directly:
-
-```bash
-podman exec -it openclaw sh
-podman logs -f openclaw
-```
-
-The Podman shell path is an escape hatch, not the main UX.
-
-## Single Instance And Multiple Instances
-
-The bootc image ships one default rootless Quadlet:
-
-```text
-/etc/containers/systemd/users/1000/openclaw.container
-```
-
-That keeps first boot predictable and gives the machine one obvious gateway,
-state directory, and service name:
-
-```text
-~/.openclaw
-openclaw.service
-openclaw
-```
-
-Multiple instances are still possible, but they should be explicit. A local
-multi-instance shape should follow the installer model:
-
-- unique container names, for example `openclaw-&lt;prefix&gt;-&lt;name&gt;`
-- unique user services, for example `openclaw-&lt;prefix&gt;-&lt;name&gt;.service`
-- unique data directories or volumes
-- unique host ports for gateway and bridge
-- per-instance env/config describing image, ports, secrets, and token
-
-For tank-os, the likely next step is to add an installer-style `tank-openclaw`
-instance manager that writes per-instance Quadlets and SecretRef config. Until
-then, the image intentionally starts one default gateway and the wrapper can
-target additional manually-created containers by name.</file><file path="docs/model-providers.md"># Model Providers And Secrets
-
-tank-os keeps model provider keys out of the image and out of `~/.openclaw/openclaw.json`.
-Users add keys as rootless Podman secrets owned by the `openclaw` user, then run
-`tank-openclaw-secrets` to sync Quadlet secret mounts and OpenClaw SecretRefs.
-
-## Built-In Provider Keys
-
-Create secrets after the machine boots, before starting or restarting the OpenClaw service:
-
-```bash
-sudo -iu openclaw
-printf &apos;%s&apos; &quot;$ANTHROPIC_API_KEY&quot; | podman secret create anthropic_api_key -
-printf &apos;%s&apos; &quot;$OPENAI_API_KEY&quot; | podman secret create openai_api_key -
-printf &apos;%s&apos; &quot;$GEMINI_API_KEY&quot; | podman secret create gemini_api_key -
-printf &apos;%s&apos; &quot;$OPENROUTER_API_KEY&quot; | podman secret create openrouter_api_key -
-tank-openclaw-secrets
-systemctl --user restart openclaw.service
-```
-
-Supported OpenClaw secret names:
-
-| Podman secret | Container env | Notes |
-| --- | --- | --- |
-| `anthropic_api_key` | `ANTHROPIC_API_KEY` | Built-in `anthropic/*` models use env auth directly; the helper does not write a provider override. |
-| `openai_api_key` | `OPENAI_API_KEY` | Built-in `openai/*` models use env auth directly; the helper does not write a provider override. |
-| `gemini_api_key` | `GEMINI_API_KEY` | Adds `models.providers.google` with a SecretRef. |
-| `google_api_key` | `GOOGLE_API_KEY` | Alternate Google env name; used only if `gemini_api_key` is absent. |
-| `openrouter_api_key` | `OPENROUTER_API_KEY` | Adds `models.providers.openrouter` with a SecretRef. |
-| `model_endpoint_api_key` | `MODEL_ENDPOINT_API_KEY` | Key only; custom endpoint metadata is still manual. |
-| `telegram_bot_token` | `TELEGRAM_BOT_TOKEN` | Adds `channels.telegram.botToken` with a SecretRef. |
-
-The helper writes rootless Quadlet drop-ins under
-`~/.config/containers/systemd/openclaw.container.d/` and updates
-`~/.openclaw/openclaw.json` with references like:
-
-```json
-{
-  &quot;secrets&quot;: {
-    &quot;providers&quot;: {
-      &quot;default&quot;: { &quot;source&quot;: &quot;env&quot; }
-    }
-  },
-  &quot;models&quot;: {
-    &quot;providers&quot;: {
-      &quot;google&quot;: {
-        &quot;baseUrl&quot;: &quot;https://generativelanguage.googleapis.com/v1beta&quot;,
-        &quot;api&quot;: &quot;google-generative-ai&quot;,
-        &quot;apiKey&quot;: { &quot;source&quot;: &quot;env&quot;, &quot;provider&quot;: &quot;default&quot;, &quot;id&quot;: &quot;GEMINI_API_KEY&quot; },
-        &quot;models&quot;: [{ &quot;id&quot;: &quot;gemini-3.1-pro-preview&quot;, &quot;name&quot;: &quot;gemini-3.1-pro-preview&quot; }]
-      }
-    }
-  }
-}
-```
-
-This mirrors the installer model: Podman secrets supply environment variables,
-and OpenClaw config references those env values through SecretRefs when explicit
-provider metadata is needed. For built-in Anthropic and OpenAI models, the env
-vars are enough, so `tank-openclaw-secrets` leaves the built-in provider catalog
-in place.
-
-## Custom Providers
-
-A Podman secret by itself is not enough to create an arbitrary provider. OpenClaw
-also needs the provider id, API adapter, base URL, and at least one model id.
-
-Use a normal Podman secret for the key:
-
-```bash
-sudo -iu openclaw
-printf &apos;%s&apos; &quot;$MOONSHOT_API_KEY&quot; | podman secret create moonshot_api_key -
-mkdir -p ~/.config/containers/systemd/openclaw.container.d
-cat &gt; ~/.config/containers/systemd/openclaw.container.d/20-moonshot.conf &lt;&lt;&apos;EOF&apos;
-[Container]
-Secret=moonshot_api_key,type=env,target=MOONSHOT_API_KEY
-EOF
-systemctl --user daemon-reload
-```
-
-Then add the non-secret provider metadata to `~/.openclaw/openclaw.json`:
-
-```json
-{
-  &quot;secrets&quot;: {
-    &quot;providers&quot;: {
-      &quot;default&quot;: { &quot;source&quot;: &quot;env&quot; }
-    }
-  },
-  &quot;models&quot;: {
-    &quot;providers&quot;: {
-      &quot;moonshot&quot;: {
-        &quot;baseUrl&quot;: &quot;https://api.moonshot.ai/v1&quot;,
-        &quot;api&quot;: &quot;openai-completions&quot;,
-        &quot;apiKey&quot;: { &quot;source&quot;: &quot;env&quot;, &quot;provider&quot;: &quot;default&quot;, &quot;id&quot;: &quot;MOONSHOT_API_KEY&quot; },
-        &quot;models&quot;: [{ &quot;id&quot;: &quot;kimi-k2.5&quot;, &quot;name&quot;: &quot;Kimi K2.5&quot; }]
-      }
-    }
-  },
-  &quot;agents&quot;: {
-    &quot;defaults&quot;: {
-      &quot;model&quot;: { &quot;primary&quot;: &quot;moonshot/kimi-k2.5&quot; }
-    }
-  }
-}
-```
-
-Restart after changing secrets or provider config:
-
-```bash
-systemctl --user restart openclaw.service
-```
-
-For now, `tank-openclaw-secrets` intentionally auto-configures only the known
-provider mappings above. Custom providers remain explicit so the helper does not
-guess an unsafe base URL or model catalog from a secret name.</file><file path="bootc/rootfs/usr/libexec/tank-os/sync-podman-secrets">#!/usr/bin/env bash
+fi</file><file path="bootc/rootfs/usr/libexec/tank-os/sync-podman-secrets">#!/usr/bin/env bash
 set -euo pipefail
 
 if [[ &quot;$(id -un)&quot; != &quot;openclaw&quot; ]]; then
@@ -939,268 +852,70 @@ Detected service-gator secrets: ${#service_gator_secret_lines[@]}
 Restart services when ready:
   systemctl --user restart openclaw.service
   systemctl --user restart service-gator.service
-EOF</file><file path="docs/provisioning.md"># Provisioning
-
-tank-os creates the `openclaw` user in the image, but instance access should be configured at provisioning time. Do not bake private SSH keys or passwords into the image.
-
-## Cloud-Init
-
-Use `examples/cloud-init/openclaw-user-data.yaml` as the starting point:
-
-```yaml
-#cloud-config
-users:
-  - name: openclaw
-    groups:
-      - wheel
-    sudo:
-      - ALL=(ALL) NOPASSWD:ALL
-    shell: /bin/bash
-    lock_passwd: true
-    ssh_authorized_keys:
-      - ssh-ed25519 REPLACE_WITH_YOUR_PUBLIC_KEY tank-os
-
-runcmd:
-  - [loginctl, enable-linger, openclaw]
-```
-
-After boot:
-
-```bash
-ssh openclaw@&lt;host&gt;
-cd ~/.openclaw
-openclaw status --deep
-```
-
-The `openclaw` command on the host delegates to the running OpenClaw container.
-See [cli.md](cli.md) for the wrapper behavior and multi-instance notes.
-
-### First Boot: Image Pull Timeout
-
-The OpenClaw gateway container (`ghcr.io/openclaw/openclaw:latest`) is ~900MB.
-On first boot, systemd starts the service while pulling the image. If the pull
-takes longer than the default 5-minute timeout, the service fails.
-
-**Workaround**: Pre-pull the image before or after first boot:
-
-```bash
-ssh openclaw@&lt;host&gt;
-sudo -iu openclaw
-podman pull ghcr.io/openclaw/openclaw:latest
-systemctl --user restart openclaw.service
-```
-
-Once cached, subsequent restarts are instant. Alternatively, increase the systemd
-timeout in the image customization (future PR).
-
-## EC2
-
-Use the cloud-init YAML as EC2 user data. Replace the public key placeholder before launch.
-
-If you want EC2 key-pair injection, verify the selected image/cloud-init path injects the key for `openclaw`. The explicit `ssh_authorized_keys` entry is the most predictable path for this image.
-
-Connect with:
-
-```bash
-ssh openclaw@&lt;ec2-public-ip&gt;
-```
-
-For browser access to the local-only gateway, use an SSH tunnel:
-
-```bash
-ssh -L 18789:127.0.0.1:18789 openclaw@&lt;ec2-public-ip&gt;
-```
-
-Then open `http://127.0.0.1:18789`.
-
-## Local macOS VM
-
-Podman Desktop can build a QCOW2 from the bootc image and start it as a local
-Linux VM. If you use the Podman Desktop bootc image builder&apos;s user form, set the
-user to `openclaw` and paste your SSH public key there. That build-time config
-is enough for a local test and you do not need a separate cloud-init seed ISO.
-
-The Podman Desktop BootC extension also provides a VM terminal. Use that directly
-for a quick demo. Use the SSH flow below when you want a separate macOS terminal
-or an SSH tunnel for browser access.
-
-When Podman Desktop starts the VM, it may use `macadam` and `gvproxy` rather than
-the normal `podman machine` list. To find the host-side SSH forward:
-
-```bash
-ps aux | grep -E &apos;macadam|gvproxy|bootc&apos;
-```
-
-Look for a process like:
-
-```text
-/opt/macadam/bin/gvproxy ... -ssh-port 63549 ... bootc-lobster-tank ...
-```
-
-Or export the forwarded port directly:
-
-```bash
-export PORT=&quot;$(
-  ps aux |
-    grep &apos;gvproxy&apos; |
-    grep &apos;bootc.*tank&apos; |
-    sed -nE &apos;s/.*-ssh-port ([0-9]+).*/\1/p&apos; |
-    tail -1
-)&quot;
-echo &quot;$PORT&quot;
-```
-
-Then SSH to localhost on that forwarded port:
-
-```bash
-ssh -o ConnectTimeout=5 \
-  -i ~/.ssh/id_ed25519 \
-  -p &quot;$PORT&quot; \
-  openclaw@localhost
-```
-
-To access the OpenClaw UI from the macOS host browser, keep an SSH tunnel open
-from another terminal:
-
-```bash
-ssh -N \
-  -o ConnectTimeout=5 \
-  -o ExitOnForwardFailure=yes \
-  -i ~/.ssh/id_ed25519 \
-  -p &quot;$PORT&quot; \
-  -L 18789:127.0.0.1:18789 \
-  -L 18790:127.0.0.1:18790 \
-  openclaw@localhost
-```
-
-Then open:
-
-```text
-http://127.0.0.1:18789
-```
-
-To print the dashboard URL from the VM, run:
-
-```bash
-openclaw dashboard --no-open
-```
-
-Or run it through SSH from your Mac:
-
-```bash
-ssh -i ~/.ssh/id_ed25519 \
-  -p &quot;$PORT&quot; \
-  openclaw@localhost \
-  &apos;openclaw dashboard --no-open&apos;
-```
-
-The forwarded port belongs to the macOS host. Do not combine it with the guest
-IP address. If you want to use the guest IP directly, use port 22 instead.
-
-To find the guest IP from the serial log, locate the VM log path in the `vfkit`
-process:
-
-```bash
-ps aux | grep -E &apos;vfkit|bootc&apos;
-```
-
-Look for a path like:
-
-```text
-logFilePath=/var/folders/.../macadam/applehv/bootc-lobster-tank.log
-```
-
-Then read the log:
-
-```bash
-tail -200 /var/folders/.../macadam/applehv/bootc-lobster-tank.log
-```
-
-The console prints the NIC address during boot, for example:
-
-```text
-enp0s1: 192.168.127.2
-```
-
-If that address is reachable from macOS, connect to the guest&apos;s normal SSH port:
-
-```bash
-ssh -o ConnectTimeout=5 \
-  -i ~/.ssh/id_ed25519 \
-  openclaw@192.168.127.2
-```
-
-For UTM, QEMU, or another local VM manager, attach a NoCloud seed ISO with:
-
-- `user-data` from `examples/cloud-init/openclaw-user-data.yaml`
-- `meta-data` from `examples/cloud-init/meta-data`
-
-On macOS, one simple way to create the ISO is:
-
-```bash
-tmpdir=&quot;$(mktemp -d)&quot;
-cp examples/cloud-init/openclaw-user-data.yaml &quot;$tmpdir/user-data&quot;
-cp examples/cloud-init/meta-data &quot;$tmpdir/meta-data&quot;
-hdiutil makehybrid -iso -joliet -default-volume-name cidata -o tank-os-seed.iso &quot;$tmpdir&quot;
-```
-
-Attach `tank-os-seed.iso` to the VM as a CD-ROM/cloud-init seed disk.
-
-## libvirt
-
-With recent `virt-install`, pass the same cloud-init files:
-
-```bash
-virt-install \
-  --connect qemu:///system \
-  --import \
-  --name tank-os \
-  --memory 4096 \
-  --disk /path/to/tank-os.qcow2 \
-  --os-variant fedora-unknown \
-  --cloud-init user-data=examples/cloud-init/openclaw-user-data.yaml,meta-data=examples/cloud-init/meta-data
-```
-
-If your `virt-install` does not support `--cloud-init user-data=...`, attach a NoCloud seed ISO instead.
-
-## Editing OpenClaw Files
-
-OpenClaw runs as the `openclaw` user. The editable state is owned by that user:
-
-```bash
-sudo -iu openclaw
-cd ~/.openclaw
-$EDITOR workspace-*/AGENTS.md
-```
-
-Restart the gateway after edits that require a restart:
-
-```bash
-systemctl --user restart openclaw.service
-```
-
-## Podman Secrets
-
-Create Podman secrets in the `openclaw` user&apos;s rootless store:
-
-```bash
-sudo -iu openclaw
-printf &apos;%s&apos; &quot;$ANTHROPIC_API_KEY&quot; | podman secret create anthropic_api_key -
-printf &apos;%s&apos; &quot;$OPENAI_API_KEY&quot; | podman secret create openai_api_key -
-```
-
-Then sync the generated Quadlet drop-ins and OpenClaw SecretRefs:
-
-```bash
-tank-openclaw-secrets
-systemctl --user restart openclaw.service
-```
-
-The helper only writes references. It does not copy secret values into `openclaw.json`.
-
-Do not create these secrets as root unless you intentionally switch to a rootful Podman runtime.
-
-See [model-providers.md](model-providers.md) for the full provider mapping and custom provider examples.</file><file path="bootc/Containerfile">ARG FEDORA_BOOTC_BASE=quay.io/fedora/fedora-bootc:latest
+EOF</file><file path="bootc/rootfs/usr/local/bin/openclaw">#!/usr/bin/env bash
+set -euo pipefail
+
+container_name=&quot;${OPENCLAW_CONTAINER:-openclaw}&quot;
+args=()
+
+while (($# &gt; 0)); do
+  case &quot;$1&quot; in
+    --container)
+      if (($# &lt; 2)); then
+        echo &quot;Missing value for --container.&quot; &gt;&amp;2
+        exit 2
+      fi
+      container_name=&quot;$2&quot;
+      shift 2
+      ;;
+    --container=*)
+      container_name=&quot;${1#--container=}&quot;
+      shift
+      ;;
+    *)
+      args+=(&quot;$1&quot;)
+      shift
+      ;;
+  esac
+done
+
+if [[ &quot;$(id -un)&quot; != &quot;openclaw&quot; ]]; then
+  if ! command -v sudo &gt;/dev/null 2&gt;&amp;1; then
+    echo &quot;Run as openclaw, or install sudo so this wrapper can delegate to the openclaw user.&quot; &gt;&amp;2
+    exit 1
+  fi
+  exec sudo -iu openclaw -- /usr/local/bin/openclaw --container &quot;$container_name&quot; &quot;${args[@]}&quot;
+fi
+
+if ! podman inspect --format &apos;{{.State.Running}}&apos; &quot;$container_name&quot; 2&gt;/dev/null | grep -qx true; then
+  echo &quot;OpenClaw container &apos;$container_name&apos; is not running.&quot; &gt;&amp;2
+  echo &quot;Try: systemctl --user start openclaw.service&quot; &gt;&amp;2
+  exit 1
+fi
+
+exec_args=(exec)
+if [[ -t 0 &amp;&amp; -t 1 ]]; then
+  exec_args+=(-it)
+else
+  exec_args+=(-i)
+fi
+
+exec podman &quot;${exec_args[@]}&quot; &quot;$container_name&quot; openclaw &quot;${args[@]}&quot;</file><file path="bootc/rootfs/usr/local/bin/tank-openclaw-secrets">#!/usr/bin/env bash
+set -euo pipefail
+
+if [[ &quot;$(id -un)&quot; == &quot;openclaw&quot; ]]; then
+  exec /usr/libexec/tank-os/sync-podman-secrets &quot;$@&quot;
+fi
+
+if ! command -v sudo &gt;/dev/null 2&gt;&amp;1; then
+  echo &quot;Run as openclaw, or install sudo so this wrapper can delegate to the openclaw user.&quot; &gt;&amp;2
+  exit 1
+fi
+
+exec sudo -iu openclaw -- /usr/libexec/tank-os/sync-podman-secrets &quot;$@&quot;</file><file path="bootc/rootfs/usr/local/bin/tank-os-version">#!/usr/bin/env bash
+set -euo pipefail
+
+cat /etc/tank-os-release</file><file path="bootc/.gitkeep"></file><file path="bootc/Containerfile">ARG FEDORA_BOOTC_BASE=quay.io/fedora/fedora-bootc:latest
 FROM ${FEDORA_BOOTC_BASE}
 
 LABEL containers.bootc=1 \
@@ -1261,427 +976,7 @@ RUN set -eux; \
       if [ -e &quot;/usr/lib/systemd/system/${unit}&quot; ] || [ -e &quot;/etc/systemd/system/${unit}&quot; ]; then \
         systemctl enable &quot;${unit}&quot;; \
       fi; \
-    done</file><file path=".github/workflows/pr.yaml">name: PR Build Validation
-on:
-  pull_request:
-    branches:
-      - main
-permissions: read-all
-jobs:
-  build:
-    name: Build ${{ matrix.platform }}
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - platform: linux/amd64
-            runner: ubuntu-latest
-          - platform: linux/arm64
-            runner: ubuntu-24.04-arm
-    runs-on: ${{ matrix.runner }}
-    permissions:
-      contents: read
-    steps:
-    - name: Prepare platform pair
-      run: |
-        platform=${{ matrix.platform }}
-        echo &quot;PLATFORM_PAIR=${platform//\//-}&quot; &gt;&gt; $GITHUB_ENV
-    - name: Checkout repository
-      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
-      with:
-        persist-credentials: false
-    - name: Build Image
-      id: build-image
-      uses: redhat-actions/buildah-build@7a95fa7ee0f02d552a32753e7414641a04307056
-      with:
-        image: localhost/tank-os
-        tags: ${{ env.PLATFORM_PAIR }}-${{ github.sha }}
-        context: bootc
-        containerfiles: |
-          bootc/Containerfile
-    - name: Validate image
-      run: |
-        buildah inspect localhost/tank-os:${{ env.PLATFORM_PAIR }}-${{ github.sha }}</file><file path=".github/workflows/commitlint.yml">name: Lint PR Title
-on:
-  pull_request_target:
-    types:
-      - opened
-      - edited
-      - synchronize
-    branches:
-      - main
-permissions: read-all
-jobs:
-  lint:
-    permissions:
-      contents: read
-    if: ${{ github.head_ref != &apos;main&apos; }}
-    runs-on: ubuntu-latest
-    steps:
-    - name: Harden runner
-      uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411
-      with:
-        egress-policy: audit
-    - name: Checkout base branch
-      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
-      with:
-        ref: ${{ github.event.pull_request.base.sha }}
-        persist-credentials: false
-    - name: Install dependencies
-      run: npm install @commitlint/cli @commitlint/config-conventional
-    - name: Validate PR title
-      run: |
-        PR_TITLE=$(jq -r &apos;.pull_request.title&apos; &quot;$GITHUB_EVENT_PATH&quot;)
-        echo &quot;$PR_TITLE&quot; | npx commitlint --config commitlint.config.js</file><file path=".github/workflows/scorecard.yml">name: OpenSSF Scorecard
-on:
-  push:
-    branches:
-      - main
-  schedule:
-    - cron: &apos;0 6 * * 1&apos;
-permissions: read-all
-jobs:
-  analysis:
-    name: Scorecard analysis
-    runs-on: ubuntu-latest
-    permissions:
-      security-events: write
-      id-token: write
-    steps:
-    - name: Harden runner
-      uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411
-      with:
-        egress-policy: audit
-    - name: Checkout code
-      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
-      with:
-        persist-credentials: false
-    - name: Run Scorecard
-      uses: ossf/scorecard-action@4eaacf0543bb3f2c246792bd56e8cdeffafb205a
-      with:
-        results_file: results.sarif
-        results_format: sarif
-        publish_results: true
-    - name: Upload SARIF results
-      uses: github/codeql-action/upload-sarif@8aad20d150bbac5944a9f9d289da16a4b0d87c1e
-      with:
-        sarif_file: results.sarif</file><file path=".gitignore">.DS_Store
-*.qcow2
-*.raw
-*.iso
-*.img
-*.zst
-/.tmp/
-/out-tank-os/
-/config.toml
-.playwright-mcp/
-prompt.md
-cosign.key
-cosign.pub</file><file path="Makefile"># tank-os Makefile
-
-# Registry configuration (no defaults - must be set explicitly)
-IMAGE_REGISTRY ?=
-IMAGE_NAMESPACE ?=
-IMAGE := tank-os
-FEDORA_BOOTC_BASE ?=
-
-# Auto-detect architecture
-UNAME_ARCH := $(shell uname -m)
-ifeq ($(UNAME_ARCH),x86_64)
-	ARCH := amd64
-else ifeq ($(UNAME_ARCH),aarch64)
-	ARCH := arm64
-else ifeq ($(UNAME_ARCH),arm64)
-	ARCH := arm64
-else
-	ARCH := $(UNAME_ARCH)
-endif
-
-# Image URI construction
-ifneq ($(IMAGE_REGISTRY),)
-  ifneq ($(IMAGE_NAMESPACE),)
-    IMAGE_URI := $(IMAGE_REGISTRY)/$(IMAGE_NAMESPACE)/$(IMAGE)
-  else
-    IMAGE_URI := localhost/$(IMAGE)
-  endif
-else
-  IMAGE_URI := localhost/$(IMAGE)
-endif
-
-PLATFORM := linux/$(ARCH)
-
-ifneq ($(FEDORA_BOOTC_BASE),)
-  BUILD_ARGS := --build-arg FEDORA_BOOTC_BASE=$(FEDORA_BOOTC_BASE)
-endif
-
-.PHONY: help
-help:
-	@echo &quot;tank-os Makefile&quot;
-	@echo &quot;&quot;
-	@echo &quot;Common targets:&quot;
-	@echo &quot;  build          Build the bootc container image locally&quot;
-	@echo &quot;  push           Push the image to registry (requires IMAGE_REGISTRY and IMAGE_NAMESPACE)&quot;
-	@echo &quot;  build-qcow2    Build a QCOW2 disk image using bootc-image-builder&quot;
-	@echo &quot;  build-iso      Build an ISO installer using bootc-image-builder&quot;
-	@echo &quot;  lint           Run bootc container lint (if available)&quot;
-	@echo &quot;  verify         Verify image signature with cosign (if COSIGN_PUBLIC_KEY is set)&quot;
-	@echo &quot;  clean          Remove build artifacts&quot;
-	@echo &quot;&quot;
-	@echo &quot;Current configuration:&quot;
-	@echo &quot;  ARCH:            $(ARCH)&quot;
-	@echo &quot;  PLATFORM:        $(PLATFORM)&quot;
-	@echo &quot;  IMAGE_URI:       $(IMAGE_URI)&quot;
-	@echo &quot;  IMAGE_REGISTRY:  $(IMAGE_REGISTRY)&quot;
-	@echo &quot;  IMAGE_NAMESPACE: $(IMAGE_NAMESPACE)&quot;
-	@echo &quot;  FEDORA_BOOTC_BASE: $(FEDORA_BOOTC_BASE)&quot;
-
-.PHONY: build
-build:
-	podman build --platform $(PLATFORM) $(BUILD_ARGS) -t $(IMAGE_URI):latest -f bootc/Containerfile bootc
-
-.PHONY: push
-push:
-	@if [ -z &quot;$(IMAGE_REGISTRY)&quot; ] || [ -z &quot;$(IMAGE_NAMESPACE)&quot; ]; then \
-		echo &quot;Error: IMAGE_REGISTRY and IMAGE_NAMESPACE must be set to push images&quot;; \
-		echo &quot;Example: make push IMAGE_REGISTRY=quay.io IMAGE_NAMESPACE=myorg&quot;; \
-		exit 1; \
-	fi
-	podman push $(IMAGE_URI):latest
-
-.PHONY: build-qcow2
-build-qcow2:
-	@if [ ! -f &quot;config.toml&quot; ]; then \
-		echo &quot;Error: config.toml not found. Create one in the repo root for bootc-image-builder.&quot;; \
-		echo &quot;See docs/build.md for examples.&quot;; \
-		exit 1; \
-	fi
-	mkdir -p out-tank-os
-	podman run --rm --privileged \
-		--security-opt label=type:unconfined_t \
-		-v ./out-tank-os:/output \
-		-v ./config.toml:/config.toml:ro \
-		-v /var/lib/containers/storage:/var/lib/containers/storage \
-		quay.io/centos-bootc/bootc-image-builder:latest \
-		$(IMAGE_URI):latest \
-		--output /output/ \
-		--local \
-		--type qcow2 \
-		--target-arch $(ARCH) \
-		--rootfs xfs \
-		--config /config.toml
-
-.PHONY: build-iso
-build-iso:
-	@if [ ! -f &quot;config.toml&quot; ]; then \
-		echo &quot;Error: config.toml not found. Create one in the repo root for bootc-image-builder.&quot;; \
-		echo &quot;See docs/build.md for examples.&quot;; \
-		exit 1; \
-	fi
-	mkdir -p out-tank-os
-	podman run --rm --privileged \
-		--security-opt label=type:unconfined_t \
-		-v ./out-tank-os:/output \
-		-v ./config.toml:/config.toml:ro \
-		-v /var/lib/containers/storage:/var/lib/containers/storage \
-		quay.io/centos-bootc/bootc-image-builder:latest \
-		$(IMAGE_URI):latest \
-		--output /output/ \
-		--local \
-		--type anaconda-iso \
-		--target-arch $(ARCH) \
-		--rootfs xfs \
-		--config /config.toml
-
-.PHONY: lint
-lint:
-	@if command -v podman &gt;/dev/null 2&gt;&amp;1; then \
-		podman run --rm $(IMAGE_URI):latest bootc container lint; \
-	else \
-		echo &quot;podman command not found, skipping lint&quot;; \
-	fi
-
-.PHONY: verify
-verify:
-	@if [ -z &quot;$(COSIGN_PUBLIC_KEY)&quot; ]; then \
-		echo &quot;COSIGN_PUBLIC_KEY not set, skipping verification&quot;; \
-		exit 0; \
-	fi
-	@if [ -z &quot;$(IMAGE_REGISTRY)&quot; ] || [ -z &quot;$(IMAGE_NAMESPACE)&quot; ]; then \
-		echo &quot;Error: IMAGE_REGISTRY and IMAGE_NAMESPACE must be set to verify images&quot;; \
-		exit 1; \
-	fi
-	@if ! command -v cosign &gt;/dev/null 2&gt;&amp;1; then \
-		echo &quot;Error: cosign command not found&quot;; \
-		exit 1; \
-	fi
-	@trap &apos;rm -f /tmp/cosign.pub&apos; EXIT; \
-	printf &apos;%s\n&apos; &quot;$$COSIGN_PUBLIC_KEY&quot; &gt; /tmp/cosign.pub &amp;&amp; \
-	cosign verify --key /tmp/cosign.pub $(IMAGE_URI):latest
-
-.PHONY: clean
-clean:
-	rm -rf out-tank-os</file><file path=".github/workflows/create-release.yml">name: Validate Build and Create Release
-on:
-  push:
-    branches:
-      - main
-permissions: read-all
-jobs:
-  build:
-    name: Build linux/${{ matrix.arch }}
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - arch: amd64
-            runner: ubuntu-latest
-          - arch: arm64
-            runner: ubuntu-24.04-arm
-    runs-on: ${{ matrix.runner }}
-    permissions:
-      contents: read
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
-      with:
-        persist-credentials: false
-    - name: Install Podman
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y podman
-    - name: Build image
-      run: make build ARCH=${{ matrix.arch }}
-    - name: Validate image
-      run: podman image inspect localhost/tank-os:latest
-  release:
-    runs-on: ubuntu-latest
-    needs: build
-    permissions:
-      contents: write
-      id-token: write
-    steps:
-    - name: Harden runner
-      uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411
-      with:
-        egress-policy: audit
-    - name: Check release token
-      id: check_release_token
-      env:
-        FG_PAT: ${{ secrets.FG_PAT }}
-      run: |
-        if [ -n &quot;$FG_PAT&quot; ]; then
-          echo &quot;available=true&quot; &gt;&gt; &quot;$GITHUB_OUTPUT&quot;
-        else
-          echo &quot;available=false&quot; &gt;&gt; &quot;$GITHUB_OUTPUT&quot;
-          echo &quot;FG_PAT is not set; skipping semantic release.&quot;
-        fi
-    - name: Checkout repository
-      if: ${{ steps.check_release_token.outputs.available == &apos;true&apos; }}
-      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
-      with:
-        fetch-depth: 0
-        token: ${{ secrets.FG_PAT }}
-    - name: Python Semantic Release
-      if: ${{ steps.check_release_token.outputs.available == &apos;true&apos; }}
-      id: release
-      uses: python-semantic-release/python-semantic-release@350c48fcb3ffcdfd2e0a235206bc2ecea6b69df0
-      with:
-        github_token: ${{ secrets.FG_PAT }}</file><file path="README.md"># tank-os
-
-Fedora bootc image for running OpenClaw as a rootless Podman workload.
-
-bootc turns a container image into a bootable, updateable Linux OS image. tank-os
-uses it to package Fedora plus a rootless OpenClaw service into one VM, cloud, or
-device image.
-
-## Why This Is Useful
-
-tank-os turns OpenClaw into a bootable Linux appliance. You publish one bootc
-container image, build it into a cloud image, VM disk, or device image, and boot
-machines that come up with the same rootless OpenClaw service every time.
-
-The interesting part is that the OpenClaw runtime, host OS, Quadlet units, CLI
-shim, and upgrade path all travel together as one OCI container image.
-The mutable parts stay where users expect them: OpenClaw state under
-`~openclaw/.openclaw`, API keys in the `openclaw` user&apos;s rootless Podman secret
-store, and SSH access configured per instance.
-
-That makes tank-os a good fit for:
-
-- local demos that behave like the cloud target
-- lab or device fleets where every machine gets its own OpenClaw interface
-- sandboxed OpenClaw hosts with a mostly read-only, image-managed OS
-- transactional updates through bootc instead of ad hoc host package changes
-- per-machine secrets through rootless Podman secrets instead of baked-in API keys
-- fast rollback and rebuild loops while developing OpenClaw host integrations
-
-The result is still a normal Fedora system. Users SSH in as `openclaw`, edit
-OpenClaw files in `~/.openclaw`, use the host `openclaw` CLI wrapper, and let
-systemd/Podman keep the service running.
-
-For test and demo images, `openclaw` is granted passwordless sudo so local
-bring-up and bootc update testing are straightforward. For production, run
-OpenClaw as an unprivileged service user and use a separate administrative user
-or tightly scoped sudo policy for OS management and bootc updates.
-
-## Start Here
-
-- Build the image: [docs/build.md](docs/build.md)
-- Configure login access: [docs/provisioning.md](docs/provisioning.md)
-- Use the OpenClaw CLI: [docs/cli.md](docs/cli.md)
-- Configure model provider keys: [docs/model-providers.md](docs/model-providers.md)
-- Configure service-gator: [docs/service-gator.md](docs/service-gator.md)
-
-For bootc concepts and day-2 operations, see the upstream [bootc documentation](https://bootc-dev.github.io/bootc/).
-For disk image builds, see the [Podman Desktop BootC extension](https://github.com/podman-desktop/extension-bootc)
-and [bootc-image-builder docs](https://osbuild.org/docs/bootc/).
-
-The host `openclaw` command delegates into the running OpenClaw container. Log in as `openclaw` when manually editing files under `~/.openclaw`.
-
-For a Podman Desktop/macOS VM, see the [local macOS VM access notes](docs/provisioning.md#local-macos-vm) for finding the SSH port or guest IP.
-
-## Agent Prompt
-
-Use this prompt with a coding agent to get oriented and run the local VM flow:
-
-```text
-I am working in the tank-os repo. This repo builds a Fedora bootc image that runs OpenClaw as a rootless Podman Quadlet owned by the `openclaw` user. Please help me get a local smoke test running.
-
-Goals:
-- Clone the repository `git clone https://github.com/LobsterTrap/tank-os.git` and work from there (cd)
-- Build or use the published bootc image `quay.io/sallyom/tank-os:latest` for arm64 or amd64.
-- Build a QCOW2 disk image with the Podman Desktop BootC extension or manual bootc-image-builder flow.
-- Start the disk image as a Linux VM. On macOS, QEMU with user-mode networking is the most reliable path: `qemu-system-aarch64 -machine virt,highmem=on -accel hvf -cpu host -smp 4 -m 4096 -drive file=disk.qcow2,format=qcow2,if=virtio -drive if=pflash,format=raw,unit=0,file=$(brew --prefix)/share/qemu/edk2-aarch64-code.fd,readonly=on -device virtio-net-pci,netdev=net0 -netdev user,id=net0,hostfwd=tcp::2222-:22 -nographic`. Podman Desktop BootC extension or UTM also work.
-- If the default 10 GB disk is too small for the OpenClaw container image (~3.5 GB), resize before first boot: `qemu-img resize disk.qcow2 20G`. XFS grows automatically on next boot.
-- SSH in as `openclaw`, verify `sudo -n true`, `sudo bootc status`, `systemctl --user status openclaw.service`, and `podman ps`.
-- If the VM is running under Podman Desktop/macadam, find the forwarded SSH port from the `gvproxy` process and use `ssh -i ~/.ssh/id_ed25519 -p &lt;port&gt; openclaw@localhost`. For QEMU with the hostfwd above, use `ssh -i ~/.ssh/id_ed25519 -p 2222 openclaw@localhost`.
-- Use an SSH tunnel to open the UI from the host browser: `ssh -N -i ~/.ssh/id_ed25519 -p &lt;port&gt; -L 18789:127.0.0.1:18789 -L 18790:127.0.0.1:18790 openclaw@localhost`, then browse to `http://127.0.0.1:18789`.
-- Print the dashboard URL from the VM with `openclaw dashboard --no-open`.
-- Configure model provider and service-gator credentials using rootless Podman secrets as the `openclaw` user, then run `tank-openclaw-secrets`.
-
-Post-boot operations (once SSH&apos;d in as `openclaw`):
-- The host `openclaw` command delegates into the running container. Use it for all CLI operations: `openclaw gateway status --deep`, `openclaw doctor`, `openclaw dashboard --no-open`, `openclaw devices list`.
-- Check service health: `systemctl --user status openclaw.service`, `podman ps`, `podman logs -f openclaw`.
-- If the OpenClaw service fails on first boot with a permission error on `~/.openclaw`, fix ownership with `sudo chown -R openclaw:openclaw ~/.openclaw` and restart: `systemctl --user restart openclaw.service`.
-- If the service times out pulling the ~3.5 GB container image, pull manually first: `podman pull ghcr.io/openclaw/openclaw:latest`, then restart the service.
-- Edit OpenClaw config and workspace files directly under `~/.openclaw/`. Restart the service after config changes: `systemctl --user restart openclaw.service`.
-- Create model provider secrets: `printf &apos;%s&apos; &quot;$ANTHROPIC_API_KEY&quot; | podman secret create anthropic_api_key -`, then run `tank-openclaw-secrets` and restart the service. Supported secret names: `anthropic_api_key`, `openai_api_key`, `gemini_api_key`, `google_api_key`, `openrouter_api_key`.
-- Create service-gator secrets the same way: `printf &apos;%s&apos; &quot;$GH_TOKEN&quot; | podman secret create gh_token -`. Edit scopes at `~/.config/service-gator/scopes.json`. Then `tank-openclaw-secrets &amp;&amp; systemctl --user restart service-gator.service`.
-- For low-level debugging, open a shell inside the container: `podman exec -it openclaw sh`.
-
-Constraints:
-- Do not bake private keys or API keys into the image.
-- Keep OpenClaw state editable under `~openclaw/.openclaw`.
-- Prefer rootless Podman for the OpenClaw and service-gator services.
-- Use `bootc switch --apply quay.io/sallyom/tank-os:latest` to test image upgrades after the VM is running.
-
-Relevant docs in this repo:
-- `docs/build.md`
-- `docs/provisioning.md`
-- `docs/cli.md`
-- `docs/model-providers.md`
-- `docs/service-gator.md`
-```</file><file path="docs/build.md"># Build
+    done</file><file path="docs/.gitkeep"></file><file path="docs/build.md"># Build
 
 ## Quick Start
 
@@ -2056,244 +1351,955 @@ PR titles are validated to follow conventional commit format via commitlint.
 
 The repository includes Dependabot configuration (`.github/dependabot.yml`) for automated updates:
 - GitHub Actions (weekly)
-- Docker base images (weekly)</file><file path=".github/workflows/build-release.yml">name: Build and Release Container Image
-on:
-  push:
-    tags:
-    - v*
-env:
-  IMAGE_REGISTRY: ${{ vars.IMAGE_REGISTRY }}
-  IMAGE_NAMESPACE: ${{ vars.IMAGE_NAMESPACE }}
-  IMAGE: tank-os
-  COSIGN_PUBLIC_KEY: ${{ vars.COSIGN_PUBLIC_KEY }}
-  RELEASE_REGISTRY: ${{ vars.RELEASE_REGISTRY }}
-permissions: read-all
-jobs:
-  build:
-    name: Build ${{ matrix.platform }}
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - platform: linux/amd64
-            runner: ubuntu-latest
-          - platform: linux/arm64
-            runner: ubuntu-24.04-arm
-    runs-on: ${{ matrix.runner }}
-    permissions:
-      contents: read
-      packages: write
-    steps:
-    - name: Prepare platform pair
-      run: |
-        platform=${{ matrix.platform }}
-        echo &quot;PLATFORM_PAIR=${platform//\//-}&quot; &gt;&gt; $GITHUB_ENV
-    - name: Checkout repository
-      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
-      with:
-        persist-credentials: false
-    - name: Parse version
-      id: parse_version
-      run: |
-        VERSION=${GITHUB_REF
-        echo &quot;VERSION=$VERSION&quot; &gt;&gt; $GITHUB_OUTPUT
-    - name: Log in to Container Registry
-      uses: redhat-actions/podman-login@4934294ad0449894bcd1e9f191899d7292469603
-      with:
-        username: ${{ secrets.REGISTRY_USER }}
-        password: ${{ secrets.REGISTRY_PASSWORD }}
-        registry: ${{ env.IMAGE_REGISTRY }}
-    - name: Build Image
-      id: build-image
-      uses: redhat-actions/buildah-build@7a95fa7ee0f02d552a32753e7414641a04307056
-      with:
-        image: ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/${{ env.IMAGE }}
-        tags: ${{ env.PLATFORM_PAIR }}-${{ github.sha }}
-        context: bootc
-        containerfiles: |
-          bootc/Containerfile
-    - name: Push image by digest
-      id: push
-      run: |
-        buildah push --digestfile /tmp/digest \
-          ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/${{ env.IMAGE }}:${{ env.PLATFORM_PAIR }}-${{ github.sha }} \
-          docker://${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/${{ env.IMAGE }}:${{ env.PLATFORM_PAIR }}-${{ github.sha }}
-        echo &quot;digest=$(cat /tmp/digest)&quot; &gt;&gt; $GITHUB_OUTPUT
-    - name: Export digest
-      run: |
-        mkdir -p /tmp/digests
-        digest=&quot;${{ steps.push.outputs.digest }}&quot;
-        touch &quot;/tmp/digests/${digest#sha256:}&quot;
-    - name: Upload digest
-      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
-      with:
-        name: digests-${{ env.PLATFORM_PAIR }}
-        path: /tmp/digests/*
-        if-no-files-found: error
-        retention-days: 1
-  merge:
-    name: Create multi-arch manifest and sign
-    outputs:
-      digest: ${{ steps.manifest_digest.outputs.digest }}
-      version: ${{ steps.parse_version.outputs.VERSION }}
-    runs-on: ubuntu-latest
-    needs: build
-    permissions:
-      contents: read
-      packages: write
-    steps:
-    - name: Install container tools
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y podman buildah skopeo
-    - name: Download digests
-      uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
-      with:
-        path: /tmp/digests
-        pattern: digests-*
-        merge-multiple: true
-    - name: Parse version
-      id: parse_version
-      run: |
-        VERSION=${GITHUB_REF
-        echo &quot;VERSION=$VERSION&quot; &gt;&gt; $GITHUB_OUTPUT
-    - name: Log in to Container Registry
-      uses: redhat-actions/podman-login@4934294ad0449894bcd1e9f191899d7292469603
-      with:
-        username: ${{ secrets.REGISTRY_USER }}
-        password: ${{ secrets.REGISTRY_PASSWORD }}
-        registry: ${{ env.IMAGE_REGISTRY }}
-    - name: Create and push manifest
-      run: |
-        IMAGE_URI=&quot;${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/${{ env.IMAGE }}&quot;
-        VERSION=&quot;${{ steps.parse_version.outputs.VERSION }}&quot;
-        for TAG in latest $VERSION ${{ github.sha }}; do
-          buildah manifest create ${IMAGE_URI}:${TAG}
-          for digest in /tmp/digests/*; do
-            digest_hash=$(basename $digest)
-            buildah manifest add ${IMAGE_URI}:${TAG} docker://${IMAGE_URI}@sha256:${digest_hash}
-          done
-          buildah manifest push --all ${IMAGE_URI}:${TAG} docker://${IMAGE_URI}:${TAG}
-        done
-    - name: Inspect manifest
-      run: |
-        IMAGE_URI=&quot;${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/${{ env.IMAGE }}&quot;
-        buildah manifest inspect ${IMAGE_URI}:latest
-    - name: Check signing secrets
-      id: check_signing
-      env:
-        COSIGN_PRIVATE_KEY: ${{ secrets.COSIGN_PRIVATE_KEY }}
-        COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
-      run: |
-        if [ -n &quot;$COSIGN_PRIVATE_KEY&quot; ] &amp;&amp; [ -n &quot;$COSIGN_PASSWORD&quot; ]; then
-          echo &quot;available=true&quot; &gt;&gt; $GITHUB_OUTPUT
-        else
-          echo &quot;available=false&quot; &gt;&gt; $GITHUB_OUTPUT
+- Docker base images (weekly)</file><file path="docs/cli.md"># OpenClaw CLI
+
+tank-os provides a host-side `openclaw` wrapper at `/usr/local/bin/openclaw`.
+It delegates into the running OpenClaw container, so users do not need to install
+a separate Node.js/OpenClaw CLI on the host and do not need to open an
+interactive shell inside the container for normal operations.
+
+For the default instance:
+
+```bash
+openclaw gateway status --deep
+openclaw doctor
+openclaw dashboard --no-open
+openclaw devices list
+openclaw devices approve &lt;request-id&gt;
+```
+
+## Dashboard URL
+
+To print the OpenClaw dashboard URL from the VM:
+
+```bash
+openclaw dashboard --no-open
+```
+
+If `gateway.auth.token` is configured as a plain token, the URL includes it as a
+fragment, for example `http://127.0.0.1:18789/#token=...`. If the token is
+SecretRef-managed, OpenClaw intentionally prints a non-tokenized URL and asks you
+to use the external token source instead.
+
+The wrapper targets the `openclaw` container by default. To target another
+container, either use `--container`:
+
+```bash
+openclaw --container openclaw-research doctor
+```
+
+or set `OPENCLAW_CONTAINER`:
+
+```bash
+export OPENCLAW_CONTAINER=openclaw-research
+openclaw doctor
+```
+
+For low-level debugging, use Podman directly:
+
+```bash
+podman exec -it openclaw sh
+podman logs -f openclaw
+```
+
+The Podman shell path is an escape hatch, not the main UX.
+
+## Single Instance And Multiple Instances
+
+The bootc image ships one default rootless Quadlet:
+
+```text
+/etc/containers/systemd/users/1000/openclaw.container
+```
+
+That keeps first boot predictable and gives the machine one obvious gateway,
+state directory, and service name:
+
+```text
+~/.openclaw
+openclaw.service
+openclaw
+```
+
+Multiple instances are still possible, but they should be explicit. A local
+multi-instance shape should follow the installer model:
+
+- unique container names, for example `openclaw-&lt;prefix&gt;-&lt;name&gt;`
+- unique user services, for example `openclaw-&lt;prefix&gt;-&lt;name&gt;.service`
+- unique data directories or volumes
+- unique host ports for gateway and bridge
+- per-instance env/config describing image, ports, secrets, and token
+
+For tank-os, the likely next step is to add an installer-style `tank-openclaw`
+instance manager that writes per-instance Quadlets and SecretRef config. Until
+then, the image intentionally starts one default gateway and the wrapper can
+target additional manually-created containers by name.</file><file path="docs/model-providers.md"># Model Providers And Secrets
+
+tank-os keeps model provider keys out of the image and out of `~/.openclaw/openclaw.json`.
+Users add keys as rootless Podman secrets owned by the `openclaw` user, then run
+`tank-openclaw-secrets` to sync Quadlet secret mounts and OpenClaw SecretRefs.
+
+## Built-In Provider Keys
+
+Create secrets after the machine boots, before starting or restarting the OpenClaw service:
+
+```bash
+sudo -iu openclaw
+printf &apos;%s&apos; &quot;$ANTHROPIC_API_KEY&quot; | podman secret create anthropic_api_key -
+printf &apos;%s&apos; &quot;$OPENAI_API_KEY&quot; | podman secret create openai_api_key -
+printf &apos;%s&apos; &quot;$GEMINI_API_KEY&quot; | podman secret create gemini_api_key -
+printf &apos;%s&apos; &quot;$OPENROUTER_API_KEY&quot; | podman secret create openrouter_api_key -
+tank-openclaw-secrets
+systemctl --user restart openclaw.service
+```
+
+Supported OpenClaw secret names:
+
+| Podman secret | Container env | Notes |
+| --- | --- | --- |
+| `anthropic_api_key` | `ANTHROPIC_API_KEY` | Built-in `anthropic/*` models use env auth directly; the helper does not write a provider override. |
+| `openai_api_key` | `OPENAI_API_KEY` | Built-in `openai/*` models use env auth directly; the helper does not write a provider override. |
+| `gemini_api_key` | `GEMINI_API_KEY` | Adds `models.providers.google` with a SecretRef. |
+| `google_api_key` | `GOOGLE_API_KEY` | Alternate Google env name; used only if `gemini_api_key` is absent. |
+| `openrouter_api_key` | `OPENROUTER_API_KEY` | Adds `models.providers.openrouter` with a SecretRef. |
+| `model_endpoint_api_key` | `MODEL_ENDPOINT_API_KEY` | Key only; custom endpoint metadata is still manual. |
+| `telegram_bot_token` | `TELEGRAM_BOT_TOKEN` | Adds `channels.telegram.botToken` with a SecretRef. |
+
+The helper writes rootless Quadlet drop-ins under
+`~/.config/containers/systemd/openclaw.container.d/` and updates
+`~/.openclaw/openclaw.json` with references like:
+
+```json
+{
+  &quot;secrets&quot;: {
+    &quot;providers&quot;: {
+      &quot;default&quot;: { &quot;source&quot;: &quot;env&quot; }
+    }
+  },
+  &quot;models&quot;: {
+    &quot;providers&quot;: {
+      &quot;google&quot;: {
+        &quot;baseUrl&quot;: &quot;https://generativelanguage.googleapis.com/v1beta&quot;,
+        &quot;api&quot;: &quot;google-generative-ai&quot;,
+        &quot;apiKey&quot;: { &quot;source&quot;: &quot;env&quot;, &quot;provider&quot;: &quot;default&quot;, &quot;id&quot;: &quot;GEMINI_API_KEY&quot; },
+        &quot;models&quot;: [{ &quot;id&quot;: &quot;gemini-3.1-pro-preview&quot;, &quot;name&quot;: &quot;gemini-3.1-pro-preview&quot; }]
+      }
+    }
+  }
+}
+```
+
+This mirrors the installer model: Podman secrets supply environment variables,
+and OpenClaw config references those env values through SecretRefs when explicit
+provider metadata is needed. For built-in Anthropic and OpenAI models, the env
+vars are enough, so `tank-openclaw-secrets` leaves the built-in provider catalog
+in place.
+
+## Custom Providers
+
+A Podman secret by itself is not enough to create an arbitrary provider. OpenClaw
+also needs the provider id, API adapter, base URL, and at least one model id.
+
+Use a normal Podman secret for the key:
+
+```bash
+sudo -iu openclaw
+printf &apos;%s&apos; &quot;$MOONSHOT_API_KEY&quot; | podman secret create moonshot_api_key -
+mkdir -p ~/.config/containers/systemd/openclaw.container.d
+cat &gt; ~/.config/containers/systemd/openclaw.container.d/20-moonshot.conf &lt;&lt;&apos;EOF&apos;
+[Container]
+Secret=moonshot_api_key,type=env,target=MOONSHOT_API_KEY
+EOF
+systemctl --user daemon-reload
+```
+
+Then add the non-secret provider metadata to `~/.openclaw/openclaw.json`:
+
+```json
+{
+  &quot;secrets&quot;: {
+    &quot;providers&quot;: {
+      &quot;default&quot;: { &quot;source&quot;: &quot;env&quot; }
+    }
+  },
+  &quot;models&quot;: {
+    &quot;providers&quot;: {
+      &quot;moonshot&quot;: {
+        &quot;baseUrl&quot;: &quot;https://api.moonshot.ai/v1&quot;,
+        &quot;api&quot;: &quot;openai-completions&quot;,
+        &quot;apiKey&quot;: { &quot;source&quot;: &quot;env&quot;, &quot;provider&quot;: &quot;default&quot;, &quot;id&quot;: &quot;MOONSHOT_API_KEY&quot; },
+        &quot;models&quot;: [{ &quot;id&quot;: &quot;kimi-k2.5&quot;, &quot;name&quot;: &quot;Kimi K2.5&quot; }]
+      }
+    }
+  },
+  &quot;agents&quot;: {
+    &quot;defaults&quot;: {
+      &quot;model&quot;: { &quot;primary&quot;: &quot;moonshot/kimi-k2.5&quot; }
+    }
+  }
+}
+```
+
+Restart after changing secrets or provider config:
+
+```bash
+systemctl --user restart openclaw.service
+```
+
+For now, `tank-openclaw-secrets` intentionally auto-configures only the known
+provider mappings above. Custom providers remain explicit so the helper does not
+guess an unsafe base URL or model catalog from a secret name.</file><file path="docs/provisioning.md"># Provisioning
+
+tank-os creates the `openclaw` user in the image, but instance access should be configured at provisioning time. Do not bake private SSH keys or passwords into the image.
+
+## Cloud-Init
+
+Use `examples/cloud-init/openclaw-user-data.yaml` as the starting point:
+
+```yaml
+#cloud-config
+users:
+  - name: openclaw
+    groups:
+      - wheel
+    sudo:
+      - ALL=(ALL) NOPASSWD:ALL
+    shell: /bin/bash
+    lock_passwd: true
+    ssh_authorized_keys:
+      - ssh-ed25519 REPLACE_WITH_YOUR_PUBLIC_KEY tank-os
+
+runcmd:
+  - [loginctl, enable-linger, openclaw]
+```
+
+After boot:
+
+```bash
+ssh openclaw@&lt;host&gt;
+cd ~/.openclaw
+openclaw status --deep
+```
+
+The `openclaw` command on the host delegates to the running OpenClaw container.
+See [cli.md](cli.md) for the wrapper behavior and multi-instance notes.
+
+### First Boot: Image Pull Timeout
+
+The OpenClaw gateway container (`ghcr.io/openclaw/openclaw:latest`) is ~900MB.
+On first boot, systemd starts the service while pulling the image. If the pull
+takes longer than the default 5-minute timeout, the service fails.
+
+**Workaround**: Pre-pull the image before or after first boot:
+
+```bash
+ssh openclaw@&lt;host&gt;
+sudo -iu openclaw
+podman pull ghcr.io/openclaw/openclaw:latest
+systemctl --user restart openclaw.service
+```
+
+Once cached, subsequent restarts are instant. Alternatively, increase the systemd
+timeout in the image customization (future PR).
+
+## EC2
+
+Use the cloud-init YAML as EC2 user data. Replace the public key placeholder before launch.
+
+If you want EC2 key-pair injection, verify the selected image/cloud-init path injects the key for `openclaw`. The explicit `ssh_authorized_keys` entry is the most predictable path for this image.
+
+Connect with:
+
+```bash
+ssh openclaw@&lt;ec2-public-ip&gt;
+```
+
+For browser access to the local-only gateway, use an SSH tunnel:
+
+```bash
+ssh -L 18789:127.0.0.1:18789 openclaw@&lt;ec2-public-ip&gt;
+```
+
+Then open `http://127.0.0.1:18789`.
+
+## Local macOS VM
+
+Podman Desktop can build a QCOW2 from the bootc image and start it as a local
+Linux VM. If you use the Podman Desktop bootc image builder&apos;s user form, set the
+user to `openclaw` and paste your SSH public key there. That build-time config
+is enough for a local test and you do not need a separate cloud-init seed ISO.
+
+The Podman Desktop BootC extension also provides a VM terminal. Use that directly
+for a quick demo. Use the SSH flow below when you want a separate macOS terminal
+or an SSH tunnel for browser access.
+
+When Podman Desktop starts the VM, it may use `macadam` and `gvproxy` rather than
+the normal `podman machine` list. To find the host-side SSH forward:
+
+```bash
+ps aux | grep -E &apos;macadam|gvproxy|bootc&apos;
+```
+
+Look for a process like:
+
+```text
+/opt/macadam/bin/gvproxy ... -ssh-port 63549 ... bootc-lobster-tank ...
+```
+
+Or export the forwarded port directly:
+
+```bash
+export PORT=&quot;$(
+  ps aux |
+    grep &apos;gvproxy&apos; |
+    grep &apos;bootc.*tank&apos; |
+    sed -nE &apos;s/.*-ssh-port ([0-9]+).*/\1/p&apos; |
+    tail -1
+)&quot;
+echo &quot;$PORT&quot;
+```
+
+Then SSH to localhost on that forwarded port:
+
+```bash
+ssh -o ConnectTimeout=5 \
+  -i ~/.ssh/id_ed25519 \
+  -p &quot;$PORT&quot; \
+  openclaw@localhost
+```
+
+To access the OpenClaw UI from the macOS host browser, keep an SSH tunnel open
+from another terminal:
+
+```bash
+ssh -N \
+  -o ConnectTimeout=5 \
+  -o ExitOnForwardFailure=yes \
+  -i ~/.ssh/id_ed25519 \
+  -p &quot;$PORT&quot; \
+  -L 18789:127.0.0.1:18789 \
+  -L 18790:127.0.0.1:18790 \
+  openclaw@localhost
+```
+
+Then open:
+
+```text
+http://127.0.0.1:18789
+```
+
+To print the dashboard URL from the VM, run:
+
+```bash
+openclaw dashboard --no-open
+```
+
+Or run it through SSH from your Mac:
+
+```bash
+ssh -i ~/.ssh/id_ed25519 \
+  -p &quot;$PORT&quot; \
+  openclaw@localhost \
+  &apos;openclaw dashboard --no-open&apos;
+```
+
+The forwarded port belongs to the macOS host. Do not combine it with the guest
+IP address. If you want to use the guest IP directly, use port 22 instead.
+
+To find the guest IP from the serial log, locate the VM log path in the `vfkit`
+process:
+
+```bash
+ps aux | grep -E &apos;vfkit|bootc&apos;
+```
+
+Look for a path like:
+
+```text
+logFilePath=/var/folders/.../macadam/applehv/bootc-lobster-tank.log
+```
+
+Then read the log:
+
+```bash
+tail -200 /var/folders/.../macadam/applehv/bootc-lobster-tank.log
+```
+
+The console prints the NIC address during boot, for example:
+
+```text
+enp0s1: 192.168.127.2
+```
+
+If that address is reachable from macOS, connect to the guest&apos;s normal SSH port:
+
+```bash
+ssh -o ConnectTimeout=5 \
+  -i ~/.ssh/id_ed25519 \
+  openclaw@192.168.127.2
+```
+
+For UTM, QEMU, or another local VM manager, attach a NoCloud seed ISO with:
+
+- `user-data` from `examples/cloud-init/openclaw-user-data.yaml`
+- `meta-data` from `examples/cloud-init/meta-data`
+
+On macOS, one simple way to create the ISO is:
+
+```bash
+tmpdir=&quot;$(mktemp -d)&quot;
+cp examples/cloud-init/openclaw-user-data.yaml &quot;$tmpdir/user-data&quot;
+cp examples/cloud-init/meta-data &quot;$tmpdir/meta-data&quot;
+hdiutil makehybrid -iso -joliet -default-volume-name cidata -o tank-os-seed.iso &quot;$tmpdir&quot;
+```
+
+Attach `tank-os-seed.iso` to the VM as a CD-ROM/cloud-init seed disk.
+
+## libvirt
+
+With recent `virt-install`, pass the same cloud-init files:
+
+```bash
+virt-install \
+  --connect qemu:///system \
+  --import \
+  --name tank-os \
+  --memory 4096 \
+  --disk /path/to/tank-os.qcow2 \
+  --os-variant fedora-unknown \
+  --cloud-init user-data=examples/cloud-init/openclaw-user-data.yaml,meta-data=examples/cloud-init/meta-data
+```
+
+If your `virt-install` does not support `--cloud-init user-data=...`, attach a NoCloud seed ISO instead.
+
+## Editing OpenClaw Files
+
+OpenClaw runs as the `openclaw` user. The editable state is owned by that user:
+
+```bash
+sudo -iu openclaw
+cd ~/.openclaw
+$EDITOR workspace-*/AGENTS.md
+```
+
+Restart the gateway after edits that require a restart:
+
+```bash
+systemctl --user restart openclaw.service
+```
+
+## Podman Secrets
+
+Create Podman secrets in the `openclaw` user&apos;s rootless store:
+
+```bash
+sudo -iu openclaw
+printf &apos;%s&apos; &quot;$ANTHROPIC_API_KEY&quot; | podman secret create anthropic_api_key -
+printf &apos;%s&apos; &quot;$OPENAI_API_KEY&quot; | podman secret create openai_api_key -
+```
+
+Then sync the generated Quadlet drop-ins and OpenClaw SecretRefs:
+
+```bash
+tank-openclaw-secrets
+systemctl --user restart openclaw.service
+```
+
+The helper only writes references. It does not copy secret values into `openclaw.json`.
+
+Do not create these secrets as root unless you intentionally switch to a rootful Podman runtime.
+
+See [model-providers.md](model-providers.md) for the full provider mapping and custom provider examples.</file><file path="docs/service-gator.md"># service-gator
+
+`service-gator` is an MCP server that gives sandboxed agents scoped access to external services such as GitHub, GitLab, Forgejo/Gitea, and JIRA. It should run outside the OpenClaw gateway container so OpenClaw agents can use it without receiving raw PATs.
+
+tank-os runs it as a second rootless Podman Quadlet owned by the `openclaw` user:
+
+```text
+/etc/containers/systemd/users/1000/service-gator.container
+```
+
+The service listens on loopback only:
+
+```text
+http://127.0.0.1:8080/mcp
+```
+
+## Configure Scopes
+
+The first boot helper creates an empty scope file:
+
+```text
+~/.config/service-gator/scopes.json
+```
+
+Edit it as the `openclaw` user:
+
+```bash
+sudo -iu openclaw
+$EDITOR ~/.config/service-gator/scopes.json
+```
+
+Example:
+
+```json
+{
+  &quot;scopes&quot;: {
+    &quot;gh&quot;: {
+      &quot;repos&quot;: {
+        &quot;myorg/myrepo&quot;: {
+          &quot;read&quot;: true,
+          &quot;push-new-branch&quot;: true,
+          &quot;create-draft&quot;: true
+        }
+      }
+    }
+  }
+}
+```
+
+service-gator watches the scope file and can reload it without restarting.
+
+## Create Secrets
+
+Create secrets in the `openclaw` user&apos;s rootless Podman store before starting or restarting `service-gator.service`:
+
+```bash
+sudo -iu openclaw
+printf &apos;%s&apos; &quot;$GH_TOKEN&quot; | podman secret create gh_token -
+printf &apos;%s&apos; &quot;$GITLAB_TOKEN&quot; | podman secret create gitlab_token -
+printf &apos;%s&apos; &quot;$FORGEJO_TOKEN&quot; | podman secret create forgejo_token -
+printf &apos;%s&apos; &quot;$JIRA_API_TOKEN&quot; | podman secret create jira_api_token -
+```
+
+Then sync drop-ins and restart:
+
+```bash
+tank-openclaw-secrets
+systemctl --user restart service-gator.service
+```
+
+service-gator receives secrets as files through Podman secrets and reads them via `*_FILE` variables such as `GH_TOKEN_FILE=/run/secrets/gh_token`.
+The base Quadlet does not reference any secrets directly, so the service can start before credentials exist. `tank-openclaw-secrets` adds a user drop-in containing only the Podman secrets that exist in the `openclaw` user&apos;s rootless secret store.
+
+## Connect OpenClaw
+
+The exact OpenClaw MCP config shape should be finalized against the OpenClaw MCP config docs before baking a default into the image. The intended endpoint is:
+
+```text
+http://127.0.0.1:8080/mcp
+```
+
+Keep service-gator on loopback unless you intentionally put it behind gateway auth or another trusted edge.
+
+For tools such as `git_push_local`, service-gator sees OpenClaw state mounted at `/workspaces`. Agent workspaces under `~/.openclaw/workspace-*` appear as `/workspaces/workspace-*` in the service-gator container.</file><file path="examples/cloud-init/meta-data">instance-id: tank-os-local
+local-hostname: tank-os</file><file path="examples/cloud-init/openclaw-user-data.yaml">users:
+  - name: openclaw
+    gecos: OpenClaw
+    groups:
+      - wheel
+    sudo:
+      - ALL=(ALL) NOPASSWD:ALL
+    shell: /bin/bash
+    lock_passwd: true
+    ssh_authorized_keys:
+      - ssh-ed25519 REPLACE_WITH_YOUR_PUBLIC_KEY tank-os
+runcmd:
+  - [loginctl, enable-linger, openclaw]</file><file path="examples/boot-tank-os-qemu.sh">set -euo pipefail
+DISK_IMAGE=&quot;${1:-.}&quot;
+DISK_PATH=&quot;&quot;
+QEMU_BIN=&quot;${QEMU_BIN:-qemu-system-x86_64}&quot;
+SSH_PORT=&quot;${SSH_PORT:-2222}&quot;
+QEMU_MEM=&quot;${QEMU_MEM:-4096}&quot;
+QEMU_SMP=&quot;${QEMU_SMP:-2}&quot;
+OVMF_CODE=&quot;${OVMF_CODE:-}&quot;
+OVMF_VARS=&quot;${OVMF_VARS:-}&quot;
+# Colors for output
+GREEN=&apos;\033[0;32m&apos;
+YELLOW=&apos;\033[1;33m&apos;
+RED=&apos;\033[0;31m&apos;
+NC=&apos;\033[0m&apos; # No Color
+# Resolve disk image path
+if [[ -d &quot;$DISK_IMAGE&quot; ]]; then
+    DISK_PATH=&quot;$DISK_IMAGE/qcow2/disk.qcow2&quot;
+elif [[ -f &quot;$DISK_IMAGE&quot; ]]; then
+    DISK_PATH=&quot;$DISK_IMAGE&quot;
+else
+    echo -e &quot;${RED}ERROR: Disk image not found: $DISK_IMAGE${NC}&quot;
+    echo &quot;Usage: $0 &lt;path-to-disk-image-or-output-dir&gt;&quot;
+    exit 1
+fi
+if [[ ! -f &quot;$DISK_PATH&quot; ]]; then
+    echo -e &quot;${RED}ERROR: Disk image not found: $DISK_PATH${NC}&quot;
+    exit 1
+fi
+echo -e &quot;${GREEN}tank-os QEMU Launcher${NC}&quot;
+echo &quot;-----------------------------------------------&quot;
+echo &quot;Disk Image: $DISK_PATH&quot;
+echo &quot;Memory: ${QEMU_MEM}M&quot;
+echo &quot;CPU Cores: $QEMU_SMP&quot;
+echo &quot;SSH Port: localhost:$SSH_PORT&quot;
+echo &quot;&quot;
+# Check QEMU availability
+if ! command -v &quot;$QEMU_BIN&quot; &amp;&gt; /dev/null; then
+    echo -e &quot;${RED}ERROR: $QEMU_BIN not found. Install QEMU and retry.${NC}&quot;
+    exit 1
+fi
+detect_ovmf() {
+    local code_fd=&quot;&quot;
+    local vars_fd=&quot;&quot;
+    # Prefer 4M variants (most common on modern systems)
+    for path in /usr/share/OVMF /usr/share/ovmf /usr/share/edk2-ovmf; do
+        if [[ -f &quot;$path/OVMF_CODE_4M.fd&quot; ]]; then
+            code_fd=&quot;$path/OVMF_CODE_4M.fd&quot;
+            [[ -f &quot;$path/OVMF_VARS_4M.fd&quot; ]] &amp;&amp; vars_fd=&quot;$path/OVMF_VARS_4M.fd&quot;
+            break
+        elif [[ -f &quot;$path/OVMF_CODE.fd&quot; ]]; then
+            code_fd=&quot;$path/OVMF_CODE.fd&quot;
+            [[ -f &quot;$path/OVMF_VARS.fd&quot; ]] &amp;&amp; vars_fd=&quot;$path/OVMF_VARS.fd&quot;
+            break
         fi
-    - name: Install Cosign
-      if: ${{ env.COSIGN_PUBLIC_KEY != &apos;&apos; &amp;&amp; steps.check_signing.outputs.available == &apos;true&apos; }}
-      uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6
-      with:
-        cosign-release: &apos;v2.2.4&apos;
-    - name: Sign image recursively
-      if: ${{ env.COSIGN_PUBLIC_KEY != &apos;&apos; &amp;&amp; steps.check_signing.outputs.available == &apos;true&apos; }}
-      env:
-        COSIGN_PRIVATE_KEY: ${{ secrets.COSIGN_PRIVATE_KEY }}
-        COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
-      run: |
-        IMAGE_URI=&quot;${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/${{ env.IMAGE }}&quot;
-        VERSION=&quot;${{ steps.parse_version.outputs.VERSION }}&quot;
-        cosign sign --yes --recursive \
-          --registry-referrers-mode=legacy \
-          --key env://COSIGN_PRIVATE_KEY \
-          -a tag=$VERSION \
-          -a tag=latest \
-          -a sha=${{ github.sha }} \
-          -a run_id=${{ github.run_id }} \
-          -a run_attempt=&quot;$GITHUB_RUN_ATTEMPT&quot; \
-          ${IMAGE_URI}:latest
-    - name: Verify image signature
-      if: ${{ env.COSIGN_PUBLIC_KEY != &apos;&apos; &amp;&amp; steps.check_signing.outputs.available == &apos;true&apos; }}
-      run: |
-        IMAGE_URI=&quot;${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/${{ env.IMAGE }}&quot;
-        echo &quot;${{ env.COSIGN_PUBLIC_KEY }}&quot; &gt; /tmp/cosign.pub
-        cosign verify \
-          --key /tmp/cosign.pub \
-          ${IMAGE_URI}:latest
-    - name: Cleanup signing keys
-      if: ${{ always() &amp;&amp; steps.check_signing.outputs.available == &apos;true&apos; }}
-      run: |
-        rm -f /tmp/cosign.pub
-        rm -rf ~/.sigstore
-        rm -rf ~/.cosign
-        unset COSIGN_PRIVATE_KEY
-        unset COSIGN_PASSWORD
-        sync
-    - name: Get manifest digest
-      id: manifest_digest
-      run: |
-        IMAGE_URI=&quot;${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/${{ env.IMAGE }}&quot;
-        DIGEST=$(skopeo inspect --format &apos;{{.Digest}}&apos; docker://${IMAGE_URI}:latest)
-        echo &quot;digest=${DIGEST}&quot; &gt;&gt; $GITHUB_OUTPUT
-  attest:
-    name: Attest, scan, and generate SBOM
-    runs-on: ubuntu-latest
-    needs: merge
-    env:
-      IMAGE_REGISTRY: ${{ vars.IMAGE_REGISTRY }}
-      IMAGE_NAMESPACE: ${{ vars.IMAGE_NAMESPACE }}
-      IMAGE: tank-os
-    permissions:
-      contents: write
-      packages: write
-      id-token: write
-      attestations: write
-      security-events: write
-    steps:
-    - name: Harden runner
-      uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411
-      with:
-        egress-policy: audit
-    - name: Checkout code
-      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
-      with:
-        persist-credentials: false
-    - name: Log in to Container Registry
-      uses: docker/login-action@650006c6eb7dba73a995cc03b0b2d7f5ca915bee
-      with:
-        registry: ${{ env.IMAGE_REGISTRY }}
-        username: ${{ secrets.REGISTRY_USER }}
-        password: ${{ secrets.REGISTRY_PASSWORD }}
-    - name: Generate SBOM
-      uses: anchore/sbom-action@e22c389904149dbc22b58101806040fa8d37a610
-      env:
-        SYFT_SELECT_CATALOGERS: &quot;-file&quot;
-        SYFT_FILE_METADATA_SELECTION: &quot;none&quot;
-      with:
-        image: ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/${{ env.IMAGE }}@${{ needs.merge.outputs.digest }}
-        format: cyclonedx-json
-        output-file: sbom.cdx.json
-    - name: Attest build provenance
-      uses: actions/attest-build-provenance@a2bbfa25375fe432b6a289bc6b6cd05ecd0c4c32
-      with:
-        subject-name: ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/${{ env.IMAGE }}
-        subject-digest: ${{ needs.merge.outputs.digest }}
-        push-to-registry: true
-    - name: Attest SBOM
-      uses: actions/attest-sbom@c604332985a26aa8cf1bdc465b92731239ec6b9e
-      with:
-        subject-name: ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/${{ env.IMAGE }}
-        subject-digest: ${{ needs.merge.outputs.digest }}
-        sbom-path: sbom.cdx.json
-        push-to-registry: true
-    - name: Run Trivy vulnerability scanner
-      uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25
-      with:
-        image-ref: ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/${{ env.IMAGE }}@${{ needs.merge.outputs.digest }}
-        format: sarif
-        output: trivy-results.sarif
-        severity: CRITICAL,HIGH
-    - name: Upload Trivy results to GitHub Security
-      uses: github/codeql-action/upload-sarif@8aad20d150bbac5944a9f9d289da16a4b0d87c1e
-      with:
-        sarif_file: trivy-results.sarif</file></files></repomix>
+    done
+    if [[ -z &quot;$code_fd&quot; ]]; then
+        echo -e &quot;${RED}ERROR: OVMF firmware not found in standard locations${NC}&quot;
+        echo &quot;Install OVMF (apt install ovmf or pacman -S edk2-ovmf) and retry.&quot;
+        exit 1
+    fi
+    echo &quot;$code_fd&quot;
+    echo &quot;$vars_fd&quot;
+}
+detect_kvm() {
+    if [[ -e /dev/kvm ]] &amp;&amp; [[ -r /dev/kvm ]] &amp;&amp; [[ -w /dev/kvm ]]; then
+        return 0
+    fi
+    return 1
+}
+if [[ -z &quot;$OVMF_CODE&quot; ]]; then
+    mapfile -t _ovmf_paths &lt; &lt;(detect_ovmf)
+    OVMF_CODE=&quot;${_ovmf_paths[0]}&quot;
+    OVMF_VARS=&quot;${_ovmf_paths[1]:-}&quot;
+fi
+if [[ -z &quot;$OVMF_VARS&quot; ]]; then
+    echo -e &quot;${RED}ERROR: OVMF variables file not found. Set OVMF_VARS=/path/to/OVMF_VARS.fd and retry.${NC}&quot;
+    exit 1
+fi
+echo -e &quot;${GREEN}OK: OVMF firmware: $(basename &quot;$OVMF_CODE&quot;)${NC}&quot;
+# Determine acceleration
+ACCEL=&quot;tcg&quot;
+if detect_kvm; then
+    ACCEL=&quot;kvm&quot;
+    echo -e &quot;${GREEN}OK: KVM available - using hardware acceleration${NC}&quot;
+else
+    echo -e &quot;${YELLOW}WARN: KVM unavailable - using TCG (software emulation)${NC}&quot;
+    echo &quot;   Performance will be reduced. For production, use KVM-enabled host.&quot;
+fi
+WORK_DIR=$(dirname &quot;$DISK_PATH&quot;)
+OVMF_VARS_COPY=&quot;$WORK_DIR/$(basename &quot;$OVMF_VARS&quot;)&quot;
+if [[ ! -f &quot;$OVMF_VARS_COPY&quot; ]]; then
+    echo -e &quot;${YELLOW}-&gt; Copying OVMF variables to work directory${NC}&quot;
+    cp &quot;$OVMF_VARS&quot; &quot;$OVMF_VARS_COPY&quot;
+fi
+echo &quot;&quot;
+echo -e &quot;${GREEN}Launching QEMU...${NC}&quot;
+echo &quot;-----------------------------------------------&quot;
+echo &quot;&quot;
+echo &quot;To access the VM:&quot;
+echo &quot;  ssh -i ~/.ssh/id_ed25519 -p $SSH_PORT openclaw@localhost&quot;
+echo &quot;&quot;
+echo &quot;To view the dashboard from host:&quot;
+echo &quot;  ssh -L 18789:127.0.0.1:18789 -p $SSH_PORT openclaw@localhost&quot;
+echo &quot;  Then: http://127.0.0.1:18789&quot;
+echo &quot;&quot;
+echo &quot;Press Ctrl+A X to quit QEMU (or &apos;quit&apos; in QEMU monitor)&quot;
+echo &quot;&quot;
+# Launch QEMU
+exec &quot;$QEMU_BIN&quot; \
+    -machine q35,accel=&quot;$ACCEL&quot; \
+    -cpu max \
+    -smp &quot;$QEMU_SMP&quot; \
+    -m &quot;$QEMU_MEM&quot; \
+    -drive file=&quot;$DISK_PATH&quot;,format=qcow2,if=virtio \
+    -drive if=pflash,format=raw,readonly=on,file=&quot;$OVMF_CODE&quot; \
+    -drive if=pflash,format=raw,file=&quot;$OVMF_VARS_COPY&quot; \
+    -device virtio-net-pci,netdev=net0 \
+    -netdev user,id=net0,hostfwd=tcp::&quot;$SSH_PORT&quot;-:22 \
+    -nographic</file><file path="examples/bootc-config.toml">[[customizations.user]]
+name = &quot;openclaw&quot;
+key = &quot;ssh-ed25519 REPLACE_WITH_YOUR_PUBLIC_KEY tank-os&quot;
+groups = [&quot;wheel&quot;]</file><file path=".gitignore">.DS_Store
+*.qcow2
+*.raw
+*.iso
+*.img
+*.zst
+/.tmp/
+/out-tank-os/
+/config.toml
+.playwright-mcp/
+prompt.md
+cosign.key
+cosign.pub</file><file path="commitlint.config.js"></file><file path="LICENSE">MIT License
+
+Copyright (c) 2026 Lobster Trap
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the &quot;Software&quot;), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.</file><file path="Makefile"># tank-os Makefile
+
+# Registry configuration (no defaults - must be set explicitly)
+IMAGE_REGISTRY ?=
+IMAGE_NAMESPACE ?=
+IMAGE := tank-os
+FEDORA_BOOTC_BASE ?=
+
+# Auto-detect architecture
+UNAME_ARCH := $(shell uname -m)
+ifeq ($(UNAME_ARCH),x86_64)
+	ARCH := amd64
+else ifeq ($(UNAME_ARCH),aarch64)
+	ARCH := arm64
+else ifeq ($(UNAME_ARCH),arm64)
+	ARCH := arm64
+else
+	ARCH := $(UNAME_ARCH)
+endif
+
+# Image URI construction
+ifneq ($(IMAGE_REGISTRY),)
+  ifneq ($(IMAGE_NAMESPACE),)
+    IMAGE_URI := $(IMAGE_REGISTRY)/$(IMAGE_NAMESPACE)/$(IMAGE)
+  else
+    IMAGE_URI := localhost/$(IMAGE)
+  endif
+else
+  IMAGE_URI := localhost/$(IMAGE)
+endif
+
+PLATFORM := linux/$(ARCH)
+
+ifneq ($(FEDORA_BOOTC_BASE),)
+  BUILD_ARGS := --build-arg FEDORA_BOOTC_BASE=$(FEDORA_BOOTC_BASE)
+endif
+
+.PHONY: help
+help:
+	@echo &quot;tank-os Makefile&quot;
+	@echo &quot;&quot;
+	@echo &quot;Common targets:&quot;
+	@echo &quot;  build          Build the bootc container image locally&quot;
+	@echo &quot;  push           Push the image to registry (requires IMAGE_REGISTRY and IMAGE_NAMESPACE)&quot;
+	@echo &quot;  build-qcow2    Build a QCOW2 disk image using bootc-image-builder&quot;
+	@echo &quot;  build-iso      Build an ISO installer using bootc-image-builder&quot;
+	@echo &quot;  lint           Run bootc container lint (if available)&quot;
+	@echo &quot;  verify         Verify image signature with cosign (if COSIGN_PUBLIC_KEY is set)&quot;
+	@echo &quot;  clean          Remove build artifacts&quot;
+	@echo &quot;&quot;
+	@echo &quot;Current configuration:&quot;
+	@echo &quot;  ARCH:            $(ARCH)&quot;
+	@echo &quot;  PLATFORM:        $(PLATFORM)&quot;
+	@echo &quot;  IMAGE_URI:       $(IMAGE_URI)&quot;
+	@echo &quot;  IMAGE_REGISTRY:  $(IMAGE_REGISTRY)&quot;
+	@echo &quot;  IMAGE_NAMESPACE: $(IMAGE_NAMESPACE)&quot;
+	@echo &quot;  FEDORA_BOOTC_BASE: $(FEDORA_BOOTC_BASE)&quot;
+
+.PHONY: build
+build:
+	podman build --platform $(PLATFORM) $(BUILD_ARGS) -t $(IMAGE_URI):latest -f bootc/Containerfile bootc
+
+.PHONY: push
+push:
+	@if [ -z &quot;$(IMAGE_REGISTRY)&quot; ] || [ -z &quot;$(IMAGE_NAMESPACE)&quot; ]; then \
+		echo &quot;Error: IMAGE_REGISTRY and IMAGE_NAMESPACE must be set to push images&quot;; \
+		echo &quot;Example: make push IMAGE_REGISTRY=quay.io IMAGE_NAMESPACE=myorg&quot;; \
+		exit 1; \
+	fi
+	podman push $(IMAGE_URI):latest
+
+.PHONY: build-qcow2
+build-qcow2:
+	@if [ ! -f &quot;config.toml&quot; ]; then \
+		echo &quot;Error: config.toml not found. Create one in the repo root for bootc-image-builder.&quot;; \
+		echo &quot;See docs/build.md for examples.&quot;; \
+		exit 1; \
+	fi
+	mkdir -p out-tank-os
+	podman run --rm --privileged \
+		--security-opt label=type:unconfined_t \
+		-v ./out-tank-os:/output \
+		-v ./config.toml:/config.toml:ro \
+		-v /var/lib/containers/storage:/var/lib/containers/storage \
+		quay.io/centos-bootc/bootc-image-builder:latest \
+		$(IMAGE_URI):latest \
+		--output /output/ \
+		--local \
+		--type qcow2 \
+		--target-arch $(ARCH) \
+		--rootfs xfs \
+		--config /config.toml
+
+.PHONY: build-iso
+build-iso:
+	@if [ ! -f &quot;config.toml&quot; ]; then \
+		echo &quot;Error: config.toml not found. Create one in the repo root for bootc-image-builder.&quot;; \
+		echo &quot;See docs/build.md for examples.&quot;; \
+		exit 1; \
+	fi
+	mkdir -p out-tank-os
+	podman run --rm --privileged \
+		--security-opt label=type:unconfined_t \
+		-v ./out-tank-os:/output \
+		-v ./config.toml:/config.toml:ro \
+		-v /var/lib/containers/storage:/var/lib/containers/storage \
+		quay.io/centos-bootc/bootc-image-builder:latest \
+		$(IMAGE_URI):latest \
+		--output /output/ \
+		--local \
+		--type anaconda-iso \
+		--target-arch $(ARCH) \
+		--rootfs xfs \
+		--config /config.toml
+
+.PHONY: lint
+lint:
+	@if command -v podman &gt;/dev/null 2&gt;&amp;1; then \
+		podman run --rm $(IMAGE_URI):latest bootc container lint; \
+	else \
+		echo &quot;podman command not found, skipping lint&quot;; \
+	fi
+
+.PHONY: verify
+verify:
+	@if [ -z &quot;$(COSIGN_PUBLIC_KEY)&quot; ]; then \
+		echo &quot;COSIGN_PUBLIC_KEY not set, skipping verification&quot;; \
+		exit 0; \
+	fi
+	@if [ -z &quot;$(IMAGE_REGISTRY)&quot; ] || [ -z &quot;$(IMAGE_NAMESPACE)&quot; ]; then \
+		echo &quot;Error: IMAGE_REGISTRY and IMAGE_NAMESPACE must be set to verify images&quot;; \
+		exit 1; \
+	fi
+	@if ! command -v cosign &gt;/dev/null 2&gt;&amp;1; then \
+		echo &quot;Error: cosign command not found&quot;; \
+		exit 1; \
+	fi
+	@trap &apos;rm -f /tmp/cosign.pub&apos; EXIT; \
+	printf &apos;%s\n&apos; &quot;$$COSIGN_PUBLIC_KEY&quot; &gt; /tmp/cosign.pub &amp;&amp; \
+	cosign verify --key /tmp/cosign.pub $(IMAGE_URI):latest
+
+.PHONY: clean
+clean:
+	rm -rf out-tank-os</file><file path="pyproject.toml">[tool.semantic_release]
+allow_zero_version = true
+commit_parser = &quot;conventional&quot;
+tag_format = &quot;v{version}&quot;
+version_variables = [
+  &quot;VERSION:*:nf&quot;,
+]</file><file path="README.md"># tank-os
+
+Fedora bootc image for running OpenClaw as a rootless Podman workload.
+
+bootc turns a container image into a bootable, updateable Linux OS image. tank-os
+uses it to package Fedora plus a rootless OpenClaw service into one VM, cloud, or
+device image.
+
+## Why This Is Useful
+
+tank-os turns OpenClaw into a bootable Linux appliance. You publish one bootc
+container image, build it into a cloud image, VM disk, or device image, and boot
+machines that come up with the same rootless OpenClaw service every time.
+
+The interesting part is that the OpenClaw runtime, host OS, Quadlet units, CLI
+shim, and upgrade path all travel together as one OCI container image.
+The mutable parts stay where users expect them: OpenClaw state under
+`~openclaw/.openclaw`, API keys in the `openclaw` user&apos;s rootless Podman secret
+store, and SSH access configured per instance.
+
+That makes tank-os a good fit for:
+
+- local demos that behave like the cloud target
+- lab or device fleets where every machine gets its own OpenClaw interface
+- sandboxed OpenClaw hosts with a mostly read-only, image-managed OS
+- transactional updates through bootc instead of ad hoc host package changes
+- per-machine secrets through rootless Podman secrets instead of baked-in API keys
+- fast rollback and rebuild loops while developing OpenClaw host integrations
+
+The result is still a normal Fedora system. Users SSH in as `openclaw`, edit
+OpenClaw files in `~/.openclaw`, use the host `openclaw` CLI wrapper, and let
+systemd/Podman keep the service running.
+
+For test and demo images, `openclaw` is granted passwordless sudo so local
+bring-up and bootc update testing are straightforward. For production, run
+OpenClaw as an unprivileged service user and use a separate administrative user
+or tightly scoped sudo policy for OS management and bootc updates.
+
+## Start Here
+
+- Build the image: [docs/build.md](docs/build.md)
+- Configure login access: [docs/provisioning.md](docs/provisioning.md)
+- Use the OpenClaw CLI: [docs/cli.md](docs/cli.md)
+- Configure model provider keys: [docs/model-providers.md](docs/model-providers.md)
+- Configure service-gator: [docs/service-gator.md](docs/service-gator.md)
+
+For bootc concepts and day-2 operations, see the upstream [bootc documentation](https://bootc-dev.github.io/bootc/).
+For disk image builds, see the [Podman Desktop BootC extension](https://github.com/podman-desktop/extension-bootc)
+and [bootc-image-builder docs](https://osbuild.org/docs/bootc/).
+
+The host `openclaw` command delegates into the running OpenClaw container. Log in as `openclaw` when manually editing files under `~/.openclaw`.
+
+For a Podman Desktop/macOS VM, see the [local macOS VM access notes](docs/provisioning.md#local-macos-vm) for finding the SSH port or guest IP.
+
+## Agent Prompt
+
+Use this prompt with a coding agent to get oriented and run the local VM flow:
+
+```text
+I am working in the tank-os repo. This repo builds a Fedora bootc image that runs OpenClaw as a rootless Podman Quadlet owned by the `openclaw` user. Please help me get a local smoke test running.
+
+Goals:
+- Clone the repository `git clone https://github.com/LobsterTrap/tank-os.git` and work from there (cd)
+- Build or use the published bootc image `quay.io/sallyom/tank-os:latest` for arm64 or amd64.
+- Build a QCOW2 disk image with the Podman Desktop BootC extension or manual bootc-image-builder flow.
+- Start the disk image as a Linux VM. On macOS, QEMU with user-mode networking is the most reliable path: `qemu-system-aarch64 -machine virt,highmem=on -accel hvf -cpu host -smp 4 -m 4096 -drive file=disk.qcow2,format=qcow2,if=virtio -drive if=pflash,format=raw,unit=0,file=$(brew --prefix)/share/qemu/edk2-aarch64-code.fd,readonly=on -device virtio-net-pci,netdev=net0 -netdev user,id=net0,hostfwd=tcp::2222-:22 -nographic`. Podman Desktop BootC extension or UTM also work.
+- If the default 10 GB disk is too small for the OpenClaw container image (~3.5 GB), resize before first boot: `qemu-img resize disk.qcow2 20G`. XFS grows automatically on next boot.
+- SSH in as `openclaw`, verify `sudo -n true`, `sudo bootc status`, `systemctl --user status openclaw.service`, and `podman ps`.
+- If the VM is running under Podman Desktop/macadam, find the forwarded SSH port from the `gvproxy` process and use `ssh -i ~/.ssh/id_ed25519 -p &lt;port&gt; openclaw@localhost`. For QEMU with the hostfwd above, use `ssh -i ~/.ssh/id_ed25519 -p 2222 openclaw@localhost`.
+- Use an SSH tunnel to open the UI from the host browser: `ssh -N -i ~/.ssh/id_ed25519 -p &lt;port&gt; -L 18789:127.0.0.1:18789 -L 18790:127.0.0.1:18790 openclaw@localhost`, then browse to `http://127.0.0.1:18789`.
+- Print the dashboard URL from the VM with `openclaw dashboard --no-open`.
+- Configure model provider and service-gator credentials using rootless Podman secrets as the `openclaw` user, then run `tank-openclaw-secrets`.
+
+Post-boot operations (once SSH&apos;d in as `openclaw`):
+- The host `openclaw` command delegates into the running container. Use it for all CLI operations: `openclaw gateway status --deep`, `openclaw doctor`, `openclaw dashboard --no-open`, `openclaw devices list`.
+- Check service health: `systemctl --user status openclaw.service`, `podman ps`, `podman logs -f openclaw`.
+- If the OpenClaw service fails on first boot with a permission error on `~/.openclaw`, fix ownership with `sudo chown -R openclaw:openclaw ~/.openclaw` and restart: `systemctl --user restart openclaw.service`.
+- If the service times out pulling the ~3.5 GB container image, pull manually first: `podman pull ghcr.io/openclaw/openclaw:latest`, then restart the service.
+- Edit OpenClaw config and workspace files directly under `~/.openclaw/`. Restart the service after config changes: `systemctl --user restart openclaw.service`.
+- Create model provider secrets: `printf &apos;%s&apos; &quot;$ANTHROPIC_API_KEY&quot; | podman secret create anthropic_api_key -`, then run `tank-openclaw-secrets` and restart the service. Supported secret names: `anthropic_api_key`, `openai_api_key`, `gemini_api_key`, `google_api_key`, `openrouter_api_key`.
+- Create service-gator secrets the same way: `printf &apos;%s&apos; &quot;$GH_TOKEN&quot; | podman secret create gh_token -`. Edit scopes at `~/.config/service-gator/scopes.json`. Then `tank-openclaw-secrets &amp;&amp; systemctl --user restart service-gator.service`.
+- For low-level debugging, open a shell inside the container: `podman exec -it openclaw sh`.
+
+Constraints:
+- Do not bake private keys or API keys into the image.
+- Keep OpenClaw state editable under `~openclaw/.openclaw`.
+- Prefer rootless Podman for the OpenClaw and service-gator services.
+- Use `bootc switch --apply quay.io/sallyom/tank-os:latest` to test image upgrades after the VM is running.
+
+Relevant docs in this repo:
+- `docs/build.md`
+- `docs/provisioning.md`
+- `docs/cli.md`
+- `docs/model-providers.md`
+- `docs/service-gator.md`
+```</file><file path="VERSION">0.0.0</file></files></repomix>

@@ -2,10 +2,7 @@
 name: hermes-agent-acp-skill
 description: "Hermes agent ACP skill: agent-to-agent delegation via Agent Communication Protocol"
 source: sources/hermes-agent-acp-skill/
-tags: [acp, ai-llm, plugin-sdk]
-  - orchestration
-  - codex
-  - claude-code
+tags: [acp, hermes-agent, orchestration, claude-code, plugin]
 ---
 # Hermes ACP Agent Skill
 

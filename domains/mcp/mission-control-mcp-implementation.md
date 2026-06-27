@@ -2,7 +2,7 @@
 name: mission-control-mcp
 description: "Mission Control MCP hub server — 49 tools across system, developer workflow, and service management"
 source: sources/mission-control/
-tags: [ai-llm, cli, dashboard, documentation, mcp, monitoring, plugin-sdk, security]
+tags: [cli, dashboard, documentation, mcp, monitoring, plugin-sdk, security]
 ---
 
 # Mission Control MCP Implementation
@@ -269,3 +269,9 @@ Playwright-based E2E tests in `tests/mcp-server.spec.ts` verify:
 - Tool invocation via `tools/call`
 - Error handling for unknown tools
 - Integration with live Mission Control API
+
+## Related
+
+- [[hermes-agent]]
+- [[mcp]]
+- [[mission-control]]

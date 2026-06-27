@@ -2,7 +2,7 @@
 name: n8n-mcp
 description: "n8n-MCP server — 1,845+ nodes indexed, MCP tools for AI-assisted n8n workflow authoring"
 source: sources/n8n-mcp/
-tags: [cli, docker, fair-code, integration, mcp, n8n, storage, typescript, workflow-automation]
+tags: [cli, docker, fair-code, integration, mcp, n8n, orchestration, storage, typescript, workflow-automation]
 ---
 
 # n8n-MCP

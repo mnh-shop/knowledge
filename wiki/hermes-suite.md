@@ -1,6 +1,6 @@
 ---
 name: hermes-suite
-tags: [agent-gateway, ai-llm, container, dashboard, docker, hermes, messaging, multi-platform, podman, typescript, wiki]
+tags: [agent, hermes-agent, agent-gateway, container, dashboard, docker, messaging, multi-platform, orchestration, podman, wiki]
 description: "Wiki entry for Hermes Suite: all-in-one Hermes container combining gateway, built-in dashboard, and browser-based WebUI (MIT)"
 source: sources/hermes-suite/
 ---

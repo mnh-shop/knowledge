@@ -1,6 +1,6 @@
 ---
 name: clawpier
-tags: [agent-manager, ai-llm, clawpier, container, dashboard, desktop, desktop-app, docker, git, gui, monitoring, plugin-sdk, rust, tauri, wiki]
+tags: [agent-manager, clawpier, container, dashboard, desktop, desktop, docker, git, gui, monitoring, tauri, wiki, agent, openclaw, typescript]
 description: "ClawPier — Tauri Desktop App for Managing Sandboxed AI Agents"
 source: sources/clawpier/
 ---

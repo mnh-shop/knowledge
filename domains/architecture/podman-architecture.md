@@ -1,6 +1,6 @@
 ---
 name: podman-architecture
-tags: [architecture, cli, container, container-engine, daemonless, golang, oci, plugin-sdk, podman, quadlet, rootless, security, storage, systemd, virtualization]
+tags: [architecture, cli, container, daemonless, golang, oci, plugin-sdk, podman, quadlet, rootless, security, storage, systemd, virtualization]
 description: "Podman Architecture"
 source: sources/podman/
 ---

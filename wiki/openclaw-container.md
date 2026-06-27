@@ -2,7 +2,7 @@
 name: openclaw-container
 description: "OpenClaw container deployment templates and patterns for AI agent infrastructure"
 source: sources/openclaw-container/
-tags: [ai-llm, cli, container, containerization, docker, git, messaging, monitoring, openclaw, plugin-sdk, podman, security, storage, virtualization]
+tags: [cli, container, deployment, docker, git, messaging, monitoring, openclaw, podman, security, storage, virtualization, python]
 status: active
 last_updated: 2026-06-25
 ---
@@ -430,6 +430,12 @@ Wrapper intercepts and calls: `http://whisper-service:8080/transcribe`
 **Maintained By**: Alex Corvin (@accorvin)
 **Repository**: https://github.com/accorvin/openclaw-container
 **Last Updated**: 2026-03-05
+
+## Related
+
+- [[openclaw]] — Parent project
+- [[podman]] — Container runtime platform
+- [[deployment]] — Container deployment patterns
 
 ## Related Resources
 

@@ -2,7 +2,7 @@
 name: deployment-architecture
 description: Defense-in-depth architecture for deploying autonomous AI agent stacks — macOS dev, Linux VM production, rootless Podman isolation
 source: sources/nix-podman-stacks/
-tags: [ai-llm, architecture, container, deployment, landscape, podman, quadlet, security, shared, systemd, virtualization]
+tags: [architecture, container, deployment, landscape, podman, quadlet, security, shared, systemd, virtualization]
   type: reference
 ---
 

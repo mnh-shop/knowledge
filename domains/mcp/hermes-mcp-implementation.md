@@ -2,7 +2,7 @@
 name: hermes-mcp-implementation
 description: "Hermes MCP implementation: MCP client consuming external tools and MCP server exposing Hermes capabilities"
 source: sources/hermes-agent/
-tags: [agent-gateway, cli, hermes, mcp, messaging, multi-platform]
+tags: [agent-gateway, cli, hermes-agent, mcp, messaging, multi-platform]
 ---
 
 # Hermes MCP Implementation — Two Modes

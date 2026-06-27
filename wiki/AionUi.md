@@ -2,7 +2,7 @@
 name: aion-ui
 description: "AionUi — open-source AI cowork desktop app with multi-agent support, MCP tools, and web UI mode"
 source: sources/AionUi/
-tags: [ai-llm, automation, cli, desktop-app, electron, mcp, react, typescript]
+tags: [automation, cli, desktop, electron, mcp, react, typescript, ui]
 ---
 
 # AionUi
@@ -87,6 +87,13 @@ Key sub-directories under `src/`:
 - **CI:** `just push` enforces lint, format, typecheck, and tests before every push; `prek` replicates the full CI pipeline
 
 ## Build & Run
+
+## Related
+
+- [[hermes-workspace]] — Similar desktop UI for multi-agent management
+- [[mcp]] — MCP protocol integration for tool access
+- [[openclaw]] — Alternative AI desktop assistant
+
 
 ```bash
 bun install              # install dependencies (Bun workspace)

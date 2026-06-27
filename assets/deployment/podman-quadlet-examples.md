@@ -1,6 +1,6 @@
 ---
 name: podman-quadlet-examples
-tags: [ai-llm, automation, container, container-engine, daemonless, dashboard, deployment, docker, golang, oci, orchestration, podman, quadlet, rootless, storage, systemd]
+tags: [automation, container, daemonless, dashboard, deployment, docker, golang, oci, orchestration, podman, quadlet, rootless, storage, systemd]
 description: "Podman Quadlet Examples -- Production-Ready Configurations"
 ---
 # Podman Quadlet Examples -- Production-Ready Configurations

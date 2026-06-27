@@ -1,6 +1,6 @@
 ---
 name: alphaclaw-architecture
-tags: [ai-llm, architecture, bootc, cli, container, dashboard, desktop-app, docker, express, mcp, messaging, monitoring, nodejs, openclaw, orchestration, plugin-sdk, storage, virtualization, watchdog, webhook, webhooks]
+tags: [architecture, bootc, cli, container, dashboard, desktop, docker, mcp, messaging, monitoring, openclaw, orchestration, plugin-sdk, storage, virtualization, webhook]
 description: "Architecture deep-dive of the AlphaClaw ops and setup layer for OpenClaw"
 source: sources/alphaclaw/
 ---

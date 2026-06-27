@@ -1,6 +1,6 @@
 ---
 name: hermes-bus
-tags: [cli, developer-tools, event-bus, messaging, monitoring, plugin-sdk, project-tag]
+tags: [cli, hermes-agent, developer-tools, event-bus, messaging, monitoring, agent, python]
 description: "Unix Socket IPC daemon that routes JSON messages between endpoints in the Hermes ecosystem"
 source: sources/hermes-bus/
 ---

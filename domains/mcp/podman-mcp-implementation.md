@@ -1,6 +1,7 @@
 ---
+name: podman-mcp-implementation
 title: "Podman REST API Implementation"
-tags: [REST-API, cli, container, containers, docker, golang, gorilla-mux, mcp, monitoring, podman, quadlet, systemd]
+tags: [cli, container, docker, golang, mcp, monitoring, podman, quadlet, systemd]
 description: "Analysis of Podman's REST API v2 server implementation (not MCP protocol)"
 source: sources/podman/
 date: 2026-06-24
@@ -259,3 +260,8 @@ Quadlet allows running containers as systemd services using `.container`, `.pod`
 - A substring match in a byte encoding table
 
 For MCP-based container management, one would need a separate MCP server that wraps Podman's REST API (e.g., using the `pkg/bindings/` Go client library or calling the REST API directly).
+
+## Related
+
+- [[mcp]]
+- [[podman]]

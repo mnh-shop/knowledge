@@ -1,6 +1,6 @@
 ---
 name: buildah
-tags: [ai-llm, buildah, container, daemonless, docker, git, golang, image-builder, oci, podman, quadlet, storage, systemd, wiki]
+tags: [buildah, container, daemonless, docker, fedora, git, image-builder, oci, podman, quadlet, storage, systemd, wiki, cli, golang]
 description: Buildah — OCI Image Builder
 source: sources/buildah/
 ---
@@ -206,7 +206,7 @@ See `install.md` in the repo for full details.
 
 - [Architecture](domains/architecture/buildah-architecture.md) — 4-layer architecture, image building pipeline, rootless mode
 - [Deployment](domains/deployment/buildah-deployment.md) — CI/CD pipelines, rootless config, agent image build examples
-- [Agent Profile](assets/agent-profiles/buildah-profile.md) — Buildah as a build-time tool, configuration reference
+- [Agent Profile](assets/profiles/buildah-profile.md) — Buildah as a build-time tool, configuration reference
 
 ## Related
 

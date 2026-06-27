@@ -1,4 +1,4 @@
 repo_slug=af-deep-research
 source_dir=/Users/admin1/Documents/knowledge/sources/af-deep-research/
 codegraph_command=codegraph init
-generated_at=2026-06-25 13:43:25
+generated_at=2026-06-26 18:32:55

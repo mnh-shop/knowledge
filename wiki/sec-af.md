@@ -1,6 +1,6 @@
 ---
 name: sec-af
-tags: [adversarial, ai-llm, auditor, docker, git, orchestration, python, sec-af, security, wiki]
+tags: [agentfield, auditor, docker, git, orchestration, python, sec-af, security, wiki]
 description: Wiki entry for SEC-AF — AI-native security auditor that confirms exploitability, not just pattern detection (Apache 2.0)
 source: sources/sec-af/
 ---

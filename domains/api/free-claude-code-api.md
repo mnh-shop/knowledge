@@ -337,3 +337,8 @@ Key environment variables (from `.env.example` and `config/settings.py`):
 | `config/settings.py` | Centralized Settings model |
 | `config/provider_catalog.py` | Provider metadata and defaults |
 | `config/paths.py` | Filesystem paths for config and logs |
+
+## Related
+
+- [[api]]
+- [[free-claude-code]]

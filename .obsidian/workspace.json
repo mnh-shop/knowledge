@@ -11,14 +11,10 @@
             "id": "feefe7facd1329b6",
             "type": "leaf",
             "state": {
-              "type": "markdown",
-              "state": {
-                "file": "wiki/tank-os.md",
-                "mode": "source",
-                "source": false
-              },
-              "icon": "lucide-file",
-              "title": "tank-os"
+              "type": "graph",
+              "state": {},
+              "icon": "lucide-git-fork",
+              "title": "Graph view"
             }
           }
         ]
@@ -48,23 +44,6 @@
             }
           },
           {
-            "id": "97ec6dd4e78d4ab6",
-            "type": "leaf",
-            "state": {
-              "type": "search",
-              "state": {
-                "query": "file:",
-                "matchingCase": false,
-                "explainSearch": false,
-                "collapseAll": false,
-                "extraContext": false,
-                "sortOrder": "alphabetical"
-              },
-              "icon": "lucide-search",
-              "title": "Search"
-            }
-          },
-          {
             "id": "a1e2a31479068fb6",
             "type": "leaf",
             "state": {
@@ -74,7 +53,8 @@
               "title": "Bookmarks"
             }
           }
-        ]
+        ],
+        "currentTab": 1
       }
     ],
     "direction": "horizontal",
@@ -202,8 +182,11 @@
       "bases:Create new base": false
     }
   },
-  "active": "feefe7facd1329b6",
+  "active": "97ec6dd4e78d4ab6",
   "lastOpenFiles": [
+    "wiki/sablier.md.tmp.33190.47d0deb7b20e",
+    "references/INDEX.md",
+    "wiki/tank-os.md",
     "tests/refine-capability-tags.py",
     "assets/n8n-workflows/n8n-category-catalog.md",
     "wiki/nix.dev.md",
@@ -237,9 +220,6 @@
     "wiki/domains/architecture",
     "wiki/domains",
     "wiki/hermes-optimization-guide.md",
-    "graphs/alphaclaw/run-info.txt",
-    "sources/alphaclaw/lib/setup/skills/gog-cli/tasks.md",
-    "sources/alphaclaw/lib/setup/skills/gog-cli/sheets.md",
     "sources/alphaclaw/lib/public/assets/icons/slack.svg",
     "sources/alphaclaw/lib/public/assets/icons/whatsapp.svg",
     "sources/alphaclaw/lib/public/assets/icons/google_icon.svg",

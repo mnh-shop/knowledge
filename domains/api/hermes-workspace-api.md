@@ -1,6 +1,6 @@
 ---
 name: hermes-workspace-api
-tags: [agent-gateway, ai-llm, api, cli, dashboard, desktop-app, hermes, mcp, messaging, multi-platform, orchestration, plugin-sdk, quadlet, rest-api, systemd, typescript]
+tags: [agent-gateway, api, cli, dashboard, desktop, hermes-agent, mcp, messaging, multi-platform, orchestration, plugin-sdk, quadlet, rest-api, systemd, typescript]
 description: Hermes Workspace API reference for the web/desktop command center
 source: sources/hermes-workspace/
 ---

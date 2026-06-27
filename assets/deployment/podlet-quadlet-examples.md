@@ -1,6 +1,6 @@
 ---
 name: podlet-quadlet-examples
-tags: [acp, ai-llm, container, conversion, deployment, docker, podlet, podman, quadlet, quadlet-generator, rust, storage, systemd]
+tags: [acp, container, deployment, docker, podlet, podman, quadlet, rust, storage, systemd]
 description: "Podlet Quadlet Examples"
 ---
 

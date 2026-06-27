@@ -1,6 +1,6 @@
 ---
 name: podlet-deployment
-tags: [acp, ai-llm, container, conversion, deployment, docker, git, podlet, podman, quadlet, quadlet-generator, rust, storage, systemd]
+tags: [acp, container, deployment, docker, git, podlet, podman, quadlet, rust, storage, systemd]
 description: "Podlet Deployment Guide"
 source: sources/podlet/
 ---

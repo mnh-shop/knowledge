@@ -1,6 +1,6 @@
 ---
 name: awesome-openclaw-usecases
-tags: [ai-llm, automation, community, git, messaging, openclaw, plugin-sdk, productivity, security, use-cases]
+tags: [automation, git, messaging, openclaw, security, reference]
 description: "Curated collection of 42 real-world OpenClaw use cases across social media, creativity, DevOps, productivity, research, and finance"
 source: sources/awesome-openclaw-usecases/
 ---

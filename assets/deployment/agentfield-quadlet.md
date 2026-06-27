@@ -1,6 +1,6 @@
 ---
 name: agentfield-quadlet
-tags: [agentfield, ai-llm, container, control-plane, deployment, docker, golang, harness, identity, mcp, orchestration, podman, quadlet, security, storage, systemd]
+tags: [agentfield, container, control-plane, deployment, docker, golang, harness, identity, mcp, orchestration, podman, quadlet, security, storage, systemd]
 description: Rootless Podman Quadlet deployment configuration for AgentField control plane with PostgreSQL, volume, and network units
 ---
 

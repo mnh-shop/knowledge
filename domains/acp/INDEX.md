@@ -12,18 +12,21 @@ Analysis of ACP (Agent Communication Protocol) implementations across repositori
 
 | Doc | Repo | Description |
 |-----|------|-------------|
-| [[agentfield-acp-implementation\|AgentField ACP]] | agentfield | Agent-to-agent routing, identity, authorization, and execution |
-| [[alphaclaw-acp-implementation\|AlphaClaw ACP]] | alphaclaw | No ACP found; related multi-agent features |
-| [[free-claude-code-acp-implementation\|Free Claude Code ACP]] | free-claude-code | ACP subagent delegation and communication |
-| [[goclaw-acp-implementation\|GoClaw ACP]] | goclaw | External agent subprocess orchestration via JSON-RPC |
-| [[hermes-acp-implementation\|Hermes ACP]] | hermes-agent | Server mode for ACP clients + client mode for external agents |
-| [[n8n-acp-implementation\|n8n ACP]] | n8n | No ACP found; uses MCP and REST API instead |
-| [[nanobot-acp-implementation\|Nanobot ACP]] | nanobot | Worker agents, task decomposition, subagent system |
-| [[openclaw-acp-implementation\|OpenClaw ACP]] | openclaw | ACP server with session control plane, approval classifier, event ledger |
-| [[podlet-acp-implementation\|Podlet ACP]] | podlet | No ACP found (Rust CLI tool, no agent protocol) |
-| [[podman-acp-implementation\|Podman ACP]] | podman | No ACP found (REST API daemon, not agent protocol) |
-| [[sablier-acp-implementation\|Sablier ACP]] | sablier | No ACP found (container scaling tool) |
-| [[tank-os-acp-implementation\|Tank OS ACP]] | tank-os | No ACP found (container OS, runtime environment) |
+| [[agentfield-acp-implementation|AgentField ACP]] | agentfield | Agent-to-agent routing, identity, authorization, and execution |
+| [[alphaclaw-acp-implementation|AlphaClaw ACP]] | alphaclaw | No ACP found; related multi-agent features |
+| [[free-claude-code-acp-implementation|Free Claude Code ACP]] | free-claude-code | ACP subagent delegation and communication |
+| [[goclaw-acp-implementation|GoClaw ACP]] | goclaw | External agent subprocess orchestration via JSON-RPC |
+| [[hermes-acp-implementation|Hermes ACP]] | hermes-agent | Server mode for ACP clients + client mode for external agents |
+| [[n8n-acp-implementation|n8n ACP]] | n8n | No ACP found; uses MCP and REST API instead |
+| [[nanobot-acp-implementation|Nanobot ACP]] | nanobot | Worker agents, task decomposition, subagent system |
+| [[oh-my-pi-acp-implementation|oh-my-pi ACP]] | oh-my-pi | No ACP found (coding agent, no agent protocol) |
+| [[openclaw-acp-implementation|OpenClaw ACP]] | openclaw | ACP server with session control plane, approval classifier, event ledger |
+| [[pi-acp-implementation|Pi ACP]] | pi | No ACP found (CLI tool, no agent protocol) |
+| [[podlet-acp-implementation|Podlet ACP]] | podlet | No ACP found (Rust CLI tool, no agent protocol) |
+| [[podman-acp-implementation|Podman ACP]] | podman | No ACP found (REST API daemon, not agent protocol) |
+| [[sablier-acp-implementation|Sablier ACP]] | sablier | No ACP found (container scaling tool) |
+| [[tank-os-acp-implementation|Tank OS ACP]] | tank-os | No ACP found (container OS, runtime environment) |
+| [[zot-acp-implementation|Zot ACP]] | zot | Swarm multi-agent subprocess orchestration with JSONL event protocol |
 
 ## Key Patterns
 

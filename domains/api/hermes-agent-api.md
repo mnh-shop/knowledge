@@ -1,14 +1,9 @@
 ---
+name: hermes-agent-api
 title: Hermes Agent REST API
-tags: [ai-llm, cli, dashboard, git, plugin-sdk, rest-api]
-  - api
-  - rest
-  - hermes
-  - openai-compatible
-  - agent
-created: 2026-06-24
-description: Complete REST API documentation for the Hermes Agent gateway, covering the OpenAI-compatible Chat/Responses APIs, custom Runs API, Sessions/Jobs control plane, skills/toolsets discovery, health probes, and the Dashboard auth API.
+tags: [api, cli, dashboard, git, hermes-agent, plugin-sdk, rest-api]
 source: sources/hermes-agent/
+description: "Complete REST API documentation for the Hermes Agent gateway, covering the OpenAI-compatible Chat/Responses APIs, custom Runs API, Sessions/Jobs control plane, skills/toolsets discovery, health probes, and the Dashboard auth API."
 ---
 
 # Hermes Agent REST API
@@ -677,3 +672,8 @@ All boolean flags in `/v1/capabilities.features`:
 - Code location: `gateway/platforms/api_server.py` (class `APIServerAdapter`)
 - Dashboard server: port 9119, enabled by `HERMES_DASHBOARD=1`
 - Proxy server: port 8645, started via `hermes proxy start`
+
+## Related
+
+- [[api]]
+- [[hermes-agent]]

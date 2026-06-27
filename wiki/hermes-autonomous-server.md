@@ -2,14 +2,7 @@
 name: hermes-autonomous-server
 description: "Autonomous Hermes server agent with self-healing and adaptive runtime capabilities"
 source: sources/hermes-autonomous-server/
-tags: [ai-llm, monitoring, security]
-  - hermes
-  - autonomous-server
-  - deployment
-  - linux-server
-  - systemd
-  - cron
-  - nous-portal
+tags: [agent, hermes-agent, deployment, monitoring, security]
 ---
 
 # 🚀 Hermes Agent – Autonomous Linux Server Setup
@@ -134,6 +127,13 @@ harmes uninstall
 ```
 
 ## Why This Approach?
+
+## Related
+
+- [[hermes-agent]] — Core Hermes agent platform
+- [[monitoring]] — Autonomous server monitoring
+- [[deployment]] — Deployment patterns
+
 
 ✅ **Advantages:**
 - Native Hermes scheduler integration

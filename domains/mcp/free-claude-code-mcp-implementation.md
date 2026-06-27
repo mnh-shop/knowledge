@@ -111,3 +111,8 @@ free-claude-code does not host its own MCP tools or resources. It is a gateway t
 - Rejects MCP configs on providers that do not support them (DeepSeek)
 - Preserves MCP tool name namespacing for the OpenAI Responses adapter
 - Does NOT implement any MCP server endpoints or tool/resource listings
+
+## Related
+
+- [[free-claude-code]]
+- [[mcp]]

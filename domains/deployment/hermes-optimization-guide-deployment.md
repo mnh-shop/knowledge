@@ -2,7 +2,7 @@
 name: hermes-optimization-guide-deployment
 description: "Deployment patterns and infrastructure templates from the Hermes Optimization Guide: systemd units, Docker Compose observability stack, Caddy reverse proxy, VPS bootstrap script, cron schedules, and reference architectures"
 source: sources/hermes-optimization-guide/
-tags: [cli, dashboard, deployment, desktop-app, developer-tools, docker, mcp, messaging, monitoring, multi-platform, optimization, plugin-sdk, security, storage, systemd, webhook]
+tags: [cli, dashboard, deployment, desktop, developer-tools, docker, mcp, messaging, monitoring, multi-platform, optimization, plugin-sdk, security, storage, systemd, webhook]
 ---
 
 # Hermes Optimization Guide -- Deployment Domain
@@ -159,3 +159,9 @@ The deployment includes multiple defense layers (documented in Part 19 and enfor
 - The Docker Compose stack is referenced by Part 20 (Observability)
 - The VPS bootstrap script ties everything together: systemd, Caddy, skills, config template
 - All reference architectures use the same templates, differing only in which ones apply
+
+## Related
+
+- [[deployment]]
+- [[hermes-agent]]
+- [[hermes-optimization-guide]]

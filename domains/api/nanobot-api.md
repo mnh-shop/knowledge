@@ -2,7 +2,7 @@
 name: nanobot-api
 description: "Nanobot OpenAI-compatible REST API — chat completions, agent sessions, tool execution"
 source: sources/nanobot/
-tags: [agent-profile, ai-llm, cli, documentation, rest-api]
+tags: [agent-profile, cli, documentation, rest-api]
 ---
 # Nanobot REST API (OpenAI-Compatible)
 
@@ -129,3 +129,8 @@ The API is started via `nanobot serve` (defined in `nanobot/cli/commands.py`):
 | `nanobot/agent/loop.py` | AgentLoop used by the API to process requests |
 | `docs/openai-api.md` | User-facing API documentation |
 | `tests/api/` | API server tests |
+
+## Related
+
+- [[api]]
+- [[nanobot]]

@@ -2,7 +2,7 @@
 name: sablier-api
 description: "Sablier REST API reference — Gin-based dynamic container scaling endpoints"
 source: sources/sablier/
-tags: [api, container, gin, rest-api, sablier, scaling]
+tags: [api, container, rest-api, sablier, scaling]
 ---
 
 # Sablier — API Reference

@@ -2,7 +2,7 @@
 name: tank-os-api
 description: "Tank OS — no REST API (bootc-based container OS image)"
 source: sources/tank-os/
-tags: [api, container-os, tank-os]
+tags: [api, container, tank-os]
 ---
 
 # Tank OS — API Reference

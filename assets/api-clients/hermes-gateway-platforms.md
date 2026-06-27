@@ -1,6 +1,6 @@
 ---
 name: hermes-gateway-platforms
-tags: [agent-gateway, ai-llm, api-client, cli, hermes, messaging, multi-platform, plugin-sdk, rest-api, typescript, webhook]
+tags: [agent-gateway, cli, hermes-agent, messaging, multi-platform, plugin-sdk, rest-api, typescript, webhook]
 description: "Gateway platform adapter reference for Hermes Agent: 20+ messaging platforms through the BasePlatformAdapter pattern"
 ---
 

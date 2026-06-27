@@ -2,7 +2,7 @@
 name: 1claw-hermes
 description: "1Claw secrets management integration for Hermes Agent — MCP vault, Shroud TEE proxy, subagent identities, and Intents API"
 source: sources/1claw-hermes/
-tags: [ai-llm, blockchain, cli, git, hermes, mcp, messaging, plugin-sdk, typescript]
+tags: [agent, cli, git, mcp, messaging, typescript]
 ---
 
 # 1claw-hermes
@@ -260,6 +260,12 @@ Supports overrides: `--provider`, `--model`, `--hermes-dir`, `--env-path`, `--si
 | `zod` ^3.22.0 | Runtime config validation |
 
 ## Tests
+
+## Related
+
+- [[hermes-agent]] — Parent project for secrets integration
+- [[mcp]] — MCP protocol for secrets vault integration
+
 
 All test files in `test/`:
 

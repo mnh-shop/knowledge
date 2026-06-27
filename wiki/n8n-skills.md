@@ -1,10 +1,13 @@
 ---
+name: n8n-skills
 title: n8n-Skills
 description: Claude Code skills for building flawless n8n workflows using the n8n-mcp MCP server
 source: sources/n8n-skills/
+tags: [n8n, skill, plugin, skills-platform]
 date: 2026-06-25
 type: skills
 status: active
+tags: [plugin, skills-platform]
 ---
 
 # n8n-Skills
@@ -110,6 +113,12 @@ n8n-skills/
 - **Test thoroughly** - each skill includes 3+ evaluations for quality assurance
 
 ## Getting Started
+
+## Related
+
+- [[n8n]] — Core n8n platform
+- [[n8n-mcp]] — MCP server for n8n
+
 
 1. Install the plugin via Claude Code
 2. Configure your n8n-mcp MCP server

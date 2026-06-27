@@ -2,7 +2,7 @@
 name: awesome-n8n-templates
 description: "Curated collection of 280+ free ready-to-import n8n workflow templates across 18 categories"
 source: sources/awesome-n8n-templates/
-tags: [ai-llm, fair-code, git, integration, messaging, n8n, security, storage, templates, workflow-automation]
+tags: [fair-code, git, integration, messaging, n8n, n8n-workflows, security, storage, templates, workflow-automation, reference]
 ---
 
 # awesome-n8n-templates
@@ -27,6 +27,10 @@ The repository organizes templates into 18 categories covering a wide range of p
 The repository also includes localized READMEs in 13 languages and usage statistics tracked via star-history.
 
 ## Source
+
+- [[n8n-workflows]] — n8n workflow catalog
+- [[n8n]] — Core n8n platform
+
 
 - **Source path**: `/Users/admin1/Documents/knowledge/sources/awesome-n8n-templates`
 - **Repository**: [enescingoz/awesome-n8n-templates](https://github.com/enescingoz/awesome-n8n-templates)

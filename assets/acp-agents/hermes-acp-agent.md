@@ -1,6 +1,6 @@
 ---
 name: hermes-acp-agent
-tags: [acp, acp-agent, agent-gateway, ai-llm, cli, hermes, mcp, messaging, multi-platform, typescript]
+tags: [acp, agent-gateway, cli, hermes-agent, mcp, messaging, multi-platform, typescript]
 description: ACP agent configuration for Hermes Agent wrapping its AIAgent behind the Agent Communication Protocol
 ---
 

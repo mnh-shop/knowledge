@@ -1,6 +1,6 @@
 ---
 name: hermes-workspace-architecture
-tags: [agent-gateway, ai-llm, architecture, cli, dashboard, desktop-app, hermes, mcp, messaging, multi-platform, orchestration, plugin-sdk, quadlet, systemd, typescript]
+tags: [agent-gateway, architecture, cli, dashboard, desktop, hermes-agent, mcp, messaging, multi-platform, orchestration, plugin-sdk, quadlet, systemd, typescript]
 description: "Hermes Workspace architecture: web/desktop command center for Hermes Agent with swarm orchestration and MCP hub"
 source: sources/hermes-workspace/
 ---

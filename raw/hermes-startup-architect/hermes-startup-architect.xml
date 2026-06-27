@@ -24,7 +24,7 @@ or other automated processes.</purpose><file_format>The content is organized as 
 - Content has been formatted for parsing in xml style
 - Content has been compressed - code blocks are separated by ⋮---- delimiter
 - Security check has been disabled - content may contain sensitive information
-- Files are sorted by Git change count (files with more changes are at the bottom)</notes></file_summary><user_provided_header>Repository: hermes-startup-architect | Generated from knowledge/sources | Generated: 2026-06-24 14:39:53</user_provided_header><directory_structure>.codegraph/
+- Files are sorted by Git change count (files with more changes are at the bottom)</notes></file_summary><user_provided_header>Repository: hermes-startup-architect | Generated from knowledge/sources | Generated: 2026-06-26 16:51:01</user_provided_header><directory_structure>.codegraph/
   .gitignore
 examples/
   forge-kit/

@@ -1,6 +1,6 @@
 ---
 name: buildah-deployment
-tags: [ai-llm, buildah, container, daemonless, deployment, docker, git, golang, image-builder, oci, podman, quadlet, security, storage, systemd]
+tags: [buildah, container, daemonless, deployment, docker, git, golang, image-builder, oci, podman, quadlet, security, storage, systemd]
 description: Buildah Deployment
 source: sources/buildah/
 ---

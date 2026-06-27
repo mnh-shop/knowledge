@@ -1,6 +1,6 @@
 ---
 name: hermes-suite-deployment
-tags: [agent-gateway, container, dashboard, deployment, docker, git, hermes, messaging, multi-platform, podman, security, typescript]
+tags: [agent-gateway, container, dashboard, deployment, docker, git, hermes-agent, messaging, multi-platform, podman, security, typescript]
 description: Hermes Suite deployment guide for the all-in-one Hermes container image combining gateway, dashboard, and WebUI
 source: sources/hermes-suite/
 ---

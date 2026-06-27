@@ -1,7 +1,8 @@
 ---
 name: mcp
 description: "Model Context Protocol — the universal protocol for LLM tool integration"
-tags: [mcp, protocol, ai-llm, integration]
+source: sources/hermes-agent/
+tags: [integration, mcp, protocol, reference]
 ---
 
 # Model Context Protocol (MCP)

@@ -1,6 +1,6 @@
 ---
 name: tank-os-quadlet
-tags: [bootc, container, container-os, deployment, fedora, git, image-based, immutable-os, mcp, podman, quadlet, systemd, tank-os]
+tags: [bootc, container, deployment, fedora, git, image-based, immutable-os, mcp, podman, quadlet, systemd, tank-os]
 description: Tank OS Quadlet Files
 ---
 

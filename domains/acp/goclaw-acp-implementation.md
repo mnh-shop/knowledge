@@ -2,7 +2,7 @@
 name: goclaw-acp
 description: "GoClaw ACP agent communication protocol — external agent subprocess orchestration via JSON-RPC"
 source: sources/goclaw/
-tags: [acp, ai-llm, cli, documentation, mcp, orchestration, security]
+tags: [acp, cli, documentation, mcp, orchestration, security]
 ---
 # GoClaw ACP (Agent Communication Protocol) Implementation
 
@@ -440,3 +440,9 @@ The admin UI includes an ACP configuration section at:
 - `internal/providers/acp_provider.go` -- `ACPProvider`, session reaper, Chat/ChatStream implementation
 - `internal/providers/adapter_anthropic.go` -- ACP lookup index migration
 - `migrations/000023_agent_hard_delete_and_file_writer_merge.down.sql` -- ACP lookup index `idx_acp_lookup`
+
+## Related
+
+- [[acp]]
+- [[goclaw]]
+- [[podman]]

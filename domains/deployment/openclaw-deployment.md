@@ -1,6 +1,6 @@
 ---
 name: openclaw-deployment
-tags: [acp, agent-gateway, ai-llm, cli, container, deployment, desktop-app, docker, git, live-canvas, mcp, messaging, openclaw, personal-assistant, plugin-sdk, podman, quadlet, storage, systemd, typescript]
+tags: [acp, agent-gateway, cli, container, deployment, desktop, docker, git, live-canvas, mcp, messaging, openclaw, personal-assistant, plugin-sdk, podman, quadlet, storage, systemd, typescript]
 description: OpenClaw Deployment Guide
 source: sources/openclaw/
 ---
@@ -819,5 +819,5 @@ Creates a sanitized zip with config shape, log summaries, health snapshots, stab
 - [[domains/acp/openclaw-acp-implementation.md]] -- ACP protocol implementation
 - [[domains/api/openclaw-api.md]] -- API reference
 - [[assets/deployment/openclaw-quadlet.md]] -- Quadlet deployment patterns
-- [[assets/agent-profiles/openclaw-profile.md]] -- Quick reference profile
+- [[assets/profiles/openclaw-profile.md]] -- Quick reference profile
 - [[wiki/openclaw.md]] -- Wiki entry

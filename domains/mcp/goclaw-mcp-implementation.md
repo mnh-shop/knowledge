@@ -2,7 +2,7 @@
 name: goclaw-mcp
 description: "GoClaw MCP client/server implementation — bridge tools, connection pool, OAuth"
 source: sources/goclaw/
-tags: [ai-llm, cli, documentation, mcp, security, storage]
+tags: [cli, documentation, mcp, security, storage]
 ---
 # GoClaw MCP Implementation
 
@@ -292,3 +292,9 @@ type ToolHints struct {
 - `internal/http/chat_completions.go` -- Chat completions endpoint that routes to agents
 - `internal/agent/loop_lazy_mcp_test.go` -- Tests for lazy MCP tool activation
 - `internal/agent/loop_mcp_user.go` -- MCP user-context tool loop integration
+
+## Related
+
+- [[goclaw]]
+- [[mcp]]
+- [[podman]]

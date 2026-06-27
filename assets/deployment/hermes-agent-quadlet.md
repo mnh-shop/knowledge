@@ -1,6 +1,6 @@
 ---
 name: hermes-agent-quadlet
-tags: [acp, agent-gateway, ai-llm, container, dashboard, deployment, docker, git, hermes, mcp, messaging, monitoring, multi-platform, podman, quadlet, storage, systemd, typescript]
+tags: [acp, agent-gateway, container, dashboard, deployment, docker, git, hermes-agent, mcp, messaging, monitoring, multi-platform, podman, quadlet, storage, systemd, typescript]
 description: Production-ready rootless Podman Quadlet configuration for deploying Hermes Agent with systemd-native lifecycle management
 ---
 
@@ -784,7 +784,7 @@ ls -la /run/user/$(id -u)/systemd/generator/
 - [[domains/mcp/hermes-mcp-implementation.md]] -- MCP implementation
 - [[domains/acp/hermes-acp-implementation.md]] -- ACP implementation
 - [[domains/api/hermes-gateway-api.md]] -- Gateway API reference
-- [[assets/agent-profiles/hermes-agent-profile.md]] -- Agent profile
+- [[assets/profiles/hermes-agent-profile.md]] -- Agent profile
 - [[assets/mcp-servers/hermes-mcp-serve.md]] -- MCP bridge server
 - [[assets/acp-agents/hermes-acp-agent.md]] -- ACP agent asset
 - [[assets/api-clients/hermes-gateway-platforms.md]] -- Gateway platforms

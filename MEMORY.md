@@ -192,8 +192,8 @@ knowledge/
 ├── graphs/
 ├── wiki/
 ├── assets/
-│   ├── agent-profiles/
-│   ├── agent-skills/
+│   ├── profiles/
+│   ├── skills/
 │   ├── mcp-servers/
 │   ├── acp-agents/
 │   ├── api-clients/
@@ -320,15 +320,15 @@ knowledge/
 ## Asset files
 
 **Agent profiles:**
-- [Agent profile: hermes-agent](assets/agent-profiles/hermes-agent-profile.md)
-- [Agent profile: hermes-workspace](assets/agent-profiles/hermes-workspace-profile.md)
-- [Agent profile: n8n](assets/agent-profiles/n8n-agent-profile.md)
-- [Agent profile: agentfield](assets/agent-profiles/agentfield-profile.md)
-- [Agent profile: openclaw](assets/agent-profiles/openclaw-profile.md)
-- [Agent profile: mission-control](assets/agent-profiles/mission-control-profile.md)
-- [Agent profile: podman](assets/agent-profiles/podman-profile.md)
-- [Agent profile: buildah](assets/agent-profiles/buildah-profile.md)
-- [Agent profile: clawpier](assets/agent-profiles/clawpier-profile.md) — Desktop agent manager
+- [Agent profile: hermes-agent](assets/profiles/hermes-agent-profile.md)
+- [Agent profile: hermes-workspace](assets/profiles/hermes-workspace-profile.md)
+- [Agent profile: n8n](assets/profiles/n8n-agent-profile.md)
+- [Agent profile: agentfield](assets/profiles/agentfield-profile.md)
+- [Agent profile: openclaw](assets/profiles/openclaw-profile.md)
+- [Agent profile: mission-control](assets/profiles/mission-control-profile.md)
+- [Agent profile: podman](assets/profiles/podman-profile.md)
+- [Agent profile: buildah](assets/profiles/buildah-profile.md)
+- [Agent profile: clawpier](assets/profiles/clawpier-profile.md) — Desktop agent manager
 
 **MCP servers:**
 - [MCP server: hermes-mcp-serve](assets/mcp-servers/hermes-mcp-serve.md)
@@ -354,4 +354,4 @@ knowledge/
 
 **Other:**
 - [Gateway platforms: hermes-agent](assets/api-clients/hermes-gateway-platforms.md)
-- [Startup Architect skill](assets/agent-skills/hermes-startup-architect-skill.md)
+- [Startup Architect skill](assets/skills/hermes-startup-architect-skill.md)

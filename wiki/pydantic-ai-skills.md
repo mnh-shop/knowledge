@@ -2,8 +2,7 @@
 name: pydantic-ai-skills
 description: "Agent skills for Pydantic AI integration with open-source agent frameworks"
 source: sources/pydantic-ai-skills/
-tags: [ai-llm, cli, git, plugin-sdk, security]
-  - tool-calling
+tags: [cli, git, plugin, python, security, tool-calling]
 ---
 
 # pydantic-ai-skills
@@ -344,6 +343,13 @@ Three example skills provided:
 - **web-research** -- Web research skill
 
 ## Code Style
+
+## Related
+
+- [[skills]] — Agent skills platform
+- [[hermes-agent]] — Compatible agent runtime
+- [[tool-calling]] — Tool-calling patterns
+
 
 - Single quotes for Python strings (Ruff)
 - Line length <= 120

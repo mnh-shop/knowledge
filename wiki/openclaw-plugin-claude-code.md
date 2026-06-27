@@ -1,6 +1,6 @@
 ---
 name: openclaw-plugin-claude-code
-tags: [agent, ai-llm, anthropic, claude-code, cli, container, git, isolation, mcp, openclaw, plugin, plugin-sdk, podman, security, typescript, webhook]
+tags: [agent, anthropic, claude-code, cli, container, git, mcp, openclaw, plugin, podman, security, typescript, webhook]
 description: OpenClaw plugin for running Claude Code CLI in isolated rootless Podman containers with session persistence and webhook notifications
 source: sources/openclaw-plugin-claude-code/
 ---

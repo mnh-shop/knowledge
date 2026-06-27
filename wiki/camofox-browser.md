@@ -1,13 +1,8 @@
 ---
-tags: [cli, docker, mcp, plugin-sdk]
-  - repo
-  - browser-automation
-  - anti-detection
-  - ai-agent
-  - open-source
-aliases:
-  - camofox-browser
-  - Camofox Browser
+name: camofox-browser
+title: Camofox Browser
+description: "Anti-detection browser automation tool for MCP-based web scraping and testing"
+tags: [cli, docker, mcp, browser-automation, javascript]
 source: sources/camofox-browser/
 license: MIT
 org: Jo Inc
@@ -18,7 +13,7 @@ version: 1.11.2
 
 Anti-detection browser automation server for AI agents, powered by Camoufox (a Firefox fork with C++-level fingerprint spoofing). Wraps a Camoufox browser engine in a REST API designed for programmatic agent use: accessibility snapshots instead of HTML, stable element refs for interaction, session isolation, and search macros for common sites.
 
-Built by [[Jo]] (`@askjo/camofox-browser`).
+Built by [AskJo.ai](https://askjo.ai) (`@askjo/camofox-browser`).
 
 ## Key Concepts
 
@@ -188,8 +183,8 @@ Test files in `tests/unit/` cover: session cleanup, downloads, proxy, navigation
 
 ## Related
 
-- [[Camoufox]] -- the underlying Firefox fork with C++ anti-detection
+- **Camoufox** — the underlying Firefox fork with C++ anti-detection (covered above under Key Concepts)
 - [[OpenClaw]] -- the MCP agent runtime that hosts this plugin
 - [[Clawdbot]] -- the broader agent ecosystem
-- [[Playwright]] -- the browser automation layer
-- [[Jo]] -- the company behind camofox-browser (AskJo.ai)
+- [Playwright](https://playwright.dev) -- the browser automation layer
+- [AskJo.ai](https://askjo.ai) -- the company behind camofox-browser (AskJo.ai)

@@ -1,6 +1,6 @@
 ---
 name: openclaw-mcp-server
-tags: [acp, agent-gateway, live-canvas, mcp, mcp-server, messaging, openclaw, personal-assistant, plugin-sdk, quadlet, systemd, typescript]
+tags: [acp, agent-gateway, live-canvas, mcp, messaging, openclaw, personal-assistant, plugin-sdk, quadlet, systemd, typescript]
 description: OpenClaw MCP Server
 ---
 
@@ -226,4 +226,4 @@ Reads `openclaw.json` for tool allow/deny policy:
 - [[domains/architecture/openclaw-architecture.md]] -- Gateway architecture
 - [[domains/acp/openclaw-acp-implementation.md]] -- ACP protocol (companion protocol)
 - [[assets/deployment/openclaw-quadlet.md]] -- Quadlet deployment patterns
-- [[assets/agent-profiles/openclaw-profile.md]] -- Quick reference profile
+- [[assets/profiles/openclaw-profile.md]] -- Quick reference profile

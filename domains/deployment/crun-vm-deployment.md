@@ -1,6 +1,6 @@
 ---
 name: crun-vm-deployment
-tags: [bootc, cli, container, container-runtime, crun-vm, deployment, docker, git, monitoring, oci-runtime, podman, qemu, quadlet, rust, security, storage, systemd, virtualization, vm]
+tags: [bootc, cli, container, crun-vm, deployment, docker, git, monitoring, oci-runtime, podman, qemu, quadlet, rust, security, storage, systemd, virtualization, vm]
 description: crun-vm Deployment Guide
 source: sources/crun-vm/
 ---

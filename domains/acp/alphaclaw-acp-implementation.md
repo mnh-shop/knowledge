@@ -2,7 +2,7 @@
 name: alphaclaw-acp
 description: "AlphaClaw ACP (Agent Communication Protocol) analysis — no ACP found, related multi-agent features"
 source: sources/alphaclaw/
-tags: [acp, ai-llm, documentation, mcp]
+tags: [acp, documentation, mcp]
 ---
 # AlphaClaw ACP (Agent Communication Protocol) Implementation
 
@@ -36,3 +36,9 @@ AlphaClaw manages agents indirectly by writing configuration consumed by the Ope
 ## Partial ACP Reference in Codebase
 
 The constant `acpRuntime: 'acp_runtime'` exists at `lib/server/doctor/constants.js:19`. However, no ACP protocol implementation, handler, or integration was found anywhere else in the codebase -- this constant is not referenced by any other module and appears to be a forward-looking placeholder or naming convention rather than an active ACP feature.
+
+## Related
+
+- [[acp]]
+- [[alphaclaw]]
+- [[openclaw]]

@@ -1,6 +1,6 @@
 ---
 name: swe-af
-tags: [ai-llm, docker, engineering-factory, git, multi-agent, orchestration, python, security, swe, swe-af, webhook, wiki]
+tags: [agentfield, docker, engineering-factory, git, multi-agent, orchestration, research, security, webhook, wiki, python, rust]
 description: Wiki entry for SWE-AF — autonomous software engineering factory runtime built on AgentField (Apache 2.0)
 source: sources/SWE-AF/
 ---

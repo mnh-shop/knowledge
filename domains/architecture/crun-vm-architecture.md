@@ -1,6 +1,6 @@
 ---
 name: crun-vm-architecture
-tags: [architecture, bootc, cli, container, container-runtime, crun-vm, docker, oci-runtime, podman, qemu, quadlet, rust, security, systemd, virtualization, vm]
+tags: [architecture, bootc, cli, container, crun-vm, docker, oci-runtime, podman, qemu, quadlet, rust, security, systemd, virtualization, vm]
 description: crun-vm Architecture
 source: sources/crun-vm/
 ---

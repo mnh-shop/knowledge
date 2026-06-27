@@ -2,14 +2,7 @@
 name: open-design
 description: "Open Design system — build once, reuse everywhere: cross-agent design token and component framework"
 source: sources/open-design/
-tags: [acp, ai-llm, cli, design, desktop-app, documentation, mcp, plugin-sdk]
-  - design-system
-  - agentic-design
-  - local-first
-  - open-source
-  - nextjs
-  - electron
-  - express
+tags: [acp, cli, design, desktop, documentation, mcp, design-system, typescript, nix]
 type: wiki/overview
 repo: https://github.com/nexu-io/open-design
 ---
@@ -159,6 +152,13 @@ Also supports user-created systems (`user:` prefix) stored under a separate dire
 ---
 
 ## Source
+
+## Related
+
+- [[mcp]] — MCP tool integration
+- [[acp]] — Agent Communication Protocol
+- [[hermes-agent]] — Design system consumers
+
 
 Repository: `https://github.com/nexu-io/open-design`
 

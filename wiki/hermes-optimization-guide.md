@@ -2,7 +2,7 @@
 name: hermes-optimization-guide
 description: "26-part practical guide for the Nous Research Hermes Agent: setup, optimization, security, deployment, and local hardware across CLI, TUI, desktop, and 22+ chat platforms"
 source: sources/hermes-optimization-guide/
-tags: [acp, ai-llm, cli, dashboard, desktop-app, developer-tools, docker, documentation, mcp, messaging, monitoring, multi-platform, optimization, plugin-sdk, security, storage, systemd, webhook]
+tags: [acp, hermes-agent, cli, dashboard, desktop, developer-tools, docker, documentation, mcp, messaging, monitoring, multi-platform, optimization, plugin-sdk, security, storage, systemd, webhook]
 ---
 
 # Hermes Optimization Guide
@@ -123,8 +123,8 @@ The repo ships production-grade infrastructure templates:
 - [[hermes-agent]] -- The Nous Research Hermes Agent itself
 - [[openclaw]] -- Predecessor agent framework (migration path documented in Part 2)
 - [[n8n-workflows]] -- Alternative automation workflows
-- [[lightrag]] -- Graph RAG memory system
-- [[langfuse]] -- LLM observability (self-hosted stack in templates)
+- [LightRAG](https://github.com/HKUDS/LightRAG) -- Graph RAG memory system
+- [Langfuse](https://langfuse.com) -- LLM observability (self-hosted stack in templates)
 - [[mcp]] -- Model Context Protocol ecosystem
 
 ## Tags

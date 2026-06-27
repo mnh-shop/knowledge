@@ -35,8 +35,8 @@ Open this folder in Obsidian to browse with:
 | Subdirectory | Contents |
 |---|---|
 | `n8n-workflows/` | Extracted workflow patterns from 2,061 n8n workflow JSONs |
-| `agent-skills/` | Catalog of 60+ agent skills from abvx-agent-skills, n8n-skills, and more |
-| `agent-profiles/` | 14 repo profiles + role-based persona profiles in `roles/` |
+| `skills/` | Catalog of 60+ agent skills from abvx-agent-skills, n8n-skills, and more |
+| `profiles/` | 14 repo profiles + role-based persona profiles in `roles/` |
 | `deployment/` | Quadlet configs, Terraform/Ansible templates |
 | `mcp-servers/` | MCP server references |
 | `acp-agents/` | ACP agent references |

@@ -1,4 +1,4 @@
 repo_slug=af-reactive-atlas-mongodb
 source_dir=/Users/admin1/Documents/knowledge/sources/af-reactive-atlas-mongodb/
 codegraph_command=codegraph init
-generated_at=2026-06-25 13:43:26
+generated_at=2026-06-26 18:32:56

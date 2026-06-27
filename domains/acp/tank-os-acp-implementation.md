@@ -2,7 +2,7 @@
 name: tank-os-acp-implementation
 description: "Tank OS — no ACP implementation (container OS, no agent protocol)"
 source: sources/tank-os/
-tags: [acp, container-os, tank-os]
+tags: [acp, container, tank-os]
 ---
 
 # Tank OS — ACP Implementation

@@ -1,6 +1,6 @@
 ---
 name: openclaw-api
-tags: [acp, agent-gateway, ai-llm, api, cli, live-canvas, mcp, messaging, openclaw, personal-assistant, plugin-sdk, quadlet, rest-api, security, systemd, typescript]
+tags: [acp, agent-gateway, api, cli, live-canvas, mcp, messaging, openclaw, personal-assistant, plugin-sdk, quadlet, rest-api, security, systemd, typescript]
 description: OpenClaw API Reference
 source: sources/openclaw/
 ---

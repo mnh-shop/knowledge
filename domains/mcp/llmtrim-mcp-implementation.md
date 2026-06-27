@@ -2,7 +2,7 @@
 name: llmtrim-mcp
 description: "llmtrim MCP proxy server — request compression, tool calling, SSE streaming"
 source: sources/llmtrim/
-tags: [ai-llm, cli, documentation, mcp]
+tags: [cli, documentation, mcp]
 ---
 # llmtrim MCP Implementation
 
@@ -200,3 +200,8 @@ Defined as `McpAction` enum in `main.rs` (variant details not visible in compres
 - `llmtrim_core` - Core compression library
 - `tokio` - Async runtime (current-thread)
 - `anyhow` - Error handling
+
+## Related
+
+- [[llmtrim]]
+- [[mcp]]

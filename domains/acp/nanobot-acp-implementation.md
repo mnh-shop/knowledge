@@ -2,7 +2,7 @@
 name: nanobot-acp
 description: "Nanobot agent communication and subagent system — worker agents, task decomposition"
 source: sources/nanobot/
-tags: [acp, agent-profile, ai-llm, documentation, event-bus, plugin-sdk]
+tags: [acp, agent-profile, documentation, event-bus, plugin-sdk]
 ---
 # Nanobot Agent Communication & Subagent System
 
@@ -118,3 +118,8 @@ The `_SubagentHook` extends `AgentHook` to monitor subagent execution:
 | `tests/agent/tools/test_subagent_tools.py` | Subagent tool tests |
 | `tests/agent/test_subagent_lifecycle.py` | Subagent lifecycle tests |
 | `tests/agent/test_subagent.py` | General subagent tests |
+
+## Related
+
+- [[acp]]
+- [[nanobot]]

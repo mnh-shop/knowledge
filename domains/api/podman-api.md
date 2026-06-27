@@ -2,7 +2,7 @@
 name: podman-api
 description: "Podman REST API reference — Docker-compatible and native libpod endpoints"
 source: sources/podman/
-tags: [api, container, docker, gorilla-mux, podman, rest-api, systemd]
+tags: [api, container, docker, podman, rest-api, systemd]
 ---
 
 # Podman — API Reference

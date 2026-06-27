@@ -24,7 +24,9 @@ or other automated processes.</purpose><file_format>The content is organized as 
 - Content has been formatted for parsing in xml style
 - Content has been compressed - code blocks are separated by ⋮---- delimiter
 - Security check has been disabled - content may contain sensitive information
-- Files are sorted by Git change count (files with more changes are at the bottom)</notes></file_summary><user_provided_header>Repository: hermzner | Generated from knowledge/sources | Generated: 2026-06-24 15:39:31</user_provided_header><directory_structure>ansible/
+- Files are sorted by Git change count (files with more changes are at the bottom)</notes></file_summary><user_provided_header>Repository: hermzner | Generated from knowledge/sources | Generated: 2026-06-26 16:51:07</user_provided_header><directory_structure>.codegraph/
+  .gitignore
+ansible/
   inventory/
     group_vars/
       all.yml
@@ -87,7 +89,11 @@ hermzner_logo_256.png
 LICENSE
 README.md
 SECURITY.md
-teardown.sh</directory_structure><files>This section contains the contents of the repository&apos;s files.<file path="ansible/inventory/localhost.yml">all:
+teardown.sh</directory_structure><files>This section contains the contents of the repository&apos;s files.<file path=".codegraph/.gitignore"># CodeGraph data files — local to each machine, not for committing.
+# Ignore everything in .codegraph/ except this file itself, so transient
+# files (the database, daemon.pid, sockets, logs) never show up in git.
+*
+!.gitignore</file><file path="ansible/inventory/localhost.yml">all:
   hosts:
     localhost:
       ansible_connection: local</file><file path="ansible/roles/mnemosyne_build/tasks/main.yml">---

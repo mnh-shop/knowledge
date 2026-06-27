@@ -1,9 +1,10 @@
 ---
+name: drawio-skill
 title: drawio-skill
 lastmod: 2026-06-25
 description: A skill that turns natural-language descriptions into .drawio XML and exports to PNG/SVG/PDF/JPG via the native draw.io desktop CLI
 source: sources/drawio-skill/
-tag: diagram-skill
+tags: [plugin, python]
 icon: 📐
 ---
 
@@ -44,6 +45,11 @@ The skill plans the layout, generates the `.drawio` XML, exports to your chosen 
 - **A casual, hand-drawn / whiteboard look** → [excalidraw-skill](https://github.com/Agents365-ai/excalidraw-skill) or [tldraw-skill](https://github.com/Agents365-ai/tldraw-skill)
 - **Diagrams-as-code that live in git and render in Markdown** → [mermaid-skill](https://github.com/Agents365-ai/mermaid-skill) (general) or [plantuml-skill](https://github.com/Agents365-ai/plantuml-skill) (UML)
 - **Freeform infinite-canvas sketching / freehand strokes** → [tldraw-skill](https://github.com/Agents365-ai/tldraw-skill)
+
+## Related
+
+- [[skills]] — Agent skills platform
+- [[hermes-agent]] — Compatible agent runtime for skills
 
 ## Related Skills
 

@@ -2,7 +2,7 @@
 name: alphaclaw-api
 description: "AlphaClaw REST API — gateway management, agent configuration, MCP and channel setup"
 source: sources/alphaclaw/
-tags: [acp, ai-llm, cli, documentation, git, mcp, rest-api, security, webhook]
+tags: [acp, cli, documentation, git, mcp, rest-api, security, webhook]
 ---
 # AlphaClaw API
 
@@ -225,3 +225,9 @@ All endpoints served under the Setup UI route and protected by session password 
 - `lib/server/webhook-middleware.js` -- Webhook delivery middleware
 - `lib/server/oauth-callback-middleware.js` -- OAuth callback handling for webhooks
 - `lib/server/operation-events.js` -- SSE operation event streaming
+
+## Related
+
+- [[alphaclaw]]
+- [[api]]
+- [[openclaw]]

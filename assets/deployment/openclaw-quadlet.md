@@ -1,6 +1,6 @@
 ---
 name: openclaw-quadlet
-tags: [acp, agent-gateway, ai-llm, cli, container, deployment, docker, live-canvas, mcp, messaging, openclaw, orchestration, personal-assistant, podman, quadlet, security, storage, systemd, typescript]
+tags: [acp, agent-gateway, cli, container, deployment, docker, live-canvas, mcp, messaging, openclaw, orchestration, personal-assistant, podman, quadlet, security, storage, systemd, typescript]
 description: OpenClaw Quadlet Deployment (Rootless Podman)
 ---
 
@@ -479,5 +479,5 @@ systemctl --user status openclaw-gateway.service
 - [[domains/architecture/openclaw-architecture.md]] -- Architecture overview
 - [[domains/deployment/quadlet-patterns.md]] -- General Quadlet deployment patterns
 - [[assets/mcp-servers/openclaw-mcp-server.md]] -- MCP server configuration
-- [[assets/agent-profiles/openclaw-profile.md]] -- Quick reference profile
+- [[assets/profiles/openclaw-profile.md]] -- Quick reference profile
 - [[tank-os]] -- Fedora bootc image for deploying OpenClaw as a bootable appliance

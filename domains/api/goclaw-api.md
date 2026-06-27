@@ -2,7 +2,7 @@
 name: goclaw-api
 description: "GoClaw REST API — agent/tool management, webhook provisioning, SSE streaming"
 source: sources/goclaw/
-tags: [ai-llm, cli, documentation, mcp, orchestration, plugin-sdk, rest-api, security, webhook]
+tags: [cli, documentation, mcp, orchestration, plugin-sdk, rest-api, security, webhook]
 ---
 # GoClaw REST API
 
@@ -459,3 +459,9 @@ An OpenAPI specification is available at `internal/http/openapi_spec.json` and s
 | `cmd/gateway_http_handlers.go` | `wireHTTP()` for handler creation |
 | `cmd/gateway_http_wiring.go` | `wireHTTPHandlersOnServer()` for route registration |
 | `cmd/gateway_http_client.go` | HTTP client for backend services |
+
+## Related
+
+- [[api]]
+- [[goclaw]]
+- [[podman]]

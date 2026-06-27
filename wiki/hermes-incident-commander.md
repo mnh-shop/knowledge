@@ -2,7 +2,7 @@
 name: hermes-incident-commander
 description: "Autonomous SRE agent for Hermes: detects, diagnoses, and heals production infrastructure with self-improving skills and RL training"
 source: sources/hermes-incident-commander/
-tags: [ai-llm, cli, developer-tools, docker, event-bus, mcp, messaging, monitoring, plugin-sdk, skills-platform, storage]
+tags: [agent, hermes-agent, cli, developer-tools, docker, event-bus, mcp, messaging, monitoring, skills-platform, storage, python]
 ---
 
 # Hermes Incident Commander

@@ -1,6 +1,6 @@
 ---
 name: openclaw-architecture
-tags: [acp, agent-gateway, ai-llm, architecture, cli, docker, live-canvas, mcp, messaging, monitoring, openclaw, orchestration, personal-assistant, plugin-sdk, quadlet, security, storage, systemd, typescript]
+tags: [acp, agent-gateway, architecture, cli, docker, live-canvas, mcp, messaging, monitoring, openclaw, orchestration, personal-assistant, plugin-sdk, quadlet, security, storage, systemd, typescript]
 description: OpenClaw Architecture
 source: sources/openclaw/
 ---
@@ -761,5 +761,5 @@ Device management for companion devices (mobile, desktop):
 - [[assets/mcp-servers/openclaw-mcp-server.md]] -- MCP server asset registration
 - [[assets/acp-agents/openclaw-acp-agent.md]] -- ACP agent asset registration
 - [[assets/deployment/openclaw-quadlet.md]] -- Quadlet deployment patterns
-- [[assets/agent-profiles/openclaw-profile.md]] -- Quick reference profile
+- [[assets/profiles/openclaw-profile.md]] -- Quick reference profile
 - [[wiki/openclaw.md]] -- Wiki entry

@@ -1,6 +1,6 @@
 ---
 name: hermes-agent
-tags: [acp, agent-gateway, ai-llm, cli, container, dashboard, desktop-app, docker, git, hermes, mcp, messaging, multi-platform, nix, plugin-sdk, quadlet, systemd, typescript, webhook, wiki]
+tags: [acp, hermes-agent, agent, agent-gateway, cli, container, dashboard, desktop, docker, git, mcp, messaging, multi-platform, orchestration, quadlet, systemd, webhook, wiki, python, typescript, nix]
 description: "Wiki entry for Hermes Agent: self-improving AI agent by Nous Research with multi-platform messaging (MIT)"
 source: sources/hermes-agent/
 ---
@@ -223,7 +223,7 @@ commands:
 | [[agentfield]] | ✅ MCP bridge | AgentField MCP bridge (`assets/mcp-servers/agentfield-mcp-server.md`) wraps AgentField REST API as MCP tools for Hermes. AgentField `app.harness()` could dispatch to Hermes for LLM execution |
 | [[hermes-workspace]] | Hermes workspace environment (isolated dev/testing workspace) |
 | [[hermes-startup-architect]] | Startup architect skill for Hermes |
-| [[hermes-agent]] profile | `assets/agent-profiles/hermes-agent-profile.md` (dev guidelines from AGENTS.md) |
+| [[hermes-agent]] profile | `assets/profiles/hermes-agent-profile.md` (dev guidelines from AGENTS.md) |
 
 ## Cross-project
 

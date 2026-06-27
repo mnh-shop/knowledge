@@ -2,7 +2,7 @@
 name: nanobot-mcp
 description: "Nanobot MCP server — tool registration, resource model, agent capability exposure"
 source: sources/nanobot/
-tags: [ai-llm, cli, documentation, mcp]
+tags: [cli, documentation, mcp]
 ---
 # Nanobot MCP Implementation
 
@@ -117,3 +117,8 @@ Nanobot includes an SDK-based MCP client in `nanobot/sdk/`:
 | `tests/agent/test_mcp_transient_retry.py` | Transient error retry tests |
 | `tests/tools/test_mcp_tool.py` | MCP tool execution tests |
 | `tests/tools/test_mcp_probe.py` | MCP probe tests |
+
+## Related
+
+- [[mcp]]
+- [[nanobot]]

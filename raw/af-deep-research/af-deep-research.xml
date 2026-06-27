@@ -24,7 +24,7 @@ or other automated processes.</purpose><file_format>The content is organized as 
 - Content has been formatted for parsing in xml style
 - Content has been compressed - code blocks are separated by ⋮---- delimiter
 - Security check has been disabled - content may contain sensitive information
-- Files are sorted by Git change count (files with more changes are at the bottom)</notes></file_summary><user_provided_header>Repository: af-deep-research | Generated from knowledge/sources | Generated: 2026-06-24 14:39:43</user_provided_header><directory_structure>.codegraph/
+- Files are sorted by Git change count (files with more changes are at the bottom)</notes></file_summary><user_provided_header>Repository: af-deep-research | Generated from knowledge/sources | Generated: 2026-06-26 16:50:08</user_provided_header><directory_structure>.codegraph/
   .gitignore
 assets/
   archi.png
@@ -1545,7 +1545,117 @@ LICENSE
 # Docker
 Dockerfile
 docker-compose*.yml
-.dockerignore</file><file path=".gitignore"># AF Deep Research - .gitignore
+.dockerignore</file><file path=".env.example"># AF Deep Research - Environment Configuration
+# ================================================
+# Copy this file to .env and fill in your API keys:
+#   cp .env.example .env
+#
+# Then run:
+#   docker-compose up
+
+# ===================
+# Required API Keys
+# ===================
+
+# OpenRouter API Key (for LLM inference)
+# Get yours at: https://openrouter.ai/keys
+OPENROUTER_API_KEY=sk-or-your-openrouter-api-key-here
+
+# ===================
+# Web Search API Keys
+# ===================
+# Configure at least ONE of the following search providers.
+# The system will auto-detect which one is available.
+
+# Jina AI (recommended - free tier available)
+# Get yours at: https://jina.ai/
+JINA_API_KEY=jina_your-jina-api-key-here
+
+# Tavily (AI-native search, 1000 free/month)
+# Get yours at: https://tavily.com/
+# TAVILY_API_KEY=tvly-your-tavily-api-key-here
+
+# Firecrawl (search + scraping, 500 free credits)
+# Get yours at: https://firecrawl.dev/
+# FIRECRAWL_API_KEY=fc-your-firecrawl-api-key-here
+
+# Serper (Google SERP, 2500 free/month)
+# Get yours at: https://serper.dev/
+# SERPER_API_KEY=your-serper-api-key-here
+
+# ===================
+# Optional Settings
+# ===================
+
+# Force a specific search provider (auto-detect if not set)
+# Options: jina, tavily, firecrawl, serper
+# SEARCH_PROVIDER=jina
+
+# ===================
+# LLM Model Configuration
+# ===================
+# Default LLM model to use (via OpenRouter)
+# Format: openrouter/&lt;provider&gt;/&lt;model-name&gt;
+# See all models: https://openrouter.ai/models
+#
+# RECOMMENDED MODELS (all verified to work with complex JSON output):
+#
+# --- Best Value (Default) ---
+# openrouter/deepseek/deepseek-chat-v3.1      # $0.15/$0.75 per 1M tokens - excellent reasoning, 128K context
+# openrouter/deepseek/deepseek-v3.2           # Latest DeepSeek, similar pricing
+#
+# --- Premium (Highest Quality) ---
+# openrouter/anthropic/claude-sonnet-4        # $3/$15 per 1M tokens - excellent for complex analysis
+# openrouter/anthropic/claude-opus-4          # $15/$75 per 1M tokens - best reasoning capability
+#
+# --- Budget-Friendly ---
+# openrouter/google/gemini-2.5-flash          # $0.30/$2.50 per 1M tokens - fast, 1M context
+# openrouter/google/gemini-2.5-flash-lite     # Even cheaper, optimized for speed
+#
+# --- Open Source ---
+# openrouter/qwen/qwen2.5-72b-instruct        # Excellent JSON/structured output
+# openrouter/qwen/qwen3-235b-a22b             # Latest Qwen, very capable
+# openrouter/meta-llama/llama-3.3-70b-instruct # Good general purpose
+# openrouter/meta-llama/llama-3.1-405b-instruct # Largest open model
+#
+DEFAULT_MODEL=openrouter/deepseek/deepseek-chat-v3.1
+
+# LLM temperature (0.0-1.0, lower = more deterministic)
+TEMPERATURE=0.6
+
+# ===================
+# Local Ollama Configuration (Optional)
+# ===================
+# To use a local Ollama deployment instead of OpenRouter:
+#   1. Set OLLAMA_BASE_URL to your Ollama server
+#   2. Change DEFAULT_MODEL to use ollama/&lt;model-name&gt; format
+#   3. OPENROUTER_API_KEY is not required when using Ollama
+#
+# IMPORTANT: When running via Docker, use host.docker.internal instead of localhost
+# to reach Ollama running on your host machine:
+#
+#   OLLAMA_BASE_URL=http://host.docker.internal:11434
+#   DEFAULT_MODEL=ollama/llama3.2
+#
+# For non-Docker (running main.py directly):
+#   OLLAMA_BASE_URL=http://localhost:11434
+#   DEFAULT_MODEL=ollama/llama3.2
+#
+# For remote Ollama server:
+#   OLLAMA_BASE_URL=http://your-ollama-server:11434
+#   DEFAULT_MODEL=ollama/llama3.1:70b
+#
+# Popular Ollama models:
+#   ollama/llama3.2           # 3B params, fast
+#   ollama/llama3.1:8b        # 8B params, good balance
+#   ollama/llama3.1:70b       # 70B params, high quality
+#   ollama/mistral            # 7B params, fast
+#   ollama/mixtral            # 8x7B MoE, powerful
+#   ollama/deepseek-r1:14b    # DeepSeek reasoning model
+#   ollama/qwen2.5:72b        # Qwen 2.5, excellent for structured output
+#
+# OLLAMA_BASE_URL=http://host.docker.internal:11434
+# DEFAULT_MODEL=ollama/llama3.2</file><file path=".gitignore"># AF Deep Research - .gitignore
 
 # Python
 __pycache__/
@@ -1843,7 +1953,49 @@ source_notes: List[SourceNote] = []
 ⋮----
 final_document = FinalDocument(
 ⋮----
-execution_time = time.time() - start_time</file><file path="Dockerfile"># Deep Research Agent
+execution_time = time.time() - start_time</file><file path="docker-compose.yml">services:
+  agentfield:
+    image: agentfield/control-plane:latest
+    container_name: agentfield-server
+    ports:
+      - &quot;8080:8080&quot;
+    environment:
+      - AGENTFIELD_HTTP_ADDR=0.0.0.0:8080
+      - AGENTFIELD_STORAGE_MODE=local
+    volumes:
+      - agentfield-data:/data
+    restart: unless-stopped
+  deep-research:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: deep-research-agent
+    environment:
+      - AGENTFIELD_SERVER=http://agentfield:8080
+      - PORT=8001
+      - AGENT_CALLBACK_URL=http://deep-research:8001
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+      - JINA_API_KEY=${JINA_API_KEY:-}
+      - TAVILY_API_KEY=${TAVILY_API_KEY:-}
+      - FIRECRAWL_API_KEY=${FIRECRAWL_API_KEY:-}
+      - SERPER_API_KEY=${SERPER_API_KEY:-}
+      - SEARCH_PROVIDER=${SEARCH_PROVIDER:-}
+      - DEFAULT_MODEL=${DEFAULT_MODEL:-openrouter/deepseek/deepseek-chat-v3.1}
+      - TEMPERATURE=${TEMPERATURE:-0.6}
+      - OLLAMA_BASE_URL=${OLLAMA_BASE_URL:-}
+    ports:
+      - &quot;8001:8001&quot;
+    depends_on:
+      - agentfield
+    healthcheck:
+      test: [&quot;CMD&quot;, &quot;curl&quot;, &quot;-f&quot;, &quot;http://localhost:8001/health&quot;]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    restart: unless-stopped
+volumes:
+  agentfield-data:</file><file path="Dockerfile"># Deep Research Agent
 # Runs the VC Intelligence research agent on Agent Field
 
 FROM python:3.10-slim
@@ -1884,174 +2036,7 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
     CMD curl -f http://localhost:${PORT:-8001}/health || exit 1
 
 # Run the agent
-CMD [&quot;python&quot;, &quot;main.py&quot;]</file><file path="railway.json">{
-  &quot;$schema&quot;: &quot;https://railway.com/railway.schema.json&quot;,
-  &quot;build&quot;: {
-    &quot;builder&quot;: &quot;DOCKERFILE&quot;,
-    &quot;dockerfilePath&quot;: &quot;Dockerfile&quot;
-  },
-  &quot;deploy&quot;: {
-    &quot;healthcheckPath&quot;: &quot;/health&quot;,
-    &quot;healthcheckTimeout&quot;: 30,
-    &quot;restartPolicyType&quot;: &quot;ON_FAILURE&quot;,
-    &quot;restartPolicyMaxRetries&quot;: 3
-  }
-}</file><file path="temporal_context.py">def get_temporal_context(context_type: str = &quot;standard&quot;) -&gt; str
-⋮----
-now = datetime.datetime.now()
-current_date = now.strftime(&quot;%B %d, %Y&quot;)
-current_year = now.year
-prev_year = current_year - 1
-⋮----
-contexts = {
-⋮----
-def get_current_date_simple() -&gt; str
-⋮----
-def get_current_year() -&gt; int
-⋮----
-current_year = get_current_year()
-⋮----
-enhanced = []
-temporal_indicators = [f&quot;{current_year}&quot;, &quot;recent&quot;, &quot;latest&quot;]</file><file path="utils.py">logger = logging.getLogger(__name__)
-⋮----
-class SearchResult(BaseModel)
-⋮----
-title: str
-url: str
-content: str
-description: Optional[str] = None
-published_time: Optional[datetime] = None
-relevance: float = 0.0
-⋮----
-class JinaSearchResponse(BaseModel)
-⋮----
-results: List[SearchResult] = []
-total_results: int = 0
-query_used: str = &quot;&quot;
-⋮----
-async def search_jina_ai(query: str) -&gt; JinaSearchResponse
-⋮----
-&quot;&quot;&quot;Search using Jina AI and return structured results.&quot;&quot;&quot;
-⋮----
-api_key = os.getenv(&quot;JINA_API_KEY&quot;)
-⋮----
-url = &quot;https://s.jina.ai/&quot;
-headers = {&quot;Authorization&quot;: f&quot;Bearer {api_key}&quot;, &quot;Accept&quot;: &quot;application/json&quot;}
-⋮----
-data = await response.json()
-results = []
-⋮----
-relevance=0.8,  # Default relevance score</file><file path=".env.example"># AF Deep Research - Environment Configuration
-# ================================================
-# Copy this file to .env and fill in your API keys:
-#   cp .env.example .env
-#
-# Then run:
-#   docker-compose up
-
-# ===================
-# Required API Keys
-# ===================
-
-# OpenRouter API Key (for LLM inference)
-# Get yours at: https://openrouter.ai/keys
-OPENROUTER_API_KEY=sk-or-your-openrouter-api-key-here
-
-# ===================
-# Web Search API Keys
-# ===================
-# Configure at least ONE of the following search providers.
-# The system will auto-detect which one is available.
-
-# Jina AI (recommended - free tier available)
-# Get yours at: https://jina.ai/
-JINA_API_KEY=jina_your-jina-api-key-here
-
-# Tavily (AI-native search, 1000 free/month)
-# Get yours at: https://tavily.com/
-# TAVILY_API_KEY=tvly-your-tavily-api-key-here
-
-# Firecrawl (search + scraping, 500 free credits)
-# Get yours at: https://firecrawl.dev/
-# FIRECRAWL_API_KEY=fc-your-firecrawl-api-key-here
-
-# Serper (Google SERP, 2500 free/month)
-# Get yours at: https://serper.dev/
-# SERPER_API_KEY=your-serper-api-key-here
-
-# ===================
-# Optional Settings
-# ===================
-
-# Force a specific search provider (auto-detect if not set)
-# Options: jina, tavily, firecrawl, serper
-# SEARCH_PROVIDER=jina
-
-# ===================
-# LLM Model Configuration
-# ===================
-# Default LLM model to use (via OpenRouter)
-# Format: openrouter/&lt;provider&gt;/&lt;model-name&gt;
-# See all models: https://openrouter.ai/models
-#
-# RECOMMENDED MODELS (all verified to work with complex JSON output):
-#
-# --- Best Value (Default) ---
-# openrouter/deepseek/deepseek-chat-v3.1      # $0.15/$0.75 per 1M tokens - excellent reasoning, 128K context
-# openrouter/deepseek/deepseek-v3.2           # Latest DeepSeek, similar pricing
-#
-# --- Premium (Highest Quality) ---
-# openrouter/anthropic/claude-sonnet-4        # $3/$15 per 1M tokens - excellent for complex analysis
-# openrouter/anthropic/claude-opus-4          # $15/$75 per 1M tokens - best reasoning capability
-#
-# --- Budget-Friendly ---
-# openrouter/google/gemini-2.5-flash          # $0.30/$2.50 per 1M tokens - fast, 1M context
-# openrouter/google/gemini-2.5-flash-lite     # Even cheaper, optimized for speed
-#
-# --- Open Source ---
-# openrouter/qwen/qwen2.5-72b-instruct        # Excellent JSON/structured output
-# openrouter/qwen/qwen3-235b-a22b             # Latest Qwen, very capable
-# openrouter/meta-llama/llama-3.3-70b-instruct # Good general purpose
-# openrouter/meta-llama/llama-3.1-405b-instruct # Largest open model
-#
-DEFAULT_MODEL=openrouter/deepseek/deepseek-chat-v3.1
-
-# LLM temperature (0.0-1.0, lower = more deterministic)
-TEMPERATURE=0.6
-
-# ===================
-# Local Ollama Configuration (Optional)
-# ===================
-# To use a local Ollama deployment instead of OpenRouter:
-#   1. Set OLLAMA_BASE_URL to your Ollama server
-#   2. Change DEFAULT_MODEL to use ollama/&lt;model-name&gt; format
-#   3. OPENROUTER_API_KEY is not required when using Ollama
-#
-# IMPORTANT: When running via Docker, use host.docker.internal instead of localhost
-# to reach Ollama running on your host machine:
-#
-#   OLLAMA_BASE_URL=http://host.docker.internal:11434
-#   DEFAULT_MODEL=ollama/llama3.2
-#
-# For non-Docker (running main.py directly):
-#   OLLAMA_BASE_URL=http://localhost:11434
-#   DEFAULT_MODEL=ollama/llama3.2
-#
-# For remote Ollama server:
-#   OLLAMA_BASE_URL=http://your-ollama-server:11434
-#   DEFAULT_MODEL=ollama/llama3.1:70b
-#
-# Popular Ollama models:
-#   ollama/llama3.2           # 3B params, fast
-#   ollama/llama3.1:8b        # 8B params, good balance
-#   ollama/llama3.1:70b       # 70B params, high quality
-#   ollama/mistral            # 7B params, fast
-#   ollama/mixtral            # 8x7B MoE, powerful
-#   ollama/deepseek-r1:14b    # DeepSeek reasoning model
-#   ollama/qwen2.5:72b        # Qwen 2.5, excellent for structured output
-#
-# OLLAMA_BASE_URL=http://host.docker.internal:11434
-# DEFAULT_MODEL=ollama/llama3.2</file><file path="LICENSE">Apache License
+CMD [&quot;python&quot;, &quot;main.py&quot;]</file><file path="LICENSE">Apache License
                            Version 2.0, January 2004
                         http://www.apache.org/licenses/
 
@@ -2240,116 +2225,7 @@ TEMPERATURE=0.6
    distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
-   limitations under the License.</file><file path="pyproject.toml">[build-system]
-requires = [&quot;setuptools&gt;=61.0&quot;, &quot;wheel&quot;]
-build-backend = &quot;setuptools.build_meta&quot;
-
-[project]
-name = &quot;af-deep-research&quot;
-version = &quot;0.1.0&quot;
-description = &quot;AI-powered deep research agent with real-time streaming&quot;
-
-authors = [{ name = &quot;Agent Field&quot;, email = &quot;research@agentfield.ai&quot; }]
-readme = &quot;README.md&quot;
-license = { text = &quot;Apache-2.0&quot; }
-requires-python = &quot;&gt;=3.8&quot;
-classifiers = [
-    &quot;Development Status :: 3 - Alpha&quot;,
-    &quot;Intended Audience :: Developers&quot;,
-    &quot;License :: OSI Approved :: Apache Software License&quot;,
-    &quot;Programming Language :: Python :: 3&quot;,
-    &quot;Programming Language :: Python :: 3.8&quot;,
-    &quot;Programming Language :: Python :: 3.9&quot;,
-    &quot;Programming Language :: Python :: 3.10&quot;,
-    &quot;Programming Language :: Python :: 3.11&quot;,
-    &quot;Programming Language :: Python :: 3.12&quot;,
-]
-
-dependencies = [
-    &quot;agentfield&quot;,
-    &quot;pyyaml&gt;=6.0&quot;,
-    &quot;requests&gt;=2.28.0&quot;,
-    &quot;fastapi&quot;,
-    &quot;uvicorn&quot;,
-    &quot;requests&gt;=2.28&quot;,
-    &quot;pydantic&gt;=2.0&quot;,
-    &quot;litellm&quot;,
-    &quot;psutil&quot;,
-    &quot;PyYAML&gt;=6.0&quot;,
-    &quot;aiohttp&gt;=3.8&quot;,
-    &quot;websockets&quot;,
-    &quot;backoff&quot;,
-]
-
-[project.optional-dependencies]
-dev = [&quot;pytest&gt;=7.0.0&quot;, &quot;black&gt;=22.0.0&quot;, &quot;flake8&gt;=5.0.0&quot;, &quot;mypy&gt;=0.991&quot;]
-
-[project.urls]
-Homepage = &quot;https://github.com/Agent-Field/af-deep-research&quot;
-Repository = &quot;https://github.com/Agent-Field/af-deep-research.git&quot;
-Issues = &quot;https://github.com/Agent-Field/af-deep-research/issues&quot;
-
-[tool.setuptools.packages.find]
-where = [&quot;.&quot;]
-include = [&quot;agent*&quot;]
-
-[tool.black]
-line-length = 88
-target-version = [&apos;py38&apos;]
-
-[tool.mypy]
-python_version = &quot;3.8&quot;
-warn_return_any = true
-warn_unused_configs = true
-disallow_untyped_defs = true
-
-[tool.pytest.ini_options]
-testpaths = [&quot;tests&quot;]
-python_files = [&quot;test_*.py&quot;]
-python_classes = [&quot;Test*&quot;]
-python_functions = [&quot;test_*&quot;]</file><file path="docker-compose.yml">services:
-  agentfield:
-    image: agentfield/control-plane:latest
-    container_name: agentfield-server
-    ports:
-      - &quot;8080:8080&quot;
-    environment:
-      - AGENTFIELD_HTTP_ADDR=0.0.0.0:8080
-      - AGENTFIELD_STORAGE_MODE=local
-    volumes:
-      - agentfield-data:/data
-    restart: unless-stopped
-  deep-research:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: deep-research-agent
-    environment:
-      - AGENTFIELD_SERVER=http://agentfield:8080
-      - PORT=8001
-      - AGENT_CALLBACK_URL=http://deep-research:8001
-      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
-      - JINA_API_KEY=${JINA_API_KEY:-}
-      - TAVILY_API_KEY=${TAVILY_API_KEY:-}
-      - FIRECRAWL_API_KEY=${FIRECRAWL_API_KEY:-}
-      - SERPER_API_KEY=${SERPER_API_KEY:-}
-      - SEARCH_PROVIDER=${SEARCH_PROVIDER:-}
-      - DEFAULT_MODEL=${DEFAULT_MODEL:-openrouter/deepseek/deepseek-chat-v3.1}
-      - TEMPERATURE=${TEMPERATURE:-0.6}
-      - OLLAMA_BASE_URL=${OLLAMA_BASE_URL:-}
-    ports:
-      - &quot;8001:8001&quot;
-    depends_on:
-      - agentfield
-    healthcheck:
-      test: [&quot;CMD&quot;, &quot;curl&quot;, &quot;-f&quot;, &quot;http://localhost:8001/health&quot;]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 15s
-    restart: unless-stopped
-volumes:
-  agentfield-data:</file><file path="main.py">AI_CALL_CONCURRENCY_LIMIT = 20
+   limitations under the License.</file><file path="main.py">AI_CALL_CONCURRENCY_LIMIT = 20
 MAX_ARTICLES_PER_TASK = 10
 NUM_SEARCH_TERMS_PER_TASK = 3
 ⋮----
@@ -3013,7 +2889,86 @@ briefing = ResearchBriefing(
 ⋮----
 model : str, optional
 ⋮----
-- research_package: Complete research data including:</file><file path="README.md">&lt;p align=&quot;center&quot;&gt;
+- research_package: Complete research data including:</file><file path="pyproject.toml">[build-system]
+requires = [&quot;setuptools&gt;=61.0&quot;, &quot;wheel&quot;]
+build-backend = &quot;setuptools.build_meta&quot;
+
+[project]
+name = &quot;af-deep-research&quot;
+version = &quot;0.1.0&quot;
+description = &quot;AI-powered deep research agent with real-time streaming&quot;
+
+authors = [{ name = &quot;Agent Field&quot;, email = &quot;research@agentfield.ai&quot; }]
+readme = &quot;README.md&quot;
+license = { text = &quot;Apache-2.0&quot; }
+requires-python = &quot;&gt;=3.8&quot;
+classifiers = [
+    &quot;Development Status :: 3 - Alpha&quot;,
+    &quot;Intended Audience :: Developers&quot;,
+    &quot;License :: OSI Approved :: Apache Software License&quot;,
+    &quot;Programming Language :: Python :: 3&quot;,
+    &quot;Programming Language :: Python :: 3.8&quot;,
+    &quot;Programming Language :: Python :: 3.9&quot;,
+    &quot;Programming Language :: Python :: 3.10&quot;,
+    &quot;Programming Language :: Python :: 3.11&quot;,
+    &quot;Programming Language :: Python :: 3.12&quot;,
+]
+
+dependencies = [
+    &quot;agentfield&quot;,
+    &quot;pyyaml&gt;=6.0&quot;,
+    &quot;requests&gt;=2.28.0&quot;,
+    &quot;fastapi&quot;,
+    &quot;uvicorn&quot;,
+    &quot;requests&gt;=2.28&quot;,
+    &quot;pydantic&gt;=2.0&quot;,
+    &quot;litellm&quot;,
+    &quot;psutil&quot;,
+    &quot;PyYAML&gt;=6.0&quot;,
+    &quot;aiohttp&gt;=3.8&quot;,
+    &quot;websockets&quot;,
+    &quot;backoff&quot;,
+]
+
+[project.optional-dependencies]
+dev = [&quot;pytest&gt;=7.0.0&quot;, &quot;black&gt;=22.0.0&quot;, &quot;flake8&gt;=5.0.0&quot;, &quot;mypy&gt;=0.991&quot;]
+
+[project.urls]
+Homepage = &quot;https://github.com/Agent-Field/af-deep-research&quot;
+Repository = &quot;https://github.com/Agent-Field/af-deep-research.git&quot;
+Issues = &quot;https://github.com/Agent-Field/af-deep-research/issues&quot;
+
+[tool.setuptools.packages.find]
+where = [&quot;.&quot;]
+include = [&quot;agent*&quot;]
+
+[tool.black]
+line-length = 88
+target-version = [&apos;py38&apos;]
+
+[tool.mypy]
+python_version = &quot;3.8&quot;
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+
+[tool.pytest.ini_options]
+testpaths = [&quot;tests&quot;]
+python_files = [&quot;test_*.py&quot;]
+python_classes = [&quot;Test*&quot;]
+python_functions = [&quot;test_*&quot;]</file><file path="railway.json">{
+  &quot;$schema&quot;: &quot;https://railway.com/railway.schema.json&quot;,
+  &quot;build&quot;: {
+    &quot;builder&quot;: &quot;DOCKERFILE&quot;,
+    &quot;dockerfilePath&quot;: &quot;Dockerfile&quot;
+  },
+  &quot;deploy&quot;: {
+    &quot;healthcheckPath&quot;: &quot;/health&quot;,
+    &quot;healthcheckTimeout&quot;: 30,
+    &quot;restartPolicyType&quot;: &quot;ON_FAILURE&quot;,
+    &quot;restartPolicyMaxRetries&quot;: 3
+  }
+}</file><file path="README.md">&lt;p align=&quot;center&quot;&gt;
   &lt;h1 align=&quot;center&quot;&gt;AF Deep Research&lt;/h1&gt;
   &lt;p align=&quot;center&quot;&gt;Autonomous research backend for AI applications.&lt;/p&gt;
 &lt;/p&gt;
@@ -3399,4 +3354,49 @@ This is an early preview. We&apos;re actively developing and want feedback. File
 
 &lt;p align=&quot;center&quot;&gt;
   &lt;sub&gt;Built by &lt;a href=&quot;https://agentfield.ai&quot;&gt;AgentField&lt;/a&gt; · &lt;a href=&quot;https://github.com/Agent-Field/af-deep-research/blob/main/LICENSE&quot;&gt;Apache 2.0&lt;/a&gt; · &lt;a href=&quot;https://github.com/Agent-Field&quot;&gt;See what else we&apos;re building →&lt;/a&gt;&lt;/sub&gt;
-&lt;/p&gt;</file></files></repomix>
+&lt;/p&gt;</file><file path="temporal_context.py">def get_temporal_context(context_type: str = &quot;standard&quot;) -&gt; str
+⋮----
+now = datetime.datetime.now()
+current_date = now.strftime(&quot;%B %d, %Y&quot;)
+current_year = now.year
+prev_year = current_year - 1
+⋮----
+contexts = {
+⋮----
+def get_current_date_simple() -&gt; str
+⋮----
+def get_current_year() -&gt; int
+⋮----
+current_year = get_current_year()
+⋮----
+enhanced = []
+temporal_indicators = [f&quot;{current_year}&quot;, &quot;recent&quot;, &quot;latest&quot;]</file><file path="utils.py">logger = logging.getLogger(__name__)
+⋮----
+class SearchResult(BaseModel)
+⋮----
+title: str
+url: str
+content: str
+description: Optional[str] = None
+published_time: Optional[datetime] = None
+relevance: float = 0.0
+⋮----
+class JinaSearchResponse(BaseModel)
+⋮----
+results: List[SearchResult] = []
+total_results: int = 0
+query_used: str = &quot;&quot;
+⋮----
+async def search_jina_ai(query: str) -&gt; JinaSearchResponse
+⋮----
+&quot;&quot;&quot;Search using Jina AI and return structured results.&quot;&quot;&quot;
+⋮----
+api_key = os.getenv(&quot;JINA_API_KEY&quot;)
+⋮----
+url = &quot;https://s.jina.ai/&quot;
+headers = {&quot;Authorization&quot;: f&quot;Bearer {api_key}&quot;, &quot;Accept&quot;: &quot;application/json&quot;}
+⋮----
+data = await response.json()
+results = []
+⋮----
+relevance=0.8,  # Default relevance score</file></files></repomix>

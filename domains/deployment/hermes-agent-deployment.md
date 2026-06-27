@@ -1,6 +1,6 @@
 ---
 name: hermes-agent-deployment
-tags: [acp, agent-gateway, ai-llm, ansible, cli, container, dashboard, deployment, docker, git, hermes, mcp, messaging, monitoring, multi-platform, nix, podman, quadlet, security, storage, systemd, terraform, typescript]
+tags: [acp, agent-gateway, ansible, cli, container, dashboard, deployment, docker, git, hermes-agent, mcp, messaging, monitoring, multi-platform, nix, podman, quadlet, security, storage, systemd, terraform, typescript]
 description: Hermes Agent deployment and operations guide for the multi-platform personal AI agent
 source: sources/hermes-agent/
 ---
@@ -962,7 +962,7 @@ ssh -L 9118:127.0.0.1:9119 hermes@<remote-host> -N
 - [[domains/mcp/hermes-mcp-implementation.md]] -- MCP implementation
 - [[domains/acp/hermes-acp-implementation.md]] -- ACP implementation
 - [[domains/api/hermes-gateway-api.md]] -- Gateway API reference
-- [[assets/agent-profiles/hermes-agent-profile.md]] -- Agent profile
+- [[assets/profiles/hermes-agent-profile.md]] -- Agent profile
 - [[assets/mcp-servers/hermes-mcp-serve.md]] -- MCP server asset
 - [[assets/acp-agents/hermes-acp-agent.md]] -- ACP agent asset
 - [[assets/api-clients/hermes-gateway-platforms.md]] -- Gateway platforms

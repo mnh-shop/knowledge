@@ -24,7 +24,7 @@ or other automated processes.</purpose><file_format>The content is organized as 
 - Content has been formatted for parsing in xml style
 - Content has been compressed - code blocks are separated by ⋮---- delimiter
 - Security check has been disabled - content may contain sensitive information
-- Files are sorted by Git change count (files with more changes are at the bottom)</notes></file_summary><user_provided_header>Repository: af-reactive-atlas-mongodb | Generated from knowledge/sources | Generated: 2026-06-24 14:39:44</user_provided_header><directory_structure>.codegraph/
+- Files are sorted by Git change count (files with more changes are at the bottom)</notes></file_summary><user_provided_header>Repository: af-reactive-atlas-mongodb | Generated from knowledge/sources | Generated: 2026-06-26 16:50:09</user_provided_header><directory_structure>.codegraph/
   .gitignore
 .sisyphus/
   plans/
@@ -353,7 +353,46 @@ exports = async function(changeEvent) {
 3. The enrichment_schema in domain config is passed to the LLM so it knows what fields to fill
 4. The `_: bool = True` workaround is still needed for skills with no required params
    (load_active_policies has domain param now so this may not be needed, but keep for get_timeline)
-5. models.py field `compliance_flags` is renamed to `flags` (generic)</file><file path="domains/ecommerce/entities.json">{
+5. models.py field `compliance_flags` is renamed to `flags` (generic)</file><file path="domains/ecommerce/config.json">{
+  &quot;domain&quot;: &quot;ecommerce&quot;,
+  &quot;display_name&quot;: &quot;E-Commerce Order Intelligence&quot;,
+  &quot;description&quot;: &quot;Fraud detection and risk assessment for online orders&quot;,
+  &quot;document_collection&quot;: &quot;orders&quot;,
+  &quot;document_id_field&quot;: &quot;order_id&quot;,
+  &quot;entity_collection&quot;: &quot;customers&quot;,
+  &quot;entity_id_field&quot;: &quot;customer_id&quot;,
+  &quot;rules_collection&quot;: &quot;fraud_rules&quot;,
+  &quot;context_loading&quot;: {
+    &quot;entity_lookup_field&quot;: &quot;customer_id&quot;,
+    &quot;counterparty_field&quot;: null,
+    &quot;history_collection&quot;: &quot;orders&quot;,
+    &quot;history_match_fields&quot;: [
+      &quot;customer_id&quot;
+    ],
+    &quot;history_limit&quot;: 30
+  },
+  &quot;enrichment_schema&quot;: {
+    &quot;risk_score&quot;: &quot;float 0.0-1.0 indicating fraud probability&quot;,
+    &quot;risk_category&quot;: &quot;one of: low, medium, high, critical&quot;,
+    &quot;pattern_match&quot;: &quot;detected fraud pattern or &apos;none&apos; (e.g. friendly_fraud, velocity_abuse, synthetic_identity, card_testing, account_takeover)&quot;,
+    &quot;flags&quot;: &quot;list of applicable fraud rule IDs from the fraud_rules collection&quot;,
+    &quot;summary&quot;: &quot;2-3 sentence fraud assessment&quot;,
+    &quot;evidence&quot;: &quot;list of {fact, source, weight} objects supporting the assessment&quot;,
+    &quot;recommended_actions&quot;: &quot;list of actions: hold, escalate, review_counterparty, enhanced_monitoring, clear, investigate_network&quot;,
+    &quot;confidence&quot;: &quot;float 0.0-1.0 confidence in assessment&quot;,
+    &quot;related_entities_flagged&quot;: &quot;entity IDs warranting investigation&quot;,
+    &quot;investigation_depth&quot;: &quot;triage_only, standard, or deep&quot;
+  },
+  &quot;cascade_config&quot;: {
+    &quot;risk_threshold&quot;: 0.7,
+    &quot;update_entities&quot;: true,
+    &quot;reenrich_related&quot;: true,
+    &quot;counterparty_threshold&quot;: null,
+    &quot;max_reenrich&quot;: 5
+  },
+  &quot;analysis_prompt&quot;: &quot;You are an e-commerce fraud analyst reviewing an incoming order for potential payment abuse, account compromise, or synthetic identity behavior. Evaluate whether the order amount is materially different from the customer&apos;s average order value and lifetime purchasing pattern. Compare shipping and billing details, and treat country-level or unusual city-level mismatches as elevated risk signals when combined with other anomalies. Factor in item category risk, especially high-resale electronics, gift cards, luxury goods, and expedited shipping combinations. Consider account age, verification state, and whether order velocity suggests card testing or takeover behavior within short time windows. Review payment method consistency and identify sudden switches to unfamiliar cards, crypto, or high-friction payment paths that differ from customer history. Use the fraud rules as evidence and cite exact rule IDs such as VELOCITY-001, IDENTITY-002, PAYMENT-001, SHIPPING-001, and AMOUNT-002 when relevant. If behavior appears consistent with legitimate history and no meaningful fraud indicators are present, set pattern_match to \&quot;none\&quot; and keep risk_score below 0.3. Only include precise, defensible flags and avoid broad or speculative tagging. Return output that strictly follows the enrichment schema with a calibrated risk score, categorical risk label, clear pattern match, exact rule flags, and a concise 2-3 sentence summary.&quot;,
+  &quot;policy_prompt&quot;: &quot;Evaluate this order against each policy using judgment. Consider the order details, customer history, and fraud signals. A policy triggers when the order meaningfully matches the policy intent.&quot;
+}</file><file path="domains/ecommerce/entities.json">{
   &quot;customers&quot;: [
     {
       &quot;customer_id&quot;: &quot;cust_0001&quot;,
@@ -1497,6 +1536,46 @@ exports = async function(changeEvent) {
     &quot;billing_address&quot;: {&quot;country&quot;: &quot;US&quot;, &quot;city&quot;: &quot;Unknown&quot;},
     &quot;status&quot;: &quot;pending&quot;
   }
+}</file><file path="domains/finance/config.json">{
+  &quot;domain&quot;: &quot;finance&quot;,
+  &quot;display_name&quot;: &quot;Financial Transaction Intelligence&quot;,
+  &quot;description&quot;: &quot;AML compliance and financial crime detection&quot;,
+  &quot;document_collection&quot;: &quot;transactions&quot;,
+  &quot;document_id_field&quot;: &quot;transaction_id&quot;,
+  &quot;entity_collection&quot;: &quot;accounts&quot;,
+  &quot;entity_id_field&quot;: &quot;account_id&quot;,
+  &quot;rules_collection&quot;: &quot;compliance_rules&quot;,
+  &quot;context_loading&quot;: {
+    &quot;entity_lookup_field&quot;: &quot;account_id&quot;,
+    &quot;counterparty_field&quot;: &quot;counterparty_id&quot;,
+    &quot;history_collection&quot;: &quot;transactions&quot;,
+    &quot;history_match_fields&quot;: [
+      &quot;account_id&quot;,
+      &quot;counterparty_id&quot;
+    ],
+    &quot;history_limit&quot;: 50
+  },
+  &quot;enrichment_schema&quot;: {
+    &quot;risk_score&quot;: &quot;float 0.0-1.0 indicating overall risk&quot;,
+    &quot;risk_category&quot;: &quot;one of: low, medium, high, critical&quot;,
+    &quot;pattern_match&quot;: &quot;detected pattern name or &apos;none&apos;&quot;,
+    &quot;flags&quot;: &quot;list of applicable rule IDs from the rules collection&quot;,
+    &quot;summary&quot;: &quot;2-3 sentence executive summary&quot;,
+    &quot;evidence&quot;: &quot;list of {fact, source, weight} objects supporting the assessment&quot;,
+    &quot;recommended_actions&quot;: &quot;list of actions: hold, escalate, review_counterparty, enhanced_monitoring, clear, investigate_network&quot;,
+    &quot;confidence&quot;: &quot;float 0.0-1.0 confidence in assessment&quot;,
+    &quot;related_entities_flagged&quot;: &quot;entity IDs warranting investigation&quot;,
+    &quot;investigation_depth&quot;: &quot;triage_only, standard, or deep&quot;
+  },
+  &quot;cascade_config&quot;: {
+    &quot;risk_threshold&quot;: 0.7,
+    &quot;update_entities&quot;: true,
+    &quot;reenrich_related&quot;: true,
+    &quot;counterparty_threshold&quot;: 0.8,
+    &quot;max_reenrich&quot;: 10
+  },
+  &quot;analysis_prompt&quot;: &quot;You are a financial crime analyst performing anti-money-laundering risk assessment for a banking transaction. Evaluate the transaction in context of account profile, jurisdiction exposure, transaction type, amount, and narrative quality. Consider whether activity fits known typologies such as structuring, layering, round-tripping, velocity abuse, sanctions evasion, or shell-entity movement. Weigh historical behavior and linked counterparty patterns when estimating risk. Use the provided rules as constraints and cite the most relevant rule IDs in flags when they materially apply. Keep risk scoring calibrated: clean routine behavior should remain low, while multi-signal suspicious behavior should be high or critical. Explain the key drivers in a concise executive summary that a compliance officer can act on. If no suspicious pattern is found, set pattern_match to none and keep risk proportionate.&quot;,
+  &quot;policy_prompt&quot;: &quot;Evaluate this document against each policy using judgment, not literal string matching.&quot;
 }</file><file path="domains/finance/entities.json">[
   {
     &quot;account_id&quot;: &quot;acc_0001&quot;,
@@ -2739,90 +2818,257 @@ exports = async function(changeEvent) {
     &quot;city&quot;: &quot;Unknown&quot;,
     &quot;status&quot;: &quot;completed&quot;
   }
-}</file><file path="reasoners/__init__.py"></file><file path="reasoners/router.py">router = AgentRouter(tags=[&quot;reactive-intelligence&quot;])</file><file path=".dockerignore">.git
+}</file><file path="reasoners/__init__.py"></file><file path="reasoners/intelligence.py">def _build_rule_query(document: dict[str, Any]) -&gt; str
+⋮----
+geo = document.get(&quot;geolocation&quot;) or document.get(&quot;shipping_address&quot;) or {}
+items = document.get(&quot;items&quot;, [])
+categories = &quot; &quot;.join(
+parts = [
+⋮----
+triage_result = await router.ai(
+⋮----
+context_loading = domain_config.get(&quot;context_loading&quot;, {})
+entity_lookup_field = context_loading.get(&quot;entity_lookup_field&quot;)
+history_collection = context_loading.get(&quot;history_collection&quot;)
+history_match_fields = context_loading.get(&quot;history_match_fields&quot;, [])
+history_limit = int(context_loading.get(&quot;history_limit&quot;, 50))
+entity_collection = domain_config.get(&quot;entity_collection&quot;)
+entity_id_field = domain_config.get(&quot;entity_id_field&quot;)
+rules_collection = domain_config.get(&quot;rules_collection&quot;)
+⋮----
+entity_id = document.get(entity_lookup_field) if entity_lookup_field else None
+⋮----
+entity_task = router.app.call(
+rules_task = router.app.call(
+⋮----
+related_tasks: list[Any] = []
+⋮----
+value = document.get(field_name)
+⋮----
+gathered = await asyncio.gather(entity_task, rules_task, *related_tasks)
+entity_result = gathered[0]
+rules_result = gathered[1]
+related_results = gathered[2:]
+⋮----
+entity = entity_result.get(&quot;entity&quot;, {})
+rules = rules_result.get(&quot;rules&quot;, [])
+⋮----
+related_documents_map: dict[str, dict[str, Any]] = {}
+doc_id_field = domain_config.get(&quot;document_id_field&quot;)
+⋮----
+key = related_doc.get(doc_id_field) if doc_id_field else None
+⋮----
+related_documents = list(related_documents_map.values())
+deep_context_available = bool(counterparty_context) or bool(recent_high_risk)
+⋮----
+intelligence = await router.ai(
+⋮----
+result = await router.ai(
+⋮----
+evaluations = [e.model_dump() for e in result.evaluations]
+any_triggered = any(e[&quot;triggered&quot;] for e in evaluations)
+⋮----
+network_insight = await router.ai(
+⋮----
+cascade_config = domain_config.get(&quot;cascade_config&quot;, {})
+⋮----
+document_collection = domain_config.get(&quot;document_collection&quot;)
+document_id_field = domain_config.get(&quot;document_id_field&quot;)
+⋮----
+counterparty_field = context_loading.get(&quot;counterparty_field&quot;)
+history_collection = context_loading.get(&quot;history_collection&quot;, document_collection)
+⋮----
+risk_score = float(intelligence.get(&quot;risk_score&quot;, 0))
+risk_threshold = float(cascade_config.get(&quot;risk_threshold&quot;, 0.7))
+ct_raw = cascade_config.get(&quot;counterparty_threshold&quot;)
+counterparty_threshold = float(ct_raw) if ct_raw is not None else float(&quot;inf&quot;)
+update_entities = bool(cascade_config.get(&quot;update_entities&quot;, True))
+reenrich_related = bool(cascade_config.get(&quot;reenrich_related&quot;, True))
+max_reenrich = int(cascade_config.get(&quot;max_reenrich&quot;, 10))
+⋮----
+entity_updates: list[str] = []
+documents_reenriched = 0
+trigger_doc_id = (
+⋮----
+entity_lookup_key = (
+counterparty_key = (
+doc_id_key = document_id_field if isinstance(document_id_field, str) else None
+⋮----
+entity_id = document.get(entity_lookup_key)
+⋮----
+related_result = await router.app.call(
+related = related_result.get(&quot;documents&quot;, [])
+unenriched = [
+⋮----
+tasks = [
+results = await asyncio.gather(*tasks, return_exceptions=True)
+⋮----
+counterparty_id = str(document.get(counterparty_key))
+⋮----
+recent_high_risk_result = await router.app.call(
+related_high_risk = recent_high_risk_result.get(&quot;documents&quot;, [])
+⋮----
+network_insight = await router.app.call(
+⋮----
+documents_affected = 1 + len(entity_updates) + documents_reenriched
+summary = (
+⋮----
+result = CascadeResult(
+⋮----
+doc_collection = domain_config.get(&quot;document_collection&quot;)
+⋮----
+doc_id = document.get(doc_id_field) if isinstance(doc_id_field, str) else None
+⋮----
+analysis = await router.app.call(
+⋮----
+config_result = await router.app.call(
+domain_config = config_result.get(&quot;config&quot;)
+⋮----
+doc_id_field = domain_config.get(&quot;document_id_field&quot;, &quot;id&quot;)
+doc_id = document.get(doc_id_field, &quot;unknown&quot;)
+⋮----
+triage = await router.app.call(
+⋮----
+investigation_needed = bool(triage.get(&quot;investigation_needed&quot;))
+investigation_depth = &quot;standard&quot;
+⋮----
+counterparty_context_task = None
+⋮----
+counterparty_context_task = router.app.call(
+⋮----
+recent_high_risk_task = router.app.call(
+⋮----
+counterparty_context = counterparty_result
+⋮----
+recent_high_risk_result = await recent_high_risk_task
+counterparty_context = None
+⋮----
+investigation_depth = &quot;deep&quot;
+⋮----
+risk_score = float(analysis.get(&quot;risk_score&quot;, 0))
+⋮----
+investigation_depth = &quot;triage_only&quot;
+⋮----
+policies_result = await router.app.call(
+policies = policies_result.get(&quot;policies&quot;, [])
+⋮----
+policy_result = await router.app.call(
+triggered_policies = [
+⋮----
+cascade_result = None
+⋮----
+cascade_result = await router.app.call(</file><file path="reasoners/router.py">router = AgentRouter(tags=[&quot;reactive-intelligence&quot;])</file><file path="reasoners/skills.py">_client: MongoClient[dict[str, Any]] | None = None
+_db = None
+⋮----
+def _get_db()
+⋮----
+uri = os.getenv(&quot;MONGODB_URI&quot;)
+⋮----
+_client = MongoClient(uri)
+_db = _client[os.getenv(&quot;MONGODB_DATABASE&quot;, &quot;reactive_intelligence&quot;)]
+⋮----
+def _serialize(value: Any) -&gt; Any
+⋮----
+@router.skill()
+def load_domain_config(domain: str) -&gt; dict[str, Any]
+⋮----
+db = _get_db()
+config = db[&quot;domain_config&quot;].find_one({&quot;domain&quot;: domain}, {&quot;_id&quot;: 0})
+⋮----
+entity = db[entity_collection].find_one({entity_id_field: entity_id}, {&quot;_id&quot;: 0})
+⋮----
+query: dict[str, Any] = {match_field: match_value}
+⋮----
+docs = list(
+⋮----
+@router.skill()
+def load_rules(query: str, rules_collection: str, k: int = 6) -&gt; dict[str, Any]
+⋮----
+enrichment = dict(intelligence)
+⋮----
+existing = db[collection].find_one({id_field: document_id})
+⋮----
+@router.skill()
+def load_active_policies(domain: str) -&gt; dict[str, Any]
+⋮----
+policies = list(db[&quot;policies&quot;].find({&quot;active&quot;: True, &quot;domain&quot;: domain}, {&quot;_id&quot;: 0}))
+⋮----
+current = db[entity_collection].find_one(
+previous = current.get(&quot;risk_profile&quot;) if current else None
+result = db[entity_collection].update_one(
+⋮----
+@router.skill()
+def log_reaction(event: dict[str, Any]) -&gt; dict[str, Any]
+⋮----
+payload = dict(event)
+⋮----
+entity = db[entity_collection].find_one(
+recent_documents = list(
+⋮----
+cutoff = datetime.now(timezone.utc) - timedelta(hours=int(hours_window))
+query: dict[str, Any] = {
+⋮----
+@router.skill()
+def get_timeline(limit: int = 20, _: bool = True) -&gt; dict[str, Any]
+⋮----
+events = list(</file><file path="setup/seed.py">BASE_DIR = Path(__file__).resolve().parent.parent
+⋮----
+DOMAINS_DIR = BASE_DIR / &quot;domains&quot;
+⋮----
+def load_json(path: Path) -&gt; Any
+⋮----
+def list_available_domains() -&gt; list[str]
+⋮----
+domains: list[str] = []
+⋮----
+required = [
+⋮----
+document_collection = config[&quot;document_collection&quot;]
+document_id_field = config[&quot;document_id_field&quot;]
+entity_collection = config[&quot;entity_collection&quot;]
+entity_id_field = config[&quot;entity_id_field&quot;]
+rules_collection = config[&quot;rules_collection&quot;]
+context_loading = config.get(&quot;context_loading&quot;, {})
+⋮----
+def seed_domain(db, domain: str) -&gt; None
+⋮----
+domain_dir = DOMAINS_DIR / domain
+config = load_json(domain_dir / &quot;config.json&quot;)
+entities_raw = load_json(domain_dir / &quot;entities.json&quot;)
+rules = load_json(domain_dir / &quot;rules.json&quot;)
+policies = load_json(domain_dir / &quot;policies.json&quot;)
+⋮----
+entities = entities_raw
+⋮----
+entities = entities_raw.get(entity_collection, [])
+⋮----
+entities = []
+⋮----
+normalized_policies = []
+⋮----
+item = dict(policy)
+⋮----
+def main() -&gt; None
+⋮----
+parser = argparse.ArgumentParser(description=&quot;Seed Reactive Atlas domain data&quot;)
+⋮----
+args = parser.parse_args()
+⋮----
+mongodb_uri = os.getenv(&quot;MONGODB_URI&quot;, &quot;mongodb://localhost:27019&quot;)
+mongodb_database = os.getenv(&quot;MONGODB_DATABASE&quot;, &quot;reactive_intelligence&quot;)
+⋮----
+available = list_available_domains()
+⋮----
+targets = available
+⋮----
+targets = [args.domain]
+⋮----
+client = MongoClient(mongodb_uri)
+db = client[mongodb_database]</file><file path=".dockerignore">.git
 .env
 __pycache__
 *.pyc
-.venv</file><file path="domains/ecommerce/config.json">{
-  &quot;domain&quot;: &quot;ecommerce&quot;,
-  &quot;display_name&quot;: &quot;E-Commerce Order Intelligence&quot;,
-  &quot;description&quot;: &quot;Fraud detection and risk assessment for online orders&quot;,
-  &quot;document_collection&quot;: &quot;orders&quot;,
-  &quot;document_id_field&quot;: &quot;order_id&quot;,
-  &quot;entity_collection&quot;: &quot;customers&quot;,
-  &quot;entity_id_field&quot;: &quot;customer_id&quot;,
-  &quot;rules_collection&quot;: &quot;fraud_rules&quot;,
-  &quot;context_loading&quot;: {
-    &quot;entity_lookup_field&quot;: &quot;customer_id&quot;,
-    &quot;counterparty_field&quot;: null,
-    &quot;history_collection&quot;: &quot;orders&quot;,
-    &quot;history_match_fields&quot;: [
-      &quot;customer_id&quot;
-    ],
-    &quot;history_limit&quot;: 30
-  },
-  &quot;enrichment_schema&quot;: {
-    &quot;risk_score&quot;: &quot;float 0.0-1.0 indicating fraud probability&quot;,
-    &quot;risk_category&quot;: &quot;one of: low, medium, high, critical&quot;,
-    &quot;pattern_match&quot;: &quot;detected fraud pattern or &apos;none&apos; (e.g. friendly_fraud, velocity_abuse, synthetic_identity, card_testing, account_takeover)&quot;,
-    &quot;flags&quot;: &quot;list of applicable fraud rule IDs from the fraud_rules collection&quot;,
-    &quot;summary&quot;: &quot;2-3 sentence fraud assessment&quot;,
-    &quot;evidence&quot;: &quot;list of {fact, source, weight} objects supporting the assessment&quot;,
-    &quot;recommended_actions&quot;: &quot;list of actions: hold, escalate, review_counterparty, enhanced_monitoring, clear, investigate_network&quot;,
-    &quot;confidence&quot;: &quot;float 0.0-1.0 confidence in assessment&quot;,
-    &quot;related_entities_flagged&quot;: &quot;entity IDs warranting investigation&quot;,
-    &quot;investigation_depth&quot;: &quot;triage_only, standard, or deep&quot;
-  },
-  &quot;cascade_config&quot;: {
-    &quot;risk_threshold&quot;: 0.7,
-    &quot;update_entities&quot;: true,
-    &quot;reenrich_related&quot;: true,
-    &quot;counterparty_threshold&quot;: null,
-    &quot;max_reenrich&quot;: 5
-  },
-  &quot;analysis_prompt&quot;: &quot;You are an e-commerce fraud analyst reviewing an incoming order for potential payment abuse, account compromise, or synthetic identity behavior. Evaluate whether the order amount is materially different from the customer&apos;s average order value and lifetime purchasing pattern. Compare shipping and billing details, and treat country-level or unusual city-level mismatches as elevated risk signals when combined with other anomalies. Factor in item category risk, especially high-resale electronics, gift cards, luxury goods, and expedited shipping combinations. Consider account age, verification state, and whether order velocity suggests card testing or takeover behavior within short time windows. Review payment method consistency and identify sudden switches to unfamiliar cards, crypto, or high-friction payment paths that differ from customer history. Use the fraud rules as evidence and cite exact rule IDs such as VELOCITY-001, IDENTITY-002, PAYMENT-001, SHIPPING-001, and AMOUNT-002 when relevant. If behavior appears consistent with legitimate history and no meaningful fraud indicators are present, set pattern_match to \&quot;none\&quot; and keep risk_score below 0.3. Only include precise, defensible flags and avoid broad or speculative tagging. Return output that strictly follows the enrichment schema with a calibrated risk score, categorical risk label, clear pattern match, exact rule flags, and a concise 2-3 sentence summary.&quot;,
-  &quot;policy_prompt&quot;: &quot;Evaluate this order against each policy using judgment. Consider the order details, customer history, and fraud signals. A policy triggers when the order meaningfully matches the policy intent.&quot;
-}</file><file path="domains/finance/config.json">{
-  &quot;domain&quot;: &quot;finance&quot;,
-  &quot;display_name&quot;: &quot;Financial Transaction Intelligence&quot;,
-  &quot;description&quot;: &quot;AML compliance and financial crime detection&quot;,
-  &quot;document_collection&quot;: &quot;transactions&quot;,
-  &quot;document_id_field&quot;: &quot;transaction_id&quot;,
-  &quot;entity_collection&quot;: &quot;accounts&quot;,
-  &quot;entity_id_field&quot;: &quot;account_id&quot;,
-  &quot;rules_collection&quot;: &quot;compliance_rules&quot;,
-  &quot;context_loading&quot;: {
-    &quot;entity_lookup_field&quot;: &quot;account_id&quot;,
-    &quot;counterparty_field&quot;: &quot;counterparty_id&quot;,
-    &quot;history_collection&quot;: &quot;transactions&quot;,
-    &quot;history_match_fields&quot;: [
-      &quot;account_id&quot;,
-      &quot;counterparty_id&quot;
-    ],
-    &quot;history_limit&quot;: 50
-  },
-  &quot;enrichment_schema&quot;: {
-    &quot;risk_score&quot;: &quot;float 0.0-1.0 indicating overall risk&quot;,
-    &quot;risk_category&quot;: &quot;one of: low, medium, high, critical&quot;,
-    &quot;pattern_match&quot;: &quot;detected pattern name or &apos;none&apos;&quot;,
-    &quot;flags&quot;: &quot;list of applicable rule IDs from the rules collection&quot;,
-    &quot;summary&quot;: &quot;2-3 sentence executive summary&quot;,
-    &quot;evidence&quot;: &quot;list of {fact, source, weight} objects supporting the assessment&quot;,
-    &quot;recommended_actions&quot;: &quot;list of actions: hold, escalate, review_counterparty, enhanced_monitoring, clear, investigate_network&quot;,
-    &quot;confidence&quot;: &quot;float 0.0-1.0 confidence in assessment&quot;,
-    &quot;related_entities_flagged&quot;: &quot;entity IDs warranting investigation&quot;,
-    &quot;investigation_depth&quot;: &quot;triage_only, standard, or deep&quot;
-  },
-  &quot;cascade_config&quot;: {
-    &quot;risk_threshold&quot;: 0.7,
-    &quot;update_entities&quot;: true,
-    &quot;reenrich_related&quot;: true,
-    &quot;counterparty_threshold&quot;: 0.8,
-    &quot;max_reenrich&quot;: 10
-  },
-  &quot;analysis_prompt&quot;: &quot;You are a financial crime analyst performing anti-money-laundering risk assessment for a banking transaction. Evaluate the transaction in context of account profile, jurisdiction exposure, transaction type, amount, and narrative quality. Consider whether activity fits known typologies such as structuring, layering, round-tripping, velocity abuse, sanctions evasion, or shell-entity movement. Weigh historical behavior and linked counterparty patterns when estimating risk. Use the provided rules as constraints and cite the most relevant rule IDs in flags when they materially apply. Keep risk scoring calibrated: clean routine behavior should remain low, while multi-signal suspicious behavior should be high or critical. Explain the key drivers in a concise executive summary that a compliance officer can act on. If no suspicious pattern is found, set pattern_match to none and keep risk proportionate.&quot;,
-  &quot;policy_prompt&quot;: &quot;Evaluate this document against each policy using judgment, not literal string matching.&quot;
-}</file><file path=".env.example"># Required
+.venv</file><file path=".env.example"># Required
 OPENROUTER_API_KEY=sk-or-v1-...
 
 # Required - MongoDB Atlas connection string
@@ -2842,7 +3088,153 @@ AI_MODEL=openrouter/minimax/minimax-m2.5</file><file path=".gitignore">__pycache
 *.egg-info/
 .DS_Store
 .docker-sdk/
-agentfield-sdk/</file><file path="docker-compose.yml">services:
+agentfield-sdk/</file><file path="demo.py">BASE_DIR = Path(__file__).resolve().parent
+⋮----
+DOMAINS_DIR = BASE_DIR / &quot;domains&quot;
+⋮----
+def require_env(name: str) -&gt; str
+⋮----
+value = os.getenv(name, &quot;&quot;).strip()
+⋮----
+def get_db()
+⋮----
+mongodb_uri = require_env(&quot;MONGODB_URI&quot;)
+db_name = os.getenv(&quot;MONGODB_DATABASE&quot;, &quot;reactive_intelligence&quot;)
+⋮----
+def get_agentfield_url() -&gt; str
+⋮----
+def load_json(path: Path) -&gt; Any
+⋮----
+def list_domains() -&gt; list[str]
+⋮----
+domains = []
+⋮----
+def load_domain_files(domain: str) -&gt; tuple[dict[str, Any], dict[str, Any]]
+⋮----
+domain_dir = DOMAINS_DIR / domain
+⋮----
+config_path = domain_dir / &quot;config.json&quot;
+scenarios_path = domain_dir / &quot;scenarios.json&quot;
+⋮----
+def print_ui_urls()
+⋮----
+def new_document_id(prefix: str) -&gt; str
+⋮----
+timestamp = datetime.now(timezone.utc).strftime(&quot;%Y%m%d%H%M%S%f&quot;)
+⋮----
+def _resolve_value(value: Any, id_prefix: str) -&gt; Any
+⋮----
+options = value[&quot;choice&quot;]
+⋮----
+id_prefix = f&quot;{domain[:5]}_doc&quot;
+docs = []
+⋮----
+doc_id_field = config.get(&quot;document_id_field&quot;)
+⋮----
+def wait_for_enrichment(db, collection: str, id_field: str, document_ids: list[str])
+⋮----
+poll_seconds = 3
+timeout_seconds = max(30, len(document_ids) * 15)
+spinner = &quot;|/-\\&quot;
+start = time.time()
+tick = 0
+⋮----
+elapsed = int(time.time() - start)
+enriched = db[collection].count_documents(
+spin = spinner[tick % len(spinner)]
+⋮----
+payload_doc = {k: v for k, v in document.items() if k != &quot;_id&quot;}
+⋮----
+response = httpx.post(
+⋮----
+body = response.json()
+⋮----
+def show_results(db, config: dict[str, Any], documents: list[dict[str, Any]]) -&gt; None
+⋮----
+collection = config[&quot;document_collection&quot;]
+id_field = config[&quot;document_id_field&quot;]
+⋮----
+doc = db[collection].find_one(
+intelligence = doc.get(&quot;_intelligence&quot;) if doc else None
+⋮----
+amount = doc.get(&quot;amount&quot;)
+⋮----
+geo = doc.get(&quot;geolocation&quot;) or doc.get(&quot;shipping_address&quot;) or {}
+country = geo.get(&quot;country&quot;, &quot;??&quot;) if isinstance(geo, dict) else &quot;??&quot;
+amount_label = (
+⋮----
+flags = intelligence.get(&quot;flags&quot;, [])
+⋮----
+summary = intelligence.get(&quot;summary&quot;, &quot;&quot;)
+⋮----
+doc_type = doc.get(&quot;type&quot;) or doc.get(&quot;shipping_method&quot;) or &quot;?&quot;
+⋮----
+execution_ids = []
+⋮----
+execution_id = trigger_processing(doc, collection, domain)
+⋮----
+entity_collection = config[&quot;entity_collection&quot;]
+entity_id_field = config[&quot;entity_id_field&quot;]
+cascaded = list(
+⋮----
+timeline = list(
+⋮----
+ts = event.get(&quot;timestamp&quot;)
+ts_label = (
+⋮----
+watch_items = scenario_info.get(&quot;watch&quot;, [])
+⋮----
+def reset_domain_data(db, config: dict[str, Any]) -&gt; None
+⋮----
+context_loading = config.get(&quot;context_loading&quot;, {})
+⋮----
+def status(db, domain: str, config: dict[str, Any]) -&gt; None
+⋮----
+threshold = float(config.get(&quot;cascade_config&quot;, {}).get(&quot;risk_threshold&quot;, 0.7))
+total = db[collection].count_documents({})
+enriched = db[collection].count_documents({&quot;_intelligence&quot;: {&quot;$exists&quot;: True}})
+high_risk = db[collection].count_documents(
+cascaded = db[config[&quot;entity_collection&quot;]].count_documents(
+reactions = db[&quot;reaction_timeline&quot;].count_documents({&quot;domain&quot;: domain})
+⋮----
+defaults = scenarios.get(&quot;custom_template&quot;, {})
+⋮----
+entity_field = context_loading.get(
+counterparty_field = context_loading.get(&quot;counterparty_field&quot;)
+id_field = config.get(&quot;document_id_field&quot;)
+⋮----
+doc = dict(defaults)
+⋮----
+raw_geo = doc.get(&quot;geolocation&quot;)
+geolocation: dict[str, object] = dict(raw_geo) if isinstance(raw_geo, dict) else {}
+⋮----
+def show_domain_list()
+⋮----
+domains = list_domains()
+⋮----
+order = scenarios.get(&quot;order&quot;, [])
+⋮----
+def parse_args()
+⋮----
+parser = argparse.ArgumentParser(description=&quot;Reactive Atlas demo runner&quot;)
+⋮----
+def main()
+⋮----
+args = parse_args()
+⋮----
+scenario_order = scenarios_doc.get(&quot;order&quot;, [])
+scenario_map = scenarios_doc.get(&quot;scenarios&quot;, {})
+⋮----
+db = get_db()
+⋮----
+scenario_info = scenario_map.get(scenario_name, {})
+documents = build_documents_for_scenario(args.domain, config, scenario_info)
+⋮----
+custom_doc = build_custom_document(args, config, scenarios_doc)
+⋮----
+supported = scenario_order + [&quot;all&quot;, &quot;custom&quot;, &quot;reset&quot;, &quot;status&quot;]
+⋮----
+scenario_info = scenario_map[args.command]</file><file path="docker-compose.yml">services:
   control-plane:
     image: agentfield/control-plane:latest
     environment:
@@ -3067,7 +3459,9 @@ CMD [&quot;python&quot;, &quot;main.py&quot;]</file><file path="LICENSE">Apache 
    distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
-   limitations under the License.</file><file path="Makefile">.PHONY: up down build logs seed demo reset status tunnel list poll
+   limitations under the License.</file><file path="main.py">DOMAIN = os.getenv(&quot;DOMAIN&quot;, &quot;finance&quot;)
+⋮----
+app = Agent(</file><file path="Makefile">.PHONY: up down build logs seed demo reset status tunnel list poll
 
 ifneq (,$(wildcard ./.env))
 include .env
@@ -3115,360 +3509,7 @@ tunnel:
 ID ?=
 poll:
 	@test -n &quot;$(ID)&quot; || (echo &quot;Usage: make poll ID=&lt;execution_id&gt;&quot; &amp;&amp; exit 1)
-	@curl -s http://localhost:8092/api/v1/executions/$(ID) | python3 -m json.tool</file><file path="railway.toml">[build]
-builder = &quot;dockerfile&quot;
-dockerfilePath = &quot;Dockerfile&quot;
-
-[deploy]
-startCommand = &quot;bash -c &apos;python setup/seed.py all; echo Starting agent...; exec python -u main.py&apos;&quot;
-restartPolicyType = &quot;on_failure&quot;
-restartPolicyMaxRetries = 3</file><file path="requirements.txt">agentfield
-pydantic&gt;=2.0
-httpx
-pymongo[srv]
-openai
-python-dotenv</file><file path="reasoners/intelligence.py">def _build_rule_query(document: dict[str, Any]) -&gt; str
-⋮----
-geo = document.get(&quot;geolocation&quot;) or document.get(&quot;shipping_address&quot;) or {}
-items = document.get(&quot;items&quot;, [])
-categories = &quot; &quot;.join(
-parts = [
-⋮----
-triage_result = await router.ai(
-⋮----
-context_loading = domain_config.get(&quot;context_loading&quot;, {})
-entity_lookup_field = context_loading.get(&quot;entity_lookup_field&quot;)
-history_collection = context_loading.get(&quot;history_collection&quot;)
-history_match_fields = context_loading.get(&quot;history_match_fields&quot;, [])
-history_limit = int(context_loading.get(&quot;history_limit&quot;, 50))
-entity_collection = domain_config.get(&quot;entity_collection&quot;)
-entity_id_field = domain_config.get(&quot;entity_id_field&quot;)
-rules_collection = domain_config.get(&quot;rules_collection&quot;)
-⋮----
-entity_id = document.get(entity_lookup_field) if entity_lookup_field else None
-⋮----
-entity_task = router.app.call(
-rules_task = router.app.call(
-⋮----
-related_tasks: list[Any] = []
-⋮----
-value = document.get(field_name)
-⋮----
-gathered = await asyncio.gather(entity_task, rules_task, *related_tasks)
-entity_result = gathered[0]
-rules_result = gathered[1]
-related_results = gathered[2:]
-⋮----
-entity = entity_result.get(&quot;entity&quot;, {})
-rules = rules_result.get(&quot;rules&quot;, [])
-⋮----
-related_documents_map: dict[str, dict[str, Any]] = {}
-doc_id_field = domain_config.get(&quot;document_id_field&quot;)
-⋮----
-key = related_doc.get(doc_id_field) if doc_id_field else None
-⋮----
-related_documents = list(related_documents_map.values())
-deep_context_available = bool(counterparty_context) or bool(recent_high_risk)
-⋮----
-intelligence = await router.ai(
-⋮----
-result = await router.ai(
-⋮----
-evaluations = [e.model_dump() for e in result.evaluations]
-any_triggered = any(e[&quot;triggered&quot;] for e in evaluations)
-⋮----
-network_insight = await router.ai(
-⋮----
-cascade_config = domain_config.get(&quot;cascade_config&quot;, {})
-⋮----
-document_collection = domain_config.get(&quot;document_collection&quot;)
-document_id_field = domain_config.get(&quot;document_id_field&quot;)
-⋮----
-counterparty_field = context_loading.get(&quot;counterparty_field&quot;)
-history_collection = context_loading.get(&quot;history_collection&quot;, document_collection)
-⋮----
-risk_score = float(intelligence.get(&quot;risk_score&quot;, 0))
-risk_threshold = float(cascade_config.get(&quot;risk_threshold&quot;, 0.7))
-ct_raw = cascade_config.get(&quot;counterparty_threshold&quot;)
-counterparty_threshold = float(ct_raw) if ct_raw is not None else float(&quot;inf&quot;)
-update_entities = bool(cascade_config.get(&quot;update_entities&quot;, True))
-reenrich_related = bool(cascade_config.get(&quot;reenrich_related&quot;, True))
-max_reenrich = int(cascade_config.get(&quot;max_reenrich&quot;, 10))
-⋮----
-entity_updates: list[str] = []
-documents_reenriched = 0
-trigger_doc_id = (
-⋮----
-entity_lookup_key = (
-counterparty_key = (
-doc_id_key = document_id_field if isinstance(document_id_field, str) else None
-⋮----
-entity_id = document.get(entity_lookup_key)
-⋮----
-related_result = await router.app.call(
-related = related_result.get(&quot;documents&quot;, [])
-unenriched = [
-⋮----
-tasks = [
-results = await asyncio.gather(*tasks, return_exceptions=True)
-⋮----
-counterparty_id = str(document.get(counterparty_key))
-⋮----
-recent_high_risk_result = await router.app.call(
-related_high_risk = recent_high_risk_result.get(&quot;documents&quot;, [])
-⋮----
-network_insight = await router.app.call(
-⋮----
-documents_affected = 1 + len(entity_updates) + documents_reenriched
-summary = (
-⋮----
-result = CascadeResult(
-⋮----
-doc_collection = domain_config.get(&quot;document_collection&quot;)
-⋮----
-doc_id = document.get(doc_id_field) if isinstance(doc_id_field, str) else None
-⋮----
-analysis = await router.app.call(
-⋮----
-config_result = await router.app.call(
-domain_config = config_result.get(&quot;config&quot;)
-⋮----
-doc_id_field = domain_config.get(&quot;document_id_field&quot;, &quot;id&quot;)
-doc_id = document.get(doc_id_field, &quot;unknown&quot;)
-⋮----
-triage = await router.app.call(
-⋮----
-investigation_needed = bool(triage.get(&quot;investigation_needed&quot;))
-investigation_depth = &quot;standard&quot;
-⋮----
-counterparty_context_task = None
-⋮----
-counterparty_context_task = router.app.call(
-⋮----
-recent_high_risk_task = router.app.call(
-⋮----
-counterparty_context = counterparty_result
-⋮----
-recent_high_risk_result = await recent_high_risk_task
-counterparty_context = None
-⋮----
-investigation_depth = &quot;deep&quot;
-⋮----
-risk_score = float(analysis.get(&quot;risk_score&quot;, 0))
-⋮----
-investigation_depth = &quot;triage_only&quot;
-⋮----
-policies_result = await router.app.call(
-policies = policies_result.get(&quot;policies&quot;, [])
-⋮----
-policy_result = await router.app.call(
-triggered_policies = [
-⋮----
-cascade_result = None
-⋮----
-cascade_result = await router.app.call(</file><file path="reasoners/skills.py">_client: MongoClient[dict[str, Any]] | None = None
-_db = None
-⋮----
-def _get_db()
-⋮----
-uri = os.getenv(&quot;MONGODB_URI&quot;)
-⋮----
-_client = MongoClient(uri)
-_db = _client[os.getenv(&quot;MONGODB_DATABASE&quot;, &quot;reactive_intelligence&quot;)]
-⋮----
-def _serialize(value: Any) -&gt; Any
-⋮----
-@router.skill()
-def load_domain_config(domain: str) -&gt; dict[str, Any]
-⋮----
-db = _get_db()
-config = db[&quot;domain_config&quot;].find_one({&quot;domain&quot;: domain}, {&quot;_id&quot;: 0})
-⋮----
-entity = db[entity_collection].find_one({entity_id_field: entity_id}, {&quot;_id&quot;: 0})
-⋮----
-query: dict[str, Any] = {match_field: match_value}
-⋮----
-docs = list(
-⋮----
-@router.skill()
-def load_rules(query: str, rules_collection: str, k: int = 6) -&gt; dict[str, Any]
-⋮----
-enrichment = dict(intelligence)
-⋮----
-existing = db[collection].find_one({id_field: document_id})
-⋮----
-@router.skill()
-def load_active_policies(domain: str) -&gt; dict[str, Any]
-⋮----
-policies = list(db[&quot;policies&quot;].find({&quot;active&quot;: True, &quot;domain&quot;: domain}, {&quot;_id&quot;: 0}))
-⋮----
-current = db[entity_collection].find_one(
-previous = current.get(&quot;risk_profile&quot;) if current else None
-result = db[entity_collection].update_one(
-⋮----
-@router.skill()
-def log_reaction(event: dict[str, Any]) -&gt; dict[str, Any]
-⋮----
-payload = dict(event)
-⋮----
-entity = db[entity_collection].find_one(
-recent_documents = list(
-⋮----
-cutoff = datetime.now(timezone.utc) - timedelta(hours=int(hours_window))
-query: dict[str, Any] = {
-⋮----
-@router.skill()
-def get_timeline(limit: int = 20, _: bool = True) -&gt; dict[str, Any]
-⋮----
-events = list(</file><file path="demo.py">BASE_DIR = Path(__file__).resolve().parent
-⋮----
-DOMAINS_DIR = BASE_DIR / &quot;domains&quot;
-⋮----
-def require_env(name: str) -&gt; str
-⋮----
-value = os.getenv(name, &quot;&quot;).strip()
-⋮----
-def get_db()
-⋮----
-mongodb_uri = require_env(&quot;MONGODB_URI&quot;)
-db_name = os.getenv(&quot;MONGODB_DATABASE&quot;, &quot;reactive_intelligence&quot;)
-⋮----
-def get_agentfield_url() -&gt; str
-⋮----
-def load_json(path: Path) -&gt; Any
-⋮----
-def list_domains() -&gt; list[str]
-⋮----
-domains = []
-⋮----
-def load_domain_files(domain: str) -&gt; tuple[dict[str, Any], dict[str, Any]]
-⋮----
-domain_dir = DOMAINS_DIR / domain
-⋮----
-config_path = domain_dir / &quot;config.json&quot;
-scenarios_path = domain_dir / &quot;scenarios.json&quot;
-⋮----
-def print_ui_urls()
-⋮----
-def new_document_id(prefix: str) -&gt; str
-⋮----
-timestamp = datetime.now(timezone.utc).strftime(&quot;%Y%m%d%H%M%S%f&quot;)
-⋮----
-def _resolve_value(value: Any, id_prefix: str) -&gt; Any
-⋮----
-options = value[&quot;choice&quot;]
-⋮----
-id_prefix = f&quot;{domain[:5]}_doc&quot;
-docs = []
-⋮----
-doc_id_field = config.get(&quot;document_id_field&quot;)
-⋮----
-def wait_for_enrichment(db, collection: str, id_field: str, document_ids: list[str])
-⋮----
-poll_seconds = 3
-timeout_seconds = max(30, len(document_ids) * 15)
-spinner = &quot;|/-\\&quot;
-start = time.time()
-tick = 0
-⋮----
-elapsed = int(time.time() - start)
-enriched = db[collection].count_documents(
-spin = spinner[tick % len(spinner)]
-⋮----
-payload_doc = {k: v for k, v in document.items() if k != &quot;_id&quot;}
-⋮----
-response = httpx.post(
-⋮----
-body = response.json()
-⋮----
-def show_results(db, config: dict[str, Any], documents: list[dict[str, Any]]) -&gt; None
-⋮----
-collection = config[&quot;document_collection&quot;]
-id_field = config[&quot;document_id_field&quot;]
-⋮----
-doc = db[collection].find_one(
-intelligence = doc.get(&quot;_intelligence&quot;) if doc else None
-⋮----
-amount = doc.get(&quot;amount&quot;)
-⋮----
-geo = doc.get(&quot;geolocation&quot;) or doc.get(&quot;shipping_address&quot;) or {}
-country = geo.get(&quot;country&quot;, &quot;??&quot;) if isinstance(geo, dict) else &quot;??&quot;
-amount_label = (
-⋮----
-flags = intelligence.get(&quot;flags&quot;, [])
-⋮----
-summary = intelligence.get(&quot;summary&quot;, &quot;&quot;)
-⋮----
-doc_type = doc.get(&quot;type&quot;) or doc.get(&quot;shipping_method&quot;) or &quot;?&quot;
-⋮----
-execution_ids = []
-⋮----
-execution_id = trigger_processing(doc, collection, domain)
-⋮----
-entity_collection = config[&quot;entity_collection&quot;]
-entity_id_field = config[&quot;entity_id_field&quot;]
-cascaded = list(
-⋮----
-timeline = list(
-⋮----
-ts = event.get(&quot;timestamp&quot;)
-ts_label = (
-⋮----
-watch_items = scenario_info.get(&quot;watch&quot;, [])
-⋮----
-def reset_domain_data(db, config: dict[str, Any]) -&gt; None
-⋮----
-context_loading = config.get(&quot;context_loading&quot;, {})
-⋮----
-def status(db, domain: str, config: dict[str, Any]) -&gt; None
-⋮----
-threshold = float(config.get(&quot;cascade_config&quot;, {}).get(&quot;risk_threshold&quot;, 0.7))
-total = db[collection].count_documents({})
-enriched = db[collection].count_documents({&quot;_intelligence&quot;: {&quot;$exists&quot;: True}})
-high_risk = db[collection].count_documents(
-cascaded = db[config[&quot;entity_collection&quot;]].count_documents(
-reactions = db[&quot;reaction_timeline&quot;].count_documents({&quot;domain&quot;: domain})
-⋮----
-defaults = scenarios.get(&quot;custom_template&quot;, {})
-⋮----
-entity_field = context_loading.get(
-counterparty_field = context_loading.get(&quot;counterparty_field&quot;)
-id_field = config.get(&quot;document_id_field&quot;)
-⋮----
-doc = dict(defaults)
-⋮----
-raw_geo = doc.get(&quot;geolocation&quot;)
-geolocation: dict[str, object] = dict(raw_geo) if isinstance(raw_geo, dict) else {}
-⋮----
-def show_domain_list()
-⋮----
-domains = list_domains()
-⋮----
-order = scenarios.get(&quot;order&quot;, [])
-⋮----
-def parse_args()
-⋮----
-parser = argparse.ArgumentParser(description=&quot;Reactive Atlas demo runner&quot;)
-⋮----
-def main()
-⋮----
-args = parse_args()
-⋮----
-scenario_order = scenarios_doc.get(&quot;order&quot;, [])
-scenario_map = scenarios_doc.get(&quot;scenarios&quot;, {})
-⋮----
-db = get_db()
-⋮----
-scenario_info = scenario_map.get(scenario_name, {})
-documents = build_documents_for_scenario(args.domain, config, scenario_info)
-⋮----
-custom_doc = build_custom_document(args, config, scenarios_doc)
-⋮----
-supported = scenario_order + [&quot;all&quot;, &quot;custom&quot;, &quot;reset&quot;, &quot;status&quot;]
-⋮----
-scenario_info = scenario_map[args.command]</file><file path="main.py">DOMAIN = os.getenv(&quot;DOMAIN&quot;, &quot;finance&quot;)
-⋮----
-app = Agent(</file><file path="models.py">class Evidence(BaseModel)
+	@curl -s http://localhost:8092/api/v1/executions/$(ID) | python3 -m json.tool</file><file path="models.py">class Evidence(BaseModel)
 ⋮----
 fact: str = Field(description=&quot;Specific observable fact&quot;)
 source: str = Field(
@@ -3518,60 +3559,14 @@ documents_affected: int = Field(description=&quot;Total documents updated in cas
 entity_updates: list[str] = Field(
 documents_reenriched: int = Field(
 summary: str = Field(description=&quot;One paragraph summary of the cascade&quot;)
-network_insight: NetworkInsight | None = Field(</file><file path="setup/seed.py">BASE_DIR = Path(__file__).resolve().parent.parent
-⋮----
-DOMAINS_DIR = BASE_DIR / &quot;domains&quot;
-⋮----
-def load_json(path: Path) -&gt; Any
-⋮----
-def list_available_domains() -&gt; list[str]
-⋮----
-domains: list[str] = []
-⋮----
-required = [
-⋮----
-document_collection = config[&quot;document_collection&quot;]
-document_id_field = config[&quot;document_id_field&quot;]
-entity_collection = config[&quot;entity_collection&quot;]
-entity_id_field = config[&quot;entity_id_field&quot;]
-rules_collection = config[&quot;rules_collection&quot;]
-context_loading = config.get(&quot;context_loading&quot;, {})
-⋮----
-def seed_domain(db, domain: str) -&gt; None
-⋮----
-domain_dir = DOMAINS_DIR / domain
-config = load_json(domain_dir / &quot;config.json&quot;)
-entities_raw = load_json(domain_dir / &quot;entities.json&quot;)
-rules = load_json(domain_dir / &quot;rules.json&quot;)
-policies = load_json(domain_dir / &quot;policies.json&quot;)
-⋮----
-entities = entities_raw
-⋮----
-entities = entities_raw.get(entity_collection, [])
-⋮----
-entities = []
-⋮----
-normalized_policies = []
-⋮----
-item = dict(policy)
-⋮----
-def main() -&gt; None
-⋮----
-parser = argparse.ArgumentParser(description=&quot;Seed Reactive Atlas domain data&quot;)
-⋮----
-args = parser.parse_args()
-⋮----
-mongodb_uri = os.getenv(&quot;MONGODB_URI&quot;, &quot;mongodb://localhost:27019&quot;)
-mongodb_database = os.getenv(&quot;MONGODB_DATABASE&quot;, &quot;reactive_intelligence&quot;)
-⋮----
-available = list_available_domains()
-⋮----
-targets = available
-⋮----
-targets = [args.domain]
-⋮----
-client = MongoClient(mongodb_uri)
-db = client[mongodb_database]</file><file path="README.md"># Reactive Atlas
+network_insight: NetworkInsight | None = Field(</file><file path="railway.toml">[build]
+builder = &quot;dockerfile&quot;
+dockerfilePath = &quot;Dockerfile&quot;
+
+[deploy]
+startCommand = &quot;bash -c &apos;python setup/seed.py all; echo Starting agent...; exec python -u main.py&apos;&quot;
+restartPolicyType = &quot;on_failure&quot;
+restartPolicyMaxRetries = 3</file><file path="README.md"># Reactive Atlas
 
 **Turn any MongoDB collection into an AI-powered intelligence layer.**
 
@@ -4049,4 +4044,9 @@ This is different from a chatbot — intelligence runs on database events and mu
 
 ## License
 
-Apache 2.0 · [See what else we&apos;re building →](https://github.com/Agent-Field)</file></files></repomix>
+Apache 2.0 · [See what else we&apos;re building →](https://github.com/Agent-Field)</file><file path="requirements.txt">agentfield
+pydantic&gt;=2.0
+httpx
+pymongo[srv]
+openai
+python-dotenv</file></files></repomix>

@@ -2,7 +2,7 @@
 name: hermes-gateway-api
 description: "Hermes Gateway API reference: multi-platform messaging layer connecting to 20+ platforms through adapter pattern"
 source: sources/hermes-agent/
-tags: [agent-gateway, api, cli, hermes, messaging, multi-platform, plugin-sdk, rest-api, typescript, webhook]
+tags: [agent-gateway, api, cli, hermes-agent, messaging, multi-platform, plugin-sdk, rest-api, typescript, webhook]
 ---
 
 # Hermes Gateway API — Multi-Platform Messaging Layer

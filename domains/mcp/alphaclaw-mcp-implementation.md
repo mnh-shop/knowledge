@@ -75,3 +75,9 @@ If `REMOTE_MCP_PROXY_URL` is also set, `url` uses the proxy value instead of `RE
 
 - `lib/server/gateway.js` -- MCP config write logic, env var resolution, key validation
 - `lib/server/openclaw-config.js` -- `readOpenclawConfig` / `writeOpenclawConfig` helpers
+
+## Related
+
+- [[alphaclaw]]
+- [[mcp]]
+- [[openclaw]]

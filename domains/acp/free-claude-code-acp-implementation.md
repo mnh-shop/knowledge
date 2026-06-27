@@ -2,7 +2,7 @@
 name: free-claude-code-acp
 description: "ACP agent communication protocol implementation in free-claude-code"
 source: sources/free-claude-code/
-tags: [acp, ai-llm, cli, documentation, messaging]
+tags: [acp, cli, documentation, messaging]
 ---
 # free-claude-code ACP Implementation
 
@@ -187,3 +187,8 @@ free-claude-code does not implement the ACP specification. Its agent communicati
 - **Discord/Telegram platform bridges** as agent communication channels
 - **Tree-based conversation management** for branching multi-turn interactions
 - **Centralized stop mechanism** for agent-wide control
+
+## Related
+
+- [[acp]]
+- [[free-claude-code]]
