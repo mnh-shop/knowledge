@@ -234,6 +234,7 @@ commands:
 - [[n8n]] — Workflow engine callable from Hermes MCP tools
 - [[hermzner]] — Deployment blueprint for Hermes on Hetzner
 - [[tank-os]] — Bootc OS pattern applicable to Hermes deployment
+- [[goclaw]] — Go-based agent gateway with compatible MCP surface
 - [[clawpier]] — Desktop GUI for managing Hermes Docker containers
 - [[buildah]] — Builds the container images Hermes agents run inside
 - [[nix-podman-stacks]] — Declarative Nix-based container infrastructure

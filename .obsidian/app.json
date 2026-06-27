@@ -4,6 +4,10 @@
     "raw/**",
     "graphs/**",
     ".smart-env/**",
-    ".claude/**"
+    ".claude/**",
+    "MEMORY.md",
+    "AGENTS.md",
+    "SCHEMA.md",
+    "README.md"
   ]
 }

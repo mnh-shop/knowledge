@@ -224,3 +224,4 @@ See `install.md` in the repo for full details.
 - [[tank-os]] -- Builds bootc container OS images
 - [[hermzner]] -- Image builds for Hetzner deployment
 - [[nix-podman-stacks]] -- Declarative image management via Nix
+- [[zot]] -- OCI image registry for storing built images

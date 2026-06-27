@@ -202,3 +202,4 @@ A workflow automation platform with 400+ integrations, AI-native workflow buildi
 - [[gogs]] -- Webhook triggers from Git events
 - [[buildah]] -- Custom n8n image building with pre-installed nodes
 - [[sablier]] -- Scale-to-zero for n8n workflow services
+- [[goclaw]] -- Go-based agent gateway with MCP surface for n8n

@@ -144,3 +144,4 @@ Mission Control is **most useful when paired with at least one agent gateway** â
 - [[gogs]] -- Self-hosted Git service for pipeline integration
 - [[nix-podman-stacks]] -- Declarative container deployment
 - [[sablier]] -- Scale-to-zero for Mission Control services
+- [[goclaw]] -- Go-based agent gateway compatible with Mission Control

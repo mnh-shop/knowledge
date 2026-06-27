@@ -1,12 +1,45 @@
 {
   "collapse-filter": false,
-  "search": "",
+  "search": "-file:MEMORY.md -file:AGENTS.md -file:SCHEMA.md -file:README.md",
   "showTags": false,
   "showAttachments": false,
-  "hideUnresolved": false,
-  "showOrphans": true,
+  "hideUnresolved": true,
+  "showOrphans": false,
   "collapse-color-groups": false,
-  "colorGroups": [],
+  "colorGroups": [
+    {
+      "query": "tag:hermes-agent",
+      "color": {"a": 1, "rgb": 10181046}
+    },
+    {
+      "query": "tag:openclaw",
+      "color": {"a": 1, "rgb": 3447003}
+    },
+    {
+      "query": "tag:podman",
+      "color": {"a": 1, "rgb": 15105570}
+    },
+    {
+      "query": "tag:agentfield",
+      "color": {"a": 1, "rgb": 3066993}
+    },
+    {
+      "query": "tag:n8n",
+      "color": {"a": 1, "rgb": 15158332}
+    },
+    {
+      "query": "tag:mission-control",
+      "color": {"a": 1, "rgb": 1752220}
+    },
+    {
+      "query": "tag:goclaw",
+      "color": {"a": 1, "rgb": 15844367}
+    },
+    {
+      "query": "path:ideas/",
+      "color": {"a": 1, "rgb": 9807270}
+    }
+  ],
   "collapse-display": false,
   "showArrow": false,
   "textFadeMultiplier": 0,
@@ -17,6 +50,6 @@
   "repelStrength": 10,
   "linkStrength": 1,
   "linkDistance": 250,
-  "scale": 0.0492590332738387,
+  "scale": 0.031135675046366704,
   "close": false
 }

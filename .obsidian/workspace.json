@@ -52,6 +52,23 @@
               "icon": "lucide-bookmark",
               "title": "Bookmarks"
             }
+          },
+          {
+            "id": "56372e9dd31cbb50",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "Search"
+            }
           }
         ],
         "currentTab": 1
@@ -143,15 +160,6 @@
             }
           },
           {
-            "id": "16d264195243b918",
-            "type": "leaf",
-            "state": {
-              "type": "infranodus-graph-view",
-              "state": {},
-              "icon": "infranodus-icon"
-            }
-          },
-          {
             "id": "53e70d4009ced325",
             "type": "leaf",
             "state": {
@@ -162,11 +170,12 @@
             }
           }
         ],
-        "currentTab": 6
+        "currentTab": 5
       }
     ],
     "direction": "horizontal",
-    "width": 300
+    "width": 816.5,
+    "collapsed": true
   },
   "left-ribbon": {
     "hiddenItems": {
@@ -182,7 +191,7 @@
       "bases:Create new base": false
     }
   },
-  "active": "97ec6dd4e78d4ab6",
+  "active": "feefe7facd1329b6",
   "lastOpenFiles": [
     "wiki/sablier.md.tmp.33190.47d0deb7b20e",
     "references/INDEX.md",

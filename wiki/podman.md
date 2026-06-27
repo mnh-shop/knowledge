@@ -207,3 +207,4 @@ Podman is the **foundation runtime** for the entire agent deployment stack:
 - [[n8n]] — Workflow automation running in Podman containers
 - [[sablier]] — Scale-to-zero daemon for Podman containers
 - [[gogs]] — Self-hosted Git service deployable via Podman
+- [[goclaw]] — Go-based agent gateway deployable via Podman

@@ -64,3 +64,4 @@ internal/
 - [[alphaclaw]] — Setup UI and gateway manager for OpenClaw
 - [[tank-os]] — Fedora bootc deployment for OpenClaw
 - [[clawpier]] — Desktop GUI for managing OpenClaw/Hermes Docker containers
+- [[mission-control]] — Dashboard and management plane for agent gateways
