@@ -1,6 +1,6 @@
 ---
 name: nanobot
-tags: [agent, cli, dashboard, desktop, docker, event-bus, mcp, messaging, monitoring, multi-platform, rest-api, security, webhook, python, typescript]
+tags: [agent, cli, dashboard, desktop, docker, event-bus, mcp, messaging, monitoring, multi-platform, rest-api, security, webhook, python, typescript, nanobot]
 description: "Open-source ultra-lightweight personal AI agent with WebUI, chat channels, tools, and memory"
 source: sources/nanobot/
 ---

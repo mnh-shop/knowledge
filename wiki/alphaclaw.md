@@ -1,6 +1,6 @@
 ---
 name: alphaclaw
-tags: [bootc, cli, dashboard, desktop, git, mcp, messaging, monitoring, openclaw, orchestration, rest-api, storage, webhook, agent, javascript]
+tags: [bootc, cli, dashboard, desktop, git, mcp, messaging, monitoring, openclaw, orchestration, rest-api, storage, webhook, agent, javascript, alphaclaw]
 description: "Setup UI, gateway manager, and onboarding wrapper for OpenClaw"
 source: sources/alphaclaw/
 ---

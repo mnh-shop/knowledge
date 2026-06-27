@@ -1,7 +1,7 @@
 ---
 name: oh-my-opencode-slim
 description: "Lightweight OpenCode-compatible agent runtime optimized for slim deployments"
-tags: [wiki, agent-runtime, opencode, typescript]
+tags: [wiki, agent-runtime, opencode, typescript, oh-my-opencode-slim]
 source: sources/oh-my-opencode-slim/
 ---
 

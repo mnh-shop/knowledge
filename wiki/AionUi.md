@@ -2,7 +2,7 @@
 name: aion-ui
 description: "AionUi — open-source AI cowork desktop app with multi-agent support, MCP tools, and web UI mode"
 source: sources/AionUi/
-tags: [automation, cli, desktop, electron, mcp, react, typescript, ui]
+tags: [automation, cli, desktop, electron, mcp, react, typescript, ui, AionUi]
 ---
 
 # AionUi

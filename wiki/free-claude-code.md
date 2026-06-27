@@ -1,7 +1,7 @@
 ---
 name: free-claude-code
 description: "Open-source proxy routing Claude Code/Codex traffic to 17 provider backends with multi-model routing"
-tags: [wiki, cli, code-assistant, multi-provider, open-source, coding-agent, proxy, python]
+tags: [wiki, cli, code-assistant, multi-provider, open-source, coding-agent, proxy, python, free-claude-code]
 source: sources/free-claude-code/
 ---
 

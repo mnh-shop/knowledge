@@ -6,7 +6,7 @@ source: sources/abvx-agent-skills/
 authors:
   - admin1
 date: 2026-06-25
-tags: [cli, git, skills, plugin, python]
+tags: [cli, git, skills, plugin, python, abvx-agent-skills]
 ---
 
 # ABVX Agent Skills

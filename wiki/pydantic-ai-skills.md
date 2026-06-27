@@ -2,7 +2,7 @@
 name: pydantic-ai-skills
 description: "Agent skills for Pydantic AI integration with open-source agent frameworks"
 source: sources/pydantic-ai-skills/
-tags: [cli, git, plugin, python, security, tool-calling]
+tags: [cli, git, plugin, python, security, tool-calling, pydantic-ai-skills]
 ---
 
 # pydantic-ai-skills

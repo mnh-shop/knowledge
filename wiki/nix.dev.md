@@ -1,6 +1,6 @@
 ---
 name: nix.dev
-tags: [developer-tools, documentation, git, python, nix]
+tags: [developer-tools, documentation, git, python, nix, nix.dev]
 description: "Official documentation for getting things done with Nix"
 source: sources/nix.dev/
 ---

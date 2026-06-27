@@ -1,7 +1,7 @@
 ---
 name: hermes-profile-control
 description: "Hermes control profile — local orchestrator for lightweight deployment stack, env rendering, skill management. Workspace prototype SOUL."
-tags: [ideas, hermes, profile, control, orchestrator]
+tags: [ideas, hermes, profile, orchestration, orchestration]
 source: workspace/deployment-setup-automation/h-coderstack-docker/profiles/hermes-control/SOUL.md
 ---
 

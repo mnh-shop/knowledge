@@ -1,7 +1,7 @@
 ---
 name: ecc
 description: "Claude Code plugin system — 67 agents, 271 skills, 92 commands, cross-harness support"
-tags: [wiki, claude-code, plugin, code-assistant, python, javascript]
+tags: [wiki, claude-code, plugin, code-assistant, python, javascript, ecc]
 source: sources/ECC/
 ---
 

@@ -1,7 +1,7 @@
 ---
 name: hermes-local-admin-setup
-description: "Synthesized Hermes local-admin multi-profile setup tutorial — Telegram gateway, kanban, coder/planner/qa-tester profiles. Workspace prototype."
-tags: [ideas, deployment, hermes, setup, profile, kanban, telegram]
+description: "Synthesized Hermes local-admin multi-profile setup tutorial — Telegram gateway, planning, coder/planner/qa-tester profiles. Workspace prototype."
+tags: [ideas, deployment, hermes, setup, profile, planning, telegram]
 source: workspace/deployment-setup-automation/setup-artifact.rtf
 ---
 
@@ -60,7 +60,7 @@ All in the same Docker network:
 
 - All containers up and healthy
 - Hermes logs show no startup errors
-- Volume mounts landed (secrets, kanban, patches, hindsight)
+- Volume mounts landed (secrets, planning, patches, hindsight)
 - Patches active (check from inside container)
 - kanban.db exists with correct schema
 - Dispatcher hook firing (check gateway logs)

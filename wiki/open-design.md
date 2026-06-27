@@ -2,7 +2,7 @@
 name: open-design
 description: "Open Design system — build once, reuse everywhere: cross-agent design token and component framework"
 source: sources/open-design/
-tags: [acp, cli, design, desktop, documentation, mcp, design-system, typescript, nix]
+tags: [acp, cli, design, desktop, documentation, mcp, design-system, typescript, nix, open-design]
 type: wiki/overview
 repo: https://github.com/nexu-io/open-design
 ---

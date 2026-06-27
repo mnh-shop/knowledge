@@ -1,6 +1,6 @@
 ---
 name: llmtrim
-tags: [cli, dashboard, developer-tools, mcp, monitoring, optimization, rust]
+tags: [cli, dashboard, developer-tools, mcp, monitoring, optimization, rust, llmtrim]
 description: "Local proxy that compresses LLM API requests to reduce token costs with no change in answer quality"
 source: sources/llmtrim/
 ---

@@ -2,7 +2,7 @@
 name: n8n-nodes
 description: "n8n node ecosystem — 816+ core nodes and 1,029+ community nodes"
 source: sources/n8n/
-tags: [fair-code, integration, mcp, n8n, workflow-automation]
+tags: [fair-code, integration, mcp, n8n, workflow-automation, n8n-nodes]
 ---
 
 # n8n Nodes

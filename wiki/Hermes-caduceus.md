@@ -1,6 +1,6 @@
 ---
 name: hermes-caduceus
-tags: [acp, agent, cli, dashboard, desktop, docker, git, mcp, messaging, multi-agent, orchestration, plugin-sdk, workflows, python, typescript, nix]
+tags: [acp, agent, cli, dashboard, desktop, docker, git, mcp, messaging, multi-agent, orchestration, plugin-sdk, workflows, python, typescript, nix, Hermes-caduceus]
 description: "Wiki entry for Hermes-caduceus: a reversible fork of Hermes Agent adding deep-planning mode, deterministic multi-agent workflows (the Loom), and Auto Router model routing"
 source: sources/Hermes-caduceus/
 ---

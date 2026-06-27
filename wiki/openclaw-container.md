@@ -2,7 +2,7 @@
 name: openclaw-container
 description: "OpenClaw container deployment templates and patterns for AI agent infrastructure"
 source: sources/openclaw-container/
-tags: [cli, container, deployment, docker, git, messaging, monitoring, openclaw, podman, security, storage, virtualization, python]
+tags: [cli, container, deployment, docker, git, messaging, monitoring, openclaw, podman, security, storage, virtualization, python, openclaw-container]
 status: active
 last_updated: 2026-06-25
 ---

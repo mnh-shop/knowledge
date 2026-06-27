@@ -1,7 +1,7 @@
 ---
 name: hermes-profiles
 description: "Hermes Agent SOUL profile scaffolds — 7 profiles from workspace prototyping (local-admin, coder, planner, qa-tester, control, FCC, KB-ingest, OMO)."
-tags: [ideas, hermes, profile, SOUL, index]
+tags: [ideas, hermes, profile, agent-profile, index]
 source: workspace/deployment-setup-automation/hermes-profiles/
 ---
 

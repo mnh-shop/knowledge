@@ -2,7 +2,7 @@
 name: mnemosyne
 description: "Mnemosyne memory server with MCP integration for AI agent persistent storage"
 source: sources/Mnemosyne/
-tags: [cli, mcp, storage, sqlite, python]
+tags: [cli, mcp, storage, sqlite, python, Mnemosyne]
 ---
 
 # Mnemosyne

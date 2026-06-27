@@ -1,7 +1,7 @@
 ---
 name: openviking
 description: "Context Database for AI Agents — filesystem-paradigm memory, resource, and skill management with tiered retrieval"
-tags: [wiki, ai-agents, python, rust, typescript]
+tags: [wiki, ai-agents, python, rust, typescript, openviking]
 source: sources/OpenViking/
 ---
 

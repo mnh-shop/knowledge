@@ -1,7 +1,7 @@
 ---
 name: opencode
 description: "Multi-platform CLI coding agent with extensible provider and toolchain support"
-tags: [cli, code-assistant, coding-agent, multi-provider, wiki, typescript, nix]
+tags: [cli, code-assistant, coding-agent, multi-provider, wiki, typescript, nix, opencode]
 source: sources/opencode/
 ---
 

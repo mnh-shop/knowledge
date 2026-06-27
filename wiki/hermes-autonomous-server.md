@@ -2,7 +2,7 @@
 name: hermes-autonomous-server
 description: "Autonomous Hermes server agent with self-healing and adaptive runtime capabilities"
 source: sources/hermes-autonomous-server/
-tags: [agent, hermes-agent, deployment, monitoring, security]
+tags: [agent, hermes-agent, deployment, monitoring, security, hermes-autonomous-server]
 ---
 
 # 🚀 Hermes Agent – Autonomous Linux Server Setup

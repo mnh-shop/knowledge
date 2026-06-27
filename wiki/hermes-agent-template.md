@@ -2,7 +2,7 @@
 name: hermes-agent-template
 description: "Template repository for Hermes agents on the Crustocean platform — SOUL personality, runtime config, and skill scaffolding"
 source: sources/hermes-agent-template/
-tags: [agent-profile, hermes-agent, docker, documentation, templates, python]
+tags: [agent-profile, hermes-agent, docker, documentation, templates, python, hermes-agent-template]
 ---
 
 # Hermes Agent Template

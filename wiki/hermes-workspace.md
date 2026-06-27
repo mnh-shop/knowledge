@@ -1,6 +1,6 @@
 ---
 name: hermes-workspace
-tags: [agent, hermes-agent, agent-gateway, dashboard, desktop, docker, mcp, messaging, multi-platform, orchestration, quadlet, systemd, wiki, typescript, nix]
+tags: [agent, hermes-agent, agent-gateway, dashboard, desktop, docker, mcp, messaging, multi-platform, orchestration, quadlet, systemd, wiki, typescript, nix, hermes-workspace]
 description: "Wiki entry for Hermes Workspace: web/desktop command center for Hermes Agent with swarm orchestration and MCP hub (MIT)"
 source: sources/hermes-workspace/
 ---

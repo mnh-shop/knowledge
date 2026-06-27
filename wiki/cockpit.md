@@ -2,7 +2,7 @@
 name: cockpit
 description: "Cockpit Project — web-based Linux server management interface"
 source: sources/cockpit-podman/
-tags: [linux, ui, podman]
+tags: [linux, ui, podman, cockpit]
 ---
 
 # Cockpit Project

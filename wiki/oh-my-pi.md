@@ -1,7 +1,7 @@
 ---
 name: oh-my-pi
 description: "Coding agent with the IDE wired in — fork of Mario Zechner's Pi with batteries-included coding workflow"
-tags: [wiki, pi, coding-agent, orchestration, python, rust, typescript]
+tags: [wiki, pi, coding-agent, orchestration, python, rust, typescript, oh-my-pi]
 source: sources/oh-my-pi/
 ---
 

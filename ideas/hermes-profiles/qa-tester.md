@@ -1,7 +1,7 @@
 ---
 name: hermes-profile-qa-tester
 description: "Hermes QA tester profile — browser-only E2E verification, failure task filing, memory-light. Workspace prototype SOUL."
-tags: [ideas, hermes, profile, qa-tester, browser]
+tags: [ideas, hermes, profile, qa-tester, browser-automation]
 source: workspace/deployment-setup-automation/hermes-profiles/profiles/qa-tester/
 ---
 

@@ -1,7 +1,7 @@
 ---
 name: graphify
 description: "Knowledge graph generator — turns any input into a persistent knowledge graph with community detection and query tools"
-tags: [wiki, python]
+tags: [wiki, python, graphify]
 source: sources/graphify/
 ---
 

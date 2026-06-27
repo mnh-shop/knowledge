@@ -1,6 +1,6 @@
 ---
 name: hermes-startup-architect
-tags: [agent, hermes-agent, agent-gateway, messaging, multi-platform, wiki]
+tags: [agent, hermes-agent, agent-gateway, messaging, multi-platform, wiki, hermes-startup-architect]
 description: "Wiki entry for Hermes Startup Architect: Hermes Agent skill for turning startup ideas into research-backed kits (MIT)"
 source: sources/hermes-startup-architect/
 ---

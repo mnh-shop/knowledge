@@ -1,7 +1,7 @@
 ---
 name: schema
 description: "Vault conventions, tag taxonomy, directory structure, and update policies for the knowledge base"
-tags: [index, meta]
+tags: [index, reference]
 ---
 
 # Vault Schema
@@ -102,18 +102,21 @@ Every source repo directory name is a valid ecosystem tag. Always include the re
 ```
 1claw-hermes, AionUi, ECC, Hermes-caduceus, Mnemosyne, OpenViking,
 SWE-AF, abvx-agent-skills, af-deep-research, af-reactive-atlas-mongodb,
-agent-rules-books, agentfield, alphaclaw, awesome-n8n-templates,
-awesome-openclaw-skills, awesome-openclaw-usecases, buildah, camofox-browser,
-clawpier, cockpit-podman, crun-vm, drawio-skill, free-claude-code, goclaw,
+agent-rules-books, agentfield, agentfield.codegraph-verify, alphaclaw,
+awesome-n8n-templates, awesome-openclaw-skills, awesome-openclaw-usecases,
+bootc, buildah, camofox-browser, clawpier, cockpit, cockpit-podman,
+crun-vm, drawio-skill, ecc, fedora-coreos-config, free-claude-code, goclaw,
 gogs, graphify, hermes-agent, hermes-agent-acp-skill, hermes-agent-docker,
 hermes-agent-template, hermes-autonomous-server, hermes-bus,
 hermes-incident-commander, hermes-optimization-guide, hermes-plugins,
 hermes-startup-architect, hermes-suite, hermes-workspace, hermzner, llmtrim,
-materia, mission-control, n8n, n8n-mcp, n8n-skills, n8n-workflows, nanobot,
-nix-podman-stacks, nix.dev, obsidian-skills, oh-my-hermes, oh-my-openagent,
-oh-my-opencode-slim, oh-my-pi, open-design, openclaw, openclaw-container,
-openclaw-plugin-claude-code, opencode, opencode-hermes-multiagent, pi, podlet,
-podman, podman-compose, pydantic-ai-skills, sablier, sec-af, skills, tank-os, zot
+materia, mission-control, n8n, n8n-mcp, n8n-nodes, n8n-skills,
+n8n-workflow-catalog, n8n-workflows, nanobot, nix-podman-stacks, nix.dev,
+obsidian-skills, oh-my-hermes, oh-my-openagent, oh-my-opencode-slim, oh-my-pi,
+open-design, openclaw, openclaw-container, openclaw-plugin-claude-code,
+openclaw.codegraph-verify, opencode, opencode-hermes-multiagent, openviking,
+outreachmagic, pi, podlet, podman, podman-compose, podman.codegraph-verify,
+pydantic-ai-skills, quadlet, sablier, sec-af, skills, tank-os, zot
 ```
 
 ## Domain-dimension tags
@@ -145,11 +148,11 @@ Based on actual file counts. Include only languages that make up a meaningful po
 General purpose — describe what the project IS or DOES:
 
 `agent`, `agent-gateway`, `agent-manager`, `agent-profile`, `agent-runtime`,
-`ai-agents`, `ansible`, `anthropic`, `auditor`, `automation`, `bootc`,
+`ai-agents`, `ai-llm`, `ansible`, `anthropic`, `auditor`, `automation`, `bootc`,
 `browser-automation`, `cli`, `claude-code`, `code-assistant`, `coding-agent`,
-`container`, `control-plane`, `dashboard`, `daemonless`, `deep-research`,
+`container`, `control-plane`, `dashboard`, `daemonless`, `declarative`, `deep-research`,
 `deployment`, `desktop`, `design`, `design-system`, `developer-tools`, `docker`,
-`documentation`, `electron`, `engineering-factory`, `event-bus`, `fair-code`,
+`documentation`, `electron`, `engineering-factory`, `event-bus`, `fair-code`, `gateway`,
 `fedora`, `git`, `gui`, `harness`, `hetzner`, `home-manager`, `identity`,
 `image-builder`, `image-based`, `immutable-os`, `infrastructure-as-code`,
 `integration`, `landscape`, `linux`, `live-canvas`, `low-code`, `mcp`,
