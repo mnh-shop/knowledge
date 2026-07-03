@@ -10,10 +10,10 @@ source: sources/goclaw/
 | Field | Value |
 |---|---|
 | **Origin** | [nextlevelbuilder/goclaw](https://github.com/nextlevelbuilder/goclaw) |
-| **License** | Unknown |
+| **License** | CC BY-NC 4.0 |
 | **Stack** | Go (net/http.ServeMux), Quadlet systemd units |
 | **Container** | `ghcr.io/nextlevelbuilder/goclaw:latest` |
-| **Port** | 18789 |
+| **Port** | 18790 |
 | **Source** | `sources/goclaw/` |
 
 ## What it is

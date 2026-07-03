@@ -33,7 +33,7 @@ A workflow automation platform with 400+ integrations, AI-native workflow buildi
 | API architecture | [[n8n-api]] (`domains/api/`) |
 | MCP integration | [[n8n-mcp]] (`domains/mcp/`) |
 | Deployment guides | [[n8n-deployment]] (`domains/deployment/`) |
-| Agent profile (standards) | [[n8n-agent-profile]] (`assets/profiles/`) |
+| Agent reference (standards) | [[n8n-agent-reference]] (`assets/agent-references/`) |
 | AGENTS.md (agent instructions) | `sources/n8n/AGENTS.md` |
 | README | `sources/n8n/README.md` |
 

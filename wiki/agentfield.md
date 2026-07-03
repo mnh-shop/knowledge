@@ -14,7 +14,7 @@ source: sources/agentfield/
 | **Stack** | Go (control plane) + Python/Go/TypeScript SDKs + React UI |
 | **Source** | `sources/agentfield/` |
 | **CLAUDE.md** | `sources/agentfield/CLAUDE.md` |
-| **Profile** | `assets/profiles/agentfield-profile.md` |
+| **Reference** | `assets/agent-references/agentfield-reference.md` |
 | **API** | `domains/api/agentfield-api.md` — REST surface, 5-layer auth, DID IAM, SDK-generated APIs |
 | **Deployment** | `domains/deployment/agentfield-deployment.md` — Docker Compose, Helm, production ops |
 | **Quadlet** | `assets/deployment/agentfield-quadlet.md` — rootless Podman Quadlet units |

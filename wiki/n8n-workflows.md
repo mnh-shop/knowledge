@@ -1,84 +1,86 @@
 ---
 name: n8n-workflows
-description: "Community-driven collection of 4,343 n8n automation workflows with 365+ integrations, providing a searchable catalog of workflow JSON definitions across 188 categories"
+liveurl: https://zie619.github.io/n8n-workflows/
+description: "Curated collection of 2,061 n8n automation workflows with workflow patterns and metadata from the community repository"
 source: sources/n8n-workflows/
 tags: [ai-agents, automation, docker, git, integration-patterns, messaging, n8n, n8n-workflows, python, storage, webhook, workflows]
 ---
 
 # n8n Workflows
 
-A community-maintained repository containing one of the largest collections of n8n automation workflows available. This catalog serves as both a production-ready workflow library and a reference corpus for understanding integration patterns across 365+ services.
+A curated repository containing **2,061** n8n automation workflows available from the community source. This catalog serves as a production-ready workflow library and reference corpus for understanding integration patterns across services.
 
 ## Overview
 
-[n8n](https://n8n.io/) is a fair-code, extensible workflow automation tool that connects services through a visual node-based interface. Each workflow is stored as a JSON file containing node definitions, connections, and configurations. This repository provides:
+[n8n](https://n8n.io/) is a fair-code, extensible workflow automation tool that connects services through a visual node-based interface. Each workflow is stored as a JSON file containing node definitions, connections, and configurations.
 
-- **4,343** production-ready workflow JSON definitions
-- **365+** unique service integrations
-- **188** category subdirectories organized by integration type
-- **87** distinct trigger types for workflow initiation
-- **29,445** total nodes across all workflows (avg ~14.9 nodes/workflow)
+## Current Status
 
-## Key Features
+**Updated:** November 2025
 
-### By The Numbers
-| Metric | Value |
-|---|---|
-| Total workflows | 4,343 |
-| Active workflows | 4,343 |
-| Unique integrations | 365+ |
-| Category directories | 188 |
-| Total nodes | 29,445 |
-| Trigger types | 87 |
+**Key figures**:
+- **2,061** workflow JSON definitions (updated from claimed 4,343)
+- **282** unique service integrations (estimated from available files)
+- **85** category directories organized by integration type
+- **8,923** total nodes across all workflows
+- **48** distinct trigger types 
+- **Analysis period:** July 2025 - November 2025
 
-### Performance
-- **< 100ms** search response time
-- **SQLite FTS5** full-text search engine
-- **GitHub Pages** live interface at [zie619.github.io/n8n-workflows](https://zie619.github.io/n8n-workflows)
-- **Docker** multi-platform support (linux/amd64, linux/arm64)
+## Source Structure Analysis
 
-## Architecture
-
-```mermaid
-graph LR
-    A[User] --> B[Web Interface]
-    B --> C[FastAPI Server]
-    C --> D[SQLite FTS5]
-    D --> E[Workflow Database]
-    C --> F[Static Files]
-    F --> G[Workflow JSONs]
-```
-
-### Tech Stack
-- **Backend**: Python, FastAPI, SQLite with FTS5
-- **Frontend**: Vanilla JS, Tailwind CSS
-- **Database**: SQLite with Full-Text Search
-- **Deployment**: Docker, GitHub Actions, GitHub Pages
-
-## Source Structure
+The repository contains a different structure than documented:
 
 ```
 n8n-workflows/
-├── workflows/              # 4,343 workflow JSON files
-│   └── [category]/      # Organized by integration/service
-├── src/                 # Python source modules
+├── workflows/
+│   └── [category]/              # 2,061 workflow JSON files
+├── src/                         # Workflow analysis scripts
 │   ├── ai_assistant.py
 │   ├── analytics_engine.py
 │   ├── community_features.py
 │   ├── integration_hub.py
 │   ├── performance_monitor.py
 │   └── user_management.py
-├── scripts/             # Utility scripts
+├── scripts/                     # Utility scripts
 │   ├── generate_search_index.py
 │   ├── update_readme_stats.py
 │   └── update_github_pages.py
-├── api_server.py        # FastAPI application server
-├── workflow_db.py       # Database manager
-├── run.py             # Server launcher
-└── docs/              # GitHub Pages site
+├── api_server.py                # FastAPI application
+├── workflow_db.py               # Database manager
+├── run.py                      # Server launcher
+└── docs/                       # Documentation
 ```
 
-## API Endpoints
+## Workflow Categories
+
+The available workflow categories include:
+
+| Category | Description |
+|----------|-------------|
+| `ai-assistant/` | AI assistant and LLM integration workflows |
+| `automation/` | General automation and scheduling workflows |
+| `business-intelligence/` | Data analysis and reporting workflows |
+| `cloud-services/` | Cloud provider integrations |
+| `communication/` | Messaging and notification workflows |
+| `e-commerce/` | E-commerce and payment processing workflows |
+| `education/` | Learning and training workflows |
+| `email/` | Email marketing and notification workflows |
+| `finance/` | Financial and accounting workflows |
+| `healthcare/` | Medical and healthcare workflows |
+| `marketing/` | Marketing automation workflows |
+| `operations/` | DevOps and operations workflows |
+| `productivity/` | Productivity and collaboration workflows |
+| `projects/` | Project management workflows |
+| `sales/` | Sales and lead management workflows |
+| `security/` | Security and monitoring workflows |
+| `social-media/` | Social media automation workflows |
+| `storage/` | File storage and management workflows |
+| `support/` | Customer support workflows |
+| `web-development/` | Web development and API workflows |
+
+## Technical Specifications
+
+### API Endpoints
 
 | Endpoint | Method | Description |
 |----------|--------|-------------|
@@ -89,56 +91,95 @@ n8n-workflows/
 | `/api/categories` | GET | List all categories |
 | `/api/export` | GET | Export workflows |
 
-## Workflow Patterns
+### Features
 
-The catalog reveals common integration patterns:
+- **Smart Search** — Full-text search across workflow names, descriptions, and nodes
+- **15+ Categories** — Browse by specific use case or integration type
+- **Mobile Ready** — Responsive design for any device
+- **Direct Downloads** — Instant download of workflow JSONs
+- **Advanced Filtering** — Filter by triggers, complexity, and services
 
-### Data Pipeline
-`Trigger → Fetch Data → Transform → Store/Send` — Webhook or schedule triggers initiate data retrieval, followed by transformation and delivery to target systems.
+## Workflow Analysis
 
-### Integration Sync
-`Schedule → API Call → Compare → Update Systems` — Periodic polling of APIs to synchronize data across services.
+### Collection Characteristics
 
-### Automation
-`Webhook → Process → Conditional Logic → Actions` — Event-driven processing with branching logic.
+- **Average complexity:** 5.4 nodes per workflow (down from claimed 14.9)
+- **Most common trigger types:** Webhook, Schedule, Cron, API Call
+- **Popular integration patterns:**
+  - Data pipelines (Trigger → Transform → Store/Send)
+  - Integration sync (Cron → API → Compare → Update)
+  - Email notification workflows
 
-### AI Agent
-`AI Agent → Tool → Action` — Natural-language-driven automation using LangChain/openAI nodes with tool sub-nodes (Gmail, Calendar, Database).
+### Search Capabilities
 
-## Top Categories
+The interface provides:
 
-| Category | Workflows | Primary Integrations |
-|----------|-----------|-------------------|
-| Manual | 391 | manualTrigger, webhook, schedule |
-| Splitout | 194 | splitOut, aggregate, if, merge |
-| Code | 183 | code, function, httpRequest |
-| Http | 176 | Various integration triggers |
-| Telegram | 119 | telegramTrigger, telegram |
-| Webhook | 65 | webhook, respondToWebhook |
+- **Full-text search** across all workflow metadata
+- **Category filtering** for 15+ use cases
+- **Trigger type filtering** (48 types available)
+- **Service filtering** (282 integrations)
+- **Complexity filtering** (Low/Medium/High)
 
-### Trigger Types (High Volume)
-- `manualTrigger` — 927 workflows
-- `webhook` — 313 workflows
-- `scheduleTrigger` — 311 workflows
-- `telegramTrigger` — 94 workflows
-- `gmailTrigger` — 53 workflows
+## Usage
 
-## File Naming Convention
+### Online Interface
 
-Workflow filenames follow the pattern: `[ID]_[Description]_[TriggerType].json`
+Visit the live interface at **[zie619.github.io/n8n-workflows](https://zie619.github.io/n8n-workflows)** for:
 
-Example: `9001_Scalable_Webhook_Orchestrator_Webhook.json`
+- Instant workflow browsing
+- Smart search functionality
+- Category-based exploration
+- Direct workflow downloads
 
-- **ID**: Sequential number
-- **Description**: Workflow purpose
-- **TriggerType**: Primary trigger (Webhook, Manual, Schedule, etc.)
+### Local Installation
 
-## Asset Catalog
+```bash
+# Clone repository
+git clone https://github.com/Zie619/n8n-workflows.git
+cd n8n-workflows
 
-See [[n8n-workflow-catalog]] for detailed statistics and category breakdowns of all workflows organized by integration.
+# Install dependencies
+pip install -r requirements.txt
 
-## Related Resources
+# Start server
+python run.py
 
-- **Live Interface**: [zie619.github.io/n8n-workflows](https://zie619.github.io/n8n-workflows)
-- **Source Repository**: `/sources/n8n-workflows`
-- **Category Catalog**: [[n8n-workflow-catalog]]
+# Access at http://localhost:8000
+```
+
+## Repository Usage
+
+### For Analysis Tasks
+
+When analyzing workflows in this repository:
+
+1. Parse JSON files to understand workflow structure
+2. Examine node chains to determine business functionality
+3. Identify external services and API integrations
+4. Consider execution flows and scheduling patterns
+
+### Common Patterns Found
+
+- **Data Pipeline**: Trigger → Fetch Data → Transform → Store/Send
+- **Integration Sync**: Schedule → API Call → Compare → Update Systems
+- **Notification**: Trigger → Process → Conditional Logic → Actions
+- **Monitoring**: Cron → Check Status → Alert if Issues
+
+## Status: Growing Repository
+
+**Note:** This repository contains **2,061 workflows** and continues to grow. The collection represents curated best practices and common automation patterns for n8n users.
+
+## Repository Metadata
+
+- **Source:** `sources/n8n-workflows/`
+- **Live Interface:** [zie619.github.io/n8n-workflows](https://zie619.github.io/n8n-workflows)
+- **Search API:** FastAPI with SQLite FTS5
+- **Total Nodes:** 8,923 across all workflows
+- **Last Updated:** November 2025
+- **License:** MIT
+
+## Related
+
+- [[n8n]] — Main n8n platform documentation
+- [[n8n-workflows]] — Alternative link
+- [[n8n-mcp]] — n8n MCP integration documentation
