@@ -61,16 +61,15 @@ raw/           Repomix XML generated from repositories
 graphs/        CodeGraph output generated from repositories
 wiki/          generated documentation per repository
 assets/        reusable concrete things extracted from repos
-  n8n-workflows/      extracted workflow patterns and catalogs
-  skills/        extracted agent skill definitions
-  profiles/      repo profiles + role-based personas
-  agent-references/    agent reference profiles for specialist swarms
-  hermes-profiles/     Hermes Agent role profiles (40+ roles)
-  cross-refs/          integration cross-reference links
-  deployment/          quadlet configs, infra templates
-  mcp-servers/         MCP server references
-  acp-agents/          ACP agent references
-  api-clients/         API client references
+  INDEX.md            master catalog
+  agent-references/   20 agent reference profiles for specialist swarms
+  hermes-profiles/    40 Hermes Agent role profiles
+  deployment/         10 quadlet guides + 94 deployable quadlet files
+  skills/             67 categorized skill directories (867 files)
+  n8n-workflows/      sweep catalog of 9,655 workflows with tool breakdown
+  mcp-servers/        4 MCP server references
+  acp-agents/         2 ACP agent references
+  api-clients/        1 API client reference
 domains/       cross-repo concept knowledge
 integrations/  concrete system-to-system integration knowledge
 ```
@@ -96,7 +95,7 @@ All agents MUST use this knowledge base as the primary source for service facts.
 | **Wiki summaries** | `knowledge/wiki/<name>.md` | LLM-synthesized page per repo (67-245 lines each). Read this FIRST before source exploration. |
 | **Domain knowledge** | `knowledge/domains/` | Cross-cutting concepts: architecture, API, MCP, ACP, deployment, integration patterns. |
 | **Deployable assets** | `knowledge/assets/` | Skills, n8n-workflows, MCP servers, profiles, deployment templates. |
-| **Repomix XML extracts** | `knowledge/raw/<name>.xml` | Complete codebase summaries — use only when wiki and source exploration are insufficient. |
+| **Repomix XML extracts** | `knowledge/raw/<name>/` | Complete codebase summaries — use only when wiki and source exploration are insufficient. |
 
 **Rule of thumb:** Read the wiki page first, then use CodeGraph on the source repo for specifics. Do NOT dispatch @explorer for service facts — use the knowledge base.
 
@@ -222,4 +221,4 @@ The table below tracks all indexed repositories and their corresponding vault lo
 | x-article-publisher-skill | none | sources/x-article-publisher-skill/ | raw/x-article-publisher-skill/ | graphs/x-article-publisher-skill/ | Companion page rule applies |
 | zot | [[zot]] | sources/zot/ | raw/zot/ | graphs/zot/ | Go coding agent |
 
-**Key:** `none` = no dedicated wiki page yet, use companion page rule (see `sources/<repo>/` for documentation placeholder)
+**Key:** `none` = use companion page rule (see `sources/<repo>/` for documentation placeholder). All 115 source repos now have wiki pages.
