@@ -34,7 +34,7 @@ Do not duplicate repositories.
 
 The following directories are **READ ONLY** — never modify, delete, or rename any file inside them:
 
-- `sources/` — full cloned GitHub repositories (87 repos total)
+- `sources/` — full cloned GitHub repositories (115 repos total)
 - `raw/` — Repomix XML exports generated from repositories
 - `graphs/` — CodeGraph database output from repositories
 
@@ -56,14 +56,16 @@ blueprint for deployment stacks.
 ## Structure
 
 ```text
-sources/       full cloned GitHub repositories (gitignored, 87 repos)
+sources/       full cloned GitHub repositories (gitignored, 115 repos)
 raw/           Repomix XML generated from repositories
 graphs/        CodeGraph output generated from repositories
 wiki/          generated documentation per repository
 assets/        reusable concrete things extracted from repos
   n8n-workflows/      extracted workflow patterns and catalogs
   skills/        extracted agent skill definitions
-  profiles/      repo profiles + role-based personas (roles/)
+  profiles/      repo profiles + role-based personas
+  agent-references/    agent reference profiles for specialist swarms
+  hermes-profiles/     Hermes Agent role profiles (40+ roles)
   cross-refs/          integration cross-reference links
   deployment/          quadlet configs, infra templates
   mcp-servers/         MCP server references
@@ -100,92 +102,124 @@ All agents MUST use this knowledge base as the primary source for service facts.
 
 ## Repository index
 
-The table below tracks all indexed repositories and their corresponding vault locations. Use this to verify source references and ensure completeness.
+The table below tracks all indexed repositories and their corresponding vault locations. Generated from actual filesystem state — 115 sources, 90 wikis, 114 raw exports, 115 codegraph indexes.
 
 | Repo | Wiki | Source | Raw | Graph | Notes |
 |------|------|--------|-----|-------|-------|
-| 1claw-hermes | none | sources/1claw-hermes/ | raw/1claw-hermes.xml | graphs/1claw-hermes/ | Companion page rule applies |
-| abvx-agent-skills | [[abvx-agent-skills]] | sources/abvx-agent-skills/ | raw/abvx-agent-skills.xml | graphs/abvx-agent-skills/ | Agent skillpack |
-| af-deep-research | none | sources/af-deep-research/ | raw/af-deep-research.xml | graphs/af-deep-research/ | Companion page rule applies |
-| af-reactive-atlas-mongodb | none | sources/af-reactive-atlas-mongodb/ | raw/af-reactive-atlas-mongodb.xml | graphs/af-reactive-atlas-mongodb/ | Companion page rule applies |
-| agent-rules-books | none | sources/agent-rules-books/ | raw/agent-rules-books.xml | graphs/agent-rules-books/ | Companion page rule applies |
-| agentfield | [[agentfield]] | sources/agentfield/ | raw/agentfield.xml | graphs/agentfield/ | Firecracker micro-VMs |
-| alphaclaw | [[alphaclaw]] | sources/alphaclaw/ | raw/alphaclaw.xml | graphs/alphaclaw/ | OpenClaw harness |
-| awesome-n8n-templates | [[awesome-n8n-templates]] | sources/awesome-n8n-templates/ | raw/awesome-n8n-templates.xml | graphs/awesome-n8n-templates/ | Template collection |
-| awesome-openclaw-skills | none | sources/awesome-openclaw-skills/ | raw/awesome-openclaw-skills.xml | graphs/awesome-openclaw-skills/ | Companion page rule applies |
-| awesome-openclaw-usecases | none | sources/awesome-openclaw-usecases/ | raw/awesome-openclaw-usecases.xml | graphs/awesome-openclaw-usecases/ | Companion page rule applies |
-| AionUi | [[AionUi]] | sources/AionUi/ | raw/AionUi.xml | graphs/AionUi/ | Desktop UI |
-| bootc | [[bootc]] | sources/bootc/ | raw/bootc.xml | graphs/bootc/ | Bootable containers |
-| buildah | [[buildah]] | sources/buildah/ | raw/buildah.xml | graphs/buildah/ | OCI image builder |
-| camofox-browser | [[camofox-browser]] | sources/camofox-browser/ | raw/camofox-browser.xml | graphs/camofox-browser/ | Headless browser MCP |
-| clawpier | [[clawpier]] | sources/clawpier/ | raw/clawpier.xml | graphs/clawpier/ | Desktop GUI |
-| cockpit-podman | [[cockpit-podman]] | sources/cockpit-podman/ | raw/cockpit-podman.xml | graphs/cockpit-podman/ | Web UI plugin |
-| communitytools | none | sources/communitytools/ | raw/communitytools.xml | graphs/communitytools/ | Companion page rule applies |
-| crun-vm | none | sources/crun-vm/ | raw/crun-vm.xml | graphs/crun-vm/ | Companion page rule applies |
-| defending-code-reference-harness | none | sources/defending-code-reference-harness/ | raw/defending-code-reference-harness.xml | graphs/defending-code-reference-harness/ | Companion page rule applies |
-| drawio-skill | none | sources/drawio-skill/ | raw/drawio-skill.xml | graphs/drawio-skill/ | Companion page rule applies |
-| ECC | [[ecc]] | sources/ECC/ | raw/ECC.xml | graphs/ECC/ | Email capture |
-| fedora-coreos-config | none | sources/fedora-coreos-config/ | raw/fedora-coreos-config.xml | graphs/fedora-coreos-config/ | Companion page rule applies |
-| free-claude-code | [[free-claude-code]] | sources/free-claude-code/ | raw/free-claude-code.xml | graphs/free-claude-code/ | Free tier MCP wrapper |
-| goclaw | [[goclaw]] | sources/goclaw/ | raw/goclaw.xml | graphs/goclaw/ | Go MCP gateway |
-| gogs | [[gogs]] | sources/gogs/ | raw/gogs.xml | graphs/gogs/ | Git server |
-| graphify | none | sources/graphify/ | raw/graphify.xml | graphs/graphify/ | Companion page rule applies |
-| hermes-agent | [[hermes-agent]] | sources/hermes-agent/ | raw/hermes-agent.xml | graphs/hermes-agent/ | MCP hub with 49 tools |
-| hermes-agent-docker | none | sources/hermes-agent-docker/ | raw/hermes-agent-docker.xml | graphs/hermes-agent-docker/ | Companion page rule applies |
-| hermes-agent-acp-skill | none | sources/hermes-agent-acp-skill/ | raw/hermes-agent-acp-skill.xml | graphs/hermes-agent-acp-skill/ | Companion page rule applies |
-| hermes-agent-template | none | sources/hermes-agent-template/ | raw/hermes-agent-template.xml | graphs/hermes-agent-template/ | Companion page rule applies |
-| hermes-autonomous-server | none | sources/hermes-autonomous-server/ | raw/hermes-autonomous-server.xml | graphs/hermes-autonomous-server/ | Companion page rule applies |
-| hermes-bus | none | sources/hermes-bus/ | raw/hermes-bus.xml | graphs/hermes-bus/ | Companion page rule applies |
-| hermes-incident-commander | none | sources/hermes-incident-commander/ | raw/hermes-incident-commander.xml | graphs/hermes-incident-commander/ | Companion page rule applies |
-| hermes-optimization-guide | none | sources/hermes-optimization-guide/ | raw/hermes-optimization-guide.xml | graphs/hermes-optimization-guide/ | Companion page rule applies |
-| hermes-plugins | none | sources/hermes-plugins/ | raw/hermes-plugins.xml | graphs/hermes-plugins/ | Companion page rule applies |
-| hermes-profiles | none | sources/hermes-profiles/ | raw/hermes-profiles.xml | graphs/hermes-profiles/ | Companion page rule applies |
-| hermes-startup-architect | none | sources/hermes-startup-architect/ | raw/hermes-startup-architect.xml | graphs/hermes-startup-architect/ | Companion page rule applies |
-| hermes-suite | none | sources/hermes-suite/ | raw/hermes-suite.xml | graphs/hermes-suite/ | Companion page rule applies |
-| hermes-workspace | [[hermes-workspace]] | sources/hermes-workspace/ | raw/hermes-workspace.xml | graphs/hermes-workspace/ | MCP hub server |
-| Hexstrike-redteam | none | sources/Hexstrike-redteam/ | raw/Hexstrike-redteam.xml | graphs/Hexstrike-redteam/ | Companion page rule applies |
-| hermzner | [[hermzner]] | sources/hermzner/ | raw/hermzner.xml | graphs/hermzner/ | Hetzner automations |
-| hexstrike-ai | [[hexstrike-ai]] | sources/hexstrike-ai/ | raw/hexstrike-ai.xml | graphs/hexstrike-ai/ | Security framework |
-| kali-pentest | none | sources/kali-pentest/ | raw/kali-pentest.xml | graphs/kali-pentest/ | Companion page rule applies |
-| llmtrim | [[llmtrim]] | sources/llmtrim/ | raw/llmtrim.xml | graphs/llmtrim/ | Tool compressor |
-| materia | [[materia]] | sources/materia/ | raw/materia.xml | graphs/materia/ | Agent framework |
-| mission-control | [[mission-control]] | sources/mission-control/ | raw/mission-control.xml | graphs/mission-control/ | MCP audit server |
-| Mnemosyne | [[Mnemosyne]] | sources/Mnemosyne/ | raw/Mnemosyne.xml | graphs/Mnemosyne/ | Memory system |
-| n8n | [[n8n]] | sources/n8n/ | raw/n8n.xml | graphs/n8n/ | Workflow automation |
-| n8n-mcp | [[n8n-mcp]] | sources/n8n-mcp/ | raw/n8n-mcp.xml | graphs/n8n-mcp/ | MCP node indexer |
-| n8n-skills | [[n8n-skills]] | sources/n8n-skills/ | raw/n8n-skills.xml | graphs/n8n-skills/ | Workflow skills |
-| n8n-workflows | [[n8n-workflows]] | sources/n8n-workflows/ | raw/n8n-workflows.xml | graphs/n8n-workflows/ | Workflow catalog |
-| nanobot | [[nanobot]] | sources/nanobot/ | raw/nanobot.xml | graphs/nanobot/ | Agent framework |
-| nix-podman-stacks | [[nix-podman-stacks]] | sources/nix-podman-stacks/ | raw/nix-podman-stacks.xml | graphs/nix-podman-stacks/ | NixOS configs |
-| nix.dev | none | sources/nix.dev/ | raw/nix.dev.xml | graphs/nix.dev/ | Companion page rule applies |
-| nyxstrike | [[nyxstrike]] | sources/nyxstrike/ | raw/nyxstrike.xml | graphs/nyxstrike/ | Security orchestration |
-| obsidian-skills | none | sources/obsidian-skills/ | raw/obsidian-skills.xml | graphs/obsidian-skills/ | Companion page rule applies |
-| oh-my-hermes | [[oh-my-hermes]] | sources/oh-my-hermes/ | raw/oh-my-hermes.xml | graphs/oh-my-hermes/ | OMH plugin system |
-| oh-my-openagent | none | sources/oh-my-openagent/ | raw/oh-my-openagent.xml | graphs/oh-my-openagent/ | Companion page rule applies |
-| oh-my-opencode-slim | none | sources/oh-my-opencode-slim/ | raw/oh-my-opencode-slim.xml | graphs/oh-my-opencode-slim/ | Companion page rule applies |
-| oh-my-pi | [[oh-my-pi]] | sources/oh-my-pi/ | raw/oh-my-pi.xml | graphs/oh-my-pi/ | Fork of pi-mono |
-| openclaw | [[openclaw]] | sources/openclaw/ | raw/openclaw.xml | graphs/openclaw/ | Rust agent platform |
-| openclaw-container | none | sources/openclaw-container/ | raw/openclaw-container.xml | graphs/openclaw-container/ | Companion page rule applies |
-| openclaw-plugin-claude-code | none | sources/openclaw-plugin-claude-code/ | raw/openclaw-plugin-claude-code.xml | graphs/openclaw-plugin-claude-code/ | Companion page rule applies |
-| opencode | [[opencode]] | sources/opencode/ | raw/opencode.xml | graphs/opencode/ | AI coding agent |
-| opencode-hermes-multiagent | none | sources/opencode-hermes-multiagent/ | raw/opencode-hermes-multiagent.xml | graphs/opencode-hermes-multiagent/ | Companion page rule applies |
-| open-design | none | sources/open-design/ | raw/open-design.xml | graphs/open-design/ | Companion page rule applies |
-| openviking | [[openviking]] | sources/OpenViking/ | raw/OpenViking.xml | graphs/OpenViking/ | OOB message relay |
-| outreachmagic | none | sources/outreachmagic/ | raw/outreachmagic.xml | graphs/outreachmagic/ | Companion page rule applies |
-| pi | [[pi]] | sources/pi/ | raw/pi.xml | graphs/pi/ | TypeScript agent harness |
-| podlet | [[podlet]] | sources/podlet/ | raw/podlet.xml | graphs/podlet/ | Quadlet generator |
-| podman | [[podman]] | sources/podman/ | raw/podman.xml | graphs/podman/ | Container engine |
-| podman-compose | none | sources/podman-compose/ | raw/podman-compose.xml | graphs/podman-compose/ | Companion page rule applies |
-| pydantic-ai-skills | none | sources/pydantic-ai-skills/ | raw/pydantic-ai-skills.xml | graphs/pydantic-ai-skills/ | Companion page rule applies |
-| quadlet | [[quadlet]] | sources/quadlet/ | raw/quadlet.xml | graphs/quadlet/ | systemd generator |
-| reverse-skill | none | sources/reverse-skill/ | raw/reverse-skill.xml | graphs/reverse-skill/ | Companion page rule applies |
-| sablier | [[sablier]] | sources/sablier/ | raw/sablier.xml | graphs/sablier/ | Time-based access |
-| sec-af | [[sec-af]] | sources/sec-af/ | raw/sec-af.xml | graphs/sec-af/ | Security agent |
-| skills | none | sources/skills/ | raw/skills.xml | graphs/skills/ | Companion page rule applies |
-| tank-os | [[tank-os]] | sources/tank-os/ | raw/tank-os.xml | graphs/tank-os/ | bootc image |
-| zot | [[zot]] | sources/zot/ | raw/zot.xml | graphs/zot/ | Go coding agent |
+| 1claw-hermes | [[1claw-hermes]] | sources/1claw-hermes/ | raw/1claw-hermes/ | graphs/1claw-hermes/ | |
+| Agent-Reach | none | sources/Agent-Reach/ | raw/Agent-Reach/ | graphs/Agent-Reach/ | Companion page rule applies |
+| AionUi | [[AionUi]] | sources/AionUi/ | raw/AionUi/ | graphs/AionUi/ | Desktop UI |
+| Android-Pentesting-Checklist | [[Android-Pentesting-Checklist]] | sources/Android-Pentesting-Checklist/ | raw/Android-Pentesting-Checklist/ | graphs/Android-Pentesting-Checklist/ | |
+| Anthropic-Cybersecurity-Skills | [[Anthropic-Cybersecurity-Skills]] | sources/Anthropic-Cybersecurity-Skills/ | raw/Anthropic-Cybersecurity-Skills/ | graphs/Anthropic-Cybersecurity-Skills/ | |
+| CyberStrikeAI | [[CyberStrikeAI]] | sources/CyberStrikeAI/ | raw/CyberStrikeAI/ | graphs/CyberStrikeAI/ | |
+| ECC | [[ecc]] | sources/ECC/ | raw/ECC/ | graphs/ECC/ | Agent harness OS |
+| Hermes-caduceus | [[Hermes-caduceus]] | sources/Hermes-caduceus/ | raw/Hermes-caduceus/ | graphs/Hermes-caduceus/ | |
+| Hexstrike-redteam | [[Hexstrike-redteam]] | sources/Hexstrike-redteam/ | raw/Hexstrike-redteam/ | graphs/Hexstrike-redteam/ | |
+| Mnemosyne | [[Mnemosyne]] | sources/Mnemosyne/ | raw/Mnemosyne/ | graphs/Mnemosyne/ | Memory system |
+| NotFair | none | sources/NotFair/ | raw/NotFair/ | graphs/NotFair/ | Companion page rule applies |
+| OpenViking | [[openviking]] | sources/OpenViking/ | raw/OpenViking/ | graphs/OpenViking/ | OOB message relay |
+| SWE-AF | [[SWE-AF]] | sources/SWE-AF/ | raw/SWE-AF/ | graphs/SWE-AF/ | |
+| SecuritySkills | [[SecuritySkills]] | sources/SecuritySkills/ | raw/SecuritySkills/ | graphs/SecuritySkills/ | |
+| Understand-Anything | none | sources/Understand-Anything/ | raw/Understand-Anything/ | graphs/Understand-Anything/ | Companion page rule applies |
+| abvx-agent-skills | [[abvx-agent-skills]] | sources/abvx-agent-skills/ | raw/abvx-agent-skills/ | graphs/abvx-agent-skills/ | Agent skillpack |
+| af-deep-research | [[af-deep-research]] | sources/af-deep-research/ | raw/af-deep-research/ | graphs/af-deep-research/ | |
+| af-reactive-atlas-mongodb | [[af-reactive-atlas-mongodb]] | sources/af-reactive-atlas-mongodb/ | raw/af-reactive-atlas-mongodb/ | graphs/af-reactive-atlas-mongodb/ | |
+| agent-rules-books | [[agent-rules-books]] | sources/agent-rules-books/ | raw/agent-rules-books/ | graphs/agent-rules-books/ | |
+| agentfield | [[agentfield]] | sources/agentfield/ | raw/agentfield/ | graphs/agentfield/ | Firecracker micro-VMs |
+| ai-marketing-claude-code-skills | [[ai-marketing-claude-code-skills]] | sources/ai-marketing-claude-code-skills/ | raw/ai-marketing-claude-code-skills/ | graphs/ai-marketing-claude-code-skills/ | |
+| alphaclaw | [[alphaclaw]] | sources/alphaclaw/ | raw/alphaclaw/ | graphs/alphaclaw/ | OpenClaw harness |
+| appstore | none | sources/appstore/ | raw/appstore/ | graphs/appstore/ | Companion page rule applies |
+| awesome-n8n-templates | [[awesome-n8n-templates]] | sources/awesome-n8n-templates/ | raw/awesome-n8n-templates/ | graphs/awesome-n8n-templates/ | Template collection |
+| awesome-openclaw-skills | [[awesome-openclaw-skills]] | sources/awesome-openclaw-skills/ | raw/awesome-openclaw-skills/ | graphs/awesome-openclaw-skills/ | |
+| awesome-openclaw-usecases | [[awesome-openclaw-usecases]] | sources/awesome-openclaw-usecases/ | raw/awesome-openclaw-usecases/ | graphs/awesome-openclaw-usecases/ | |
+| bootc | [[bootc]] | sources/bootc/ | raw/bootc/ | graphs/bootc/ | Bootable containers |
+| buildah | [[buildah]] | sources/buildah/ | raw/buildah/ | graphs/buildah/ | OCI image builder |
+| camofox-browser | [[camofox-browser]] | sources/camofox-browser/ | raw/camofox-browser/ | graphs/camofox-browser/ | Headless browser MCP |
+| claude-ai-music-skills | [[claude-ai-music-skills]] | sources/claude-ai-music-skills/ | raw/claude-ai-music-skills/ | graphs/claude-ai-music-skills/ | |
+| claude-ecom | none | sources/claude-ecom/ | raw/claude-ecom/ | graphs/claude-ecom/ | Companion page rule applies |
+| claude-seo | [[claude-seo]] | sources/claude-seo/ | raw/claude-seo/ | graphs/claude-seo/ | |
+| claw-code | none | sources/claw-code/ | raw/claw-code/ | graphs/claw-code/ | Companion page rule applies |
+| clawpier | [[clawpier]] | sources/clawpier/ | raw/clawpier/ | graphs/clawpier/ | Desktop GUI |
+| cockpit-podman | [[cockpit-podman]] | sources/cockpit-podman/ | raw/cockpit-podman/ | graphs/cockpit-podman/ | Web UI plugin |
+| communitytools | [[communitytools]] | sources/communitytools/ | raw/communitytools/ | graphs/communitytools/ | |
+| coreos-assembler | none | sources/coreos-assembler/ | raw/coreos-assembler/ | graphs/coreos-assembler/ | Companion page rule applies |
+| crun-vm | [[crun-vm]] | sources/crun-vm/ | raw/crun-vm/ | graphs/crun-vm/ | |
+| defending-code-reference-harness | [[defending-code-reference-harness]] | sources/defending-code-reference-harness/ | raw/defending-code-reference-harness/ | graphs/defending-code-reference-harness/ | |
+| digital-marketing-pro | none | sources/digital-marketing-pro/ | raw/digital-marketing-pro/ | graphs/digital-marketing-pro/ | Companion page rule applies |
+| drawio-skill | [[drawio-skill]] | sources/drawio-skill/ | raw/drawio-skill/ | graphs/drawio-skill/ | |
+| extension-podman-quadlet | none | sources/extension-podman-quadlet/ | raw/extension-podman-quadlet/ | graphs/extension-podman-quadlet/ | Companion page rule applies |
+| fedora-coreos-config | [[fedora-coreos-config]] | sources/fedora-coreos-config/ | raw/fedora-coreos-config/ | graphs/fedora-coreos-config/ | |
+| free-claude-code | [[free-claude-code]] | sources/free-claude-code/ | raw/free-claude-code/ | graphs/free-claude-code/ | Free tier MCP wrapper |
+| goclaw | [[goclaw]] | sources/goclaw/ | raw/goclaw/ | graphs/goclaw/ | Go MCP gateway |
+| gogs | [[gogs]] | sources/gogs/ | raw/gogs/ | graphs/gogs/ | Git server |
+| grafana | none | sources/grafana/ | raw/grafana/ | graphs/grafana/ | Companion page rule applies |
+| graphify | [[graphify]] | sources/graphify/ | raw/graphify/ | graphs/graphify/ | |
+| headroom | none | sources/headroom/ | raw/headroom/ | graphs/headroom/ | Companion page rule applies |
+| hermes-agent | [[hermes-agent]] | sources/hermes-agent/ | raw/hermes-agent/ | graphs/hermes-agent/ | MCP hub with 49 tools |
+| hermes-agent-acp-skill | [[hermes-agent-acp-skill]] | sources/hermes-agent-acp-skill/ | raw/hermes-agent-acp-skill/ | graphs/hermes-agent-acp-skill/ | |
+| hermes-agent-docker | [[hermes-agent-docker]] | sources/hermes-agent-docker/ | raw/hermes-agent-docker/ | graphs/hermes-agent-docker/ | |
+| hermes-agent-template | [[hermes-agent-template]] | sources/hermes-agent-template/ | raw/hermes-agent-template/ | graphs/hermes-agent-template/ | |
+| hermes-autonomous-server | [[hermes-autonomous-server]] | sources/hermes-autonomous-server/ | raw/hermes-autonomous-server/ | graphs/hermes-autonomous-server/ | |
+| hermes-bus | [[hermes-bus]] | sources/hermes-bus/ | raw/hermes-bus/ | graphs/hermes-bus/ | |
+| hermes-incident-commander | [[hermes-incident-commander]] | sources/hermes-incident-commander/ | raw/hermes-incident-commander/ | graphs/hermes-incident-commander/ | |
+| hermes-optimization-guide | [[hermes-optimization-guide]] | sources/hermes-optimization-guide/ | raw/hermes-optimization-guide/ | graphs/hermes-optimization-guide/ | |
+| hermes-plugins | [[hermes-plugins]] | sources/hermes-plugins/ | raw/hermes-plugins/ | graphs/hermes-plugins/ | |
+| hermes-profiles | [[hermes-profiles]] | sources/hermes-profiles/ | raw/hermes-profiles/ | graphs/hermes-profiles/ | |
+| hermes-startup-architect | [[hermes-startup-architect]] | sources/hermes-startup-architect/ | raw/hermes-startup-architect/ | graphs/hermes-startup-architect/ | |
+| hermes-suite | [[hermes-suite]] | sources/hermes-suite/ | raw/hermes-suite/ | graphs/hermes-suite/ | |
+| hermes-workspace | [[hermes-workspace]] | sources/hermes-workspace/ | raw/hermes-workspace/ | graphs/hermes-workspace/ | MCP hub server |
+| hermzner | [[hermzner]] | sources/hermzner/ | raw/hermzner/ | graphs/hermzner/ | Hetzner automations |
+| hexstrike-ai | [[hexstrike-ai]] | sources/hexstrike-ai/ | raw/hexstrike-ai/ | graphs/hexstrike-ai/ | Security framework |
+| infinite-brain-os | none | sources/infinite-brain-os/ | raw/infinite-brain-os/ | graphs/infinite-brain-os/ | Companion page rule applies |
+| k3s | none | sources/k3s/ | raw/k3s/ | graphs/k3s/ | Companion page rule applies |
+| kali-pentest | [[kali-pentest]] | sources/kali-pentest/ | raw/kali-pentest/ | graphs/kali-pentest/ | |
+| llmtrim | [[llmtrim]] | sources/llmtrim/ | raw/llmtrim/ | graphs/llmtrim/ | Tool compressor |
+| materia | [[materia]] | sources/materia/ | raw/materia/ | graphs/materia/ | Agent framework |
+| mission-control | [[mission-control]] | sources/mission-control/ | raw/mission-control/ | graphs/mission-control/ | MCP audit server |
+| n8n | [[n8n]] | sources/n8n/ | raw/n8n/ | graphs/n8n/ | Workflow automation |
+| n8n-mcp | [[n8n-mcp]] | sources/n8n-mcp/ | raw/n8n-mcp/ | graphs/n8n-mcp/ | MCP node indexer |
+| n8n-skills | [[n8n-skills]] | sources/n8n-skills/ | raw/n8n-skills/ | graphs/n8n-skills/ | Workflow skills |
+| n8n-workflows | [[n8n-workflows]] | sources/n8n-workflows/ | raw/n8n-workflows/ | graphs/n8n-workflows/ | Workflow catalog |
+| n8nworkflows.xyz | none | sources/n8nworkflows.xyz/ | raw/n8nworkflows.xyz/ | graphs/n8nworkflows.xyz/ | Companion page rule applies |
+| nanobot | [[nanobot]] | sources/nanobot/ | raw/nanobot/ | graphs/nanobot/ | Agent framework |
+| netdata | none | sources/netdata/ | raw/netdata/ | graphs/netdata/ | Companion page rule applies |
+| nix-podman-stacks | [[nix-podman-stacks]] | sources/nix-podman-stacks/ | raw/nix-podman-stacks/ | graphs/nix-podman-stacks/ | NixOS configs |
+| nix.dev | [[nix.dev]] | sources/nix.dev/ | raw/nix.dev/ | graphs/nix.dev/ | |
+| nyxstrike | [[nyxstrike]] | sources/nyxstrike/ | raw/nyxstrike/ | graphs/nyxstrike/ | Security orchestration |
+| obsidian-skills | [[obsidian-skills]] | sources/obsidian-skills/ | raw/obsidian-skills/ | graphs/obsidian-skills/ | |
+| oh-my-hermes | [[oh-my-hermes]] | sources/oh-my-hermes/ | raw/oh-my-hermes/ | graphs/oh-my-hermes/ | OMH plugin system |
+| oh-my-openagent | [[oh-my-openagent]] | sources/oh-my-openagent/ | raw/oh-my-openagent/ | graphs/oh-my-openagent/ | |
+| oh-my-opencode-slim | [[oh-my-opencode-slim]] | sources/oh-my-opencode-slim/ | raw/oh-my-opencode-slim/ | graphs/oh-my-opencode-slim/ | |
+| oh-my-pi | [[oh-my-pi]] | sources/oh-my-pi/ | raw/oh-my-pi/ | graphs/oh-my-pi/ | Fork of pi-mono |
+| open-design | [[open-design]] | sources/open-design/ | raw/open-design/ | graphs/open-design/ | |
+| openai-skills | [[openai-skills]] | sources/openai-skills/ | raw/openai-skills/ | graphs/openai-skills/ | |
+| openclaw | [[openclaw]] | sources/openclaw/ | raw/openclaw/ | graphs/openclaw/ | Rust agent platform |
+| openclaw-container | [[openclaw-container]] | sources/openclaw-container/ | raw/openclaw-container/ | graphs/openclaw-container/ | |
+| openclaw-plugin-claude-code | [[openclaw-plugin-claude-code]] | sources/openclaw-plugin-claude-code/ | raw/openclaw-plugin-claude-code/ | graphs/openclaw-plugin-claude-code/ | |
+| opencode | [[opencode]] | sources/opencode/ | raw/opencode/ | graphs/opencode/ | AI coding agent |
+| opencode-hermes-multiagent | [[opencode-hermes-multiagent]] | sources/opencode-hermes-multiagent/ | raw/opencode-hermes-multiagent/ | graphs/opencode-hermes-multiagent/ | |
+| outreachmagic | [[outreachmagic]] | sources/outreachmagic/ | raw/outreachmagic/ | graphs/outreachmagic/ | |
+| pi | [[pi]] | sources/pi/ | raw/pi/ | graphs/pi/ | TypeScript agent harness |
+| podlet | [[podlet]] | sources/podlet/ | raw/podlet/ | graphs/podlet/ | Quadlet generator |
+| podman | [[podman]] | sources/podman/ | raw/podman/ | graphs/podman/ | Container engine |
+| podman-compose | [[podman-compose]] | sources/podman-compose/ | raw/podman-compose/ | graphs/podman-compose/ | |
+| podman-quadlet | none | sources/podman-quadlet/ | raw/podman-quadlet/ | graphs/podman-quadlet/ | Companion page rule applies |
+| prometheus | none | sources/prometheus/ | raw/prometheus/ | graphs/prometheus/ | Companion page rule applies |
+| pydantic-ai-skills | [[pydantic-ai-skills]] | sources/pydantic-ai-skills/ | raw/pydantic-ai-skills/ | graphs/pydantic-ai-skills/ | |
+| quadit | none | sources/quadit/ | raw/quadit/ | graphs/quadit/ | Companion page rule applies |
+| quadlet-lsp | none | sources/quadlet-lsp/ | raw/quadlet-lsp/ | graphs/quadlet-lsp/ | Companion page rule applies |
+| quadlet-nix | none | sources/quadlet-nix/ | raw/quadlet-nix/ | graphs/quadlet-nix/ | Companion page rule applies |
+| reverse-skill | [[reverse-skill]] | sources/reverse-skill/ | raw/reverse-skill/ | graphs/reverse-skill/ | |
+| sablier | [[sablier]] | sources/sablier/ | raw/sablier/ | graphs/sablier/ | Time-based access |
+| sec-af | [[sec-af]] | sources/sec-af/ | raw/sec-af/ | graphs/sec-af/ | Security agent |
+| secureblue | none | sources/secureblue/ | raw/secureblue/ | graphs/secureblue/ | Companion page rule applies |
+| shannon | none | sources/shannon/ | raw/shannon/ | graphs/shannon/ | Companion page rule applies |
+| skills | [[skills]] | sources/skills/ | raw/skills/ | graphs/skills/ | |
+| slavinga-skills | [[slavinga-skills]] | sources/slavinga-skills/ | raw/slavinga-skills/ | graphs/slavinga-skills/ | |
+| tank-agent-os | none | sources/tank-agent-os/ | raw/tank-agent-os/ | graphs/tank-agent-os/ | Companion page rule applies |
+| tank-os | [[tank-os]] | sources/tank-os/ | raw/tank-os/ | graphs/tank-os/ | bootc image |
+| turnstone | none | sources/turnstone/ | raw/turnstone/ | graphs/turnstone/ | Companion page rule applies |
+| x-article-publisher-skill | none | sources/x-article-publisher-skill/ | raw/x-article-publisher-skill/ | graphs/x-article-publisher-skill/ | Companion page rule applies |
+| zot | [[zot]] | sources/zot/ | raw/zot/ | graphs/zot/ | Go coding agent |
 
-**Key:** `none` = no dedicated wiki page, use companion page rule (see `sources/<repo>/` for documentation)
-
-**In-scope repos with wiki pages (all have summaries):**
-Primary agent repos (full wiki summaries): hermes-agent, openclaw, goclaw, zot, oh-my-hermes, agentfield, n8n, pi, oh-my-pi, tank-os, free-claude-code, n8n-mcp, n8n-workflows, abvx-agent-skills, nanobot, materia
+**Key:** `none` = no dedicated wiki page yet, use companion page rule (see `sources/<repo>/` for documentation placeholder)

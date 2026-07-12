@@ -27,6 +27,12 @@ Reference architectures and deployment stacks showing how multiple systems in th
 - [[telegram-bot-setup]] — Telegram bot integration
 - [[podman-pod-stack]] — Podman pod-based deployment stacks
 
+## Use Case Patterns
+
+| Doc | Agent | Description |
+|-----|-------|-------------|
+| [[openclaw-use-case-patterns|OpenClaw Use Cases]] | OpenClaw | 42 real-world patterns across productivity, content, DevOps, research, finance, social media, and development |
+
 ## Common Patterns
 
 - OpenClaw as central agent gateway with MCP tool exposure

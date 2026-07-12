@@ -206,7 +206,7 @@ See `install.md` in the repo for full details.
 
 - [Architecture](domains/architecture/buildah-architecture.md) — 4-layer architecture, image building pipeline, rootless mode
 - [Deployment](domains/deployment/buildah-deployment.md) — CI/CD pipelines, rootless config, agent image build examples
-- [Agent Profile](assets/profiles/buildah-profile.md) — Buildah as a build-time tool, configuration reference
+- [Agent Reference](assets/agent-references/buildah-reference.md) — Buildah as a build-time tool, configuration reference
 
 ## Related
 

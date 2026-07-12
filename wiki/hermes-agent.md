@@ -223,7 +223,7 @@ commands:
 | [[agentfield]] | ✅ MCP bridge | AgentField MCP bridge (`assets/mcp-servers/agentfield-mcp-server.md`) wraps AgentField REST API as MCP tools for Hermes. AgentField `app.harness()` could dispatch to Hermes for LLM execution |
 | [[hermes-workspace]] | Hermes workspace environment (isolated dev/testing workspace) |
 | [[hermes-startup-architect]] | Startup architect skill for Hermes |
-| [[hermes-agent]] profile | `assets/profiles/hermes-agent-profile.md` (dev guidelines from AGENTS.md) |
+| [[hermes-agent]] reference | `assets/agent-references/hermes-agent-reference.md` (dev guidelines from AGENTS.md) |
 
 ## Cross-project
 

@@ -11,7 +11,7 @@ tags: [index, reference]
 
 ## Domain
 
-This vault covers **AI agent infrastructure** — the software stack for building, deploying, and orchestrating autonomous AI agents. It tracks 70+ open-source repos (sources), 77 wiki entries, 125 domain deep-dive docs, and reference deployment stacks.
+This vault covers **AI agent infrastructure** — the software stack for building, deploying, and orchestrating autonomous AI agents. It tracks 115 open-source repos (sources), 98 wiki entries, 129 domain deep-dive docs, and reference deployment stacks.
 
 It is a **curated, evidence-grounded reference** — not a general note vault, not a scratchpad. All claims should be traceable to source repos or verified documentation.
 
@@ -25,11 +25,11 @@ knowledge/
 ├── sources/               # Layer 1: Git clones / archived source repos (immutable)
 │   ├── hermes-agent/      #   One directory per repo
 │   ├── n8n/
-│   └── ...                #   70 source repos total
+│   └── ...                #   115 source repos total
 ├── wiki/                  # Layer 2: Wiki entry per repo (one markdown page each)
 │   ├── hermes-agent.md
 │   ├── n8n.md
-│   └── ...                #   77 wiki pages
+│   └── ...                #   98 wiki pages
 ├── domains/               # Layer 2: Deep-dive docs by dimension
 │   ├── architecture/      #   System design, component relationships, data flow
 │   ├── api/               #   REST / HTTP API references
@@ -100,21 +100,33 @@ Tags fall into three categories: **ecosystem** (repo names), **language**, and *
 Every source repo directory name is a valid ecosystem tag. Always include the repo's own name tag on its pages.
 
 ```
-1claw-hermes, AionUi, ECC, Hermes-caduceus, Mnemosyne, OpenViking,
-SWE-AF, abvx-agent-skills, af-deep-research, af-reactive-atlas-mongodb,
-agent-rules-books, agentfield, alphaclaw, awesome-n8n-templates,
-awesome-openclaw-skills, awesome-openclaw-usecases, bootc, buildah,
-camofox-browser, clawpier, cockpit-podman, crun-vm, drawio-skill, ecc,
-fedora-coreos-config, free-claude-code, goclaw, gogs, graphify, hermes-agent,
-hermes-agent-acp-skill, hermes-agent-docker, hermes-agent-template,
-hermes-autonomous-server, hermes-bus, hermes-incident-commander,
-hermes-optimization-guide, hermes-plugins, hermes-startup-architect,
-hermes-suite, hermes-workspace, hermzner, llmtrim, materia, mission-control,
-n8n, n8n-mcp, n8n-skills, n8n-workflows, nanobot, nix-podman-stacks, nix.dev,
-obsidian-skills, oh-my-hermes, oh-my-openagent, oh-my-opencode-slim, oh-my-pi,
-open-design, openclaw, openclaw-container, openclaw-plugin-claude-code,
-opencode, opencode-hermes-multiagent, openviking, outreachmagic, pi, podlet,
-podman, podman-compose, pydantic-ai-skills, sablier, sec-af, skills, tank-os, zot
+1claw-hermes, Agent-Reach, AionUi, Android-Pentesting-Checklist,
+Anthropic-Cybersecurity-Skills, CyberStrikeAI, ECC, Hermes-caduceus,
+Hexstrike-redteam, Mnemosyne, NotFair, OpenViking, SWE-AF,
+SecuritySkills, Understand-Anything, abvx-agent-skills, af-deep-research,
+af-reactive-atlas-mongodb, agent-rules-books, agentfield,
+ai-marketing-claude-code-skills, alphaclaw, appstore,
+awesome-n8n-templates, awesome-openclaw-skills, awesome-openclaw-usecases,
+bootc, buildah, camofox-browser, claude-ai-music-skills, claude-ecom,
+claude-seo, claw-code, clawpier, cockpit-podman, communitytools,
+coreos-assembler, crun-vm, defending-code-reference-harness,
+digital-marketing-pro, drawio-skill, extension-podman-quadlet,
+fedora-coreos-config, free-claude-code, goclaw, gogs, grafana, graphify,
+headroom, hermes-agent, hermes-agent-acp-skill, hermes-agent-docker,
+hermes-agent-template, hermes-autonomous-server, hermes-bus,
+hermes-incident-commander, hermes-optimization-guide, hermes-plugins,
+hermes-profiles, hermes-startup-architect, hermes-suite, hermes-workspace,
+hermzner, hexstrike-ai, infinite-brain-os, k3s, kali-pentest, llmtrim,
+materia, mission-control, n8n, n8n-mcp, n8n-skills, n8n-workflows,
+n8nworkflows.xyz, nanobot, netdata, nix-podman-stacks, nix.dev,
+nyxstrike, obsidian-skills, oh-my-hermes, oh-my-openagent,
+oh-my-opencode-slim, oh-my-pi, open-design, openai-skills, openclaw,
+openclaw-container, openclaw-plugin-claude-code, opencode,
+opencode-hermes-multiagent, outreachmagic, pi, podlet, podman,
+podman-compose, podman-quadlet, prometheus, pydantic-ai-skills, quadit,
+quadlet-lsp, quadlet-nix, reverse-skill, sablier, sec-af, secureblue,
+shannon, skills, slavinga-skills, tank-agent-os, tank-os, turnstone,
+x-article-publisher-skill, zot
 ```
 
 ## Domain-dimension tags

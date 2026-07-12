@@ -1,5 +1,8 @@
 # OS junk
 .DS_Store
+
+# Deepwork session state (regeneratable)
+.slim/deepwork/
 Thumbs.db
 
 # Claude local config

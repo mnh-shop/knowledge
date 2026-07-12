@@ -1,43 +1,86 @@
 {
   "collapse-filter": false,
-  "search": "-file:MEMORY.md -file:AGENTS.md -file:SCHEMA.md -file:README.md",
+  "search": "",
   "showTags": false,
   "showAttachments": false,
-  "hideUnresolved": true,
+  "hideUnresolved": false,
   "showOrphans": false,
-  "collapse-color-groups": false,
+  "collapse-color-groups": true,
   "colorGroups": [
     {
-      "query": "tag:hermes-agent",
-      "color": {"a": 1, "rgb": 10181046}
+      "query": "tag:#hermes-agent OR tag:#hermes-workspace OR tag:#hermes-bus OR tag:#hermes-plugins OR tag:#hermes-profiles OR tag:#hermes-suite OR tag:#hermes-caduceus OR tag:#hermes-autonomous-server OR tag:#hermes-incident-commander OR tag:#hermes-optimization-guide OR tag:#hermes-startup-architect OR tag:#hermes-agent-template OR tag:#hermes-agent-docker OR tag:#hermes-agent-acp-skill OR tag:#oh-my-hermes OR tag:#hermzner",
+      "color": {"a": 1, "rgb": [41, 128, 185]},
+      "colorGroupName": "Hermes Ecosystem"
     },
     {
-      "query": "tag:openclaw",
-      "color": {"a": 1, "rgb": 3447003}
+      "query": "tag:#openclaw OR tag:#goclaw OR tag:#claw-code OR tag:#clawpier OR tag:#alphaclaw OR tag:#openclaw-container OR tag:#openclaw-plugin-claude-code",
+      "color": {"a": 1, "rgb": [39, 174, 96]},
+      "colorGroupName": "OpenClaw Ecosystem"
     },
     {
-      "query": "tag:podman",
-      "color": {"a": 1, "rgb": 15105570}
+      "query": "tag:#n8n OR tag:#n8n-mcp OR tag:#n8n-skills OR tag:#n8n-workflows OR tag:#n8nworkflows.xyz OR tag:#awesome-n8n-templates",
+      "color": {"a": 1, "rgb": [230, 126, 34]},
+      "colorGroupName": "n8n Ecosystem"
     },
     {
-      "query": "tag:agentfield",
-      "color": {"a": 1, "rgb": 3066993}
+      "query": "tag:#podman OR tag:#podlet OR tag:#podman-compose OR tag:#podman-quadlet OR tag:#quadlet OR tag:#quadit OR tag:#quadlet-lsp OR tag:#quadlet-nix OR tag:#extension-podman-quadlet OR tag:#cockpit-podman",
+      "color": {"a": 1, "rgb": [142, 68, 173]},
+      "colorGroupName": "Podman / Quadlet"
     },
     {
-      "query": "tag:n8n",
-      "color": {"a": 1, "rgb": 15158332}
+      "query": "tag:#agentfield OR tag:#af-deep-research OR tag:#af-reactive-atlas-mongodb OR tag:#sec-af",
+      "color": {"a": 1, "rgb": [192, 57, 43]},
+      "colorGroupName": "AgentField Ecosystem"
     },
     {
-      "query": "tag:mission-control",
-      "color": {"a": 1, "rgb": 1752220}
+      "query": "tag:#hexstrike-ai OR tag:#hexstrike-redteam OR tag:#kali-pentest OR tag:#nyxstrike OR tag:#cyberstrikeai OR tag:#securityskills OR tag:#anthropic-cybersecurity-skills OR tag:#android-pentesting-checklist OR tag:#sec-af",
+      "color": {"a": 1, "rgb": [155, 89, 182]},
+      "colorGroupName": "Security & Offensive"
     },
     {
-      "query": "tag:goclaw",
-      "color": {"a": 1, "rgb": 15844367}
+      "query": "tag:#grafana OR tag:#prometheus OR tag:#netdata OR tag:#mission-control OR tag:#headroom",
+      "color": {"a": 1, "rgb": [26, 188, 156]},
+      "colorGroupName": "Monitoring & Observability"
     },
     {
-      "query": "path:ideas/",
-      "color": {"a": 1, "rgb": 9807270}
+      "query": "tag:#bootc OR tag:#fedora-coreos-config OR tag:#coreos-assembler OR tag:#tank-os OR tag:#tank-agent-os OR tag:#secureblue",
+      "color": {"a": 1, "rgb": [241, 196, 15]},
+      "colorGroupName": "Bootc / Fedora CoreOS"
+    },
+    {
+      "query": "tag:#k3s OR tag:#kubernetes OR tag:#headroom",
+      "color": {"a": 1, "rgb": [52, 152, 219]},
+      "colorGroupName": "Kubernetes"
+    },
+    {
+      "query": "tag:#mcp OR tag:#acp",
+      "color": {"a": 1, "rgb": [149, 165, 166]},
+      "colorGroupName": "Protocols (MCP / ACP)"
+    },
+    {
+      "query": "tag:#deployment OR tag:#docker OR tag:#container OR tag:#infrastructure OR tag:#terraform OR tag:#ansible OR tag:#nix",
+      "color": {"a": 1, "rgb": [44, 62, 80]},
+      "colorGroupName": "Deployment & Infrastructure"
+    },
+    {
+      "query": "tag:#opencode OR tag:#claude-code OR tag:#claude-seo OR tag:#claude-ai-music-skills OR tag:#claude-ecom OR tag:#free-claude-code OR tag:#oh-my-opencode-slim OR tag:#opencode-hermes-multiagent",
+      "color": {"a": 1, "rgb": [211, 84, 0]},
+      "colorGroupName": "Coding Agents (Claude / OpenCode)"
+    },
+    {
+      "query": "tag:#pi OR tag:#oh-my-pi OR tag:#materia OR tag:#nanobot OR tag:#shannon OR tag:#turnstone OR tag:#agent-reach OR tag:#infinite-brain-os",
+      "color": {"a": 1, "rgb": [46, 204, 113]},
+      "colorGroupName": "Agent Frameworks"
+    },
+    {
+      "query": "tag:#mnemosyne OR tag:#understand-anything OR tag:#research OR tag:#documentation OR tag:#wiki",
+      "color": {"a": 1, "rgb": [52, 73, 94]},
+      "colorGroupName": "Knowledge & Research"
+    },
+    {
+      "query": "tag:#skill OR tag:#skills OR tag:#abvx-agent-skills OR tag:#ai-marketing-claude-code-skills OR tag:#obsidian-skills OR tag:#openai-skills OR tag:#pydantic-ai-skills OR tag:#slavinga-skills OR tag:#reverse-skill OR tag:#x-article-publisher-skill OR tag:#drawio-skill OR tag:#defending-code-reference-harness OR tag:#claude-ai-music-skills",
+      "color": {"a": 1, "rgb": [231, 76, 60]},
+      "colorGroupName": "Skills"
     }
   ],
   "collapse-display": false,
@@ -50,6 +93,6 @@
   "repelStrength": 10,
   "linkStrength": 1,
   "linkDistance": 250,
-  "scale": 0.031135675046366704,
+  "scale": 0.030873264449012738,
   "close": false
 }

@@ -142,7 +142,7 @@ Everything else should remain evidence-grounded.
 
 ❌ = not yet done  ·  (N) = multiple architecture docs ·  — = N/A
 
-**28 repos total — all have wiki entries.**
+**115 repos total — all 115 have wiki entries.** Wiki coverage is now complete.
 
 ## Cross-repo compatibility
 
@@ -231,21 +231,41 @@ knowledge/
 - [buildah](wiki/buildah.md) — Buildah: daemonless OCI image builder (Go, Apache 2.0)
 - [podlet](wiki/podlet.md) — Podlet: Quadlet file generator (Rust, Apache 2.0)
 - [nix-podman-stacks](wiki/nix-podman-stacks.md) — Declarative Podman Quadlet stacks via Nix/Home Manager
-- [clawpier](wiki/clawpier.md) (NEW) — Tauri desktop manager for OpenClaw/Hermes Docker containers
-- [gogs](wiki/gogs.md) (NEW) — Gogs: self-hosted Git service (Go, MIT)
-- [hermes-agent-docker](wiki/hermes-agent-docker.md) (NEW) — Minimal Docker image for Hermes Agent
-- [hermes-suite](wiki/hermes-suite.md) (NEW) — All-in-one Hermes container (gateway + dashboard + webui)
-- [awesome-openclaw-skills](wiki/awesome-openclaw-skills.md) (NEW) — Curated list of 5300+ community-built OpenClaw skills
-- [llmtrim](wiki/llmtrim.md) (NEW) — Local LLM request compression proxy (Rust)
-- [nanobot](wiki/nanobot.md) (NEW) — Ultra-lightweight open-source AI agent (Python)
-- [nix.dev](wiki/nix.dev.md) (NEW) — Official Nix documentation site
-- [opencode-hermes-multiagent](wiki/opencode-hermes-multiagent.md) (NEW) — Multi-agent pipeline for Hermes/OpenCode
+- [clawpier](wiki/clawpier.md) — Tauri desktop manager for OpenClaw/Hermes Docker containers
+- [gogs](wiki/gogs.md) — Gogs: self-hosted Git service (Go, MIT)
+- [hermes-agent-docker](wiki/hermes-agent-docker.md) — Minimal Docker image for Hermes Agent
+- [hermes-suite](wiki/hermes-suite.md) — All-in-one Hermes container (gateway + dashboard + webui)
+- [awesome-openclaw-skills](wiki/awesome-openclaw-skills.md) — Curated list of 5300+ community-built OpenClaw skills
+- [llmtrim](wiki/llmtrim.md) — Local LLM request compression proxy (Rust)
+- [nanobot](wiki/nanobot.md) — Ultra-lightweight open-source AI agent (Python)
+- [nix.dev](wiki/nix.dev.md) — Official Nix documentation site
+- [opencode-hermes-multiagent](wiki/opencode-hermes-multiagent.md) — Multi-agent pipeline for Hermes/OpenCode
+- [Android-Pentesting-Checklist](wiki/Android-Pentesting-Checklist.md) — Comprehensive Android security testing guide
+- [Anthropic-Cybersecurity-Skills](wiki/Anthropic-Cybersecurity-Skills.md) — 817+ cybersecurity skills for Claude Code
+- [CyberStrikeAI](wiki/CyberStrikeAI.md) — AI-powered cybersecurity testing framework (Go, Apache 2.0)
+- [ECC](wiki/ECC.md) — Agent harness OS: 67 agents, 271 skills, cross-harness support
+- [Hexstrike-redteam](wiki/Hexstrike-redteam.md) — AI-driven adversarial red team automation (Go)
+- [OpenViking](wiki/OpenViking.md) — Open-source data forensics platform
+- [SecuritySkills](wiki/SecuritySkills.md) — 45 framework-grounded security skills for AI coding agents
+- [agent-rules-books](wiki/agent-rules-books.md) — Curated library of AI agent behavioral rules
+- [communitytools](wiki/communitytools.md) — Docker-powered community infrastructure tools
+- [defending-code-reference-harness](wiki/defending-code-reference-harness.md) — Reference harness for securing AI coding environments
+- [fedora-coreos-config](wiki/fedora-coreos-config.md) — Fedora CoreOS configuration repository
+- [hermes-profiles](wiki/hermes-profiles.md) — 38 curated Hermes Agent profiles for specialist swarms
+- [hexstrike-ai](wiki/hexstrike-ai.md) — AI-powered penetration testing automation framework
+- [kali-pentest](wiki/kali-pentest.md) — Kali Linux penetration testing environment automation
+- [outreachmagic](wiki/outreachmagic.md) — AI-powered experimental outreach engine
+- [reverse-skill](wiki/reverse-skill.md) — 15 reverse engineering skills for pentesters and RE analysts
 
 ## Related
 
+**Vault Structure:**
+- [Vault Structure Recommendations](domains/integration-patterns/vault-structure-recommendations.md) — Agent context retrieval improvements
+- [Tag Taxonomy](memory/tag-taxonomy.md) — Complete ecosystem/language/classification tags
+
 **General Architecture:**
 - [Deployment Architecture](domains/architecture/deployment-architecture.md) — Defense-in-depth: host → VM → rootless Podman → agents
-- [Stack Landscape](domains/integration-patterns/stack-landscape.md) — Full system landscape mapping (updated 23 repos)
+- [Stack Landscape](domains/integration-patterns/stack-landscape.md) — Full system landscape mapping
 
 **AgentField:**
 - [Architecture: agentfield](domains/architecture/agentfield-architecture.md)
@@ -319,16 +339,19 @@ knowledge/
 
 ## Asset files
 
-**Agent profiles:**
-- [Agent profile: hermes-agent](assets/profiles/hermes-agent-profile.md)
-- [Agent profile: hermes-workspace](assets/profiles/hermes-workspace-profile.md)
-- [Agent profile: n8n](assets/profiles/n8n-agent-profile.md)
-- [Agent profile: agentfield](assets/profiles/agentfield-profile.md)
-- [Agent profile: openclaw](assets/profiles/openclaw-profile.md)
-- [Agent profile: mission-control](assets/profiles/mission-control-profile.md)
-- [Agent profile: podman](assets/profiles/podman-profile.md)
-- [Agent profile: buildah](assets/profiles/buildah-profile.md)
-- [Agent profile: clawpier](assets/profiles/clawpier-profile.md) — Desktop agent manager
+**Agent profiles (hermz runtime):**
+- [Hermes Profiles Catalog](assets/hermes-profiles/) — 39 specialization profiles (orchestrator, backend-engineer, sre, security-engineer, etc.)
+
+**Agent references (reference cards):**
+- [Reference: hermes-agent](assets/agent-references/hermes-agent-reference.md)
+- [Reference: hermes-workspace](assets/agent-references/hermes-workspace-reference.md)
+- [Reference: n8n](assets/agent-references/n8n-agent-reference.md)
+- [Reference: agentfield](assets/agent-references/agentfield-reference.md)
+- [Reference: openclaw](assets/agent-references/openclaw-reference.md)
+- [Reference: mission-control](assets/agent-references/mission-control-reference.md)
+- [Reference: podman](assets/agent-references/podman-reference.md)
+- [Reference: buildah](assets/agent-references/buildah-reference.md)
+- [Reference: clawpier](assets/agent-references/clawpier-reference.md) — Desktop agent manager
 
 **MCP servers:**
 - [MCP server: hermes-mcp-serve](assets/mcp-servers/hermes-mcp-serve.md)
@@ -355,3 +378,15 @@ knowledge/
 **Other:**
 - [Gateway platforms: hermes-agent](assets/api-clients/hermes-gateway-platforms.md)
 - [Startup Architect skill](assets/skills/hermes-startup-architect-skill.md)
+
+**Skill Catalogs (by Use Case):**
+- [Skills Catalog](assets/skills/) — Cross-harness skills organized by use case (1000+)
+- [Cybersecurity Skills](assets/skills/cybersecurity/) — 900+ security across 4 sub-catalogs: [[ai-appsec]], [[cloud-infrastructure-security]], [[offensive-security]], [[governance-compliance-ir]]
+- [Software Engineering Skills](assets/skills/software-engineering/) — 235+ dev/debug/architecture skills (new: 15 Hermes Agent native skills)
+- [Research Skills](assets/skills/research/) — 45+ evidence gathering and synthesis skills (new: 5 Hermes Agent research skills)
+- [Orchestration Skills](assets/skills/orchestration/) — 54+ multi-agent workflow patterns (new: 4 Hermes Agent agent orchestration skills)
+- [Token Efficiency Skills](assets/skills/token-efficiency/) — 11+ token optimization skills
+- [Product Management Skills](assets/skills/product-management/) — 45+ product planning skills (new: 15 Hermes productivity tools)
+- [Content Creation Skills](assets/skills/content-creation/) — 95+ creative/generative skills (new: 22 Hermes Agent creative skills)
+- [Infrastructure Skills](assets/skills/infrastructure/) — 35+ deployment/operations skills (new: 11 Hermes Agent MLOps/infra skills)
+- [n8n Workflows](assets/skills/n8n-workflows/) — 188 workflow automation patterns

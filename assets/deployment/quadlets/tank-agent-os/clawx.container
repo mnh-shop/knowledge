@@ -1,0 +1,114 @@
+[Unit]
+Description=Agent runtime on tank-os rootless Podman architecture
+
+[Container]
+Image=quay.io/fedora/fedora:placeholder
+ContainerName=clawx
+Pull=missing
+RunInit=true
+UserNS=keep-id
+User=%U:%G
+# Pin SELinux MCS to a fixed pair shared with service-gator. See the comment
+# on the workspaces Volume= below for why. The numeric values are arbitrary
+# but must match those in service-gator.container exactly.
+SecurityLabelLevel=s0:c200,c500
+Volume=/usr/local/bin/agent:/usr/local/bin/agent:ro
+# The build-recorded SHA-256 of the agent binary, mounted next to it so the
+# acceptance suite can verify the binary still matches what the image baked.
+Volume=/usr/local/share/tank-os/agent.sha256:/usr/local/share/tank-os/agent.sha256:ro
+# CLAUDE.md and AGENTS.md point at the same root-owned source so both
+# claw-code (CLAUDE.md) and opencode (AGENTS.md) find their expected file.
+Volume=/etc/clawx/CLAUDE.md:/home/clawx/CLAUDE.md:ro
+Volume=/etc/clawx/CLAUDE.md:/home/clawx/AGENTS.md:ro
+# Belt-and-braces against opencode auto-update: the proxy allowlist is the
+# structural defence; this mount makes the disabled flag explicit. Assumes
+# claw-code does not consult ~/.config/opencode/ — invariant, not derived.
+# %h/workspaces is shared with service-gator. SELinux :Z normally assigns a
+# fresh private MCS pair on every container start — with two containers
+# sharing the volume, whichever one restarted last would steal the label and
+# lock the other one out (EACCES inside, even though host perms are
+# 0700-clawx). Fix: SecurityLabelLevel below pins BOTH containers to the
+# same explicit MCS pair, so :Z relabels the volume to that fixed pair on
+# every start and they no longer fight. MCS isolation against unrelated
+# containers is preserved (the fixed pair is unique to tank-agent-os);
+# isolation between the two cooperating containers is intentionally relaxed
+# (the trust model already has them sharing this directory anyway).
+Volume=%h/.clawx:/home/clawx/.clawx:Z
+Volume=%h/workspaces:/home/clawx/workspaces:Z
+# opencode config mounted inside XDG_CONFIG_HOME (see below) so the agent can
+# read the autoupdate-disabled config AND write its own plugin/agent files
+# next to it. The file itself stays root-owned ro; only siblings are writable.
+Volume=/etc/clawx/opencode-config.json:/home/clawx/.clawx/xdg-config/opencode/config.json:ro
+# claw-code MCP config. claw-code reads MCP servers from ~/.claw/settings.json
+# (user-scope in its config-resolution order); this static, root-owned file is
+# the claw-side equivalent of the mcp block in opencode-config.json. opencode
+# ignores it. claw-code's MCP client only supports the stdio transport, so the
+# entries spawn `mcp-proxy` (baked into clawx-runtime) to bridge stdio to each
+# HTTP MCP server on the bridge. Unlike opencode, claw-code blocks the first
+# prompt until every listed bridge has completed its streamable-HTTP handshake,
+# so an entry whose backend container is not running stalls the agent for
+# minutes (mcp-proxy retries the DNS NXDOMAIN inside clawx-isolated.network).
+# The Containerfile strips the not-auto-started opt-in MCP entries for the
+# claw AGENT_KIND build (see the claw arm of the case statement there).
+Volume=/etc/clawx/claw-settings.json:/home/clawx/.claw/settings.json:ro
+# claude-code MCP config. claude-code speaks streamable-HTTP MCP natively, so
+# these entries point straight at the bridge endpoints — no mcp-proxy (unlike
+# claw-settings.json above). The wrapper passes --mcp-config with the path
+# below plus --strict-mcp-config, so a project .mcp.json in a cloned repo
+# cannot inject servers. opencode and claw-code ignore this file.
+Volume=/etc/clawx/claude-mcp.json:/etc/clawx/claude-mcp.json:ro
+# claude-code managed settings — highest-precedence layer, mounted read-only
+# so the agent cannot rewrite it. Carries the telemetry lockdown and the
+# bypassPermissions default mode. opencode and claw-code ignore this path.
+Volume=/etc/clawx/claude-managed-settings.json:/etc/claude-code/managed-settings.json:ro
+Network=clawx-isolated.network
+Environment=HOME=/home/clawx
+Environment=TERM=xterm-256color
+# opencode follows XDG and would otherwise write under ~/.local/, ~/.cache/,
+# ~/.config/ — all root-owned in the container, so mkdir fails. Redirect every
+# XDG path into ~/.clawx/ which is already the agent's writable mount. Keeps
+# the two-writable-paths invariant (.clawx + workspaces); claw-code ignores
+# these vars.
+Environment=XDG_CONFIG_HOME=/home/clawx/.clawx/xdg-config
+Environment=XDG_DATA_HOME=/home/clawx/.clawx/xdg-data
+Environment=XDG_CACHE_HOME=/home/clawx/.clawx/xdg-cache
+Environment=XDG_STATE_HOME=/home/clawx/.clawx/xdg-state
+# Claude Code telemetry / auto-update kill-switches. Root-controlled here and
+# doubly enforced by claude-managed-settings.json (env block). The agent
+# binary is mounted read-only, so auto-update cannot succeed anyway — these
+# vars stop the futile egress attempt. claw-code and opencode ignore them.
+Environment=CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC=1
+Environment=DISABLE_AUTOUPDATER=1
+Environment=DISABLE_UPDATES=1
+Environment=DISABLE_TELEMETRY=1
+Environment=DISABLE_ERROR_REPORTING=1
+Environment=DISABLE_FEEDBACK_COMMAND=1
+Environment=DO_NOT_TRACK=1
+# Lock opencode's MCP-server set (plus hooks/plugins) to the baked,
+# root-owned config. Without this, opencode merges project-scoped
+# opencode.json / .opencode/ discovered by walking up from the cwd — and
+# the cwd is the writable ~/workspaces mount, so a file there (a cloned
+# repo, or a prompt-injected self-write) could inject or shadow MCP
+# servers. claw-code ignores this var; its equivalent is the
+# claw-lock-project-config.patch applied at build.
+Environment=OPENCODE_DISABLE_PROJECT_CONFIG=1
+# Build-time opt-in for agent persistent memory. The literal __placeholder__
+# below is sed-substituted at bootc image build with the AGENT_MEMORY_PERSIST
+# ARG value (default "false"). When true, clawx-init symlinks the agent's
+# memory directory into ~/.clawx/, surviving container restarts. See
+# docs/memory.md for the threat-model trade-off.
+Environment=AGENT_MEMORY_PERSIST=__placeholder__
+WorkingDir=/home/clawx/workspaces
+# clawx-init seeds the pre-baked @opencode-ai/plugin SDK into XDG_CONFIG_HOME
+# (idempotent) and then exec's sleep infinity. See clawx-runtime/Containerfile
+# for the bake step and the security rationale (closes opencode's runtime npm
+# trip to fetch the plugin SDK on every startup).
+Exec=/usr/local/bin/clawx-init
+
+[Service]
+ExecStartPre=/usr/libexec/tank-os/bootstrap-clawx
+TimeoutStartSec=300
+Restart=on-failure
+
+[Install]
+WantedBy=default.target

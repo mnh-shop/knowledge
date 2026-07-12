@@ -8,7 +8,7 @@ metadata:
 On 2026-06-27, reorganized the knowledge vault `assets/` directory and imported workspace prototypes into `ideas/`.
 
 **Assets reorg:**
-- `assets/agent-profiles/` → `assets/profiles/` (all 14 profile docs + roles/)
+- `assets/agent-profiles/` → `assets/agent-references/` (all 14 profile docs + roles/)
 - `assets/agent-skills/` → `assets/skills/` (INDEX + 1 skill doc)
 - Removed empty `assets/adapters/` and `assets/workflows/` directories
 - Updated all wikilinks and path references in AGENTS.md, SCHEMA.md, README.md, MEMORY.md, wiki/, domains/, and assets/

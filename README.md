@@ -10,7 +10,7 @@ A curated knowledge base for AI agent ecosystems: architecture, deployment,
 APIs, protocols (MCP, ACP), and cross-system integrations.
 
 **Focus:** Hermes, OpenClaw, AgentField, Podman, n8n, and the surrounding
-ecosystem — 54 repositories across 6 functional layers.
+ecosystem — 115 source repositories (cloned and indexed) across 6 functional layers.
 
 ## Use as an Obsidian vault
 
@@ -34,14 +34,14 @@ Open this folder in Obsidian to browse with:
 
 | Subdirectory | Contents |
 |---|---|
-| `n8n-workflows/` | Extracted workflow patterns from 2,061 n8n workflow JSONs |
-| `skills/` | Catalog of 60+ agent skills from abvx-agent-skills, n8n-skills, and more |
-| `profiles/` | 14 repo profiles + role-based persona profiles in `roles/` |
+| `agent-references/` | 20 agent reference profiles for specialist swarms |
+| `hermes-profiles/` | 40 Hermes Agent role profiles (backend-engineer through writer) |
 | `deployment/` | Quadlet configs, Terraform/Ansible templates |
+| `skills/` | 67 cataloged agent skills across engineering, design, methodology |
+| `n8n-workflows/` | Workflow pattern catalog from 2,061 n8n workflow JSONs |
 | `mcp-servers/` | MCP server references |
 | `acp-agents/` | ACP agent references |
 | `api-clients/` | API client references |
-| `cross-refs/` | Cross-referencing indexes by integration/service |
 
 ## For agent instructions
 
@@ -51,7 +51,7 @@ with this repo.
 
 ## For the system index
 
-See [`MEMORY.md`](./MEMORY.md) — the full landscape of 23 repositories
+See [`MEMORY.md`](./MEMORY.md) — the full landscape of indexed repositories
 across 6 layers, with the compatibility matrix.
 
 ## Validation

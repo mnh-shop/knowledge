@@ -121,7 +121,7 @@ Mission Control is **most useful when paired with at least one agent gateway** â
 - [Deployment: mission-control](domains/deployment/mission-control-deployment.md)
 - [Quadlet: mission-control](assets/deployment/mission-control-quadlet.md)
 - [MCP Server: mission-control](assets/mcp-servers/mission-control-mcp-server.md)
-- [Agent Profile: mission-control](assets/profiles/mission-control-profile.md)
+- [Agent Reference: mission-control](assets/agent-references/mission-control-reference.md)
 
 ## Related
 

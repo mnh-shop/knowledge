@@ -49,7 +49,7 @@ Install to `~/.hermes/plugins/omh/`. Requires Python 3.10+ and `pyyaml`.
 
 | Component | What It Does | Status |
 |-----------|-------------|--------|
-| `omh_state` tool (8 actions) | Atomic read/write/check/cancel for `.omh/` state files; `load_role` action for explicit role loading | Shipped |
+| `omh_state` tool (13 actions) | Atomic read/write/clear/check/cancel/lock/unlock + `load_role` action for explicit role loading | Shipped |
 | `omh_gather_evidence` tool | Runs build/test/lint commands from an allowlist, captures + truncates output | Shipped |
 | `pre_llm_call` hook | Detects `[omh-role:NAME]` in subagent `user_message`; injects matching role prompt into system context | Shipped |
 | `pre_tool_call` hook | Validates `[omh-role:NAME]` markers in `delegate_task` goals before subagents start | Shipped |
@@ -57,7 +57,7 @@ Install to `~/.hermes/plugins/omh/`. Requires Python 3.10+ and `pyyaml`.
 
 ### Role Prompts
 
-Nine shared role prompts give subagents precise behavioral instructions:
+Fifteen shared role prompts give subagents precise behavioral instructions:
 
 | Role | Purpose | Used By |
 |------|---------|---------|
@@ -73,6 +73,9 @@ Nine shared role prompts give subagents precise behavioral instructions:
 | Debugger | Root cause analysis, hypothesis testing, targeted fixes | ralph (error diagnosis) |
 | Triage Maintainer | Code-anchored issue triage | omh-triage |
 | Triage Skeptic | Pruning and prioritization | omh-triage |
+| Researcher | Parallel decomposition and web search | deep-research |
+| Research Synthesist | Synthesize research findings | deep-research |
+| Research Verifier | Verify research citations and facts | deep-research |
 
 ### Role Injection
 

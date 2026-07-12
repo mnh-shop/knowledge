@@ -479,5 +479,5 @@ systemctl --user status openclaw-gateway.service
 - [[domains/architecture/openclaw-architecture.md]] -- Architecture overview
 - [[domains/deployment/quadlet-patterns.md]] -- General Quadlet deployment patterns
 - [[assets/mcp-servers/openclaw-mcp-server.md]] -- MCP server configuration
-- [[assets/profiles/openclaw-profile.md]] -- Quick reference profile
+- [[assets/agent-references/openclaw-reference.md]] -- Quick reference profile
 - [[tank-os]] -- Fedora bootc image for deploying OpenClaw as a bootable appliance

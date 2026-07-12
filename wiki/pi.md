@@ -1,13 +1,13 @@
 ---
 name: pi
-description: "Agent orchestration toolkit — predecessor to oh-my-pi with tool bridge and provider routing"
+description: "Coding agent harness and orchestration toolkit — TypeScript monorepo for multi-provider LLM, tool calling, and interactive TUI"
 tags: [agent-runtime, cli, coding-agent, orchestration, pi, typescript, wiki]
 source: sources/pi/
 ---
 
 # Pi Agent Harness
 
-Pi is a self-extensible coding agent harness and orchestration toolkit built as a TypeScript monorepo. It provides a unified multi-provider LLM API, an agent runtime with tool calling and state management, an interactive coding agent CLI, and a terminal UI library — serving as the architectural predecessor to oh-my-pi.
+Pi is a self-extensible coding agent harness and orchestration toolkit built as a TypeScript monorepo. It provides a unified multi-provider LLM API, an agent runtime with tool calling and state management, an interactive coding agent CLI, and a terminal UI library.
 
 ## Description
 

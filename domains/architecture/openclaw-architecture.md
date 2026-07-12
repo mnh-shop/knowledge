@@ -761,5 +761,5 @@ Device management for companion devices (mobile, desktop):
 - [[assets/mcp-servers/openclaw-mcp-server.md]] -- MCP server asset registration
 - [[assets/acp-agents/openclaw-acp-agent.md]] -- ACP agent asset registration
 - [[assets/deployment/openclaw-quadlet.md]] -- Quadlet deployment patterns
-- [[assets/profiles/openclaw-profile.md]] -- Quick reference profile
+- [[assets/agent-references/openclaw-reference.md]] -- Quick reference profile
 - [[wiki/openclaw.md]] -- Wiki entry

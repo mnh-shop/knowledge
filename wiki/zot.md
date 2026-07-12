@@ -1,9 +1,14 @@
 ---
 name: zot
-description: "Ultra-lightweight Go coding agent harness — single static binary, 25+ LLM providers, built-in tools, Telegram bot, extension protocol"
+description: "Ultra-lightweight Go coding agent harness — single static binary, 4 run modes, 25+ LLM providers, built-in tools, Telegram bot, extension protocol"
 tags: [cli, coding-agent, wiki, zot, golang]
 source: sources/zot/
 ---
+
+| Field | Value |
+|---|---|
+| **License** | MIT |
+| **Source** | `sources/zot/` |
 
 # Zot
 
@@ -14,8 +19,8 @@ source: sources/zot/
 - **Single static binary** — ~20MB, Go, zero runtime dependencies, no database
 - **25+ LLM providers** — Anthropic, OpenAI, Gemini, Groq, xAI, OpenRouter, Together, Bedrock, Vertex AI, GitHub Copilot, DeepSeek, and more
 - **4 built-in tools** — `read`, `write`, `edit`, `bash` with sandbox path-jailing
-- **3 run modes** — Interactive TUI (`zot`), one-shot print (`zot --print`), JSON RPC (`zot rpc`)
-- **Telegram bot** — Built-in (`zot telegram`), polling-based, per-chat queues, file uploads
+- **4 run modes** — Interactive TUI (`zot`), print (`-p`), JSON (`--json`), RPC (`zot rpc`)
+- **Telegram bot** — Built-in (`zot telegram-bot run` for standalone daemon, or `/telegram` in TUI), polling-based, per-chat queues, file uploads
 - **Extension system** — Subprocess JSON-RPC protocol for tool/command registration, event interception, and interactive panels
 - **Swarm mode** — Multi-agent subprocess orchestration with JSONL event protocol
 - **Go SDK** — Embeddable in Go programs (`packages/agent/sdk/`)

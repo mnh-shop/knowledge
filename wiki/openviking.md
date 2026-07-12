@@ -1,8 +1,8 @@
 ---
-name: openviking
+name: OpenViking
 description: "Context Database for AI Agents — filesystem-paradigm memory, resource, and skill management with tiered retrieval"
-tags: [wiki, ai-agents, python, rust, typescript, openviking]
 source: sources/OpenViking/
+tags: [OpenViking, agent, ai-agents, cli, mcp, python, rust, typescript, storage]
 ---
 
 # OpenViking — Context Database for AI Agents
@@ -34,137 +34,49 @@ The project is backed by academic research published as the **VikingMem** paper 
 
 ## Architecture
 
+OpenViking follows a **three-tier context loading model** (L0/L1/L2):
+- **L0 (`.abstract`)**: ~100 tokens for quick relevance checks
+- **L1 (`.overview`)**: ~2k tokens with structure and key points  
+- **L2**: Full content loaded on demand
+
+**Storage paradigm**: Uses `viking://` virtual filesystem URIs to organize memories, resources, and skills hierarchically.
+
 ### Core Components
 
-```
-openviking/                  # Python server package
-├── async_client.py          # Singleton async client (embedded mode)
-├── sync_client.py           # Synchronous client wrapper
-├── client/                  # Client implementations (LocalClient, ServerClient)
-├── server/                  # HTTP server (FastAPI-based)
-├── storage/                 # VikingFS — virtual filesystem backend
-├── service/                 # Business logic services
-├── session/                 # Session management and memory iteration
-├── retrieve/                # Retrieval engine (directory-recursive search)
-├── parse/                   # Content parsing and extraction
-├── resource/                # Resource management (files, URLs)
-├── core/                    # Core abstractions (BaseClient, content types)
-├── models/                  # Data models and schemas
-├── crypto/                  # Encryption and security
-├── privacy/                 # Privacy controls
-├── telemetry/               # Operation telemetry
-├── metrics/                 # Performance metrics
-├── observability/           # Observability (OpenTelemetry, logging)
-└── prompts/                 # LLM prompt templates
+- **Python server** (`openviking/`): FastAPI-based HTTP server, VikingFS storage backend
+- **Rust CLI** (`ov_cli`): `ov` command for resource management and search
+- **RAGFS** (`crates/ragfs`): Core filesystem engine with caching adapters
+- **VikingBot** (`bot/`): Built-in AI agent framework
+- **Web Studio** (`web-studio/`): Browser-based UI
 
-crates/                      # Rust sub-projects (Cargo workspace)
-├── ov_cli/                  # CLI tool (npm/cargo installable)
-├── ragfs/                   # Core filesystem engine
-├── ragfs-cache-mooncake/    # Mooncake caching for RAGFS
-├── ragfs-cache-redis/       # Redis caching for RAGFS
-├── ragfs-cache-yuanrong/    # Yuanrong caching for RAGFS
-├── ragfs-cache-yuanrong-sys/# Yuanrong system bindings
-├── ragfs-python/            # Python bindings for RAGFS
-└── ragfs-python-native/     # Native Python bindings for RAGFS
-
-sdk/python/                  # Python SDK for programmatic access
-examples/                    # Usage examples
-web-studio/                  # Web-based UI
-bot/                         # VikingBot agent framework
-```
-
-### Storage Paradigm — Viking URI
-
-```
-viking://
-├── resources/               # Project docs, repos, web pages
-│   ├── my_project/
-│   │   ├── docs/
-│   │   └── src/
-├── user/                    # User preferences, habits
-│   └── {user_id}/
-│       ├── memories/
-│       ├── resources/
-│       ├── skills/
-│       └── peers/
-```
-
-### Context Layers (L0/L1/L2)
-
-```
-viking://resources/my_project/
-├── .abstract                # L0: ~100 tokens — quick relevance check
-├── .overview                # L1: ~2k tokens — structure and key points
-├── docs/
-│   ├── .abstract
-│   ├── .overview
-│   ├── api/
-│   │   ├── auth.md          # L2: full content — loaded on demand
-│   │   └── endpoints.md
-```
-
-### Deployment Modes
-
-- **Docker** — Official Dockerfile and `docker-compose.yml` for containerized deployment
-- **Caddy** — Included `Caddyfile` for reverse proxy with TLS
-- **ECS** — Recommended deployment on Volcengine Elastic Compute Service (veLinux)
-- **Local** — `pip install openviking` and `openviking-server` CLI
-
-## Quick Start
+## Deployment
 
 ```bash
-# Install Python server
-pip install openviking --upgrade --force-reinstall
-
-# Install Rust CLI (optional)
-npm i -g @openviking/cli
-# or: cargo install --git https://github.com/volcengine/OpenViking ov_cli
-
-# Configure and validate
-openviking-server init
-openviking-server doctor
-
-# Launch server
-openviking-server
-
-# Add resources and search
-ov add-resource https://github.com/volcengine/OpenViking
-ov ls viking://resources/
-ov find "what is openviking"
+pip install openviking
+openviking-server init && openviking-server doctor
+openviking-server  # launches server
+ov add-resource https://github.com/volcengine/OpenViking  # add via CLI
 ```
 
-For VikingBot (AI agent framework):
+## Evaluation
 
-```bash
-pip install "openviking[bot]"
-openviking-server --with-bot
-ov chat
-```
+| Scenario | Result |
+|---|---|
+| **User Memory (LoCoMo)** | 24.2% -> 82.08% accuracy (+3.39x) |
+| **Agent Memory (tau2-bench)** | +6.87pp retail, +11.87pp airline |
+| **Knowledge QA (HotpotQA)** | 91% accuracy at 0.23s latency |
 
-## Evaluation Highlights
-
-OpenViking 0.3.22 demonstrates significant improvements across three benchmarks:
-
-| Scenario | Metric | Improvement |
-|---|---|---|
-| **User Memory (LoCoMo)** | OpenClaw +3.39x accuracy, -91% tokens | 24.2% -> 82.08% accuracy |
-| **Agent Memory (tau2-bench)** | +6.87pp retail, +11.87pp airline | Task success improvement |
-| **Knowledge QA (HotpotQA)** | 91% accuracy at 0.23s latency | top-20 retrieval |
+Published as **VikingMem** (VLDB 2026).
 
 ## Related
 
-- [[hermes-agent]] — AI agent with MCP integration, can use OpenViking for memory
-- [[openclaw]] — Personal AI assistant agent gateway, tested with OpenViking memory
-- [[nanobot]] — Foundational agent framework that VikingBot extends
-- [[mcp]] — Model Context Protocol for tool integration
-- [[mission-control]] — Agent orchestration that can integrate with OpenViking resources
-- [[n8n]] — Workflow automation that can connect to OpenViking resources
+- [[hermes-agent]] — AI agent with MCP integration
+- [[openclaw]] — Agent gateway tested with OpenViking
+- [[nanobot]] — Foundational agent framework
+- [[mcp]] — Model Context Protocol integration
 
 ## Links
 
-- **GitHub**: [github.com/volcengine/OpenViking](https://github.com/volcengine/OpenViking)
+- **GitHub**: [volcengine/OpenViking](https://github.com/volcengine/OpenViking)
 - **Website**: [openviking.ai](https://www.openviking.ai)
-- **Paper**: [VikingMem on arXiv](https://arxiv.org/abs/2605.29640) (VLDB 2026)
-- **Docs**: [Full Documentation](https://www.openviking.ai/docs)
-- **Discord**: [Join Discord](https://discord.com/invite/eHvx8E9XF3)
-- **X/Twitter**: [@openvikingai](https://x.com/openvikingai)
+- **Paper**: [VikingMem (arXiv:2605.29640)](https://arxiv.org/abs/2605.29640)
