@@ -17,6 +17,7 @@ Deployment guides, operations templates, and infrastructure configuration for ea
 | [[clawpier-deployment|ClawPier Deployment]] | clawpier | Tauri desktop app deployment |
 | [[crun-vm-deployment|crun-vm Deployment]] | crun-vm | VM runtime deployment guide |
 | [[goclaw-deployment|GoClaw Deployment]] | goclaw | Go binary deployment, container images, Quadlet patterns |
+| [[goclaw-scaling|GoClaw Scaling]] | goclaw | Scaling guide — single-user to multi-tenant production |
 | [[gogs-deployment|Gogs Deployment]] | gogs | Self-hosted Git service deployment |
 | [[hermes-agent-deployment|Hermes Agent Deployment]] | hermes-agent | Multi-platform personal AI agent deployment |
 | [[hermes-agent-docker-deployment|Hermes Agent Docker]] | hermes-agent-docker | Minimal Docker image packaging |
