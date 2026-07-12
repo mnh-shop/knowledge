@@ -229,5 +229,5 @@ All endpoints served under the Setup UI route and protected by session password 
 ## Related
 
 - [[alphaclaw]]
-- [[api]]
+- [[domains/api/INDEX|api]]
 - [[openclaw]]

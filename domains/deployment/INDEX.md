@@ -30,6 +30,9 @@ Deployment guides, operations templates, and infrastructure configuration for ea
 | [[podlet-deployment|Podlet Deployment]] | podlet | Quadlet management deployment |
 | [[podman-deployment|Podman Deployment]] | podman | Container engine deployment |
 | [[quadlet-patterns|Quadlet Patterns]] | podman | General Quadlet deployment patterns |
+| [[nanobot-deployment|NanoBot Deployment]] | nanobot | Agent framework — Docker/Podman, channels, LLM providers |
+| [[oh-my-pi-deployment|Oh My Pi Deployment]] | oh-my-pi | Rust binary, systemd, ACP/MCP setup |
+| [[pi-deployment|Pi Deployment]] | pi | TypeScript agent harness, npm/pnpm, TUI config |
 | [[sablier-deployment|Sablier Deployment]] | sablier | Dynamic container scaling deployment |
 | [[tank-os-deployment|Tank OS Deployment]] | tank-os | Container OS deployment |
 

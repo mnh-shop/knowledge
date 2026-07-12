@@ -340,5 +340,5 @@ Key environment variables (from `.env.example` and `config/settings.py`):
 
 ## Related
 
-- [[api]]
+- [[domains/api/INDEX|api]]
 - [[free-claude-code]]

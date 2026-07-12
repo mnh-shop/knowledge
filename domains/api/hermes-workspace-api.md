@@ -277,7 +277,7 @@ The workspace does NOT use ACP (Agent Communication Protocol) for worker managem
 - [[hermes-workspace]] -- Wiki entry for Hermes Workspace
 - [[hermes-workspace-architecture]] -- System architecture
 - [[hermes-workspace-deployment]] -- Deployment guide
-- [[hermes-workspace-profile]] -- Agent profile
+- [[hermes-profiles]] -- Agent profile
 - [[hermes-workspace-mcp-hub]] -- MCP hub implementation
 - [[hermes-workspace-swarm-architecture]] -- Swarm architecture
 - [[hermes-workspace-quadlet]] -- Quadlet deployment

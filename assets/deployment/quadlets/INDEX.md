@@ -2,6 +2,155 @@
 
 This directory contains deployable Quadlet files and bootc scripts from multiple source repositories for use in tank-os and tank-agent-os deployments.
 
+## Per-Stack Architecture Descriptions
+
+### AI Stack
+The AI stack provides a complete self-hosted AI inference and interface pipeline. **Ollama** serves as the LLM inference engine (via pod `ollama.pod`), **Open WebUI** provides a ChatGPT-compatible interface, **Valkey** handles caching and session state for WebUI, **Edge TTS** enables text-to-speech, and **Tika** provides document parsing for RAG pipelines. The stack is designed to run as a cohesive unit — the `ollama.pod` groups Ollama and its network, with Open WebUI connecting to it as a dependent container.
+
+### Bluesky PDS
+The Bluesky Personal Data Server stack runs a full AT Protocol PDS behind a **Caddy** reverse proxy. Caddy terminates TLS and handles ACME certificate provisioning. The PDS container stores user data, repository, and account state. Three dedicated volumes separate Caddy configuration, SSL data, and access logs for clean management.
+
+### Inlets Ghost
+Inlets provides secure HTTP tunnels for exposing local services to the internet. The `.kube` file wraps a Kubernetes-style deployment that runs an inlets-ghost exit node. License and token templates (Jinja2) are provided for dynamic secret injection at deploy time.
+
+### LocalStack
+LocalStack emulates AWS cloud APIs (S3, DynamoDB, SQS, Lambda, etc.) locally for development and testing. A single container with a persistent volume stores emulated service state across restarts.
+
+### MinIO & Prometheus
+**MinIO** provides S3-compatible object storage for agent artifacts, backups, and media. **Prometheus** scrapes metrics from MinIO and other services. MinIO and Prometheus share a dedicated network for internal metric collection without exposing Prometheus externally.
+
+### PostgreSQL
+A standard PostgreSQL 16+ database container with template-based configuration. The `.container.j2` Jinja2 template allows customization of image tag, resource limits, and environment variables. The `.env` file provides default credentials and database name.
+
+### Redpanda
+Redpanda is a Kafka-compatible event streaming platform. Two containers run in parallel: **redpanda-server** (the broker) and **redpanda-console** (a Web UI for management). They share a network for internal communication. A persistent volume stores broker data.
+
+### Splunk
+Splunk provides log aggregation, search, and monitoring. A single container with a persistent volume stores all indexed data. Configured via environment variables for admin credentials and license.
+
+### Syncthing
+Syncthing provides peer-to-peer file synchronization across devices. A single container with bind mounts to host directories enables agent workspace synchronization across machines.
+
+### ValKey
+Standalone Valkey (a Redis-compatible key-value store) for caching and session state. A persistent volume ensures cache data survives restarts. Used by other stacks (AI stack, Open WebUI) as a shared dependency.
+
+### Watchtower
+Watchtower automatically monitors running containers and updates their images when new versions are published. It is a cross-stack utility that depends on the Docker/Podman socket being mounted.
+
+### Zerotier One
+Zerotier One provides software-defined networking, allowing containers to join a global virtual LAN. A persistent volume stores the node identity and configuration across restarts.
+
+### Zot Registry
+Zot is a lightweight OCI container registry for storing and distributing container images. A persistent volume holds the image layer storage. Useful for local image distribution in air-gapped or edge deployments.
+
+## Dependency Ordering
+
+Quadlet files within each stack have implicit and explicit startup ordering via systemd dependencies (`After=`, `BindsTo=`, `Requires=`). The general rules:
+
+| Dependency Type | Directive | Behavior |
+|-----------------|-----------|----------|
+| Hard dependency | `BindsTo=%N.volume` | Container stops if volume unit fails |
+| Network dependency | `Network=%N.network` | Container attaches to named network |
+| Pod membership | `Pod=%N.pod` | Container joins systemd pod |
+| Startup ordering | `After=network-online.target` | Container starts after network is available |
+
+### Per-Stack Dependency Graph
+
+| Stack | Dependency Order | Notes |
+|-------|-----------------|-------|
+| **AI Stack** | Volume(s) → Network → Pod → Containers → Dependent containers | `ollama.volume` → `ollama.network` → `ollama.pod` → `ollama.container`; `open-webui.container` depends on both `ollama` and `valkey` |
+| **Bluesky PDS** | Volume(s) → Network → Containers | `pds_data.volume` + `pds_logs.volume` → `pds.network` → `pds.container`; `caddy_config.volume` + `caddy_data.volume` + `caddy_logs.volume` → `caddy.container` |
+| **Redpanda** | Volume → Network → Containers | `redpanda.volume` → `redpanda.network` → `redpanda-server.container` + `redpanda-console.container` (parallel) |
+| **MinIO & Prometheus** | Network → Containers (parallel) | `minio.network` → `minio.container` + `prometheus.container` (parallel) |
+| **All single-container** | Volume (if any) → Container | e.g., `zot-registry.volume` → `zot-registry.container` |
+
+### Cross-Stack Dependencies
+
+| Consumer Stack | Depends On | Reason |
+|----------------|-----------|--------|
+| AI Stack (Open WebUI) | ValKey | Session caching |
+| All HTTP stacks | Watchtower (optional) | Auto-updates |
+| All exposed stacks | Zerotier One (optional) | Network connectivity |
+
+## Port Mapping Reference
+
+The following ports are used by Quadlet stacks. Stacks that bind to the same port cannot run simultaneously on the same host without modification.
+
+| Port(s) | Stack | Service | Transport | Bind Address | Notes |
+|---------|-------|---------|-----------|--------------|-------|
+| 11434 | AI Stack | Ollama | TCP | `127.0.0.1` | LLM inference API |
+| 8080 | AI Stack | Open WebUI | TCP | `127.0.0.1` | Web chat interface |
+| 5002 | AI Stack | Edge TTS | TCP | `127.0.0.1` | Text-to-speech API |
+| 9998 | AI Stack | Tika | TCP | `127.0.0.1` | Document parsing |
+| 6379 | AI Stack / ValKey | Valkey | TCP | `127.0.0.1` | Key-value cache |
+| 80, 443 | Bluesky PDS | Caddy | TCP | Host IP (public) | Reverse proxy (HTTP/HTTPS) |
+| 3000 | Bluesky PDS | PDS | TCP | `127.0.0.1` | AT Protocol server |
+| 9000 | MinIO | MinIO API | TCP | `127.0.0.1` | S3-compatible object storage |
+| 9001 | MinIO | MinIO Console | TCP | `127.0.0.1` | Web management UI |
+| 9090 | Prometheus | Prometheus | TCP | `127.0.0.1` | Metrics endpoint |
+| 5432 | PostgreSQL | PostgreSQL | TCP | `127.0.0.1` | Database server |
+| 8081 | Redpanda | Console | TCP | `127.0.0.1` | Kafka Web UI |
+| 9092 | Redpanda | Broker (SASL) | TCP | `127.0.0.1` | Kafka message broker |
+| 8008 | Redpanda | Broker (admin) | TCP | `127.0.0.1` | Admin REST API |
+| 8089 | Splunk | Splunk Web | TCP | `127.0.0.1` | Log management UI |
+| 22000 | Syncthing | Sync TCP | TCP | `127.0.0.1` | File sync data |
+| 21027 | Syncthing | Discovery | UDP | `0.0.0.0` | LAN discovery |
+| 4566 | LocalStack | LocalStack | TCP | `127.0.0.1` | AWS API emulation |
+| 9999 | Zot Registry | Zot | TCP | `127.0.0.1` | OCI container registry |
+| 9994 | Zerotier One | ZeroTier | TCP | `127.0.0.1` | Controller API |
+
+## Volume Mount Conventions
+
+All persistent storage follows these conventions for consistency across stacks.
+
+### Volume Naming Convention
+
+```
+<stack-name>-<service-name>
+```
+
+Examples: `ollama`, `open-webui`, `pds_data`, `caddy_data`, `redpanda`, `zot-registry`.
+
+### Volume Driver and Options
+
+All volumes use the default `local` driver unless otherwise specified:
+
+```ini
+[Volume]
+VolumeName=<name>
+# Optional: Driver=local
+# Optional: Label=app=<stack>
+```
+
+### Volume Mount Paths by Service
+
+| Stack | Service | Volume Name | Container Mount Path | Purpose |
+|-------|---------|-------------|---------------------|---------|
+| AI Stack | Ollama | ollama | `/root/.ollama` | Model storage |
+| AI Stack | Open WebUI | open-webui | `/app/backend/data` | User data, sessions |
+| AI Stack | Valkey | valkey | `/data` | Cache persistence |
+| Bluesky PDS | PDS | pds_data | `/pds` | User repos and data |
+| Bluesky PDS | PDS | pds_logs | `/var/log/pds` | Access logs |
+| Bluesky PDS | Caddy | caddy_config | `/config` | Caddy config |
+| Bluesky PDS | Caddy | caddy_data | `/data` | SSL certs, OCSP |
+| Bluesky PDS | Caddy | caddy_logs | `/var/log/caddy` | Access logs |
+| LocalStack | LocalStack | localstack | `/var/lib/localstack` | Emulated service state |
+| PostgreSQL | PostgreSQL | postgresql | `/var/lib/postgresql/data` | Database files |
+| Redpanda | Redpanda | redpanda | `/var/lib/redpanda/data` | Kafka log data |
+| Splunk | Splunk | splunk | `/opt/splunk/var` | Indexed data |
+| ValKey | ValKey | valkey | `/data` | Cache persistence |
+| Zerotier One | Zerotier One | zerotier-one | `/var/lib/zerotier-one` | Identity, config |
+| Zot Registry | Zot | zot-registry | `/var/lib/zot` | Image layer storage |
+
+### Best Practices
+
+1. **Named volumes** are preferred over bind mounts for portability across storage backends.
+2. **Volume labels** (`Label=`) can be applied for lifecycle management tools like Materia.
+3. **Quadlet auto-creation**: Quadlet creates volumes with `[Volume]` sections automatically if they don't exist.
+4. **Rootless Podman**: Volumes are stored under `~/.local/share/containers/storage/volumes/` by default.
+5. **SELinux**: Use the `:Z` flag on bind mounts to auto-relabel for container access (e.g., `Volume=/host/path:/container/path:Z`).
+6. **Backup**: Use `scripts/podman-volume-backup.sh` for volume backup automation.
+
 ## Overview
 
 | Source Repository | Files Count | File Types | Purpose |

@@ -680,7 +680,7 @@ for chunk in stream:
 - [[openclaw-acp-agent]] -- ACP agent asset registration
 - [[openclaw-mcp-server]] -- MCP server asset configuration
 - [[openclaw-quadlet]] -- Quadlet deployment patterns
-- [[openclaw-profile]] -- Quick reference profile
+- [[hermes-profiles]] -- Quick reference profile
 - [[openclaw]] -- Main wiki entry
 
 ---

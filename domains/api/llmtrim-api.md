@@ -462,5 +462,5 @@ crates/llmtrim-cli/src/
 
 ## Related
 
-- [[api]]
+- [[domains/api/INDEX|api]]
 - [[llmtrim]]

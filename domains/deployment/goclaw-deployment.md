@@ -150,6 +150,6 @@ Larger workflow (10.2 KB) that handles:
 
 ## Related
 
-- [[deployment]]
+- [[domains/deployment/INDEX|deployment]]
 - [[goclaw]]
 - [[podman]]

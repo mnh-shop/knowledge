@@ -675,5 +675,5 @@ All boolean flags in `/v1/capabilities.features`:
 
 ## Related
 
-- [[api]]
+- [[domains/api/INDEX|api]]
 - [[hermes-agent]]

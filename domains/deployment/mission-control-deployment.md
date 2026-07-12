@@ -303,5 +303,5 @@ A full Quadlet `.container` file for this project is available at `assets/deploy
 - [[mission-control]] -- Project overview
 - [[mission-control-architecture]] -- Architecture context for deployment
 - [[mission-control-quadlet]] -- Quadlet container configuration
-- [[mission-control-profile]] -- Deployment quick reference
+- [[hermes-profiles]] -- Deployment quick reference
 - [[mission-control-api]] -- API reference for the deployed service

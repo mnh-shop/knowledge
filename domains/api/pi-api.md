@@ -80,5 +80,5 @@ pi config                       # Enable/disable package resources
 
 ## Related
 
-- [[api]]
+- [[domains/api/INDEX|api]]
 - [[pi]]

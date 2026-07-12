@@ -131,6 +131,6 @@ Configure health checks with automatic restart on failure to recover from crashe
 
 - [[clawpier]] — Wiki entry
 - [[clawpier-architecture]] — Architecture documentation
-- [[clawpier-profile]] — Agent profile
+- [[hermes-profiles]] — Agent profile
 - [[openclaw]] — Primary agent runtime
 - [[hermes-agent]] — Secondary agent runtime

@@ -222,7 +222,7 @@ Workspace Server (:3000)
 - [[hermes-workspace]] — Wiki entry
 - [[hermes-workspace-architecture]] — System architecture
 - [[hermes-workspace-api]] — REST API reference
-- [[hermes-workspace-profile]] — Agent profile
+- [[hermes-profiles]] — Agent profile
 - [[hermes-workspace-quadlet]] — Quadlet deployment
 - [[hermes-workspace-mcp-hub]] — MCP hub implementation
 - [[hermes-workspace-swarm-architecture]] — Swarm architecture

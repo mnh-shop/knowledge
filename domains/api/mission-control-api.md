@@ -279,4 +279,4 @@ Recommended architecture: A dedicated `AgentfieldAdapter` (framework adapter pat
 - [[mission-control-architecture]] -- API design patterns and routing structure
 - [[mission-control-mcp-server]] -- MCP server that wraps these endpoints
 - [[mission-control-deployment]] -- Deploying the API server
-- [[mission-control-profile]] -- Quick reference for API usage
+- [[hermes-profiles]] -- Quick reference for API usage

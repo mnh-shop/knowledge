@@ -569,7 +569,7 @@ All builds use tags `embedded sqlite_fts5` and link flags `-s -w`. The `af` CLI 
 - [[agentfield-api]] -- REST API reference
 - [[agentfield-quadlet]] -- Quadlet deployment
 - [[agentfield-mcp-server]] -- MCP bridge server
-- [[agentfield-profile]] -- AgentField platform profile
+- [[hermes-profiles]] -- AgentField platform profile
 - [[SWE-AF]] -- autonomous engineering factory
 - [[sec-af]] -- security auditor agent
 - [[af-deep-research]] -- deep research engine

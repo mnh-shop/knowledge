@@ -462,6 +462,6 @@ An OpenAPI specification is available at `internal/http/openapi_spec.json` and s
 
 ## Related
 
-- [[api]]
+- [[domains/api/INDEX|api]]
 - [[goclaw]]
 - [[podman]]

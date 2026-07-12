@@ -723,4 +723,4 @@ Architecture contract: AgentField is the **agent execution layer** (reasoning, m
 - [[agentfield-deployment]] -- deployment guide
 - [[agentfield-quadlet]] -- Quadlet deployment
 - [[agentfield-mcp-server]] -- MCP bridge server
-- [[agentfield-profile]] -- AgentField platform profile
+- [[hermes-profiles]] -- AgentField platform profile

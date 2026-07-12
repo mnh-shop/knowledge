@@ -141,5 +141,5 @@ Environment variables for all settings. Key ones:
 - n8n Instance AI: [[n8n-instance-ai]] -- Autonomous agent architecture and tools
 - n8n API: [[n8n-api]]
 - n8n MCP: [[n8n-mcp]] -- MCP integration surfaces
-- n8n Agent Profile: [[n8n-agent-profile]] -- Engineering standards and development patterns
+- n8n Agent Profile: [[hermes-profiles]] -- Engineering standards and development patterns
 - Wiki entry: [[n8n]]

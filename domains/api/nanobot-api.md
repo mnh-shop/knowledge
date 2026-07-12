@@ -132,5 +132,5 @@ The API is started via `nanobot serve` (defined in `nanobot/cli/commands.py`):
 
 ## Related
 
-- [[api]]
+- [[domains/api/INDEX|api]]
 - [[nanobot]]

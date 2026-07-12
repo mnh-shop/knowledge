@@ -279,7 +279,7 @@ All three MCP servers call `routeLogsToStderr()` to keep stdout clean. Stderr is
 
 - [[openclaw-acp-agent]] -- ACP agent asset registration (companion protocol)
 - [[openclaw-deployment]] -- Full deployment guide
-- [[openclaw-profile]] -- Quick reference profile
+- [[hermes-profiles]] -- Quick reference profile
 - [[openclaw]] -- Main wiki entry
 
 ---

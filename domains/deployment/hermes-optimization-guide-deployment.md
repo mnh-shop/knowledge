@@ -162,6 +162,6 @@ The deployment includes multiple defense layers (documented in Part 19 and enfor
 
 ## Related
 
-- [[deployment]]
+- [[domains/deployment/INDEX|deployment]]
 - [[hermes-agent]]
 - [[hermes-optimization-guide]]

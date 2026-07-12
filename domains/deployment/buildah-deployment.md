@@ -448,4 +448,4 @@ EOF
 
 - [[buildah]] — Wiki overview, feature comparison, relationship to Podman
 - [[buildah-architecture]] — Four-layer architecture, image building pipeline, rootless mode
-- [[buildah-profile]] — Agent profile, configuration reference, command cheatsheet
+- [[hermes-profiles]] — Agent profile, configuration reference, command cheatsheet
