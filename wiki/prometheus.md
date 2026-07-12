@@ -4,8 +4,7 @@ tags: [prometheus, monitoring, metrics, observability, alerting, time-series, cn
 description: "CNCF-graduated open-source systems monitoring and alerting toolkit with a dimensional data model"
 source: sources/prometheus/
 verification_date: 2026-07-12
-verified_by: fixer (source analysis)
-source_reference: sources/prometheus/README.md, sources/prometheus/AGENTS.md
+verified_by: codegraph-verify
 ---
 
 # Prometheus

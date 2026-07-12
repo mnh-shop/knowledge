@@ -3,6 +3,8 @@ name: openai-skills
 tags: [openai-skills, agent, skill, openai, codex, automation, typescript, python, authorization, api, plugin]
 description: "OpenAI Skills repository - CodnEX skills system and plugin architecture for Claude Code and OpenAI integration with comprehensive skill management and installation capabilities"
 source: sources/openai-skills/
+verification_date: 2026-07-12
+verified_by: codegraph-verify
 updated: 2026-07-06
 ---
 

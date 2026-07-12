@@ -2,6 +2,8 @@
 name: CyberStrikeAI
 description: "AI-native security testing platform with 100+ integrated tools, multi-agent orchestration, and built-in C2 framework"
 source: sources/CyberStrikeAI/
+verification_date: 2026-07-12
+verified_by: codegraph-verify
 tags: [CyberStrikeAI, golang, security, ai-llm, mcp, orchestration, multi-agent, rest-api, plugin, skills-platform]
 ---
 

@@ -86,7 +86,7 @@ The architecture documentation in `domains/architecture/podman-architecture.md` 
 - [[podman-architecture]] -- Deep-dive into architecture
 - [[podman-deployment]] -- Deployment guide with Quadlet lifecycle
 - [[podman-quadlet-examples]] -- Production Quadlet file collection
-- [[podman-profile]] -- Quick-reference profile card
+- [[hermes-profiles]] -- Quick-reference profile card
 
 ## Cross-project
 

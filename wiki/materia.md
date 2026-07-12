@@ -2,6 +2,8 @@
 name: Materia
 description: A GitOps tool for managing services and applications deployed as Podman Quadlets, handling full component lifecycle including install, update, and removal
 source: sources/materia/
+verification_date: 2026-07-12
+verified_by: codegraph-verify
 tags: [container, deployment, git, infrastructure-as-code, podman, quadlet, security, systemd, golang, materia]
 ---
 
@@ -115,7 +117,7 @@ Multiple vault backends supported:
 
 - [[podman]] — Container runtime for Quadlet services
 - [[quadlet]] — Systemd-native container management
-- [[deployment]] — GitOps deployment patterns
+- [[domains/deployment/INDEX|deployment]] — GitOps deployment patterns
 
 
 - [Documentation](https://primamateria.systems)

@@ -7,6 +7,8 @@ authors:
   - admin1
 date: 2026-06-25
 tags: [cli, git, skills, plugin, python, abvx-agent-skills, agent, automation]
+verification_date: 2026-07-12
+verified_by: codegraph-verify
 ---
 
 # ABVX Agent Skills

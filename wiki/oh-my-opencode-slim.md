@@ -3,6 +3,8 @@ name: oh-my-opencode-slim
 description: "Lightweight OpenCode-compatible agent runtime optimized for slim deployments"
 tags: [wiki, agent-runtime, opencode, typescript, oh-my-opencode-slim]
 source: sources/oh-my-opencode-slim/
+verification_date: 2026-07-12
+verified_by: codegraph-verify
 ---
 
 # oh-my-opencode-slim
@@ -99,7 +101,7 @@ Disable the plugin at any time: `OH_MY_OPENCODE_SLIM_DISABLE=1 opencode`
 ## Related
 
 - [[opencode]] -- The CLI coding agent that hosts this plugin
-- [[api/hermes-agent-api]] -- ACP agent protocol (for ACP agent integration)
+- [[domains/api/hermes-agent-api|hermes-agent-api]] -- ACP agent protocol (for ACP agent integration)
 
 ## Links
 

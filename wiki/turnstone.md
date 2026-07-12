@@ -3,6 +3,8 @@ name: turnstone
 tags: [turnstone, ai-agents, agent-framework, autonomous, orchestration]
 description: "Agent framework for building and deploying autonomous AI workers"
 source: sources/turnstone/
+verification_date: 2026-07-12
+verified_by: codegraph-verify
 ---
 
 # Turnstone

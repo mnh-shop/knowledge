@@ -3,6 +3,8 @@ name: agentfield
 tags: [agentfield, cli, container, control-plane, dashboard, docker, event-bus, harness, identity, mcp, monitoring, orchestration, podman, quadlet, security, storage, systemd, virtualization, webhook, wiki, agent, python, golang, typescript]
 description: "Wiki entry for AgentField: AI control plane for sandboxed agents, micro-VMs, and pipeline orchestration"
 source: sources/agentfield/
+verification_date: 2026-07-12
+verified_by: codegraph-verify
 ---
 
 # AgentField
@@ -198,12 +200,12 @@ Config via `config/agentfield.yaml` or environment variables (env vars take prec
 - [[agentfield-deployment]] -- deployment guide
 - [[agentfield-quadlet]] -- Quadlet deployment
 - [[agentfield-mcp-server]] -- MCP bridge server
-- [[agentfield-profile]] -- AgentField platform profile
+- [[hermes-profiles]] -- AgentField platform profile
 - [[agentfield.codegraph-verify]] -- codegraph verification
-- [[swe-af-profile]] -- SWE-AF profile
-- [[sec-af-profile]] -- SEC-AF profile
-- [[af-deep-research-profile]] -- Deep Research profile
-- [[af-reactive-atlas-mongodb-profile]] -- Reactive MongoDB profile
+- [[hermes-profiles]] -- SWE-AF profile
+- [[hermes-profiles]] -- SEC-AF profile
+- [[hermes-profiles]] -- Deep Research profile
+- [[hermes-profiles]] -- Reactive MongoDB profile
 
 ## Cross-project
 

@@ -3,6 +3,8 @@ name: clawpier
 tags: [agent-manager, clawpier, container, dashboard, desktop, desktop, docker, git, gui, monitoring, tauri, wiki, agent, openclaw, typescript]
 description: "ClawPier — Tauri Desktop App for Managing Sandboxed AI Agents"
 source: sources/clawpier/
+verification_date: 2026-07-12
+verified_by: codegraph-verify
 ---
 # ClawPier — Tauri Desktop App for Managing Sandboxed AI Agents
 
@@ -123,7 +125,7 @@ Prerequisite: Docker must be installed and running.
 
 ## Related
 
-- [[clawpier-profile]] — Agent profile
+- [[hermes-profiles]] — Agent profile
 - [[clawpier-architecture]] — Architecture documentation
 - [[clawpier-deployment]] — Deployment guide
 - [[openclaw]] — The primary agent runtime ClawPier manages

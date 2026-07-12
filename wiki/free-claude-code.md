@@ -3,6 +3,8 @@ name: free-claude-code
 description: "Open-source proxy routing Claude Code/Codex traffic to 17 provider backends with multi-model routing"
 tags: [wiki, cli, code-assistant, multi-provider, open-source, coding-agent, proxy, python, free-claude-code]
 source: sources/free-claude-code/
+verification_date: 2026-07-12
+verified_by: codegraph-verify
 ---
 
 # free-claude-code
@@ -85,12 +87,12 @@ uv run uvicorn server:app --host 0.0.0.0 --port 8082
 
 ## Domain Docs
 
-No dedicated domain documentation found at [[domains/free-claude-code/]]. See the [[sources/free-claude-code/README.md]] for comprehensive usage documentation.
+No dedicated domain documentation found at [[free-claude-code]]. See the [[sources/free-claude-code/README.md]] for comprehensive usage documentation.
 
 ## Related
 
 - [[mcp]] -- Model Context Protocol for extending agent capabilities
-- [[api]] -- HTTP API integration patterns
+- [[domains/api/INDEX|api]] -- HTTP API integration patterns
 
 ## Links
 

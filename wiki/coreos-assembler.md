@@ -3,6 +3,8 @@ name: coreos-assembler
 tags: [coreos-assembler, fedora, bootc, image-builder, ostree, container-linux]
 description: "Build pipeline and tooling for creating Fedora CoreOS images and derivatives"
 source: sources/coreos-assembler/
+verification_date: 2026-07-12
+verified_by: codegraph-verify
 ---
 
 # coreos-assembler

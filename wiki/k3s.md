@@ -4,7 +4,7 @@ tags: [k3s, kubernetes, container, orchestration, edge, iot, lightweight, cncf, 
 description: "CNCF-certified lightweight Kubernetes distribution for edge, IoT, CI, and resource-constrained environments"
 source: sources/k3s/
 verification_date: 2026-07-12
-verified_by: fixer (source analysis)
+verified_by: codegraph-verify
 source_reference: sources/k3s/README.md
 ---
 

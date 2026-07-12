@@ -3,6 +3,8 @@ name: hexstrike-ai
 tags: [hexstrike-ai, python, mcp, security, ai-llm, ai-agents, multi-agent, orchestration, tool-calling]
 description: "AI-powered MCP cybersecurity automation platform with 150+ security tools and 12+ autonomous agents for penetration testing and red team operations"
 source: sources/hexstrike-ai/
+verification_date: 2026-07-12
+verified_by: codegraph-verify
 ---
 
 # HexStrike AI

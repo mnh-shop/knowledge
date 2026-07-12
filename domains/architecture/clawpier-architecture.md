@@ -190,6 +190,6 @@ When sending a message to a bot, ClawPier:
 
 - [[clawpier]] — Wiki entry
 - [[clawpier-deployment]] — Deployment guide
-- [[clawpier-profile]] — Agent profile
+- [[hermes-profiles]] — Agent profile
 - [[openclaw]] — Primary agent runtime
 - [[hermes-agent]] — Secondary agent runtime

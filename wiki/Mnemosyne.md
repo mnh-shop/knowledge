@@ -2,6 +2,8 @@
 name: mnemosyne
 description: "Mnemosyne memory server with MCP integration for AI agent persistent storage"
 source: sources/Mnemosyne/
+verification_date: 2026-07-12
+verified_by: codegraph-verify
 tags: [cli, mcp, storage, sqlite, python, Mnemosyne]
 ---
 

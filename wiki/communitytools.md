@@ -3,6 +3,8 @@ name: communitytools
 tags: [communitytools, security, ai-llm, automation, multi-agent, cli]
 description: Transilience AI Community Security Tools — 27 Claude Code skills for AI-powered penetration testing, bug bounty hunting, and security reconnaissance (MIT)
 source: sources/communitytools/
+verification_date: 2026-07-12
+verified_by: codegraph-verify
 ---
 
 # Community Security Tools

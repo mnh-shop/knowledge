@@ -2,6 +2,8 @@
 name: 1claw-hermes
 description: "1Claw secrets management integration for Hermes Agent — MCP vault, Shroud TEE proxy, subagent identities, and Intents API"
 source: sources/1claw-hermes/
+verification_date: 2026-07-12
+verified_by: codegraph-verify
 tags: [agent, cli, git, mcp, messaging, typescript, 1claw-hermes]
 ---
 

@@ -3,6 +3,8 @@ name: podlet
 tags: [cli, container, docker, podlet, podman, quadlet, security, systemd, wiki, rust]
 description: "Generate Podman Quadlet files from container images"
 source: sources/podlet/
+verification_date: 2026-07-12
+verified_by: codegraph-verify
 ---
 
 # Podlet

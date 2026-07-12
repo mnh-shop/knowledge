@@ -3,6 +3,8 @@ name: podman
 tags: [cli, container, daemonless, docker, oci, podman, quadlet, rootless, security, storage, systemd, virtualization, wiki, golang]
 description: "Podman — Container Management Tool"
 source: sources/podman/
+verification_date: 2026-07-12
+verified_by: codegraph-verify
 ---
 # Podman — Container Management Tool
 
@@ -195,7 +197,7 @@ Podman is the **foundation runtime** for the entire agent deployment stack:
 - [[podman-architecture]] — 3-layer architecture, rootless re-exec mechanism, container lifecycle flow
 - [[podman-deployment]] — Quadlet, secrets, auto-updates, Podman Machine, troubleshooting
 - [[podman-quadlet-examples]] — .container/.volume/.network/.pod/.kube/.build/.image patterns
-- [[podman-profile]] — Skills, integration knowledge, SSH tunnel patterns
+- [[hermes-profiles]] — Skills, integration knowledge, SSH tunnel patterns
 - [[podman.codegraph-verify]] — Codegraph verification of architecture claims
 
 ## Cross-project

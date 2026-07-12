@@ -568,4 +568,4 @@ Each skill gets a `security_status` ('unchecked' | 'safe' | 'suspicious' | 'bloc
 - [[mission-control-deployment]] -- Deployment configuration and methods
 - [[mission-control-mcp-server]] -- MCP server implementation
 - [[mission-control-quadlet]] -- Container deployment with Quadlet
-- [[mission-control-profile]] -- Quick reference profile
+- [[hermes-profiles]] -- Quick reference profile

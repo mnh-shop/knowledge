@@ -3,6 +3,8 @@ name: af-deep-research
 tags: [af-deep-research, cli, container, deep-research, docker, git, orchestration, plugin-sdk, recursive-agents, research, security, wiki, agentfield, python]
 description: Wiki entry for AF Deep Research — autonomous research backend with recursive agent spawning and self-correcting loops (Apache 2.0)
 source: sources/af-deep-research/
+verification_date: 2026-07-12
+verified_by: codegraph-verify
 ---
 
 # AF Deep Research
@@ -257,9 +259,9 @@ AF Deep Research represents the next evolution in autonomous research systems, c
 ## Related
 
 - [[af-deep-research-architecture]] -- architecture documentation
-- [[af-deep-research-profile]] -- agent profile
+- [[hermes-profiles]] -- agent profile
 - [[agentfield]] -- core AgentField platform
-- [[agentfield-profile]] -- AgentField platform profile
+- [[hermes-profiles]] -- AgentField platform profile
 - [[agentfield-deployment]] -- deployment guide
 
 ## Cross-project

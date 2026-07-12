@@ -3,6 +3,8 @@ name: n8n
 tags: [automation, cli, docker, fair-code, git, integration, low-code, mcp, n8n, orchestration, storage, typescript, vue, webhook, wiki, workflow-automation]
 description: "Low-code automation platform with 400+ integrations and AI agent capabilities"
 source: sources/n8n/
+verification_date: 2026-07-12
+verified_by: codegraph-verify
 ---
 
 # n8n
@@ -15,7 +17,7 @@ source: sources/n8n/
 | **Source** | `sources/n8n/` |
 | **Raw** | `raw/n8n/n8n.xml` (62MB) |
 | **Codegraph** | `graphs/n8n/` (774MB DB — 16,057 files, 219+ symbols) |
-| **Profile** | [[n8n-agent-profile]] |
+| **Profile** | [[hermes-profiles]] |
 | **Wanted** | n8n is a workflow automation platform — fair-code alternative to Zapier/Make |
 
 ## What it is
@@ -33,7 +35,7 @@ A workflow automation platform with 400+ integrations, AI-native workflow buildi
 | API architecture | [[n8n-api]] (`domains/api/`) |
 | MCP integration | [[n8n-mcp]] (`domains/mcp/`) |
 | Deployment guides | [[n8n-deployment]] (`domains/deployment/`) |
-| Agent reference (standards) | [[n8n-agent-reference]] (`assets/agent-references/`) |
+| Agent reference (standards) | [[hermes-profiles]] (`assets/agent-references/`) |
 | AGENTS.md (agent instructions) | `sources/n8n/AGENTS.md` |
 | README | `sources/n8n/README.md` |
 
@@ -189,7 +191,7 @@ A workflow automation platform with 400+ integrations, AI-native workflow buildi
 - [[n8n-mcp]] — MCP integration
 - [[n8n-api]] — REST and Public API
 - [[n8n-deployment]] — Self-hosted deployment
-- [[n8n-agent-profile]] — Engineering profile
+- [[hermes-profiles]] — Engineering profile
 
 ## Cross-project
 

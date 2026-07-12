@@ -3,6 +3,8 @@ name: outreachmagic
 tags: [outreachmagic, skill, skills-platform, python, webhook, automation, integration]
 description: "Skill suite for syncing sales sequencer webhooks (Smartlead, Instantly, HeyReach, etc.) into a local SQLite database with lead enrichment and email waterfall finder"
 source: sources/outreachmagic/
+verification_date: 2026-07-12
+verified_by: codegraph-verify
 ---
 
 # Outreach Magic

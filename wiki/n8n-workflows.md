@@ -3,6 +3,8 @@ name: n8n-workflows
 liveurl: https://zie619.github.io/n8n-workflows/
 description: "Curated collection of 2,061 n8n automation workflows with workflow patterns and metadata from the community repository"
 source: sources/n8n-workflows/
+verification_date: 2026-07-12
+verified_by: codegraph-verify
 tags: [ai-agents, automation, docker, git, integration-patterns, messaging, n8n, n8n-workflows, python, storage, webhook, workflows]
 ---
 

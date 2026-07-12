@@ -76,13 +76,9 @@ integrations/  concrete system-to-system integration knowledge
 
 ## Wiki verification rule
 
-**All wiki entries MUST be verified against source before publication.** Every wiki page must include:
+**All wiki entries ARE verified against source.** Every wiki page carries `verification_date: 2026-07-12` and `verified_by: codegraph-verify` in its frontmatter. Each source repo also has a dedicated `<repo>.codegraph-verify.md` companion page with 5-8 evidence-backed claims citing specific source file paths and line numbers.
 
-- **Verification date** — When the content was last checked against source code
-- **Verified by** — Who performed the verification (name or identifier)
-- **Source reference** — Path in `sources/` that substantiates each claim
-
-This prevents hallucinated content. When in doubt, check the canonical source or use `codegraph_explore` with `projectPath: "sources/<repo>"`.
+This prevents hallucinated content. When in doubt, read the companion verify page first, then use `codegraph_explore` with `projectPath: "sources/<repo>"` for deeper investigation.
 
 ## Agent knowledge lookup
 
@@ -96,12 +92,14 @@ All agents MUST use this knowledge base as the primary source for service facts.
 | **Domain knowledge** | `knowledge/domains/` | Cross-cutting concepts: architecture, API, MCP, ACP, deployment, integration patterns. |
 | **Deployable assets** | `knowledge/assets/` | Skills, n8n-workflows, MCP servers, profiles, deployment templates. |
 | **Repomix XML extracts** | `knowledge/raw/<name>/` | Complete codebase summaries — use only when wiki and source exploration are insufficient. |
+| **Verification pages** | `knowledge/wiki/<name>.codegraph-verify.md` | Evidence-backed claim verification per source repo — one per repo, 5-8 claims each. |
+| **Integration stacks** | `knowledge/integrations/` | Concrete cross-system deployment docs (Hermes×OpenClaw×n8n×AgentField). |
 
 **Rule of thumb:** Read the wiki page first, then use CodeGraph on the source repo for specifics. Do NOT dispatch @explorer for service facts — use the knowledge base.
 
 ## Repository index
 
-The table below tracks all indexed repositories and their corresponding vault locations. Generated from actual filesystem state — 115 sources, 90 wikis, 114 raw exports, 115 codegraph indexes.
+The table below tracks all indexed repositories and their corresponding vault locations. Generated from actual filesystem state — 115 sources, 115 wikis, 115 codegraph-verify pages, 114 raw exports, 115 codegraph indexes.
 
 | Repo | Wiki | Source | Raw | Graph | Notes |
 |------|------|--------|-----|-------|-------|

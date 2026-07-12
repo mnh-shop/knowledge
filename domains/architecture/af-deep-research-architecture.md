@@ -245,7 +245,7 @@ AF Deep Research represents the next evolution in autonomous research systems, c
 ## Related
 
 - [[af-deep-research]] -- wiki page for this agent
-- [[af-deep-research-profile]] -- agent profile
+- [[hermes-profiles]] -- agent profile
 - [[agentfield]] -- core AgentField platform
 - [[agentfield-architecture]] -- platform architecture
 - [[agentfield-deployment]] -- deployment guide

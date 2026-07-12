@@ -106,7 +106,7 @@ processes through tmux sessions.
 - [[hermes-workspace]] -- Wiki entry
 - [[hermes-workspace-architecture]] -- System architecture
 - [[hermes-workspace-api]] -- REST API reference
-- [[hermes-workspace-profile]] -- Agent profile
+- [[hermes-profiles]] -- Agent profile
 - [[hermes-workspace-deployment]] -- Deployment guide
 
 ## Links

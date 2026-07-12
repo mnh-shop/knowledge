@@ -165,7 +165,7 @@ This modularity enables continuous expansion of the security analysis capabiliti
 ## Related
 
 - [[sec-af]] -- wiki page for this agent
-- [[sec-af-profile]] -- agent profile
+- [[hermes-profiles]] -- agent profile
 - [[agentfield]] -- core AgentField platform
 - [[agentfield-architecture]] -- platform architecture
 - [[agentfield-deployment]] -- deployment guide

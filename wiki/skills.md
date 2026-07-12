@@ -3,6 +3,8 @@ name: skills
 description: "Installable agent skill registry and SDK for extending Claude Code with domain-specific capabilities"
 tags: [claude-code, plugin, skills, skills-platform, wiki]
 source: sources/skills/
+verification_date: 2026-07-12
+verified_by: codegraph-verify
 ---
 
 # Skills For Real Engineers

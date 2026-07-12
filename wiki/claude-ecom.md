@@ -3,6 +3,8 @@ name: claude-ecom
 tags: [claude-ecom, claude-code, ecommerce, automation, shopify]
 description: "E-commerce automation skills and tools for Claude Code"
 source: sources/claude-ecom/
+verification_date: 2026-07-12
+verified_by: codegraph-verify
 ---
 
 # Claude Ecom

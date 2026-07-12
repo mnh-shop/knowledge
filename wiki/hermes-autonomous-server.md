@@ -2,6 +2,8 @@
 name: hermes-autonomous-server
 description: "Autonomous Hermes server agent with self-healing and adaptive runtime capabilities"
 source: sources/hermes-autonomous-server/
+verification_date: 2026-07-12
+verified_by: codegraph-verify
 tags: [agent, hermes-agent, deployment, monitoring, security, hermes-autonomous-server]
 ---
 
@@ -132,7 +134,7 @@ harmes uninstall
 
 - [[hermes-agent]] — Core Hermes agent platform
 - [[monitoring]] — Autonomous server monitoring
-- [[deployment]] — Deployment patterns
+- [[domains/deployment/INDEX|deployment]] — Deployment patterns
 
 
 ✅ **Advantages:**

@@ -3,6 +3,8 @@ name: opencode-hermes-multiagent
 tags: [agent, cli, developer-tools, mcp, optimization, orchestration, security, opencode-hermes-multiagent]
 description: "Multi-agent system configuration for OpenCode/Hermes with 17 specialized subagents"
 source: sources/opencode-hermes-multiagent/
+verification_date: 2026-07-12
+verified_by: codegraph-verify
 ---
 
 # OpenCode Hermes Multiagent

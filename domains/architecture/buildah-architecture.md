@@ -274,4 +274,4 @@ From `go.mod`:
 
 - [[buildah]] — Wiki overview, feature comparison, relationship to Podman
 - [[buildah-deployment]] — Installation, CI/CD pipelines, rootless configuration
-- [[buildah-profile]] — Agent profile, configuration reference, command cheatsheet
+- [[hermes-profiles]] — Agent profile, configuration reference, command cheatsheet

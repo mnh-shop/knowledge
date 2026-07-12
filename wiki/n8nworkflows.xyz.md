@@ -3,6 +3,8 @@ name: n8nworkflows.xyz
 tags: [n8nworkflows.xyz, n8n, workflow-automation, templates, community]
 description: "Community workflow template catalog for n8n automation"
 source: sources/n8nworkflows.xyz/
+verification_date: 2026-07-12
+verified_by: codegraph-verify
 ---
 
 # n8nworkflows.xyz

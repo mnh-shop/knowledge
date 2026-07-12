@@ -3,6 +3,8 @@ name: mission-control
 tags: [agent, cli, container, dashboard, docker, mcp, mission-control, monitoring, nextjs, orchestration, quadlet, react, security, systemd, typescript, webhook, wiki]
 description: Mission Control — AI Agent Orchestration Dashboard
 source: sources/mission-control/
+verification_date: 2026-07-12
+verified_by: codegraph-verify
 ---
 
 # Mission Control — AI Agent Orchestration Dashboard
@@ -134,7 +136,7 @@ Mission Control is **most useful when paired with at least one agent gateway** �
 - [[mission-control-deployment]] — Deployment methods and configuration
 - [[mission-control-mcp-server]] — MCP server setup and tools
 - [[mission-control-quadlet]] — Quadlet container deployment
-- [[mission-control-profile]] — Quick reference profile
+- [[hermes-profiles]] — Quick reference profile
 
 ## Cross-project
 

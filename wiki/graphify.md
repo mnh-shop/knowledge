@@ -3,6 +3,8 @@ name: graphify
 description: "Knowledge graph generator — turns any input into a persistent knowledge graph with community detection and query tools"
 tags: [wiki, python, graphify]
 source: sources/graphify/
+verification_date: 2026-07-12
+verified_by: codegraph-verify
 ---
 
 # graphify

@@ -3,6 +3,8 @@ name: quadit
 tags: [quadit, quadlet, cli, deployment, container, systemd]
 description: "CLI toolkit for managing Podman Quadlet units"
 source: sources/quadit/
+verification_date: 2026-07-12
+verified_by: codegraph-verify
 ---
 
 # Quadit

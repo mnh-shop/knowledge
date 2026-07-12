@@ -3,6 +3,8 @@ name: oh-my-openagent
 description: "OpenAgent-compatible extensible agent runtime with MCP support and multi-model architecture"
 tags: [wiki, agent-runtime, mcp, multi-provider, typescript, oh-my-openagent]
 source: sources/oh-my-openagent/
+verification_date: 2026-07-12
+verified_by: codegraph-verify
 ---
 
 # oh-my-openagent

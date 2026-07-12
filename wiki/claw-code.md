@@ -3,6 +3,8 @@ name: claw-code
 tags: [claw-code, cli, developer-tools, openclaw, agent-gateway]
 description: "Command-line tool for OpenClaw agent interaction and management"
 source: sources/claw-code/
+verification_date: 2026-07-12
+verified_by: codegraph-verify
 ---
 
 # Claw Code

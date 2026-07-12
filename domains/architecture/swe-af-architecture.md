@@ -422,7 +422,7 @@ The architecture successfully balances adaptability with speed, offering both a 
 ## Related
 
 - [[SWE-AF]] -- wiki page for this agent
-- [[swe-af-profile]] -- agent profile
+- [[hermes-profiles]] -- agent profile
 - [[agentfield]] -- core AgentField platform
 - [[agentfield-architecture]] -- platform architecture
 - [[agentfield-deployment]] -- deployment guide

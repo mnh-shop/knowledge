@@ -2,6 +2,8 @@
 name: open-design
 description: "Open Design system — build once, reuse everywhere: cross-agent design token and component framework"
 source: sources/open-design/
+verification_date: 2026-07-12
+verified_by: codegraph-verify
 tags: [acp, cli, design, desktop, documentation, mcp, design-system, typescript, nix, open-design]
 type: wiki/overview
 repo: https://github.com/nexu-io/open-design
@@ -156,7 +158,7 @@ Also supports user-created systems (`user:` prefix) stored under a separate dire
 ## Related
 
 - [[mcp]] — MCP tool integration
-- [[acp]] — Agent Communication Protocol
+- [[domains/acp/INDEX|acp]] — Agent Communication Protocol
 - [[hermes-agent]] — Design system consumers
 
 

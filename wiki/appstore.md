@@ -3,6 +3,8 @@ name: appstore
 tags: [appstore, mcp, developer-tools, marketplace, agent-tools]
 description: "MCP server marketplace and discovery platform for AI agent tools"
 source: sources/appstore/
+verification_date: 2026-07-12
+verified_by: codegraph-verify
 ---
 
 # AppStore

@@ -648,7 +648,7 @@ This agent represents a fundamental shift from traditional ETL and rules-based a
 ## Related
 
 - [[af-reactive-atlas-mongodb]] -- wiki page for this agent
-- [[af-reactive-atlas-mongodb-profile]] -- agent profile
+- [[hermes-profiles]] -- agent profile
 - [[agentfield]] -- core AgentField platform
 - [[agentfield-architecture]] -- platform architecture
 - [[agentfield-deployment]] -- deployment guide

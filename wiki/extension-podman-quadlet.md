@@ -3,6 +3,8 @@ name: extension-podman-quadlet
 tags: [extension-podman-quadlet, podman, quadlet, plugin, desktop, container]
 description: "Podman Desktop extension for Quadlet container management"
 source: sources/extension-podman-quadlet/
+verification_date: 2026-07-12
+verified_by: codegraph-verify
 ---
 
 # Extension Podman Quadlet

@@ -3,6 +3,8 @@ name: ECC
 description: "The agent harness operating system — 67 agents, 271 skills, cross-harness support"
 tags: [wiki, ECC, claude-code, plugin, code-assistant, python, javascript, typescript, golang, security, skills-platform, harness]
 source: sources/ECC/
+verification_date: 2026-07-12
+verified_by: codegraph-verify
 ---
 
 # ECC (Ergonomic Code Copilot / Everything Claude Code)

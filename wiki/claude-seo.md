@@ -3,6 +3,8 @@ name: claude-seo
 tags: [claude-seo, agent, skill, seo, marketing, ai-llm, automation, cli, typescript, python, authorization]
 description: "Claude SEO: Comprehensive SEO analysis agent skill for Claude Code with 25 sub-skills and 18 parallel agents"
 source: sources/claude-seo/
+verification_date: 2026-07-12
+verified_by: codegraph-verify
 updated: 2026-07-06
 ---
 

@@ -4,7 +4,7 @@ tags: [grafana, monitoring, dashboard, observability, visualization, metrics, lo
 description: "Open-source observability and data visualization platform"
 source: sources/grafana/
 verification_date: 2026-07-12
-verified_by: fixer (source analysis)
+verified_by: codegraph-verify
 source_reference: sources/grafana/README.md, sources/grafana/AGENTS.md
 ---
 

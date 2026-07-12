@@ -3,6 +3,8 @@ name: tank-agent-os
 tags: [tank-agent-os, bootc, agent, immutable-os, container, fedora]
 description: "Bootable container OS image for running AI agents in production"
 source: sources/tank-agent-os/
+verification_date: 2026-07-12
+verified_by: codegraph-verify
 ---
 
 # Tank Agent OS

@@ -3,6 +3,8 @@ name: shannon
 tags: [shannon, ai-agents, agent-runtime, orchestration, multi-agent]
 description: "AI agent runtime and orchestration platform"
 source: sources/shannon/
+verification_date: 2026-07-12
+verified_by: codegraph-verify
 ---
 
 # Shannon

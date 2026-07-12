@@ -4,6 +4,8 @@ title: Camofox Browser
 description: "Anti-detection browser automation tool for MCP-based web scraping and testing"
 tags: [cli, docker, mcp, browser-automation, javascript, camofox-browser]
 source: sources/camofox-browser/
+verification_date: 2026-07-12
+verified_by: codegraph-verify
 license: MIT
 org: Jo Inc
 version: 1.11.2

@@ -3,37 +3,47 @@ name: anthropic-cybersecurity-skills
 description: "Structured cybersecurity skill library for AI agents with 817 skills across 29 domains, mapped to MITRE ATT&CK, NIST CSF 2.0, ATLAS, D3FEND, AI RMF, and MITRE F3 frameworks"
 tags: [anthropic, Anthropic-Cybersecurity-Skills, security, skill, skills-platform, claude-code]
 source: sources/Anthropic-Cybersecurity-Skills/
+verification_date: 2026-07-12
+verified_by: codegraph-verify
 ---
 
 # Anthropic Cybersecurity Skills
 
 An open-source cybersecurity skills library designed for AI agents, providing structured playbooks and procedures for security analysis workflows. Contains 817 production-grade skills spanning 29 security domains, each following the agentskills.io standard with YAML frontmatter for discovery and step-by-step execution guides.
 
+## Overview
+
+This is the largest open-source cybersecurity skills library for AI agents — an AI-native knowledge base built from the ground up for the agentskills.io standard. Every skill encodes real practitioner workflows (not generated summaries) covering digital forensics, threat hunting, malware analysis, cloud security, incident response, and more. The library bridges the 4.8-million-unfilled-role cybersecurity workforce gap (ISC2 2024) by giving AI agents the structured decision-making workflow a senior security analyst follows: when to use each technique, what prerequisites to check, how to execute step-by-step, and how to verify results. Existing security tool repos give you wordlists, payloads, or exploit code — this project gives an AI agent the practitioner playbook.
+
+**Community project** by Mahipal Jangra ([@mukul975](https://github.com/mukul975)), not affiliated with Anthropic PBC. Licensed under Apache 2.0.
+
 ## Key Features
 
-- **817 structured cybersecurity skills** covering digital forensics, threat hunting, malware analysis, cloud security, and more
-- **Six framework mappings** per skill: MITRE ATT&CK v19.1, NIST CSF 2.0, MITRE ATLAS v5.4, MITRE D3FEND v1.3, NIST AI RMF, and MITRE Fight Fraud Framework (F3)
-- **Progressive disclosure** for AI agents: ~30 tokens to scan frontmatter, 500-2000 tokens to load full workflow
-- **29 security domains**: cloud security, threat hunting, digital forensics, malware analysis, SIEM operations, vulnerability management, incident response, red teaming, and others
-- **6 framework mappings**: Every skill maps across MITRE ATT&CK, NIST CSF, ATLAS, D3FEND, AI RMF, and F3 frameworks for compliance and defense coverage
-- Works with Claude Code, GitHub Copilot, Cursor, OpenAI Codex CLI, Gemini CLI, and any agentskills.io-compatible platform
+- **817 structured cybersecurity skills** covering digital forensics, threat hunting, malware analysis, cloud security (66 skills), threat hunting (58), threat intelligence (52), network security (43), web application security (42), digital forensics (41), malware analysis (39), IAM (37), SOC operations (35), red teaming (33), container security (33), OT/ICS security (28), API security (28), incident response (26), vulnerability management (25), penetration testing (21), DevSecOps (18), zero trust architecture (17), endpoint security (17), cryptography (16), phishing defense (15), AI security (14), mobile security (13), ransomware defense (13), compliance & governance (9), supply chain security (8), deception technology (6), and hardware/firmware security (4)
+- **Six framework mappings** per skill: MITRE ATT&CK v19.1 (286 techniques across all 15 Enterprise tactics), NIST CSF 2.0 (6 functions, 22 categories), MITRE ATLAS v5.4 (16 tactics, 84 AI/ML techniques), MITRE D3FEND v1.3 (267 defensive techniques), NIST AI RMF 1.0 (72 subcategories), and MITRE Fight Fraud Framework F3 v1.1 (8 tactics, 123 techniques)
+- **Progressive disclosure** for AI agents: ~30 tokens to scan frontmatter, 500-2000 tokens to load full workflow — agents search all 817 skills in a single pass without blowing context windows
+- **MITRE F3 fight fraud framework support** — 94 fraud-relevant skills covering Positioning (FA0001: synthetic-identity seeding, account warming, SIM-swap) and Monetization (FA0002: money-mule layering, APP fraud, crypto off-ramping)
+- **Compatible with 26+ platforms**: Claude Code, GitHub Copilot, Cursor, Windsurf, Cline, Aider, Continue, Roo Code, Amazon Q Developer, Tabnine, Sourcegraph Cody, JetBrains AI, OpenAI Codex CLI, Gemini CLI, Devin, Replit Agent, SWE-agent, OpenHands, LangChain, CrewAI, AutoGen, Semantic Kernel, Haystack, Vercel AI SDK, and any MCP-compatible agent
+- **Validation tooling**: `tools/validate-skill.py` for testing skill structure, framework mapping completeness, and MITRE ATT&CK ID validity against the official `mitreattack-python` library
 
-## Architecture
+## Usage
 
-Skills follow a consistent structure with YAML frontmatter defining metadata (name, description, domain, subdomain, tags, framework technique IDs) followed by Markdown body sections for execution guidance. Each skill includes:
+Skills follow a consistent directory structure with YAML frontmatter defining metadata (name, description, domain, subdomain, tags, framework technique IDs) followed by Markdown body sections:
 
-- `When to Use` — trigger conditions for agent activation
-- `Prerequisites` — required tools, access levels, and environment setup
-- `Workflow` — step-by-step execution guide with commands and decision points
-- `Verification` — methods to confirm successful execution
+```yaml
+---
+name: performing-memory-forensics-with-volatility3
+description: Analyze memory dumps to extract running processes and malware artifacts
+domain: cybersecurity
+subdomain: digital-forensics
+tags: [forensics, memory-analysis, volatility3, dfir]
+mitre_attack: [T1003, T1055]
+nist_csf: [DE.CM-01, RS.AN-03]
+version: "1.2"
+---
+```
 
-Skills are organized in directories under `skills/` with optional `references/`, `scripts/`, and `assets/` subdirectories for technical depth.
-
-## Skills & Tools
-
-The repo includes a validation script (`tools/validate-skill.py`) for testing skill structure and framework mapping completeness. Skills cover a wide range of security tasks from memory forensics with Volatility3 to cloud security assessments across AWS, Azure, and GCP.
-
-## Deployment / Use
+Each skill includes `When to Use` (trigger conditions), `Prerequisites` (tools, access levels), `Workflow` (step-by-step commands with decision points), and `Verification` (confirmation methods). Skills live in directories under `skills/` with optional `references/`, `scripts/`, and `assets/` subdirectories.
 
 ```bash
 # Install via npx (recommended)
@@ -43,10 +53,13 @@ npx skills add mukul975/Anthropic-Cybersecurity-Skills
 git clone https://github.com/mukul975/Anthropic-Cybersecurity-Skills.git
 ```
 
-Compatible with 26+ AI platforms including Claude Code, Cursor, Windsurf, GitHub Copilot, and any agentskills.io-compatible agent runtime.
+The ATT&CK Navigator layer file is included in v1.0.0 release assets for visual coverage mapping. The project has been featured in awesome-agent-skills, awesome-ai-security, awesome-codex-cli, and SkillsLLM directory.
 
 ## Related
 
 - [[skills]] — Agent skills platform and registry
-- [[abvx-agent-skills]] — Auditable skillpack for coding agents
 - [[SecuritySkills]] — Security-focused agent skill ecosystem
+- [[Android-Pentesting-Checklist]] — Android-specific pentesting companion for mobile security assessment
+- [[CyberStrikeAI]] — AI-powered cybersecurity platform with red-teaming capabilities
+- [[abvx-agent-skills]] — Auditable skillpack for coding agents
+- [[defending-code-reference-harness]] — Reference implementation for autonomous vulnerability discovery using agents

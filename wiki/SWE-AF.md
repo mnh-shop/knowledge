@@ -3,6 +3,8 @@ name: swe-af
 tags: [agentfield, docker, engineering-factory, git, multi-agent, orchestration, research, security, webhook, wiki, python, rust, SWE-AF]
 description: Wiki entry for SWE-AF — autonomous software engineering factory runtime built on AgentField (Apache 2.0)
 source: sources/SWE-AF/
+verification_date: 2026-07-12
+verified_by: codegraph-verify
 ---
 
 # SWE-AF
@@ -169,9 +171,9 @@ See [`examples/agent-comparison/README.md`](examples/agent-comparison/README.md)
 ## Related
 
 - [[swe-af-architecture]] -- architecture documentation
-- [[swe-af-profile]] -- agent profile
+- [[hermes-profiles]] -- agent profile
 - [[agentfield]] -- core AgentField platform
-- [[agentfield-profile]] -- AgentField platform profile
+- [[hermes-profiles]] -- AgentField platform profile
 - [[agentfield-deployment]] -- deployment guide
 - [[sec-af]] -- sibling security auditor agent
 - [[af-deep-research]] -- sibling research engine

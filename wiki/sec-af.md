@@ -3,6 +3,8 @@ name: sec-af
 tags: [agentfield, auditor, docker, git, orchestration, python, sec-af, security, wiki]
 description: Wiki entry for SEC-AF — AI-native security auditor that confirms exploitability, not just pattern detection (Apache 2.0)
 source: sources/sec-af/
+verification_date: 2026-07-12
+verified_by: codegraph-verify
 ---
 
 # SEC-AF
@@ -61,11 +63,11 @@ Requires AgentField control plane, Python 3.11+, OpenRouter API key. Air-gapped 
 ## Related
 
 - [[sec-af-architecture]] -- architecture documentation
-- [[sec-af-profile]] -- agent profile
+- [[hermes-profiles]] -- agent profile
 - [[agentfield]] -- core AgentField platform
-- [[agentfield-profile]] -- AgentField platform profile
+- [[hermes-profiles]] -- AgentField platform profile
 - [[agentfield-deployment]] -- deployment guide
-- [[swe-af-profile]] -- sibling SWE-AF profile
+- [[hermes-profiles]] -- sibling SWE-AF profile
 
 ## Cross-project
 

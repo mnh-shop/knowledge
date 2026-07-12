@@ -2,6 +2,8 @@
 name: hermes-profiles
 description: "Curated Hermes Agent profiles for specialist swarms with role identity, skill dependencies, and Hermes-native patterns"
 source: sources/hermes-profiles/
+verification_date: 2026-07-12
+verified_by: codegraph-verify
 tags: [hermes-profiles, hermes-agent, agent-profile, catalog, swarm, orchestration]
 ---
 

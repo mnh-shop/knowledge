@@ -3,6 +3,8 @@ name: buildah
 tags: [buildah, container, daemonless, docker, fedora, git, image-builder, oci, podman, quadlet, storage, systemd, wiki, cli, golang]
 description: Buildah — OCI Image Builder
 source: sources/buildah/
+verification_date: 2026-07-12
+verified_by: codegraph-verify
 ---
 
 # Buildah — OCI Image Builder
@@ -212,7 +214,7 @@ See `install.md` in the repo for full details.
 
 - [[buildah-architecture]] — Four-layer architecture, image building pipeline, rootless mode
 - [[buildah-deployment]] — Installation, CI/CD pipelines, rootless configuration
-- [[buildah-profile]] — Agent profile, configuration reference, command cheatsheet
+- [[hermes-profiles]] — Agent profile, configuration reference, command cheatsheet
 
 ## Cross-project
 

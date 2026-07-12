@@ -3,6 +3,8 @@ name: ai-marketing-claude-code-skills
 tags: [ai-marketing-claude-code-skills, agent, skill, marketing, ai-llm, automation, cli, typescript, python, authorization]
 description: "AI marketing agent skills for Claude Code: automated marketing workflows, content generation, lead nurturing, and campaign optimization"
 source: sources/ai-marketing-claude-code-skills/
+verification_date: 2026-07-12
+verified_by: codegraph-verify
 updated: 2026-07-06
 ---
 

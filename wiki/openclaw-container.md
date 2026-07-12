@@ -2,6 +2,8 @@
 name: openclaw-container
 description: "OpenClaw container deployment templates and patterns for AI agent infrastructure"
 source: sources/openclaw-container/
+verification_date: 2026-07-12
+verified_by: codegraph-verify
 tags: [cli, container, deployment, docker, git, messaging, monitoring, openclaw, podman, security, storage, virtualization, python, openclaw-container]
 status: active
 last_updated: 2026-06-25
@@ -435,7 +437,7 @@ Wrapper intercepts and calls: `http://whisper-service:8080/transcribe`
 
 - [[openclaw]] — Parent project
 - [[podman]] — Container runtime platform
-- [[deployment]] — Container deployment patterns
+- [[domains/deployment/INDEX|deployment]] — Container deployment patterns
 
 ## Related Resources
 

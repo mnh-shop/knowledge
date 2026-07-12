@@ -3,6 +3,8 @@ name: SecuritySkills
 description: "Framework-grounded security skills for AI coding agents — threat modeling, code review, vulnerability management, compliance, and AI security (MIT)"
 tags: [SecuritySkills, security, skill, agent]
 source: sources/SecuritySkills/
+verification_date: 2026-07-12
+verified_by: codegraph-verify
 ---
 
 # SecuritySkills

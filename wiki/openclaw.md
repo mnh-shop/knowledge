@@ -3,6 +3,8 @@ name: openclaw
 tags: [acp, agent, agent-gateway, bootc, cli, container, dashboard, docker, git, live-canvas, mcp, messaging, openclaw, orchestration, personal-assistant, podman, quadlet, security, storage, systemd, typescript, wiki]
 description: OpenClaw — Personal AI Assistant
 source: sources/openclaw/
+verification_date: 2026-07-12
+verified_by: codegraph-verify
 ---
 
 # OpenClaw — Personal AI Assistant
@@ -192,7 +194,7 @@ docker pull ghcr.io/openclaw/openclaw:latest
 - [[openclaw-mcp-server]] -- MCP server asset configuration
 - [[openclaw-acp-agent]] -- ACP agent asset registration
 - [[openclaw-quadlet]] -- Quadlet deployment patterns
-- [[openclaw-profile]] -- Quick reference profile
+- [[hermes-profiles]] -- Quick reference profile
 - [[openclaw.codegraph-verify]] -- Codegraph verification document
 - [[tank-os]] — Fedora bootc image to deploy OpenClaw as a bootable appliance
 - [[hermes-agent]] — Competing agent gateway (Python, MIT)

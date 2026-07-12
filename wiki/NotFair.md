@@ -3,6 +3,8 @@ name: NotFair
 tags: [notfair, ai-agents, automation, workflow, intelligent-automation]
 description: "AI-powered intelligent automation platform for business workflows"
 source: sources/NotFair/
+verification_date: 2026-07-12
+verified_by: codegraph-verify
 ---
 
 # NotFair

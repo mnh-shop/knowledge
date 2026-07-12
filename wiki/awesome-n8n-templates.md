@@ -2,6 +2,8 @@
 name: awesome-n8n-templates
 description: "Curated collection of 280+ free ready-to-import n8n workflow templates across 18 categories"
 source: sources/awesome-n8n-templates/
+verification_date: 2026-07-12
+verified_by: codegraph-verify
 tags: [fair-code, git, integration, messaging, n8n, n8n-workflows, security, storage, templates, workflow-automation, reference, awesome-n8n-templates]
 ---
 

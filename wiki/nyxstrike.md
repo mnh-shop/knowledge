@@ -3,6 +3,8 @@ name: nyxstrike
 description: "AI-powered offensive security orchestration engine — connects LLM agents to security tools for reconnaissance to exploitation"
 tags: [mcp, security, pentest, python, agent]
 source: sources/nyxstrike/
+verification_date: 2026-07-12
+verified_by: codegraph-verify
 ---
 
 # NyxStrike

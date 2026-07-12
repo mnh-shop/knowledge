@@ -575,5 +575,5 @@ Podman Machine is a thin management layer that runs a Linux virtual machine on m
 - [[podman]] -- Wiki entry with overview and installation
 - [[podman-deployment]] -- Deployment guide with step-by-step instructions
 - [[podman-quadlet-examples]] -- Production-ready Quadlet file collection
-- [[podman-profile]] -- Quick-reference profile card
+- [[hermes-profiles]] -- Quick-reference profile card
 - [[podman.codegraph-verify]] -- Codegraph verification of architecture claims

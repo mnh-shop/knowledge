@@ -3,6 +3,8 @@ name: pi
 description: "Coding agent harness and orchestration toolkit — TypeScript monorepo for multi-provider LLM, tool calling, and interactive TUI"
 tags: [agent-runtime, cli, coding-agent, orchestration, pi, typescript, wiki]
 source: sources/pi/
+verification_date: 2026-07-12
+verified_by: codegraph-verify
 ---
 
 # Pi Agent Harness

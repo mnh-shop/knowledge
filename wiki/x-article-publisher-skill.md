@@ -3,6 +3,8 @@ name: x-article-publisher-skill
 tags: [x-article-publisher-skill, skill, automation, twitter, social-media]
 description: "Claude Code skill for publishing articles to X/Twitter"
 source: sources/x-article-publisher-skill/
+verification_date: 2026-07-12
+verified_by: codegraph-verify
 ---
 
 # X Article Publisher Skill

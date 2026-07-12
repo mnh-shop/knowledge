@@ -432,6 +432,6 @@ The `App` struct (`ui/desktop/app.go:24`) wraps the Go backend in a Wails deskto
 
 ## Related
 
-- [[architecture]]
+- [[domains/architecture/INDEX|architecture]]
 - [[goclaw]]
 - [[podman]]

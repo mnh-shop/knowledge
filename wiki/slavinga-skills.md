@@ -3,6 +3,8 @@ name: slavinga-skills
 tags: [slavinga-skills, agent, skill, security, cybersecurity, automation, typescript, python, authorization, ai, hacking, defense]
 description: "Slavinga Skills - Comprehensive security and cybersecurity agent skills framework for vulnerability assessment, penetration testing, security audits, and defensive security operations"
 source: sources/slavinga-skills/
+verification_date: 2026-07-12
+verified_by: codegraph-verify
 updated: 2026-07-06
 ---
 

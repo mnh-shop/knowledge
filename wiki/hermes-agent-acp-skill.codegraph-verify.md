@@ -5,7 +5,7 @@ date: 2026-07-12
 tags: [hermes-agent-acp-skill, codegraph-verify, hermes-agent, acp]
 suffix: .codegraph-verify
 source: sources/hermes-agent-acp-skill/
-related: [[hermes-agent-acp-skill]], [[hermes-agent]], [[acp]], [[openclaw-acp-agent]]
+related: [[hermes-agent-acp-skill]], [[hermes-agent]], [[domains/acp/INDEX|acp]], [[openclaw-acp-agent]]
 verified-by: codegraph-explore
 ---
 

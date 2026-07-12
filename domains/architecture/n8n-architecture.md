@@ -315,4 +315,4 @@ Multiple main instances can run for high availability. The `scaling/` module coo
 - n8n MCP: [[n8n-mcp]]
 - n8n Deployment: [[n8n-deployment]]
 - Wiki entry: [[n8n]]
-- Agent profile: [[n8n-agent-profile]]
+- Agent profile: [[hermes-profiles]]

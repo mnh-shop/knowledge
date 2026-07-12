@@ -9,6 +9,8 @@ tags:
   - harness
   - agent
 source: sources/reverse-skill/
+verification_date: 2026-07-12
+verified_by: codegraph-verify
 ---
 
 # reverse-skill

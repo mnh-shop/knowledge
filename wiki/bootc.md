@@ -3,6 +3,8 @@ name: bootc
 tags: [bootc, container, oci, ostree, transactional, os-updates, container-image, wiki]
 description: bootc does transactional, in-place OS updates using OCI container images
 source: sources/bootc/
+verification_date: 2026-07-12
+verified_by: codegraph-verify
 ---
 
 # bootc — Bootable Container OS

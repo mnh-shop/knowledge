@@ -3,6 +3,8 @@ name: hermes-startup-architect
 tags: [hermes-startup-architect, hermes-agent, skill, startup, research, business, entrepreneurship]
 description: "Hermes Agent skill for transforming startup ideas into research-backed 0-to-1 kits with 8 deliverable files"
 source: sources/hermes-startup-architect/
+verification_date: 2026-07-12
+verified_by: codegraph-verify
 ---
 
 # Hermes Startup Architect

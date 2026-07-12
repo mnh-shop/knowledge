@@ -3,6 +3,8 @@ name: infinite-brain-os
 tags: [infinite-brain-os, ai-agents, memory, knowledge-graph, agent-memory]
 description: "Infinite memory and knowledge system for AI agents"
 source: sources/infinite-brain-os/
+verification_date: 2026-07-12
+verified_by: codegraph-verify
 ---
 
 # Infinite Brain OS

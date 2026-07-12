@@ -4,7 +4,7 @@ tags: [netdata, monitoring, observability, infrastructure, real-time, metrics, m
 description: "Real-time infrastructure monitoring and troubleshooting platform with per-second metrics and ML-powered anomaly detection"
 source: sources/netdata/
 verification_date: 2026-07-12
-verified_by: fixer (source analysis)
+verified_by: codegraph-verify
 source_reference: sources/netdata/README.md, sources/netdata/AGENTS.md
 ---
 

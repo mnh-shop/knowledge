@@ -3,6 +3,8 @@ name: crun-vm
 tags: [acp, bootc, container, crun-vm, docker, fedora, oci-runtime, podman, qemu, rust, virtualization, vm, wiki]
 description: CRUN-VM — OCI Runtime for Running VMs as Containers
 source: sources/crun-vm/
+verification_date: 2026-07-12
+verified_by: codegraph-verify
 ---
 
 # CRUN-VM — OCI Runtime for Running VMs as Containers

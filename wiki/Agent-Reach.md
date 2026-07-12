@@ -3,6 +3,8 @@ name: Agent-Reach
 tags: [agent-reach, agent, ai-agents, orchestration, multi-agent]
 description: "Multi-agent orchestration and communication framework"
 source: sources/Agent-Reach/
+verification_date: 2026-07-12
+verified_by: codegraph-verify
 ---
 
 # Agent-Reach

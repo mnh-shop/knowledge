@@ -3,6 +3,8 @@ name: goclaw
 tags: [ai-llm, cli, container, gateway, golang, mcp, acp, orchestration, plugin-sdk, quadlet, security, systemd, webhook, wiki, goclaw]
 description: "GoClaw — Go-based AI agent gateway with MCP, ACP, and REST API"
 source: sources/goclaw/
+verification_date: 2026-07-12
+verified_by: codegraph-verify
 ---
 
 # GoClaw — Go-based AI Agent Gateway

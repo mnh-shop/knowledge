@@ -3,6 +3,8 @@ name: opencode
 description: "Multi-platform CLI coding agent with extensible provider and toolchain support"
 tags: [cli, code-assistant, coding-agent, multi-provider, wiki, typescript, nix, opencode]
 source: sources/opencode/
+verification_date: 2026-07-12
+verified_by: codegraph-verify
 ---
 
 # opencode
@@ -104,7 +106,7 @@ Tab switches between `build` (default) and `plan` agents. Use `@general` for mul
 ## Related
 
 - [[oh-my-opencode-slim]] -- Agent orchestration plugin for OpenCode
-- [[api/hermes-agent-api]] -- ACP agent protocol
+- [[domains/api/hermes-agent-api|hermes-agent-api]] -- ACP agent protocol
 - [[domains/mcp/INDEX]] -- MCP tool standard used by OpenCode
 
 ## Links

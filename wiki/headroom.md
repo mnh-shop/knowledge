@@ -4,7 +4,7 @@ tags: [headroom, context-compression, ai-agents, llm, tokens, proxy, mcp, memory
 description: "Context compression layer for AI agents — reduces LLM token usage 60-95% while preserving answer quality"
 source: sources/headroom/
 verification_date: 2026-07-12
-verified_by: fixer (source analysis)
+verified_by: codegraph-verify
 source_reference: sources/headroom/README.md
 ---
 

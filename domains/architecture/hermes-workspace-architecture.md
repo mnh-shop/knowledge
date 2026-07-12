@@ -140,7 +140,7 @@ This is a substantial codebase (~4MB raw). Forking considerations:
 ## Related
 
 - [[hermes-workspace]] -- Wiki entry
-- [[hermes-workspace-profile]] -- Agent profile
+- [[hermes-profiles]] -- Agent profile
 - [[hermes-workspace-api]] -- REST API reference
 - [[hermes-workspace-swarm-architecture]] -- Swarm architecture
 - [[hermes-workspace-deployment]] -- Deployment guide

@@ -2,6 +2,8 @@
 name: hermes-agent-acp-skill
 description: "Hermes agent ACP skill: agent-to-agent delegation via Agent Communication Protocol"
 source: sources/hermes-agent-acp-skill/
+verification_date: 2026-07-12
+verified_by: codegraph-verify
 tags: [hermes-agent-acp-skill, hermes-agent, acp, skill, orchestration, delegation, codex, claude-code]
 ---
 

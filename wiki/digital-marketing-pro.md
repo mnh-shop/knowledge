@@ -3,6 +3,8 @@ name: digital-marketing-pro
 tags: [digital-marketing-pro, automation, ai-llm, marketing, seo, content-generation]
 description: "AI-powered digital marketing automation platform"
 source: sources/digital-marketing-pro/
+verification_date: 2026-07-12
+verified_by: codegraph-verify
 ---
 
 # Digital Marketing Pro

@@ -3,6 +3,8 @@ name: hermes-agent
 tags: [acp, hermes-agent, agent, agent-gateway, cli, container, dashboard, desktop, docker, git, mcp, messaging, multi-platform, orchestration, quadlet, systemd, webhook, wiki, python, typescript, nix]
 description: "Wiki entry for Hermes Agent: self-improving AI agent by Nous Research with multi-platform messaging (MIT)"
 source: sources/hermes-agent/
+verification_date: 2026-07-12
+verified_by: codegraph-verify
 ---
 
 # Hermes Agent
@@ -202,7 +204,7 @@ commands:
 
 ## Related
 
-- [[hermes-agent-profile]] -- Agent profile / development guidelines
+- [[hermes-profiles]] -- Agent profile / development guidelines
 - [[hermes-agent-architecture]] -- System architecture
 - [[hermes-agent-deployment]] -- Deployment guide
 - [[hermes-agent-docker]] -- Docker packaging

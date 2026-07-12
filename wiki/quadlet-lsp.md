@@ -3,6 +3,8 @@ name: quadlet-lsp
 tags: [quadlet-lsp, quadlet, lsp, developer-tools, editor-support, container]
 description: "Language server protocol implementation for Podman Quadlet files"
 source: sources/quadlet-lsp/
+verification_date: 2026-07-12
+verified_by: codegraph-verify
 ---
 
 # Quadlet LSP

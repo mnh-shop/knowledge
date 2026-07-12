@@ -3,6 +3,8 @@ name: podman-quadlet
 tags: [podman-quadlet, podman, quadlet, deployment, systemd, container]
 description: "Getting started guide and reference for Podman with Quadlet systemd integration"
 source: sources/podman-quadlet/
+verification_date: 2026-07-12
+verified_by: codegraph-verify
 ---
 
 # Podman Quadlet

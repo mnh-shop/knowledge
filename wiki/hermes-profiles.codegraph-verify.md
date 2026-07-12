@@ -5,7 +5,7 @@ date: 2026-07-12
 tags: [hermes-profiles, codegraph-verify, hermes-agent, profiles]
 suffix: .codegraph-verify
 source: sources/hermes-profiles/
-related: [[hermes-profiles]], [[hermes-agent]], [[agent-references]], [[hermzner]]
+related: [[hermes-profiles]], [[hermes-agent]], [[hermes-profiles]], [[hermzner]]
 verified-by: codegraph-explore
 ---
 

@@ -4,6 +4,8 @@ title: drawio-skill
 lastmod: 2026-06-25
 description: A skill that turns natural-language descriptions into .drawio XML and exports to PNG/SVG/PDF/JPG via the native draw.io desktop CLI
 source: sources/drawio-skill/
+verification_date: 2026-07-12
+verified_by: codegraph-verify
 tags: [plugin, python, drawio-skill]
 icon: 📐
 ---

@@ -435,7 +435,7 @@ The Go server initializes a `StorageFactory` abstracting SQLite vs PostgreSQL:
 - [[agentfield-deployment]] -- deployment guide
 - [[agentfield-quadlet]] -- Quadlet deployment
 - [[agentfield-mcp-server]] -- MCP bridge server
-- [[agentfield-profile]] -- AgentField platform profile
+- [[hermes-profiles]] -- AgentField platform profile
 - [[agentfield.codegraph-verify]] -- codegraph verification
 - [[SWE-AF]] -- autonomous engineering factory
 - [[sec-af]] -- security auditor agent

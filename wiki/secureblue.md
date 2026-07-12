@@ -4,7 +4,7 @@ tags: [secureblue, fedora, bootc, security, hardening, immutable-os, bluebuild, 
 description: "Hardened Fedora Atomic images built with BlueBuild for security-focused desktop and server deployments"
 source: sources/secureblue/
 verification_date: 2026-07-12
-verified_by: fixer (source analysis)
+verified_by: codegraph-verify
 source_reference: sources/secureblue/docs/README.md, sources/secureblue/recipes/, sources/secureblue/files/
 ---
 

@@ -3,6 +3,8 @@ name: quadlet-nix
 tags: [quadlet-nix, quadlet, nix, deployment, container, declarative]
 description: "Nix-based generation and management of Podman Quadlet units"
 source: sources/quadlet-nix/
+verification_date: 2026-07-12
+verified_by: codegraph-verify
 ---
 
 # Quadlet Nix

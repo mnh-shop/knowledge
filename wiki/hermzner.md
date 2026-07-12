@@ -3,6 +3,8 @@ name: hermzner
 tags: [agent, hermes-agent, ansible, bootc, container, dashboard, deployment, docker, hermzner, hetzner, infrastructure-as-code, podman, quadlet, security, systemd, terraform, vps, wiki]
 description: "Hermzner — Hardened Hermes on Hetzner"
 source: sources/hermzner/
+verification_date: 2026-07-12
+verified_by: codegraph-verify
 ---
 
 # Hermzner — Hardened Hermes on Hetzner

@@ -105,4 +105,4 @@ All 6 key claims from the hermes-optimization-guide wiki have been verified agai
 - [[hermes-agent.codegraph-verify]] -- Similar codegraph verification for Hermes Agent
 - [[n8n-workflows]] -- Alternative automation workflows referenced in guide
 - [[openclaw]] -- Predecessor agent framework (migration path in Part 2)
-- [[hermes-optimization-guide.deployment]] -- Deployment patterns from the guide
+- [[domains/deployment/hermes-optimization-guide-deployment|hermes-optimization-guide deployment]] -- Deployment patterns from the guide

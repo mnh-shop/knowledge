@@ -5,6 +5,8 @@ parent: project-based-wiki
 published: true
 description: Agent skills for use with Obsidian - a collection of specialized skills following the Agent Skills specification
 source: sources/obsidian-skills/
+verification_date: 2026-07-12
+verified_by: codegraph-verify
 tags: [plugin, skills-platform, typescript, obsidian-skills]
 ---
 

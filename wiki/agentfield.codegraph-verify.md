@@ -73,7 +73,7 @@ source: sources/agentfield/
 - [[agentfield-architecture]] -- system architecture with route groups
 - [[agentfield-api]] -- REST API reference
 - [[agentfield-deployment]] -- deployment modes documentation
-- [[agentfield-profile]] -- AgentField platform profile
+- [[hermes-profiles]] -- AgentField platform profile
 
 ## Summary
 All 5 key claims from the wiki have been verified against the source code via codegraph exploration:

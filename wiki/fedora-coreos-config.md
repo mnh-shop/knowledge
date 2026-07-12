@@ -3,6 +3,8 @@ name: fedora-coreos-config
 tags: [bootc, container, fedora, fedora-coreos-config, image-builder, immutable-os, linux, oci, qemu, security, virtualization, wiki]
 description: "Base manifest configuration for Fedora CoreOS, defining bootable OCI images for immutable infrastructure"
 source: sources/fedora-coreos-config/
+verification_date: 2026-07-12
+verified_by: codegraph-verify
 ---
 
 # fedora-coreos-config

@@ -45,7 +45,7 @@ Key rule: **No AI agent code ever runs directly on the host OS.** The host runs 
 sources/       Layer 1: Git clones (gitignored, 115 repos)
 raw/           Layer 1: Repomix XML (gitignored, regeneratable)
 graphs/        Layer 1: CodeGraph DBs (gitignored, regeneratable)
-wiki/          Layer 2: One page per source repo (127 pages)
+wiki/          Layer 2: 235 pages — 115 source wikis + 115 codegraph-verify + 5 companion
 assets/        Layer 3: Reusable artifacts — skills, profiles, deploy templates
 domains/       Layer 2: Cross-repo deep-dive docs (6 dimensions)
 integrations/  Layer 3: System-to-system integration docs
@@ -73,13 +73,17 @@ assets/
 
 ```
 domains/
-├── architecture/       34 files — system design, component relationships
+├── architecture/       54 files — system design, component relationships
 ├── api/                21 files — REST/HTTP API references
 ├── mcp/                20 files — MCP server implementations
 ├── acp/                16 files — Agent Communication Protocol
 ├── deployment/         22 files — deployment and operations
 └── integration-patterns/  16 files — cross-system stacks
 ```
+
+### Verification coverage
+
+All 115 source repos now have codegraph-verify companion pages with 5-8 evidence-backed claims each. All wiki pages carry `verification_date: 2026-07-12` and `verified_by: codegraph-verify` in their frontmatter.
 
 ### Companion page rule
 
@@ -117,6 +121,26 @@ Companion pages derive their ecosystem tag from their parent repo (per SCHEMA.md
 | [hermzner](domains/architecture/hermzner-architecture.md) | hermzner | Hermes on Hetzner |
 | [deployment architecture](domains/architecture/deployment-architecture.md) | — | Cross-cutting: defense-in-depth layering |
 | [gogs](domains/architecture/gogs-architecture.md) | gogs | Git service internals |
+| [opencode](domains/architecture/opencode-architecture.md) | opencode | Effect-TS monorepo, V2 Session model |
+| [materia](domains/architecture/materia-architecture.md) | materia | GitOps Quadlet lifecycle, vault engine |
+| [oh-my-hermes](domains/architecture/oh-my-hermes-architecture.md) | oh-my-hermes | Plugin hook system, role prompts |
+| [hermes-bus](domains/architecture/hermes-bus-architecture.md) | hermes-bus | UDS IPC daemon, pub/sub messaging |
+| [Mnemosyne](domains/architecture/Mnemosyne-architecture.md) | Mnemosyne | L1-L3 tiered memory, vector+FTS5 |
+| [bootc](domains/architecture/bootc-architecture.md) | bootc | OCI transactional updates, OSTree |
+| [hexstrike-ai](domains/architecture/hexstrike-ai-architecture.md) | hexstrike-ai | AI pentesting, 150+ MCP tools |
+| [graphify](domains/architecture/graphify-architecture.md) | graphify | 7-stage pipeline, tree-sitter extraction |
+| [headroom](domains/architecture/headroom-architecture.md) | headroom | Context compression, Rust core |
+| [camofox-browser](domains/architecture/camofox-browser-architecture.md) | camofox-browser | Anti-detection browser, 29-event plugin system |
+| [n8n-mcp](domains/architecture/n8n-mcp-architecture.md) | n8n-mcp | MCP server, SQLite FTS5 indexing |
+| [k3s](domains/architecture/k3s-architecture.md) | k3s | Lightweight K8s, Kine datastore |
+| [hermes-autonomous-server](domains/architecture/hermes-autonomous-server-architecture.md) | hermes-autonomous-server | Headless deployment, systemd gateway |
+| [hermes-startup-architect](domains/architecture/hermes-startup-architect-architecture.md) | hermes-startup-architect | Research-first startup pipeline, forge-kit |
+| [nix.dev](domains/architecture/nix.dev-architecture.md) | nix.dev | Diataxis docs, MyST+Sphinx build |
+| [n8n-workflows](domains/architecture/n8n-workflows-architecture.md) | n8n-workflows | FastAPI catalog, workflow taxonomy |
+| [infinite-brain-os](domains/architecture/infinite-brain-os-architecture.md) | infinite-brain-os | Git-backed OS, 11 entity types |
+| [podman-compose](domains/architecture/podman-compose-architecture.md) | podman-compose | Compose Spec, 5k-line Python impl |
+| [hermes-profiles](domains/architecture/hermes-profiles-architecture.md) | hermes-profiles | 39 profiles, symlink skill sharing |
+| [hermes-incident-commander](domains/architecture/hermes-incident-commander-architecture.md) | hermes-incident-commander | DETECT-LEARN pipeline, RL training |
 
 ### API
 
@@ -180,6 +204,15 @@ Companion pages derive their ecosystem tag from their parent repo (per SCHEMA.md
 | Doc | Description |
 |-----|-------------|
 | [stack-landscape](domains/integration-patterns/stack-landscape.md) | Full ecosystem stack landscape |
+| [hermes-openclaw-deployment](integrations/hermes-openclaw-deployment.md) | Hermes + OpenClaw side-by-side Podman Quadlet with MCP bridge |
+| [hermes-n8n-workflow-engine](integrations/hermes-n8n-workflow-engine.md) | Hermes webhook triggers + n8n MCP notifications |
+| [openclaw-n8n-gateway](integrations/openclaw-n8n-gateway.md) | OpenClaw agent gateway routing to n8n workflows |
+| [agentfield-openclaw-stack](integrations/agentfield-openclaw-stack.md) | AgentField + OpenClaw MCP bridge |
+| [hermes-mission-control-monitoring](integrations/hermes-mission-control-monitoring.md) | Mission Control monitoring Hermes deployments |
+| [podman-quadlet-service-stack](integrations/podman-quadlet-service-stack.md) | Complete 4-service Quadlet stack (Hermes, n8n, Postgres, Redis) |
+| [n8n-supabase-ai-pipeline](integrations/n8n-supabase-ai-pipeline.md) | n8n AI workflows with Supabase pgvector |
+| [hermes-telegram-whatsapp-messaging](integrations/hermes-telegram-whatsapp-messaging.md) | Multi-platform messaging via Hermes channels |
+| [security-monitoring-stack](integrations/security-monitoring-stack.md) | hexstrike + nyxstrike + SecuritySkills under Podman |
 | [stack-reference-mission-control](domains/integration-patterns/stack-reference-mission-control.md) | Mission Control + OpenClaw + Hermes |
 | [stack-reference-openclaw-n8n](domains/integration-patterns/stack-reference-openclaw-n8n.md) | OpenClaw + n8n workflow engine |
 | [openclaw-agent-gateway](domains/integration-patterns/openclaw-agent-gateway.md) | Agent routing gateway pattern |
@@ -209,6 +242,7 @@ See `assets/INDEX.md` for the master catalog. Key resources:
 | ACP agents | `assets/acp-agents/` | 2 ACP agent references |
 | API clients | `assets/api-clients/` | Gateway platform reference |
 | n8n workflows | `assets/n8n-workflows/` | Sweep catalog of 9,655 workflows with tool breakdown |
+| Integration stacks | `integrations/` | 10 cross-system deployment stack docs (Hermes×OpenClaw×n8n×AgentField) |
 
 ## Related
 

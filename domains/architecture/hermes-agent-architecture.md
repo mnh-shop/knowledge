@@ -183,7 +183,7 @@ See [[hermes-mcp-serve]] for full details.
 ## Related
 
 - [[hermes-agent]] -- Wiki entry
-- [[hermes-agent-profile]] -- Agent profile / development guidelines
+- [[hermes-profiles]] -- Agent profile / development guidelines
 - [[hermes-agent-deployment]] -- Deployment guide
 - [[hermes-acp-implementation]] -- ACP implementation patterns
 - [[hermes-mcp-implementation]] -- MCP implementation patterns

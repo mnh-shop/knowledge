@@ -3,6 +3,8 @@ name: hexstrike-redteam
 tags: [Hexstrike-redteam, python, mcp, security, ai-llm, ai-agents, multi-agent, orchestration, tool-calling]
 description: "AI-powered cybersecurity automation MCP platform with BOAZ red team payload evasion (127 tools, 12+ agents, 77+ loaders)"
 source: sources/Hexstrike-redteam/
+verification_date: 2026-07-12
+verified_by: codegraph-verify
 ---
 
 # Hexstrike RedTeam

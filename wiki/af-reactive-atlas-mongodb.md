@@ -3,6 +3,8 @@ name: af-reactive-atlas-mongodb
 tags: [af-reactive-atlas-mongodb, docker, git, plugin-sdk, python, storage, wiki, research, agentfield]
 description: Wiki entry for AF Reactive Atlas MongoDB — real-time intelligence layer for MongoDB via Atlas Triggers (Apache 2.0)
 source: sources/af-reactive-atlas-mongodb/
+verification_date: 2026-07-12
+verified_by: codegraph-verify
 ---
 
 # AF Reactive Atlas MongoDB
@@ -291,9 +293,9 @@ Apache 2.0 · [See what else we're building →](https://github.com/Agent-Field)
 ## Related
 
 - [[af-reactive-atlas-mongodb-architecture]] -- architecture documentation
-- [[af-reactive-atlas-mongodb-profile]] -- agent profile
+- [[hermes-profiles]] -- agent profile
 - [[agentfield]] -- core AgentField platform
-- [[agentfield-profile]] -- AgentField platform profile
+- [[hermes-profiles]] -- AgentField platform profile
 - [[agentfield-deployment]] -- deployment guide
 
 ## Cross-project

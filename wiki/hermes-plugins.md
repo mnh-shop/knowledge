@@ -2,6 +2,8 @@
 name: hermes-plugins
 description: "34 evey-* plugins extending hermes-agent with autonomous decision-making, observability, cost control, memory, safety guards, and external integrations"
 source: sources/hermes-plugins/
+verification_date: 2026-07-12
+verified_by: codegraph-verify
 tags: [cli, hermes-agent, dashboard, developer-tools, docker, event-bus, git, messaging, monitoring, multi-platform, orchestration, plugin, skills-platform, storage, python, hermes-plugins]
 ---
 

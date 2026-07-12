@@ -3,6 +3,8 @@ name: Understand-Anything
 tags: [understand-anything, code-analysis, research, ai-agents, code-comprehension]
 description: "Universal codebase comprehension and analysis tool for AI"
 source: sources/Understand-Anything/
+verification_date: 2026-07-12
+verified_by: codegraph-verify
 ---
 
 # Understand-Anything
