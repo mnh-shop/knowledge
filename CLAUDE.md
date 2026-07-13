@@ -4,13 +4,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Overview
 
-This is a **knowledge vault** for AI agent infrastructure — curated documentation of 115 open-source repos covering MCP, ACP, agent frameworks, deployment patterns, and system integrations. It follows a **3-layer architecture**:
+This is a **knowledge vault** for AI agent infrastructure — curated documentation of 122 open-source repos covering MCP, ACP, agent frameworks, deployment patterns, and system integrations. It follows a **3-layer architecture**:
 
 - **Layer 1** (`sources/`, `raw/`): Git clones / archived source repos (immutable)
 - **Layer 2** (`wiki/`, `domains/`, `graphs/`): Derived documentation (editable)
 - **Layer 3** (`assets/`, `SCHEMA.md`, `MEMORY.md`): Reference templates and conventions (editable)
 
-The focus is **Hermes, OpenClaw, AgentField, Podman, n8n, and surrounding ecosystem** — 115 source repositories (cloned and indexed) across 6 functional layers.
+The focus is **Hermes, OpenClaw, AgentField, Podman, n8n, and surrounding ecosystem** — 122 source repositories (cloned and indexed) across 6 functional layers.
 
 ## Key Tools and Access Patterns
 
@@ -196,7 +196,7 @@ The knowledge vault includes:
 
 | Type | Location | Purpose |
 |------|----------|---------|
-| **Repository wikis** | `wiki/` | 98 wiki entries for 115 source repos |
+| **Repository wikis** | `wiki/` | 118 wiki entries for 122 source repos (+4 generating) |
 | **Domain knowledge** | `domains/` | Cross-repo concept docs (6 dimensions) |
 | **Integration patterns** | `domains/integration-patterns/` | How systems connect |
 | **Reusable assets** | `assets/` | Skills, workflows, profiles, deployment configs |
