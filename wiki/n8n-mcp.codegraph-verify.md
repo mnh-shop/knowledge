@@ -7,18 +7,20 @@ source: sources/n8n-mcp/
 
 # Codegraph Verification: n8n-mcp
 
-**Date:** 2026-07-12
+**Date:** 2026-07-30 (claims 1 and 7 re-verified against current README.md and manifest.json)
 
-## Claim 1: MCP server with stdio/HTTP dual-mode and 23 MCP tools
-- **Wiki says:** The MCP server in `src/mcp/` implements both stdio and HTTP modes, exposing 23 MCP tools across discovery, configuration, validation, workflow management, and security categories. Entry points are `src/mcp/index.ts` and `src/mcp/server.ts`.
+## Claim 1: MCP server with stdio/HTTP dual-mode and 23 registered MCP tools
+- **Wiki says:** The MCP server in `src/mcp/` implements both stdio and HTTP modes, registering exactly 23 MCP tools: 7 core documentation/validation tools (`tools_documentation`, `search_nodes`, `get_node`, `validate_node`, `validate_workflow`, `search_templates`, `get_template`) and 16 n8n management tools (`n8n_create_workflow`, `n8n_get_workflow`, `n8n_update_full_workflow`, `n8n_update_partial_workflow`, `n8n_delete_workflow`, `n8n_list_workflows`, `n8n_validate_workflow`, `n8n_autofix_workflow`, `n8n_test_workflow`, `n8n_executions`, `n8n_health_check`, `n8n_workflow_versions`, `n8n_deploy_template`, `n8n_manage_datatable`, `n8n_manage_credentials`, `n8n_audit_instance`). Entry points are `src/mcp/index.ts` and `src/mcp/server.ts`; the `N8NDocumentationMCPServer` class is defined at `server.ts:168`.
 - **Source evidence:**
   - `src/mcp/index.ts` — Main entry point with mode selection
-  - `src/mcp/server.ts` — Core `N8NDocumentationMCPServer` class for tool registration and execution
+  - `src/mcp/server.ts` — Core `N8NDocumentationMCPServer` class for tool registration and execution (class at line 168, ~171KB file)
   - `src/mcp/stdio-wrapper.ts` — Stdio transport wrapper
-  - `manifest.json` defines exactly 23 `tools` entries (lines 83-177): `search_nodes`, `get_node`, `validate_node`, `search_templates`, `get_template`, `validate_workflow`, `n8n_create_workflow`, `n8n_get_workflow`, `n8n_update_full_workflow`, `n8n_update_partial_workflow`, `n8n_delete_workflow`, `n8n_list_workflows`, `n8n_validate_workflow`, `n8n_autofix_workflow`, `n8n_test_workflow`, `n8n_executions`, `n8n_health_check`, `n8n_workflow_versions`, `n8n_deploy_template`, `n8n_manage_datatable`, `n8n_manage_credentials`, `n8n_audit_instance`, `tools_documentation`
-  - `package.json` lines 28-31 show `start` (stdio) and `start:http` modes
+  - `manifest.json` (repo root) defines exactly 23 `tools` entries (lines 84-177): `tools_documentation`, `search_nodes`, `get_node`, `validate_node`, `get_template`, `search_templates`, `validate_workflow`, `n8n_create_workflow`, `n8n_get_workflow`, `n8n_update_full_workflow`, `n8n_update_partial_workflow`, `n8n_delete_workflow`, `n8n_list_workflows`, `n8n_validate_workflow`, `n8n_autofix_workflow`, `n8n_test_workflow`, `n8n_executions`, `n8n_health_check`, `n8n_workflow_versions`, `n8n_deploy_template`, `n8n_manage_datatable`, `n8n_manage_credentials`, `n8n_audit_instance`
+  - `package.json` lines 27-28 show `start` (stdio) and `start:http` modes
+  - `n8n_list_available_tools` and `n8n_diagnostic` appear ONLY as tool-docs in `src/mcp/tool-docs/system/` — they are not registered tools
+  - Fabricated tool names (`n8n_search_nodes`, `n8n_get_node_essentials`, `n8n_generate_workflow`, etc.) have 0 grep hits in `src/`
 - **Verdict:** ✅ CORRECT
-- **Fix needed:** None
+- **Fix needed:** None (wiki previously listed fabricated tool names; corrected to the real 23-tool manifest catalog)
 
 ## Claim 2: SQLite database layer with FTS5 full-text search and universal adapter
 - **Wiki says:** SQLite database at `data/nodes.db` stores parsed node metadata with FTS5 full-text search. Repository pattern via `NodeRepository` and universal adapter supporting both `better-sqlite3` and `sql.js`.
@@ -87,27 +89,30 @@ source: sources/n8n-mcp/
 - **Verdict:** ✅ CORRECT
 - **Fix needed:** None
 
-## Claim 7: 1,845 n8n nodes indexed (816 core + 1,029 community)
-- **Wiki says:** The system indexes 1,845 total n8n nodes: 816 core + 1,029 community (911 verified), with 99% node property coverage and 63.6% operation coverage.
+## Claim 7: 2,285 n8n nodes indexed (828 core + 1,457 community, 1,295 verified)
+- **Wiki says:** The system indexes 2,285 total n8n nodes: 828 core + 1,457 community (1,295 verified), with 99% node property coverage, 66.5% operation coverage, 86% documentation coverage, and 267 AI-capable tool variants.
 - **Source evidence:**
+  - `README.md:12` — "2,285 workflow automation nodes (828 core + 1,457 community)"
+  - `README.md:18` — 828 core + 1,457 community (1,295 verified)
+  - `README.md:19-22` — 99% property coverage, 66.5% operation coverage, 86% documentation coverage, 267 AI tools
+  - `README.md:8` — n8n 2.31.6 compatibility badge
   - `src/community/` — Community node management
   - `src/scripts/fetch-community-nodes.js` — Fetches community node metadata
   - `src/loaders/node-loader.ts` — Core node loading
-  - `src/services/node-documentation-service.ts` — Node documentation service
-  - Package depends on `n8n-nodes-base` and `@n8n/n8n-nodes-langchain` for node access
+  - `package.json` dependencies pin `n8n-nodes-base`, `n8n-workflow`, `n8n-core`, and `@n8n/n8n-nodes-langchain` to 2.31.3 for node access
 - **Verdict:** ✅ CORRECT
-- **Fix needed:** None
+- **Fix needed:** None (wiki previously carried stale 1,845/816/1,029/911, 63.6%, 87%, 265 counts; updated to current README stats)
 
 ## Summary
 
 All 7 key claims from the n8n-mcp wiki have been verified against the source code via codegraph exploration:
-- ✅ MCP server: stdio/HTTP dual-mode with 23 MCP tools confirmed in `src/mcp/` and `manifest.json`
+- ✅ MCP server: stdio/HTTP dual-mode with 23 registered MCP tools confirmed in `src/mcp/` and `manifest.json:84-177`
 - ✅ SQLite database: FTS5 full-text search with universal adapter confirmed in `src/database/`
 - ✅ Node processing pipeline: Loader, parser, extractor, mapper all confirmed in respective directories
 - ✅ Service layer: 38 service modules covering validation, templates, expressions, diff engine confirmed
 - ✅ Template system: Fetches templates from n8n.io API with repository and service layers confirmed
-- ✅ n8n MCP client node: Bidirectional bridge confirmed in `src/n8n/` directory
-- ✅ Node index: Community node management and 1,845 indexed nodes confirmed
+- ✅ n8n MCP client node: Bidirectional bridge confirmed in `src/n8n/` directory (community-node wrapper)
+- ✅ Node index: Community node management and 2,285 indexed nodes (828 core + 1,457 community) confirmed
 
 ## Related
 

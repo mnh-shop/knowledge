@@ -17,8 +17,10 @@ date: 2026-07-12
   - `CLAUDE.md` lines 10-17 document the architecture: "Order CSV Data → Python CLI (ecom review) [Deterministic: KPI calc, scoring, check evaluation] → review.json → Claude (SKILL.md) → REVIEW.md." With the key principle: "Python computes the numbers. Claude interprets them."
   - `skills/ecom/SKILL.md` line 29: "Key principle: Python computes the numbers. Claude interprets them. Never present raw numbers without business context."
   - `claude_ecom/review_engine.py` — Python engine producing review.json with KPI data.
-  - `claude_ecom/report.py` — `generate_review_json()` and `review_json_filename()` for JSON output.
+  - `claude_ecom/report.py` — `generate_review_json()` (line 161), `review_json_filename()` (line 149) and `review_md_filename()` (line 155) for JSON/markdown output; `_build_clusters()` (line 107) groups findings into 4 clusters (Discount Dependency, Assortment, Customer, Concentration).
+  - `claude_ecom/pricing.py` — `discount_dependency()` (line 40), `margin_analysis()` (line 79), `free_shipping_threshold()` (line 106) with `DiscountResult`/`MarginResult`/`ThresholdResult` dataclasses (lines 12-31).
   - Python package `claude_ecom/` with 11 modules vs skill layer `skills/ecom/` with SKILL.md + 9 reference files — confirming the hybrid split.
+  - README.md line 140: "Inspired by [claude-ads](https://github.com/AgriciDaniel/claude-ads) by [@AgriciDaniel]" — the claude-ads inspiration IS stated in source (Acknowledgements).
 
 - **Verdict:** ✅ CORRECT
 - **Fix needed:** None
@@ -29,8 +31,8 @@ date: 2026-07-12
 - **Source evidence:**
   - `.claude-plugin/plugin.json` — Plugin manifest with name `claude-ecom`, version `0.2.0`, author `Hajime Takeda`.
   - `.claude-plugin/marketplace.json` — Marketplace manifest.
-  - `bin/ecom` — Self-bootstrapping launcher (referenced in `hook.json` and plugin manifest).
-  - `hooks/hooks.json` lines 1-17: Defines `SessionStart` hook with command `"${CLAUDE_PLUGIN_ROOT}"/bin/ecom --bootstrap-only` and 300s timeout.
+  - `bin/ecom` — Self-bootstrapping launcher (referenced in `hook.json` and plugin manifest). Lines 8-13: "The plugin's install directory is replaced on every plugin update … so the Python venv lives outside it, in XDG data. A version stamp ties the venv to the plugin version: when the plugin updates, the next run reinstalls the backend." It installs the venv to `${XDG_DATA_HOME:-$HOME/.local/share}/claude-ecom/venv` with a `.claude-ecom-version` stamp file.
+  - `hooks/hooks.json` lines 1-17: Defines `SessionStart` hook with `"matcher": "startup|resume"` and command `"${CLAUDE_PLUGIN_ROOT}"/bin/ecom --bootstrap-only` and `"timeout": 300` (300s).
   - README.md lines 27-42: Plugin install path: `/plugin marketplace add takechanman1228/claude-ecom` then `/plugin install claude-ecom@claude-ecom`. Documents: "The Python backend installs itself into a private venv (`~/.local/share/claude-ecom/`) on session start and survives plugin updates."
   - CHANGELOG.md 0.2.0 lines 15-18: "New self-bootstrapping launcher bin/ecom: installs the Python backend into a persistent venv at ~/.local/share/claude-ecom/ that survives plugin updates."
 
@@ -96,6 +98,17 @@ date: 2026-07-12
 
 - **Verdict:** ✅ CORRECT
 - **Fix needed:** None
+
+## Claim 8: Test suite — 126 test functions across 11 test modules
+
+- **Wiki says:** A 126-test pytest suite in `tests/` covers checks, CLI, loader, metrics, periods, report, review engine, and end-to-end review generation.
+
+- **Source evidence:**
+  - `grep -rc '^def test_\|^    def test_'` over `tests/**/*.py` sums to **126** test functions across 11 test files: `test_checks.py`, `test_cli_review.py`, `test_clusters.py`, `test_loader.py`, `test_metrics.py`, `test_na_handling.py`, `test_periods.py`, `test_report.py`, `test_review_e2e.py`, `test_review_engine.py`, `test_review_json_schema.py`.
+  - `tests/test_review_json_schema.py` validates generated `review.json` against a JSON schema; `tests/test_review_e2e.py` covers the full orders-CSV → REVIEW.md pipeline.
+
+- **Verdict:** ✅ CORRECT
+- **Fix needed:** None (new claim added).
 
 ## Related
 

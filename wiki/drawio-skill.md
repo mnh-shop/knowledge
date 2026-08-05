@@ -16,13 +16,13 @@ icon: 📐
 
 ## Key Features
 
-- **6 diagram type presets** — ERD, UML Class, Sequence, Architecture, ML/Deep Learning, Flowchart
+- **11 diagram type presets** — ERD, UML Class, Sequence, C4, Architecture, ML/Deep Learning, Flowchart, SysML (BDD / IBD / Requirement / Parametric), BPMN, Network Topology, Cross-Functional Swimlane (README.md:24; the comparison table's "7 presets" at README.md:350 is stale)
 - **Visualize existing codebases** — extract and auto-lay-out the structure of Python / JS-TS / Go / Rust projects (import graphs) or a Python class hierarchy
 - **Search 10,000+ official shapes** — resolve exact AWS / Azure / GCP / Cisco / Kubernetes / UML / BPMN icon styles instead of guessing
-- **AI / LLM brand logos** — 321 logos (OpenAI, Claude, Gemini, Mistral, Llama, Ollama, LangChain...) for LLM-app architecture diagrams
+- **AI / LLM brand logos** — 321 logos (OpenAI, Claude, Gemini, Mistral, Llama, Ollama, LangChain...) plus **18 data-store brands** (Redis, Postgres, MongoDB, Qdrant, Milvus, Supabase...) via simple-icons, for LLM-app / RAG architecture diagrams
 - **Self-check + auto-fix** — reads PNG output and auto-fixes overlaps, clipped labels, stacked edges (up to 2 rounds)
 - **Iterative feedback loop** — up to 5 rounds of targeted refinement
-- **Style presets** — capture visual style from a `.drawio` file or image
+- **Style presets** — 5 built-in (default, corporate, handdrawn, colorblind-safe, dark) plus capture your own visual style from a `.drawio` file or image
 - **Clean layout** — grid-aligned, spacing scales with diagram size, connectors routed clear of nodes
 - **Multi-agent, zero-config** — runs from a single SKILL.md; no MCP server, no background daemon
 
@@ -98,7 +98,19 @@ git clone https://github.com/Agents365-ai/drawio-skill.git \
 | Flowcharts | business processes, workflows, decision trees, state machines | Semantic shapes (parallelogram I/O, diamond decisions) |
 | UML | class diagrams, sequence diagrams | Inheritance / composition / aggregation arrows; lifelines + activation boxes |
 | Data | ER diagrams, data flow diagrams (DFD) | Table containers, PK/FK notation |
+| SysML | BDD / IBD / Requirement / Parametric | Official SysML block and requirement shapes |
+| BPMN | business process modeling | BPMN events, gateways, activities |
+| Network Topology | device / connectivity diagrams | Network device and connector shapes |
+| Cross-Functional Swimlane | multi-lane process lanes | Lane containers spanning actor/phase axes |
 | Other | org charts, mind maps, wireframes | — |
+
+## Repository Layout
+
+- **`skills/drawio-skill/scripts/`** — 11 Python tools: `c4.py`, `aiicons.py`, `timelapse.py`, `heatmap.py`, `tubemap.py`, `pyclasses.py`, `drawio2mermaid.py`, `shapesearch.py`, `tfstate.py`, `relabel.py`, `jsimports.py`
+- **Extractor coverage (13)** — import graphs for **Python / JS-TS / Go / Rust** (`pyimports`, `jsimports`, `goimports`, `rustimports`) + **Python class hierarchy** (`pyclasses`); **Terraform / Kubernetes / docker-compose** (`tfimports`, `k8simports`, `composeimports`); **SQL DDL → ERD** (`sqlerd`); **OpenAPI / Swagger → API diagram** (`openapiimports`); **CI pipelines → DAG** (`ciimports`); **live infra** from `terraform show -json` / `docker inspect` / `kubectl get -o json` (`tfstate`, `dockerimports`)
+- **`skills/drawio-skill/references/`** — 13 docs: autolayout, derasterize, diagram-types, live-infra, mermaid-authoring, pr-bot, shapes, style-extraction, style-presets, toolbox, troubleshooting, tubemap, xml-authoring
+- **`skills/drawio-skill/styles/`** — 5 built-in presets (`default`, `corporate`, `handdrawn`, `colorblind-safe`, `dark`) + `schema.json`
+- **`docs/`** — 12 markdown guides (INSTALL_CLI, INSTALL_SKILL, USAGE, STYLE_PRESETS, COMPARISON, CI — each with a CN mirror) + `index.html`/`zh.html` online docs
 
 ## Community
 

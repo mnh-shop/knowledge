@@ -17,9 +17,13 @@ verified_by: codegraph-verify
 
 - **Source evidence:**
   - `flake.nix` defines the flake with inputs (`nixpkgs`, `home-manager`, `sops-nix`, `search`) and outputs `homeModules = import ./modules/module_list.nix;` and `homeConfigurations.ci = home-manager.lib.homeManagerConfiguration { ... modules = [ ./ci_config.nix ]; }`
+  - `flake.nix` lines 14-15: `search = { url = "github:NuschtOS/search"; inputs.nixpkgs.follows = "nixpkgs"; };` — the NuschtOS option-search engine input
+  - `flake.nix` lines 37-40: `templates.default = { description = "Nix Podman Stacks Starter"; path = ./template; };` — a starter template output
   - `modules/module_list.nix` defines an attrset of 86+ modules plus a meta-module `nps = { imports = builtins.attrValues modules; }`
-  - `ci_config.nix` enables every stack module with dummy secrets for CI validation — 888 lines covering AdGuard, Authelia, Traefik, n8n, monitoring, and more
+  - `ci_config.nix` enables every stack module with dummy secrets for CI validation — **916 lines** covering AdGuard, Authelia, Traefik, n8n, monitoring, and more
   - `flake.nix` line 41-53 defines the `ci` home configuration with all modules
+  - `docs/` contains a VitePress documentation project (`docs/book/` with `getting-started.md`, `container-options.md`, `settings-options.md`, `secrets-templating.md`, `examples.md`, `backups.md`, `intro.md`, `index.md`) plus `docs/default.nix` which renders it via `easy-nix-documentation` (eval modules → `optionsJSON` → per-stack pages)
+  - `docs/default.nix` also builds `search = inputs.search.packages.${system}.mkSearch { modules = [self.homeModules.nps]; ... }` — the NuschtOS option-search engine over the evaluated `nps` module
 
 - **Verdict:** ✅ CORRECT
 - **Fix needed:** None

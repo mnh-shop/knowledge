@@ -12,13 +12,14 @@ verified_by: codegraph-verify
 | Field | Value |
 |---|---|
 | **Origin** | [robertbretz/digital-marketing-pro](https://github.com/robertbretz/digital-marketing-pro) → maintained by [Indranil Banerjee](https://github.com/indranilbanerjee/digital-marketing-pro) |
+| **Version** | 3.17.0 (package.json, released 2026-07-29) |
 | **Source** | `sources/digital-marketing-pro/` |
 | **Repomix** | `raw/digital-marketing-pro/digital-marketing-pro.xml` |
 | **Codegraph** | `graphs/digital-marketing-pro/` |
 
 ## Overview
 
-Digital Marketing Pro (DM Pro) is an open-source AI marketing plugin shipping **158 skills, 25 specialist agents, a 12-Part Strategy Flow, and EU AI Act Article 50 readiness**. Built for marketing agencies managing 50–200 brands, in-house teams, and consultancies, it orchestrates multi-channel marketing campaigns using LLM-driven content generation, audience segmentation, and performance analytics.
+Digital Marketing Pro (DM Pro) is an open-source AI marketing plugin shipping **158 skills, 24 specialist agents, a 12-Part Strategy Flow, and EU AI Act Article 50 readiness**. Built for marketing agencies managing 50–200 brands, in-house teams, and consultancies, it orchestrates multi-channel marketing campaigns using LLM-driven content generation, audience segmentation, and performance analytics.
 
 The plugin installs on Claude Code, Anthropic Cowork, OpenAI Codex, Cursor 2.5+, GitHub Copilot CLI, Google Antigravity 2.0, Hermes Agent, and OpenClaw — plus 35+ additional platforms via the Agent Skills open standard. Created by [Indranil Banerjee](https://indranil.in) ([@askneelnow](https://x.com/askneelnow)), it is MIT-licensed with no telemetry and no seat fees.
 
@@ -28,13 +29,14 @@ DM Pro runs every brand engagement through the same **12-Part Strategy Flow**, p
 
 - **12-Part Strategy Flow** — Canonical methodology producing the Four Core Documents across 61 explicit steps. Parts cover: Stone-vs-Opinion intake, unbiased market research, Business & SBU Analysis, Segmentation Framework, Brand Positioning, DMFlow, competitive/customer/market analysis, Client Validation, selective v2 re-runs, preparation docs, Growth Plan + Yearly Planner, channel strategy fan-out, execution artefacts, AI creative briefs, and continuous improvement.
 - **158 Marketing Skills** — Comprehensive skill library covering SEO (tech audits, keyword clustering, AEO/GEO, backlink gap, content decay), content marketing (engine, briefs, repurposing), paid advertising (Google Ads, Meta Ads, campaign orchestration), social media (scheduling, content creation), email marketing (sequences, automation), analytics (attribution, performance reporting, anomaly detection), and compliance (C2PA metadata, EU AI Act, multi-jurisdiction privacy).
-- **25 Specialist Agents** — Defined subagent roles for specialized marketing functions including competitor analysis, content strategy, SEO, paid media, social, analytics, compliance, and creative direction.
+- **24 Specialist Agents** — Defined subagent roles for specialized marketing functions including competitor analysis, content strategy, SEO, paid media, social, analytics, compliance, and creative direction. Consolidated from 25 in v3.15.0 (`competitor-intelligence.md` removed).
+- **v3.15–3.17 Reliability Releases** — v3.15.0 added a uniform **typed-approval gate** to all 18 execution skills (closes issue #6) and grew the test suite from 123 to 207 passing. v3.17.0 shipped the **Line-by-Line Audit** — every one of the repo's 530 files read end-to-end by a 16-reader audit fleet and re-verified against July-2026 ground truth (~250 fixes) — and fully **closed the storage split-brain** via the shared `scripts/_common.py` workspace-root resolver adopted across the script layer.
 - **EU AI Act Article 50 Ready** — Built-in compliance infrastructure covering C2PA content provenance signing, deepfake disclosure clauses on AI creative briefs, multi-jurisdiction privacy checks (GDPR, CCPA, DPDPA, LGPD across 16 jurisdictions), and an operational readiness checklist for the August 2026 applicability date.
 - **Cross-Platform Portability** — 8 native manifests (Claude Code, Cowork, Codex, Cursor, Copilot CLI, Antigravity, Hermes, OpenClaw) plus automatic compatibility with 35+ additional Agent Skills platforms including Goose, OpenHands, OpenCode, Junie, Gemini CLI, Roo Code, Mistral Vibe, and nanobot.
 - **Multi-Brand Agency Support** — Per-brand state management, brand-switch workflow, agency dashboard with per-brand AI cost rollup, and team persistence via Cowork + Google Drive MCP routing.
 - **Live API Execution** — 8 verified HTTP connectors executing against Slack, HubSpot, Klaviyo, SendGrid, Brevo, Customer.io, Mailchimp, and Ahrefs. 25 OAuth connectors available via MCP manifest. No third-party dependencies beyond stdlib.
 - **Continuous Market Refresh** — Updated against actual ecosystem state including Google I/O releases, EU AI Act developments, Meta platform changes, model deprecations, and broad core algorithm updates. The model registry contains 47 verified entries with automatic fall-forward for deprecated model IDs.
-- **Comprehensive Test Suite** — 123 passing stdlib unittest tests covering model resolution, connector execution, drive sync state, plugin metadata, skill line limits, Hermes adapter, OpenClaw manifest, and release consistency.
+- **Comprehensive Test Suite** — 209 passing stdlib unittest tests (210 test functions across 17 test modules) covering model resolution, connector execution, drive sync state, plugin metadata, skill line limits, Hermes adapter, OpenClaw manifest, and release consistency. Grown from 123 in v3.15.0.
 
 ## Architecture
 
@@ -57,11 +59,10 @@ The project structure:
 ```
 digital-marketing-pro/
 ├── skills/                    # 158 skill directories, each with SKILL.md
-├── agents/                    # 25 specialist agent definitions
-├── commands/                  # Claude Code slash commands
-├── scripts/                   # 84 Python helpers
-├── tests/                     # 123 stdlib unittest tests
-├── references/                # 167 reference knowledge files
+├── agents/                    # 24 specialist agent definitions
+├── commands/                  # 18 Claude Code slash commands
+├── scripts/                   # 86 Python helpers
+├── tests/                     # 209 stdlib unittest tests
 ├── .claude-plugin/            # Claude Code manifest
 ├── .codex-plugin/             # OpenAI Codex manifest
 ├── .cursor-plugin/            # Cursor 2.5+ manifest

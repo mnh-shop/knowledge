@@ -32,7 +32,7 @@ The project is backed by academic research published as the **VikingMem** paper 
 - **Multi-Provider VLM Support** — Volcengine (Doubao), OpenAI, OpenAI Codex (OAuth), Kimi Coding, GLM/Z.AI Coding Plan, Ollama (local)
 - **Multi-Provider Embedding Support** — Volcengine, OpenAI, Azure, Jina, Ollama, Voyage, DashScope, MiniMax, Cohere, VikingDB, Gemini, LiteLLM, local
 - **VikingBot** — Built-in AI agent framework for conversational interaction
-- **OpenViking Personal** — Hosted commercial version (free tier for up to 50 files)
+- **OpenViking Personal** — Hosted commercial version with a free trial for up to 50 files
 
 ## Architecture
 
@@ -46,10 +46,14 @@ OpenViking follows a **three-tier context loading model** (L0/L1/L2):
 ### Core Components
 
 - **Python server** (`openviking/`): FastAPI-based HTTP server, VikingFS storage backend
-- **Rust CLI** (`ov_cli`): `ov` command for resource management and search
-- **RAGFS** (`crates/ragfs`): Core filesystem engine with caching adapters
-- **VikingBot** (`bot/`): Built-in AI agent framework
-- **Web Studio** (`web-studio/`): Browser-based UI
+- **Rust CLI** (`ov_cli`): `ov` command for resource management and search (`crates/ov_cli` bin `ov`; pyproject `ov = "openviking_cli.rust_cli:main"`)
+- **RAGFS** (`crates/ragfs`): Core filesystem engine ("AGFS — Aggregated File System for AI Agents") with caching adapters
+- **VikingBot** (`bot/`): Built-in AI agent framework (`vikingbot = "vikingbot.cli.commands:app"`)
+- **Web Studio** (`web-studio/`): React-based browser UI (Vite, TypeScript)
+- **C++ ABI engine** (`src/`): Native vector-search backend (`abi3_engine_backend.cpp`, `CMakeLists.txt`, `index/`, `store/`) shipped as `.abi3.so`
+- **SDKs** (`sdk/`): Go, Python, and TypeScript client libraries
+- **Benchmark suite** (`benchmark/`): LoCoMo, tau2-bench, RAG, retrieval, skillsbench, LongMemEval, vectordb_perf, cuvs, and custom runs
+- **Experimental caches** (`crates/`): `ragfs-cache-mooncake` and `ragfs-cache-yuanrong` (with `ragfs-cache-yuanrong-sys`), excluded from the main workspace
 
 ## Deployment
 
@@ -66,7 +70,12 @@ ov add-resource https://github.com/volcengine/OpenViking  # add via CLI
 |---|---|
 | **User Memory (LoCoMo)** | 24.2% -> 82.08% accuracy (+3.39x) |
 | **Agent Memory (tau2-bench)** | +6.87pp retail, +11.87pp airline |
-| **Knowledge QA (HotpotQA)** | 91% accuracy at 0.23s latency |
+| **Knowledge-base QA (incl. HotpotQA)** | Reported in the external benchmark report — not verifiable in repo sources |
+
+> LoCoMo and tau2-bench numbers are stated in the README (lines 99-103). Knowledge-base QA
+> (including HotpotQA) is covered only in the external
+> [benchmark report](https://blog.openviking.ai/post/openviking-benchmark-results/) referenced
+> from README line 95; the repo itself carries reproduction scripts under `benchmark/`.
 
 Published as **VikingMem** (VLDB 2026).
 

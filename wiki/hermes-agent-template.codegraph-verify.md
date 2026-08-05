@@ -49,17 +49,40 @@ The template includes a `SOUL.md` file that defines the agent's personality with
 - Lines 161-181: `patch_run_tool_import()` adds early import of `crustocean_tools` so tools register at import time.
 - Lines 203-218: Verification checks ensure all patches are applied correctly.
 
-## Claim-4: Comprehensive tool registry with 16+ Crustocean-specific tools
+## Claim-4: Tool registry with split availability gating + blind-signer wallet
 
-`crustocean_tools.py` registers tools at import time via Hermes's registry, including slash commands, room traversal, wallet operations, and hook deployment. All tools gate availability on `CRUSTOCEAN_AGENT_TOKEN`.
+`crustocean_tools.py` registers 16 tools at import time via Hermes's registry. Availability is **gated per group, not by a single token**: the 10 platform/hook/evolution tools gate on `CRUSTOCEAN_AGENT_TOKEN`, while the 6 wallet tools gate on a separate `SIGNER_URL` + `SIGNER_AUTH_TOKEN` pair. The upstream `web_search` tool is also wrapped with a guarded handler.
 
-**Source evidence:** `crustocean_tools.py` lines 1-1289:
-- Lines 34-35: `_check_available()` gates all tools on `bool(os.getenv("CRUSTOCEAN_AGENT_TOKEN"))`.
-- Lines 3-10: Docstring lists "run_command, discover_commands, observe_room, traverse the platform, and join new rooms."
-- Line 7: "Tools register at import time via registry.register()."
-- Line 40+: Contains schemas for multiple tools: `RUN_COMMAND_SCHEMA`, `DISCOVER_COMMANDS_SCHEMA`, `OBSERVE_ROOM_SCHEMA`, `LIST_ROOMS_SCHEMA`, `JOIN_ROOM_SCHEMA`, `CRUSTOCEAN_SEND_SCHEMA`, plus wallet tools (`get_wallet_address`, `get_wallet_balance`, `sign_transaction`, `crust_transfer`, `sign_message`, `deploy_contract`), `deploy_hook`, `map_environment`, and `evolution_report`.
+**Source evidence:** `crustocean_tools.py` lines 34-35 and 885-889:
+```python
+def _check_available():
+    return bool(os.getenv("CRUSTOCEAN_AGENT_TOKEN"))
+...
+_SIGNER_URL = os.getenv("SIGNER_URL", "").rstrip("/")
+_SIGNER_TOKEN = os.getenv("SIGNER_AUTH_TOKEN", "")
 
-## Claim-5: Dual deployment path (Docker + Railway.app)
+def _signer_available():
+    return bool(_SIGNER_URL and _SIGNER_TOKEN)
+```
+
+**Supporting detail:**
+- Platform tools (`run_command`, `discover_commands`, `observe_room`, `list_rooms`, `join_room`, `explore_platform`, `crustocean_send`, `deploy_hook`, `map_environment`) and `evolution_report` (line 1218) use `check_fn=_check_available`.
+- The six wallet tools — `get_wallet_address`, `get_wallet_balance`, `sign_transaction`, `crust_transfer`, `sign_message`, `deploy_contract` — each register with `check_fn=_signer_available` at lines 1144, 1152, 1160, 1168, 1176, and 1184, so they only appear when a blind-signer service is configured.
+- The guarded `web_search` wrapper (lines 1222-1259) replaces the upstream handler with one returning an unambiguous `[SEARCH FAILED — NO RESULTS]` message on errors, registered at 1253-1259.
+- `_CRUSTOCEAN_TOOLS` (lines 1265-1271) lists the full 16-tool set appended to the `hermes-telegram` toolset.
+
+## Claim-5: Module inventory — evolution engine, motive ecology, secret redaction
+
+The template ships three auxiliary modules beyond the adapter: `evolution.py`, `poker.py`, and `redaction.py`.
+
+**Source evidence:**
+- `evolution.py` — 1,094 lines / 44,314 bytes, 53 function definitions: GEPA-style evolution engine that applies selection pressure to the motive pool from live social engagement signals (docstring, lines 1-39).
+- `poker.py` — 225 lines / 13,147 bytes: "Motive selection for autonomous wake cycles (Social Gradience layer). The motive ecology: a pool of ~40 internal impulses that shape what Reina does (or doesn't do) when she wakes on her own. Each motive carries an energy level (low/medium/high) and gets selected through circadian weighting, with cooldown to prevent repetition." (lines 1-13).
+- `redaction.py` — 199 lines / 8,587 bytes: "Applies 25+ regex patterns to strip API keys, tokens, passwords, SSH keys, database connection strings, and other secrets from any text before it reaches Crustocean or the LLM context window" (lines 1-10), replacing each match with a `[REDACTED:<name>]` tag. A real security component in the output pipeline.
+
+**Supporting detail:** The repo contains **no README.md and no LICENSE file** — this wiki is the only documentation and the license is unstated.
+
+## Claim-6: Dual deployment path (Docker + Railway.app)
 
 The template supports both Docker-based container deployment and Railway.app cloud deployment with the same codebase.
 
@@ -77,7 +100,7 @@ restartPolicyMaxRetries = 10
 - `start.sh` lines 1-34: Startup script that runs `fetch_config.py`, syncs defaults, then `exec python -u /app/start_gateway.py`.
 - `start_gateway.py` lines 1-30: Wrapper that imports `gateway.run.start_gateway` and runs it with the agent name derived from `CRUSTOCEAN_HANDLE`.
 
-## Claim-6: Runtime config fetching from Crustocean API with fallback
+## Claim-7: Runtime config fetching from Crustocean API with fallback
 
 `fetch_config.py` pulls persona (SOUL.md), runtime config (config.yaml), and skills from the Crustocean API on container startup, falling back to bundled defaults if the API is unreachable.
 
@@ -87,7 +110,7 @@ restartPolicyMaxRetries = 10
 - Lines 96-99: `main()` calls `fetch_config()` first, falls back to `copy_defaults()`.
 - `start.sh` lines 8-18: Shell-side fallback copies config and SOUL.md from `/app/hermes-defaults/` if `fetch_config.py` didn't write files.
 
-## Claim-7: GitHub Actions CI for Docker image build and publish
+## Claim-8: GitHub Actions CI for Docker image build and publish
 
 The repository includes a GitHub Actions workflow that builds and pushes the Docker image to GHCR on every push to `main`.
 
@@ -95,7 +118,10 @@ The repository includes a GitHub Actions workflow that builds and pushes the Doc
 - Lines 3-5: Trigger on `push` to `main` branch.
 - Lines 7-9: Registry set to `ghcr.io` with `IMAGE_NAME` from `github.repository`.
 - Lines 13-16: Job runs on `ubuntu-latest` with `contents: read` and `packages: write` permissions.
-- Lines 19-39: Steps: checkout → docker login → metadata (SHA + latest tags) → build and push with `docker/build-push-action@v6`.
+- Lines 31-33: Metadata tags are commit SHA + `latest`.
+- Lines 35-40: Build and push with `docker/build-push-action@v6` (`push: true`).
+
+**Supporting detail:** No `platforms` are declared, so the workflow produces a single-arch (runner-native amd64) image — unlike the hermes-agent-docker workflow which cross-builds `linux/amd64,linux/arm64`.
 
 ## Dependency Map
 

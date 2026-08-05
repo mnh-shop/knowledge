@@ -29,9 +29,12 @@ The project derives its name from "half the size of Kubernetes" — Kubernetes i
 
 ## Key Features
 
-- **Single Binary Distribution** — All Kubernetes components packaged in a single ~60MB binary with no external OS dependencies beyond a sane kernel and cgroup mounts. Includes `kubectl`, `crictl`, `k3s-killall.sh`, and `k3s-uninstall.sh` utilities.
-- **Embedded Database** — SQLite as the default state store via Kine (a datastore shim). Optional etcd for multi-node HA clusters, plus MariaDB, MySQL, and PostgreSQL support.
-- **Automatic TLS** — Self-signed certificate generation and rotation for cluster communication, eliminating manual certificate management.
+- **Single Binary Distribution** — All Kubernetes components packaged in a single binary less than 100 MB with no external OS dependencies beyond a sane kernel and cgroup mounts (README.md:13,34). Includes `kubectl`, `crictl`, `k3s-killall.sh`, and `k3s-uninstall.sh` utilities (README.md:156).
+- **Embedded Database** — SQLite as the default state store via Kine (a datastore shim). Optional etcd for multi-node HA clusters, plus MariaDB, MySQL, and PostgreSQL support (README.md:31).
+- **Docker Runtime Shim (cridockerd)** — Optional dockerd support via the cridockerd shim (`pkg/agent/cridockerd/cridockerd.go`) for clusters that need a Docker-compatible runtime instead of bundled containerd.
+- **Version Channels** — `channel.yaml` defines update channels (stable, latest, testing, per-minor) consumed by the install script; release automation lives in `updatecli/` (`updatecli.d/`, `values.yaml`).
+- **Automatic TLS** — Self-signed certificate generation and rotation for cluster communication, eliminating manual certificate management. Certificates and tokens are managed via `k3s certificate`, `k3s token`, and `k3s encrypt` subcommands (`cmd/cert/`, `cmd/token/`, `cmd/encrypt/`).
+- **Secret Encryption** — `k3s encrypt` subcommand (`cmd/encrypt/main.go`) enables at-rest encryption of Kubernetes secrets via the embedded encryption configuration in `pkg/cluster/encrypt.go`.
 - **Helm Controller** — Built-in Helm chart operator for CRD-driven declarative application deployment without a separate Helm CLI.
 - **Flannel-based Networking** — Default CNI with WireGuard encryption support for cross-node traffic. Replaceable with alternative CNI plugins.
 - **Multi-Architecture** — Full support for amd64, arm64, armhf, and s390x — ideal for Raspberry Pi, ARM edge gateways, and embedded systems.
@@ -64,9 +67,9 @@ All bundled technologies can be disabled or swapped out for alternatives.
 
 K3s simplifies Kubernetes by consolidating traditionally separate processes — kube-controller-manager, kube-scheduler, and kube-apiserver — into a single server binary. The server process manages TLS certificates, the embedded datastore, and the connection between worker and server nodes via a tunnel proxy (eliminating direct node-to-node connectivity requirements).
 
-The agent process connects to the server through the tunnel proxy, which simplifies firewall configuration and network security by requiring only outbound connectivity from agents to the server. The embedded SQLite database (via Kine) replaces etcd for single-server setups, reducing memory and storage requirements by an order of magnitude.
+The agent process connects to the server through the tunnel proxy, which simplifies firewall configuration and network security by requiring only outbound connectivity from agents to the server. The embedded SQLite database (via Kine) replaces etcd for single-server setups. The README's lightweight claim is **half the memory/footprint** ("half the memory, all in a binary less than 100 MB", README.md:13) — achieved by running many components inside a single process (README.md:81) — not an order-of-magnitude reduction.
 
-For high-availability deployments, K3s supports embedded etcd clusters across three or more server nodes, or external etcd/PostgreSQL/MySQL databases. The HA setup provides automatic leader election, data replication, and seamless failover.
+For high-availability deployments, K3s supports embedded etcd clusters across three or more server nodes, or external etcd/PostgreSQL/MySQL databases. The HA setup provides automatic leader election, data replication, and seamless failover. *(Embedded etcd clustering is documented in the external docs at docs.k3s.io; the in-repo README confirms only "managing an embedded etcd cluster" (README.md:58), backed by the `pkg/etcd/` implementation and `k3s etcd-snapshot` command in `cmd/etcdsnapshot/`.)*
 
 ## Deployment
 
@@ -85,6 +88,12 @@ curl -sfL https://get.k3s.io | K3S_URL=https://server:6443 K3S_TOKEN=XXX sh -
 ```
 
 K3s maintains pace with upstream Kubernetes releases, aiming for patch releases within one week and new minor versions within 30 days. Release versioning reflects upstream Kubernetes: e.g., `v1.27.4+k3s1` maps to Kubernetes `v1.27.4` with K3s-specific patches.
+
+### Rootless, building, and adoption
+
+- **Rootless mode** — A dedicated `k3s-rootless.service` systemd unit ships in-tree alongside the standard `k3s.service`, enabling K3s to run without root privileges.
+- **Building** — `BUILDING.md` documents the build process (scripts, Makefile targets, packaging), and the release/install pipeline is driven by `channel.yaml` plus the `updatecli/` automation for dependency bumps.
+- **Adoption** — `ADOPTERS.md` lists production adopters of the distribution.
 
 ## Usage / Integration
 

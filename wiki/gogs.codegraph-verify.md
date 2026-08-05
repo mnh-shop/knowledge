@@ -7,110 +7,108 @@ source: sources/gogs/
 
 # Codegraph Verification: gogs
 
-**Date:** 2026-07-12
+**Date:** 2026-07-30
 
-## Claim 1: Go binary with standalone entry points in cmd/gogs/
-- **Wiki says:** CLI entry points in `cmd/gogs/`: `main.go`, `admin.go`, `backup.go`, `restore.go`, `hook.go`, `import.go`, `serv.go`.
-- **Source evidence:**
-  - `cmd/gogs/` directory contains all listed files plus `cmd.go` and `internal/` subdirectory
-  - `main.go` — Binary entry point
-  - `admin.go` — Administrative CLI commands (user management, config validation)
-  - `backup.go` / `restore.go` — Backup and restore subcommands
-  - `hook.go` — Git hook handler for server-side hooks
-  - `import.go` — Repository import from external hosts
-  - `serv.go` — SSH server handler for Git protocol operations
-  - `cmd.go` — Root command wiring (Cobra-like CLI framework)
-  - `internal/` — Internal command helpers
-- **Verdict:** ✅ CORRECT (all listed entry points confirmed; `cmd.go` also present but not in wiki)
-- **Fix needed:** None
-
-## Claim 2: Internal package organization with 30+ packages
-- **Wiki says:** Internal packages: `app`, `auth`, `conf`, `database`, `email`, `gitx`, `lfsx`, `markup`, `route`, `ssh`, `cron`, `repox`, `template`, `avatar`.
-- **Source evidence:**
-  - `internal/` directory contains 36 packages: `app`, `auth`, `authx`, `avatar`, `conf`, `context`, `cron`, `cryptox`, `database`, `dbtest`, `dbx`, `email`, `errx`, `form`, `gitx`, `httplib`, `iox`, `lazyregexp`, `lfsx`, `markup`, `mocks`, `netx`, `osx`, `pathx`, `process`, `ptrx`, `repox`, `route`, `semverx`, `ssh`, `strx`, `sync`, `template`, `testx`, `tool`, `urlx`, `userx`
-  - Key packages per wiki:
-    - `internal/app/` — Core application logic with `api.go`, `api_test.go`, `metrics.go`
-    - `internal/auth/` — Authentication backends
-    - `internal/conf/` — Configuration management
-    - `internal/database/` — Database layer with migrations
-    - `internal/email/` — Notification emails
-    - `internal/gitx/` — Git operations
-    - `internal/lfsx/` — Git LFS implementation
-    - `internal/markup/` — Rendering engine
-    - `internal/route/` — Web route handlers (admin, api, dev, home, lfs, org, repo, user)
-    - `internal/ssh/` — SSH server (`ssh.go`)
-    - `internal/cron/` — Scheduled tasks
-    - `internal/repox/` — Repository management
-    - `internal/template/` — HTML templates
-    - `internal/avatar/` — Avatar generation
-- **Verdict:** ✅ CORRECT (the package count is actually 36, exceeding the "30+" claim; all named packages confirmed)
-- **Fix needed:** None
-
-## Claim 3: Web framework is Flamego v1.12
-- **Wiki says:** Web framework: Flamego (v1.12).
-- **Source evidence:**
-  - `go.mod` line: `github.com/flamego/flamego v1.12.0`
-  - Additional Flamego dependencies: `flamego/binding v1.3.0`, `flamego/cache v1.5.1`, `flamego/captcha v1.3.0`, `flamego/session v1.3.0`, `flamego/validator v1.0.0`
-  - The Flamego framework is used throughout `internal/route/` for HTTP handler registration
-- **Verdict:** ✅ CORRECT
-- **Fix needed:** None
-
-## Claim 4: Built-in SSH server for Git protocol operations
-- **Wiki says:** Built-in SSH server for Git protocol with `internal/ssh/ssh.go`.
-- **Source evidence:**
-  - `internal/ssh/ssh.go` implements the SSH server
-  - `cmd/gogs/serv.go` provides the SSH handler entry point (`serv` subcommand)
-  - The SSH server handles Git protocol operations (clone, push, pull) over SSH
-  - SSH key authentication is supported for repository access
-- **Verdict:** ✅ CORRECT
-- **Fix needed:** None
-
-## Claim 5: Multiple database backends (PostgreSQL, MySQL, SQLite)
-- **Wiki says:** Database: PostgreSQL, MySQL/MariaDB, SQLite3 via GORM-compatible drivers.
-- **Source evidence:**
-  - `internal/database/` implements the database abstraction layer
-  - `go.mod` dependencies: `github.com/glebarez/go-sqlite v1.21.2`, `github.com/glebarez/sqlite v1.11.0`, `github.com/DATA-DOG/go-sqlmock v1.5.2` (for testing)
-  - GORM-compatible driver integration confirmed via database package imports
-  - Database migrations exist in `internal/database/` for schema management
-  - Configuration in `internal/conf/` supports multiple database driver selections
-- **Verdict:** ✅ CORRECT
-- **Fix needed:** None
-
-## Claim 6: Moonrepo monorepo build system with moon.yml
-- **Wiki says:** Build system: Moonrepo monorepo (`moon.yml`).
-- **Source evidence:**
-  - `moon.yml` exists at repository root (3,755 bytes)
-  - `.moon/` directory with Moonrepo configuration
-  - `pnpm-workspace.yaml` defines workspace structure for frontend
-  - `package.json` exists for frontend package management
-  - `web/` directory contains React frontend with TanStack Router
-- **Verdict:** ✅ CORRECT
-- **Fix needed:** None
-
-## Claim 7: Go 1.26 with module path gogs.io/gogs
+## Claim 1: Go binary, module gogs.io/gogs, Go 1.26
 - **Wiki says:** Language: Go 1.26, module `gogs.io/gogs`.
 - **Source evidence:**
-  - `go.mod` line 1: `module gogs.io/gogs`
-  - `go.mod` line 3: `go 1.26.0`
-  - Go module path confirmed as `gogs.io/gogs`
+  - `go.mod:1` — `module gogs.io/gogs`
+  - `go.mod:3` — `go 1.26.0`
 - **Verdict:** ✅ CORRECT
 - **Fix needed:** None
+
+## Claim 2: CLI framework is urfave/cli v3 (NOT "Cobra-like")
+- **Wiki says (CORRECTED):** CLI framework: urfave/cli v3.
+- **Source evidence:**
+  - `cmd/gogs/cmd.go:6` — `"github.com/urfave/cli/v3"` import; flag helpers `stringFlag`/`intFlag`/`boolFlag` build `cli.StringFlag`/`cli.IntFlag` structs (cmd.go:9-20, 33-40)
+  - `cmd/gogs/main.go:19-48` — root `cli.Command` named "Gogs" with subcommands, run via `cmd.Run(context.Background(), os.Args)`
+  - `go.mod:50` — `github.com/urfave/cli/v3 v3.9.0`
+- **Verdict:** ❌ PREVIOUSLY WRONG (was labeled "Cobra-like"); now ✅ CORRECT — urfave/cli v3.
+- **Fix needed:** Done (wiki stack section + this page).
+
+## Claim 3: cmd/gogs/ standalone entry points (9 files)
+- **Wiki says:** CLI entry points: `main.go`, `admin.go`, `backup.go`, `restore.go`, `hook.go`, `import.go`, `serv.go` (+ `cmd.go`, `internal/web/`).
+- **Source evidence:**
+  - `cmd/gogs/` contains exactly 9 files: `main.go`, `admin.go`, `backup.go`, `restore.go`, `hook.go`, `import.go`, `serv.go`, `cmd.go`, plus `internal/web/` package
+  - `main.go:19-48` — root command registers `web`, `serv`, `hook`, `admin`, `import`, `backup`, `restore`
+  - `admin.go:17-32` — 8 admin subcommands wired
+  - `hook.go:28-57` — `pre-receive`, `update`, `post-receive` subcommands
+- **Verdict:** ✅ CORRECT (with `cmd.go` and `internal/web/` added)
+- **Fix needed:** Done (wiki package table).
+
+## Claim 4: internal/ has 36 packages, NO internal/db/
+- **Wiki says (CORRECTED):** Database layer lives in `internal/database/` only.
+- **Source evidence:**
+  - `internal/` directory listing shows exactly 36 packages: `app`, `auth`, `authx`, `avatar`, `conf`, `context`, `cron`, `cryptox`, `database`, `dbtest`, `dbx`, `email`, `errx`, `form`, `gitx`, `httplib`, `iox`, `lazyregexp`, `lfsx`, `markup`, `mocks`, `netx`, `osx`, `pathx`, `process`, `ptrx`, `repox`, `route`, `semverx`, `ssh`, `strx`, `sync`, `template`, `testx`, `tool`, `urlx`, `userx`
+  - `internal/db/` does NOT exist (confirmed via directory listing)
+  - `internal/database/database.go` — engine setup, `internal/database/migrations/` — schema migrations
+- **Verdict:** ❌ PREVIOUSLY WRONG (claimed `internal/db/`); now ✅ CORRECT — only `internal/database/`.
+- **Fix needed:** Done (wiki package table).
+
+## Claim 5: Web framework is Flamego v1.12
+- **Wiki says:** Web framework: Flamego (v1.12).
+- **Source evidence:**
+  - `go.mod:16` — `github.com/flamego/flamego v1.12.0`
+  - `go.mod:13-18` — `flamego/binding v1.3.0`, `flamego/cache v1.5.1`, `flamego/captcha v1.3.0`, `flamego/session v1.3.0`, `flamego/validator v1.0.0`
+- **Verdict:** ✅ CORRECT
+- **Fix needed:** None
+
+## Claim 6: Built-in SSH server; serv.go gates git verbs then execs
+- **Wiki says:** Built-in SSH server for Git protocol.
+- **Source evidence:**
+  - `internal/ssh/ssh.go` implements the SSH server
+  - `cmd/gogs/serv.go:24-32` — `serv` subcommand: "This command should only be called by SSH shell"
+  - `cmd/gogs/serv.go:120-123` — `allowedCommands` map: `git-upload-pack` → Read, `git-receive-pack` → Write
+  - `cmd/gogs/serv.go:172` — `requestMode, ok := allowedCommands[verb]` (access gate)
+  - `cmd/gogs/serv.go:251-253` — `exec.Command(verbs[0], verbs[1], repoFullName)` / `exec.Command(verb, repoFullName)`; hook env composed for write mode (:255-267), `gitCmd.Dir = conf.Repository.Root` (:269)
+- **Verdict:** ✅ CORRECT
+- **Fix needed:** None
+
+## Claim 7: DB backends postgres/mysql/sqlite3 via GORM
+- **Wiki says:** Database: PostgreSQL, MySQL/MariaDB, SQLite3 via GORM-compatible drivers.
+- **Source evidence:**
+  - `internal/database/database.go:87-92` — `case "postgres"`, `case "mysql"`, `case "sqlite3"`
+  - `go.mod:58-60` — `gorm.io/driver/mysql v1.5.2`, `gorm.io/driver/postgres v1.6.0`, `gorm.io/gorm v1.25.12`
+  - `go.mod:19-20` — `github.com/glebarez/go-sqlite v1.21.2`, `github.com/glebarez/sqlite v1.11.0` (pure-Go SQLite drivers)
+- **Verdict:** ✅ CORRECT
+- **Fix needed:** None
+
+## Claim 8: import.go is portable-data import (NOT external-repo migration); markup is Markdown/Org-mode only
+- **Wiki says (CORRECTED):** `import` = "Import portable data as local Gogs data" + locale subcommand; rendering = Markdown + Org-mode.
+- **Source evidence:**
+  - `cmd/gogs/import.go:20-28` — `importCommand` usage: "Import portable data as local Gogs data"; description: "Allow user import data from other Gogs installations to local instance without manually hacking the data files"
+  - `cmd/gogs/import.go:30-39` — `subcmdImportLocale`: "Import locale files to local repository"
+  - Repo migration/mirroring actually lives in `internal/database/mirror.go` (+ `internal/route/repo/repo.go`, `internal/route/api/v1/repo_repo.go`)
+  - `internal/markup/` contains ONLY `markdown.go`, `orgmode.go`, `sanitizer.go` (+ `markup.go` + tests) — no Jupyter/PDF renderer
+  - `internal/tool/file.go:23` — MIME sniff only (`application/pdf`), not a renderer
+- **Verdict:** ❌ PREVIOUSLY WRONG (import claimed as external-repo import; markup claimed Jupyter/PDF); now ✅ CORRECT.
+- **Fix needed:** Done (wiki features + package table).
+
+## Additional verified facts (not standalone claims)
+
+- **Auth backends:** `internal/auth/` — LDAP, SMTP, GitHub, PAM (`go.mod:21,32,37` deps); 2FA in `internal/database/two_factor.go`; trusted proxy CIDRs parsed in `internal/conf/conf.go:247-263`
+- **Webhooks:** Slack/Discord/Dingtalk handlers in `internal/route/repo/webhook.go` (:202 Slack, :235 Discord, :267 Dingtalk)
+- **Protected branches / merge styles / deploy keys:** `internal/database/repo_branch.go` (ProtectedBranch), `internal/database/pull.go:189,255,278` (MergeStyleRebase), `internal/route/repo/setting.go:655` + `internal/database/ssh_key.go`
+- **LFS:** `internal/route/lfs/{basic,batch,store}.go`; `[lfs]` section in `internal/conf/conf.go:386-393`
+- **Localization:** 32 `conf/locale/locale_*.ini` files (31+ languages)
+- **Frontend:** React + TanStack Router — `web/package.json:27-28` (`@tanstack/react-query`, `@tanstack/react-router`); `web/src/pages/{repo,user}`
+- **Monorepo:** `moon.yml`, `.moon/`, `pnpm-workspace.yaml`
+- **Agent-compat:** `AGENTS.md`, `CLAUDE.md`, `skills-lock.json`
 
 ## Summary
 
-All 7 key claims from the Gogs wiki have been verified against the source code:
-- ✅ CLI entry points: All 7 listed cmd/gogs/ files confirmed (+ cmd.go)
-- ✅ Internal packages: 36 packages confirmed (exceeds "30+")
-- ✅ Flamego v1.12: Confirmed in go.mod with 5 additional Flamego sub-packages
-- ✅ SSH server: internal/ssh/ssh.go + cmd/gogs/serv.go confirmed
-- ✅ Database backends: PostgreSQL/MySQL/SQLite via GORM-compatible drivers confirmed
-- ✅ Moonrepo build: moon.yml + .moon/ + pnpm-workspace.yaml confirmed
-- ✅ Go 1.26: go.mod confirms both module path and language version
+All 8 key claims from the Gogs wiki have been verified against the source code; two were corrected:
+- ✅ urfave/cli v3 CLI framework (was wrongly "Cobra-like")
+- ✅ 36 internal packages, no `internal/db/` (was wrongly listed)
+- ✅ import = portable data + locale (was wrongly "external-repo import")
+- ✅ markup = Markdown + Org-mode only (was wrongly "Jupyter/PDF")
+- ✅ cmd/gogs entry points, Flamego v1.12, SSH serv flow, GORM DB backends, Go 1.26 confirmed
 
 ## Related
 
 - [[gogs]] -- Main wiki entry
 - [[gogs-architecture]] -- Architecture and component design
+- [[gogs-cli]] -- CLI command reference
 - [[gogs-deployment]] -- Deployment options and configuration
 - [[gogs-api]] -- REST API reference
 

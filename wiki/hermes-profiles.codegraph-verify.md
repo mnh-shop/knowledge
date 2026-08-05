@@ -105,6 +105,26 @@ Each profile's SOUL.md specifies an artifact-pyramid output format — progressi
 - `profiles/ceo/SOUL.md` refers to CEO output contract with strategic mandates as artifact pyramid.
 - `CONTRIBUTING.md` line 42: "Be Hermes-native (artifact-pyramid output, skill-based methodology loading)"
 
+## Claim-7: Profile → skills mapping declared in profile.yaml (required/recommended)
+
+Every profile's `profile.yaml` declares `skills.required` and optionally `skills.recommended`, and all 39 profiles list `artifact-pyramids` first. Symlinks in `profiles/<name>/skills/` mirror the declared set.
+
+**Source evidence:**
+- `profiles/researcher/profile.yaml:2-6` — `required: [artifact-pyramids, research-methodology, researcher-workflow]`; `profiles/researcher/skills/` contains exactly those 3 relative symlinks → `../../../skills/<name>` (mode 120000)
+- `profiles/technical-architect/profile.yaml` — `required: [artifact-pyramids, c4-diagramming, adr-authoring, arc42-context, architect-pyramid, mermaid-diagrams, software-architecture-analysis]`
+- `profiles/ceo/profile.yaml` — `required: [artifact-pyramids, executive-methodology, strategy-frameworks]`, `recommended: [mermaid-diagrams]`
+- The 9 C-suite profiles (ceo/cfo/coo/cpo/cmo/cto/clo/chro/chief-of-staff) all require `executive-methodology` (verified across profile.yaml files)
+- `scripts/validate_profiles.py:108-120` — `declared_skills()` reads `required` + `recommended` buckets from profile.yaml; lines 123-127 `reachable_profile_skills()` cross-checks against resolved symlinks
+
+## Claim-8: Unexplained `.hermes/plans/` directory at repo root
+
+The repository root contains a `.hermes/plans/` directory that no README/CONTRIBUTING/AGENTS doc explains.
+
+**Source evidence:**
+- `ls -la .hermes/plans/` shows a single file: `2026-06-05_123300-platform-engineer-profile.md` (a dated plan document for the platform-engineer profile)
+- No mention of `.hermes/` in `README.md`, `CONTRIBUTING.md`, or `AGENTS.md` (grep confirms zero hits)
+- **Verdict:** ⚠️ FLAGGED as an upstream gap — wiki notes the directory exists but is undocumented
+
 ## Dependency Map
 
 ```

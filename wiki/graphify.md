@@ -19,20 +19,20 @@ Works in Claude Code, Codex, OpenCode, Kilo Code, Cursor, Gemini CLI, GitHub Cop
 
 ## Key Features
 
-- **Multi-format extraction** — Code (36 tree-sitter grammars including Python, TypeScript, Go, Rust, Java, C/C++, CUDA, Ruby, C#, Kotlin, Scala, PHP, Swift, Lua, Zig, Elixir, Erlang, Julia, Vue, Svelte, Astro, Groovy, Dart, Verilog, Fortran, Pascal, SQL, shell/bash, Terraform/HCL, Salesforce Apex, and more), docs (.md .mdx .html .txt .rst .yaml .qmd), Office (.docx .xlsx), PDFs, images (.png .jpg .webp .gif), video/audio (.mp4 .mov .mp3 .wav via faster-whisper + yt-dlp), YouTube URLs, Google Workspace (.gdoc .gsheet .gslides), SQL schemas, PostgreSQL live introspection, BYOND DreamMaker (.dm/.dme), package manifests (pyproject.toml, go.mod, pom.xml, apm.yml), MCP configs
+- **Multi-format extraction** — Code (36 tree-sitter grammars including Python, TypeScript, Go, Rust, Java, C/C++, CUDA, Ruby, C#, Kotlin, Scala, PHP, Swift, Lua, Zig, Elixir, Erlang, Julia, Vue, Svelte, Astro, Groovy, Dart, Verilog, Fortran, Pascal, SQL, shell/bash, Terraform/HCL, Salesforce Apex, and more), docs (.md .mdx .html .txt .rst .yaml .qmd), Office (.docx .xlsx), PDFs, images (.png .jpg .webp .gif), video/audio (.mp4 .mov .mp3 .wav via faster-whisper + yt-dlp), YouTube URLs, Google Workspace (.gdoc .gsheet .gslides), SQL schemas, PostgreSQL live introspection, BYOND DreamMaker (.dm/.dme), package manifests (pyproject.toml, go.mod, pom.xml, apm.yml), MCP configs; SCIP LSP JSON ingestion (`scip_ingest`) and Rust `Cargo.toml`/`Cargo.lock` introspection (`cargo_introspect`) for dependency graphs
 - **Cross-platform skill** — Platform-specific installers for Claude Code, CodeBuddy, Codex, OpenCode, Kilo Code, Cursor, Gemini CLI, GitHub Copilot CLI, VS Code Copilot Chat, Aider, OpenClaw, Factory Droid, Trae, Hermes, Kimi Code, Amp, Kiro, Pi, Devin CLI, Google Antigravity, and Agent Skills (cross-framework)
 - **Always-on integration** — Installs PreToolUse hooks (Claude Code, Codex, CodeBuddy, Gemini CLI), native plugins (Kilo Code, OpenCode), instruction files (Cursor .mdc rules, Copilot skill file, Aider AGENTS.md, OpenClaw AGENTS.md, etc.), or persistent `AGENTS.md`/`GEMINI.md`/`CODEBUDDY.md` instructions that guide assistants toward graph-based queries
 - **Community detection** — Leiden clustering identifies architectural modules with configurable resolution; god-node ranking surfaces the most-connected concepts; hub exclusion prevents utility super-hubs from dominating rankings
 - **Confidence scoring** — Every relationship labeled `EXTRACTED` (explicitly stated), `INFERRED` (reasonable deduction), or `AMBIGUOUS` (uncertain, flagged for review)
 - **MCP server** — Graph exposed via `graphify serve` as stdio or HTTP MCP server with structured query tools: `query_graph`, `get_node`, `get_neighbors`, `shortest_path`, `list_prs`, `get_pr_impact`, `triage_prs`
-- **Git integration** — `graphify hook install` auto-rebuilds on commit (AST-only, no API cost); merge driver (`graphify merge`) prevents conflict markers in `graph.json` when two devs commit in parallel
+- **Git integration** — `graphify hook install` auto-rebuilds on commit (AST-only, no API cost); `graphify hook-check` / `graphify hook-guard` validate the installed hooks (silent during editor tool use) with opt-in strict mode; merge driver (`graphify merge`) prevents conflict markers in `graph.json` when two devs commit in parallel
 - **PR intelligence** — `graphify prs` dashboard shows CI state, review status, worktree mapping; `graphify prs --triage` AI-ranks review queue; `graphify prs --conflicts` surfaces PRs sharing graph communities for merge-order risk analysis
 - **Headless extraction** — `graphify extract` for CI pipelines with configurable backend (Claude, Gemini, OpenAI, DeepSeek, Ollama, Bedrock, Azure, Kimi, Claude CLI)
 - **Cross-project global graph** — `graphify global add` registers project graphs into a unified global graph; `graphify global query` queries across all registered repos
 - **Local-first** — Code extracted via tree-sitter AST (fully offline). Video/audio via faster-whisper (offline). Only docs, PDFs, images require LLM API calls
 - **Export formats** — HTML visualization, JSON graph, Obsidian vault (`--obsidian`), markdown wiki (`--wiki`), SVG (`--svg`), GraphML for Gephi/yEd (`--graphml`), Neo4j Cypher (`--neo4j`), FalkorDB Cypher (`--falkordb`), Mermaid call-flow HTML (`graphify export callflow-html`)
 - **Watch mode** — `graphify watch` auto-syncs the graph as files change using watchdog file system notifications
-- **Query logging** — Every `graphify query`, `path`, `explain`, and MCP `query_graph` call logged to `~/.cache/graphify-queries.log` (JSON Lines); opt-out via `GRAPHIFY_QUERY_LOG_DISABLE=1`
+- **Query logging** — Every `graphify query`, `path`, `explain`, and MCP `query_graph` call can be logged as append-only JSONL (fail-silent) to a plaintext file under `~/.cache` — but it is **opt-in** since [#1797](https://github.com/safishamsi/graphify/pull/1797), OFF unless explicitly enabled: `GRAPHIFY_QUERY_LOG=<path>` logs to that path, or `GRAPHIFY_QUERY_LOG_ENABLE=1` logs to `~/.cache/graphify-queries.log`. `GRAPHIFY_QUERY_LOG_DISABLE=1` still forces it off (back-compat, wins); `GRAPHIFY_QUERY_LOG_RESPONSES=1` additionally records full subgraph responses
 
 ## Architecture
 
@@ -55,6 +55,8 @@ detect()  →  extract()  →  build_graph()  →  cluster()  →  analyze()  �
 | `export.py` | `export(G, out_dir, ...)` | graph → Obsidian vault, graph.json, graph.html, graph.svg, GraphML |
 | `callflow_html.py` | `write_callflow_html(...)` | graphify-out files → Mermaid architecture/call-flow HTML |
 | `ingest.py` | `ingest(url, ...)` | URL → file saved to corpus dir (arXiv, YouTube, etc.) |
+| `scip_ingest.py` | `ingest_scip_json(doc, source_file)` | SCIP LSP JSON doc → graph nodes/edges (stub `scip_external` nodes for unresolved symbols) |
+| `cargo_introspect.py` | `introspect_cargo(root)` | Rust Cargo workspace → dependency graph nodes/edges |
 | `cache.py` | `check_semantic_cache / save_semantic_cache` | files → (cached, uncached) split for incremental extraction |
 | `security.py` | validation helpers | URL / path / label → validated or raises (blocks file:// redirects, size caps) |
 | `validate.py` | `validate_extraction(data)` | extraction dict → raises on schema errors |
@@ -122,12 +124,14 @@ uv tool install "graphifyy[leiden]"      # Leiden community detection (C backend
 uv tool install "graphifyy[openai]"      # OpenAI backend
 uv tool install "graphifyy[gemini]"      # Google Gemini backend
 uv tool install "graphifyy[bedrock]"     # AWS Bedrock backend
-uv tool install "graphifyy[azure]"       # Azure OpenAI backend
-uv tool install "graphifyy[sql]"         # SQL database introspection
-uv tool install "graphifyy[dm]"          # Dependency management extras
+# No [azure] extra — Azure is a built-in backend (llm.py), no install needed
+uv tool install "graphifyy[sql]"         # tree-sitter-sql AST extraction for SQL files
+uv tool install "graphifyy[dm]"          # BYOND DreamMaker (.dm/.dme) tree-sitter grammar
 uv tool install "graphifyy[chinese]"     # Chinese language support
 uv tool install "graphifyy[all]"         # Everything
 ```
+
+> **Note:** `[azure]` does **not** exist as an extra — Azure OpenAI is a built-in backend in `llm.py:182-192` (requires `AZURE_OPENAI_API_KEY` / `AZURE_OPENAI_ENDPOINT`). `[sql]` = `tree-sitter-sql` AST extraction, not SQL database introspection (that's `[postgres]` = psycopg). `[dm]` = the BYOND DreamMaker tree-sitter grammar, not dependency management.
 
 ## Domain Docs
 
@@ -146,7 +150,7 @@ uv tool install "graphifyy[all]"         # Everything
 
 ## Links
 
-- Source: `/Users/admin1/Documents/knowledge/sources/graphify/`
+- Source: `/Users/admin/repos/knowledge/sources/graphify/`
 - GitHub: https://github.com/safishamsi/graphify
 - Website: https://graphifylabs.ai
 - PyPI: https://pypi.org/project/graphifyy/

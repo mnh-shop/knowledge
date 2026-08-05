@@ -18,7 +18,7 @@ The repository serves as a comprehensive template library for the [[n8n]] workfl
 ## Key Features
 
 - **280+ ready-to-import templates** across 18 categories of automation use cases
-- **Multi-language support** with localized READMEs in 13 languages including English, Turkish, Chinese, German, French, Spanish, Japanese, Korean, Hindi, Arabic, Indonesian, Russian, and Italian
+- **Multi-language support** with 13 translated READMEs plus English (14 READMEs total): Turkish, Chinese, German, French, Spanish, Portuguese, Japanese, Korean, Hindi, Arabic, Indonesian, Russian, and Italian
 - **AI-native templates** featuring OpenAI, Anthropic Claude, Google Gemini, DeepSeek R1, Mistral AI, Ollama, LangChain, and Perplexity integrations
 - **Production-ready workflows** for Gmail/Outlook email automation, Telegram/Discord/Slack bots, social media management, and data processing pipelines
 - **Security-focused automations** including phishing detection, suspicious email analysis, and toxic language detection in messaging platforms
@@ -72,6 +72,6 @@ Content and document processing templates enable chat-with-PDF functionality, au
 - [[n8n-workflows]] — n8n workflow catalog and template collections
 - [[n8n]] — Core n8n automation platform
 
-- **Source path**: `/Users/admin1/Documents/knowledge/sources/awesome-n8n-templates`
+- **Source path**: `/Users/admin/repos/knowledge/sources/awesome-n8n-templates`
 - **Repository**: [enescingoz/awesome-n8n-templates](https://github.com/enescingoz/awesome-n8n-templates)
 - **License**: CC BY 4.0

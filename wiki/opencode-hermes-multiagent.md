@@ -16,7 +16,7 @@ A multi-agent system configuration for OpenCode and Hermes Agent that defines 17
 | Field | Value |
 |---|---|
 | **Origin** | [ChromaBrain/opencode-hermes-multiagent](https://github.com/ChromaBrain/opencode-hermes-multiagent) |
-| **License** | Not specified (agent configuration definitions) |
+| **License** | MIT (README.md:9 badge, README.md:489) |
 | **Stack** | OpenCode + Hermes Agent agent runtime |
 | **Subagents** | 17 specialized agents |
 | **Source** | `sources/opencode-hermes-multiagent/` |
@@ -29,7 +29,7 @@ A multi-agent system configuration for OpenCode and Hermes Agent that defines 17
 - **Task Tracking:** Master orchestrator tracks progress with `task` and `todowrite`/`todoread` tools in OpenCode.
 - **OpenCode Configuration:** Ships `opencode.json` configuration defining the agent swarm structure.
 - **Hermes Core Definition:** Primary orchestrator agent using `openai/gpt-5.2-high` model with no execution tools -- pure dispatch.
-- **Pipeline Chains:** Defined execution chains for standard workflows (feature development, bug fixing, refactoring, documentation) with required agent sequences.
+- **Pipeline Chains:** 10 defined execution chains (hermes.md:143-175) — 7 named in the README (New Feature, New Feature Security-Related, Bug Fix Unknown Cause, Bug Fix Known Cause, Refactoring, Performance Optimization, Infrastructure Changes) plus Analysis Only, Documentation Only, and Comments Only — each with required agent sequences.
 
 ## Architecture
 
@@ -81,11 +81,11 @@ The master orchestrator (Hermes) is configured with `mode: primary` and has no e
 | Planning | @planner | "plan", "steps", complex task |
 | Implementation | @coder | "create", "add", "implement" |
 | Implementation | @editor | "change", "update", "modify" |
-| Implementation | @debugger | "debug", "trace", "why fails" |
 | Implementation | @fixer | "fix" with known location |
 | Implementation | @refactorer | "refactor", "clean", "simplify" |
 | Quality | @reviewer | AFTER any code change (MANDATORY) |
 | Quality | @tester | AFTER any code change (MANDATORY) |
+| Quality | @debugger | "debug", "trace", "why fails" |
 | Quality | @security | auth, password, token, secrets (MANDATORY) |
 | Documentation | @documenter | new API, README changes |
 | Documentation | @commenter | complex logic, public interfaces |
@@ -109,9 +109,38 @@ The master orchestrator (Hermes) is configured with `mode: primary` and has no e
 
 ## Interfaces
 
-- **OpenCode Swarm Configuration:** Defines the agent topology for OpenCode's multi-agent runtime
+- **OpenCode Configuration:** Ships `opencode.json` (18 agent entries: `hermes` as `default_agent`/`mode: primary` + 17 subagents in `mode: subagent`) defining the agent topology for OpenCode AI's multi-agent runtime
+- **Activation:** The system activates **automatically when you use OpenCode AI** — Hermes analyzes the request and routes it to the appropriate pipeline (README.md:190). No special CLI flag; deploy by copying `agent/` into `~/.config/opencode/` (README.md:176) and setting `default_agent: hermes` in `opencode.json`
 - **Agent Markdown Files:** Each subagent is defined in a markdown file consumable by the Hermes/OpenCode agent system
-- **CLI:** Activated through OpenCode's multi-agent mode (`opencode --swarm`)
+- **MCP (for @researcher):** Context7 for library documentation (`npx -y @upstash/context7-mcp`) plus web-page fetch (`uvx mcp-server-fetch`) — README.md:179-186
+
+### Per-Agent Model Map
+
+Models are assigned per agent in README.md:64-110 (mirrored in `opencode.json`):
+
+| Agent | Model |
+|---|---|
+| @finder / @planner | `google/gemini-3-flash` |
+| @analyst | `google/gemini-claude-sonnet-4-5-thinking-high` |
+| @researcher | `google/gemini-claude-sonnet-4-5-thinking-low` |
+| @architect | `google/gemini-claude-opus-4-5-thinking-medium` |
+| @coder / @editor | `google/gemini-claude-opus-4-5-thinking-high` |
+| @fixer / @refactorer / @debugger | `google/gemini-claude-sonnet-4-5-thinking-high` |
+| @reviewer / @tester / @security | `openai/gpt-5.2-codex-xhigh` |
+| @documenter / @devops | `google/gemini-claude-sonnet-4-5-thinking-medium` |
+| @commenter | `google/gemini-claude-sonnet-4-5-thinking-low` |
+| @optimizer | `google/gemini-claude-sonnet-4-5-thinking-high` |
+| Hermes (orchestrator) | `openai/gpt-5.2-high` |
+
+### Tool Scoping
+
+Tool scoping is per-role rather than per-domain. In `opencode.json`:
+
+- **Hermes (primary):** only `task`, `todowrite`, `todoread` enabled — pure dispatch, no execution tools
+- **Implementation** (coder, editor, fixer, refactorer): full toolset — `bash`/`read`/`write`/`edit`/`list`/`glob`/`grep`/`lsp` + `todoread`
+- **Research/Planning** (finder, analyst, researcher, architect, planner): `read`/`list`/`glob`/`grep` (+ `lsp` for analyst, `webfetch` for researcher) — no `bash` or `write`/`edit`
+- **Quality:** NOT uniformly read-only — `@tester` has the full implementation toolset (`bash`/`write`/`edit`, opencode.json:213-226); `@debugger` has `bash` but **no** `write`/`edit` (opencode.json:232-245, diagnosis-only); only `@reviewer` and `@security` are fully read-only (`read`/`list`/`glob`/`grep`/`lsp`/`todoread`, no `bash`/`write`/`edit`)
+- **Documentation/Infrastructure:** `@documenter` has `write`/`edit` (no `bash`); `@commenter` has `edit` only; `@devops`/`@optimizer` have the full implementation toolset
 
 ## Related
 

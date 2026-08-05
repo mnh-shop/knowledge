@@ -19,7 +19,7 @@ An implementation of the [Compose Spec](https://compose-spec.io/) with the [Podm
 
 - **Rootless by default:** containers run without root privileges.
 - **Daemon-less process model:** directly execs `podman` subprocesses; no persistent daemon.
-- **Single-file deployment:** everything lives in one Python script (`podman_compose.py`, 5266 lines) that can be dropped into `PATH`.
+- **Single-file deployment:** everything lives in one Python script (`podman_compose.py`, 5514 lines) that can be dropped into `PATH`.
 - **Minimal dependencies:** requires only `podman`, `python-dotenv`, and `PyYAML`.
 
 ---
@@ -34,16 +34,17 @@ The entire implementation is a single Python module (`podman_compose.py`) broken
 |---|---|
 | 1-57 | Imports, version (`__version__ = "1.6.0"`), constants |
 | 58-695 | Helper functions (`is_list`, `filteri`, `norm_as_list`, `ulimit_to_ulimit_args`, `mount_desc_to_volume_args`, etc.) |
-| 696-1305 | Container-to-args translation helpers (`get_net_args`, `get_volumes_args`, `container_to_res_args`, etc.) |
-| 1306-1716 | **`container_to_args()`** -- the central function that converts a compose service definition into `podman run` CLI arguments |
-| 1717-1794 | YAML tags (`!override`, `!reset`) |
-| 1795-2333 | **`Podman` class** -- async wrapper around the podman CLI |
-| 2334-3130 | **`PodmanCompose` class** -- the main orchestrator |
-| 3131-3176 | Command registration decorators (`cmd_run`, `cmd_parse`) |
-| 3177-5251 | **Command implementations** (22 commands) |
-| 5252-5266 | Entry point (`async_main` / `main`) |
+| 696-1338 | Container-to-args translation helpers (`get_net_args`, `get_volumes_args`, `container_to_res_args`, etc.) |
+| 1339-1755 | **`container_to_args()`** -- the central function that converts a compose service definition into `podman run` CLI arguments |
+| 1756-1836 | YAML tags (`!override`, `!reset`) |
+| 1837-2398 | **`Podman` class** -- async wrapper around the podman CLI |
+| 2399-3252 | **`PodmanCompose` class** -- the main orchestrator (incl. `XPodmanSettingKey` enum) |
+| 3253-3296 | Command registration decorators (`cmd_run`, `cmd_parse`) |
+| 3297-4875 | **Command implementations** (24 commands) |
+| 4876-5500 | Command arg parsers (`cmd_parse` registrations + `compose_*_parse` functions) |
+| 5501-5514 | Entry point (`async_main` / `main`) |
 
-### `container_to_args()` (line 1306)
+### `container_to_args()` (line 1339)
 
 This is the heart of the system. It takes a parsed compose service dictionary and produces a flat list of CLI arguments for `podman run` (or `podman create`). It handles:
 
@@ -58,7 +59,7 @@ This is the heart of the system. It takes a parsed compose service dictionary an
 - IPC modes, PID modes, cgroup parents
 - Labels, annotations, devices, group additions
 
-### `Podman` class (line 1795)
+### `Podman` class (line 1837)
 
 Wraps the `podman` binary via asyncio subprocess:
 
@@ -75,7 +76,7 @@ Key methods:
 
 All methods are async and concurrency-limited by an `asyncio.Semaphore` (default: `--parallel` CLI arg).
 
-### `PodmanCompose` class (line 2334)
+### `PodmanCompose` class (line 2399)
 
 The main orchestrator. Holds all compose state:
 
@@ -123,14 +124,15 @@ A companion `cmd_parse` decorator attaches CLI argument parsers to any registere
 | `config` | Display the compose file |
 | `version` | Show version |
 | `wait` | Wait for running containers to stop |
-| `systemd` | Generate systemd unit files |
+| `systemd` | Generate systemd unit files and register compose stacks into the `podman-compose@.service` template unit |
+| `stats` | Display percentage of CPU, memory, network I/O, block I/O and PIDs for services |
 | `config --services` | List configured services |
 
 ---
 
 ## Podman-specific Extensions (`x-podman.*`)
 
-Podman-compose supports several extensions beyond the standard Compose spec, documented in `/Users/admin1/Documents/knowledge/sources/podman-compose/docs/Extensions.md`.
+Podman-compose supports several extensions beyond the standard Compose spec, documented in `sources/podman-compose/docs/Extensions.md`.
 
 ### Container-level extensions
 
@@ -241,7 +243,7 @@ Podman-compose supports several compatibility modes to match docker-compose beha
 
 ```
 sources/podman-compose/
-  podman_compose.py          # 5266 lines -- the whole implementation
+  podman_compose.py          # 5514 lines -- the whole implementation
   pyproject.toml             # Project metadata, dependencies, tool config
   README.md                  # User-facing documentation
   LICENSE                    # GPL-2.0-only
@@ -258,7 +260,7 @@ sources/podman-compose/
     Mappings.md              # Podman-compose CLI mapping details
     Changelog-*.md           # Per-version changelogs
   tests/
-    unit/                    # 25 unit test files (async tests via IsolatedAsyncioTestCase)
+    unit/                    # 26 unit test files (async tests via IsolatedAsyncioTestCase)
     integration/             # Integration tests
   examples/
     hello-python/            # Python app with Redis
@@ -282,13 +284,14 @@ sources/podman-compose/
 
 ## Unit Tests
 
-Unit tests are located in `tests/unit/` with 25 test files covering:
+Unit tests are located in `tests/unit/` with 26 test files covering:
 
 | Test file | Coverage |
 |---|---|
 | `test_container_to_args.py` | Core `container_to_args()` function (38807 bytes) |
 | `test_container_to_args_secrets.py` | Secret handling in `container_to_args()` |
 | `test_container_to_build_args.py` | Build argument generation |
+| `test_compose_up_args.py` | `up` command argument handling |
 | `test_get_net_args.py` | Network argument generation |
 | `test_get_network_create_args.py` | Network creation arguments |
 | `test_build_deps.py` | Build dependency resolution |
@@ -301,8 +304,10 @@ Unit tests are located in `tests/unit/` with 25 test files covering:
 | `test_normalize_depends_on.py` | depends_on normalization |
 | `test_normalize_final_build.py` | Final build normalization |
 | `test_normalize_service.py` | Service definition normalization |
+| `test_parse_args.py` | CLI argument parsing |
 | `test_rec_merge_depends_on.py` | Recursive depends_on merging |
 | `test_rec_subs.py` | Recursive substitution |
+| `test_service_dependency_condition.py` | Service dependency condition states |
 | `test_var_interpolate.py` | Variable interpolation |
 | `test_pull_image.py` | Image pull logic |
 | `test_include.py` | Include directive handling |
@@ -318,6 +323,7 @@ Tests use `unittest.IsolatedAsyncioTestCase` for async test methods and `paramet
 
 **Runtime:**
 - `podman` (CLI tool, any modern version >=3.4 recommended)
+- `podman dnsname plugin` — required for compose network DNS (in `podman-plugins`/`podman-dnsname` distro packages; README.md:9-14)
 - `python-dotenv` -- env file parsing
 - `PyYAML` -- YAML parsing
 
@@ -353,6 +359,6 @@ chmod +x /usr/local/bin/podman-compose
 - [[orchestration]] — Container orchestration
 
 
-`/Users/admin1/Documents/knowledge/sources/podman-compose/podman_compose.py`
+`sources/podman-compose/podman_compose.py`
 
 **Type:** LLM wiki page

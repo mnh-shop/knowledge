@@ -9,15 +9,16 @@ source: sources/headroom/
 
 **Date:** 2026-07-12
 
-## Claim 1: Context compression as library, proxy, and agent wrap (3 deployment modes)
-- **Wiki says:** Headroom operates in three modes — a Python/TypeScript library (`compress(messages)`), a standalone proxy (`headroom proxy --port 8787`), and an agent wrap (`headroom wrap claude|codex|...`). Each mode feeds compressed context to the LLM.
+## Claim 1: Context compression as library, proxy, agent wrap, and MCP server (4 modes)
+- **Wiki says:** Headroom operates in multiple modes — a Python/TypeScript library (`compress(messages)`), a standalone proxy (`headroom proxy --port 8787`), an agent wrap (`headroom wrap claude|codex|...`), and an MCP server with four tools. Each mode feeds compressed context to the LLM.
 - **Source evidence:**
-  - **Library:** `headroom/compress.py` line 162 defines `compress()` with `CompressResult` and `CompressConfig`. Python SDK at `sdk/typescript/src/compress.ts` line 19 exports `compress()` with adapters for Anthropic (`sdk/typescript/src/adapters/anthropic.ts`), Gemini, OpenAI, and Vercel AI.
+  - **Library:** `headroom/compress.py` line 171 defines `compress()` with `CompressResult` and `CompressConfig`. Python SDK at `sdk/typescript/src/compress.ts` line 19 exports `compress()` with adapters for Anthropic (`sdk/typescript/src/adapters/anthropic.ts`), Gemini, OpenAI, and Vercel AI.
   - **Proxy:** `headroom/cli/proxy.py` line 852 implements the `proxy` command, accepting port config via `_get_env_int_optional` (line 84). The proxy interceptor pipeline lives in `headroom/proxy/`.
   - **Wrap:** `headroom/cli/wrap.py` line 3724 defines the `wrap` command that injects Headroom into agent CLIs.
+  - **MCP:** `headroom/ccr/mcp_server.py` registers 4 tools — `headroom_compress` (line 616), `headroom_retrieve` (line 639), `headroom_stats` (line 658), and `headroom_read` (line 676, file read caching behind a feature flag). README.md:53 lists only the first three.
   - `headroom/cli/__init__.py` registers both `proxy` and `wrap` as CLI subcommands.
-- **Verdict:** ✅ CORRECT
-- **Fix needed:** None
+- **Verdict:** ⚠️ CORRECTED (was "3 modes"; MCP is a 4th mode with 4 tools, and `compress()` line was 162 → 171)
+- **Fix needed:** wiki updated to list the 4th MCP tool and corrected line reference
 
 ## Claim 2: Multi-compressor pipeline (diff, log, search, code-aware, Kompress, live zone, smart-crusher, content router)
 - **Wiki says:** Headroom's pipeline contains 8+ content-aware compressors: diff compressor, log compressor, search compressor, code-aware compressor, Kompress ML compressor, live zone, smart-crusher, and content router — each implementing `Transform`.
@@ -69,10 +70,11 @@ source: sources/headroom/
 ## Claim 6: Cross-language SDK (Python + TypeScript with isomorphic compress API)
 - **Wiki says:** Headroom provides both Python and TypeScript SDKs with the same `compress()` API surface, adapter-based message format support (Anthropic, OpenAI, Gemini, Vercel AI SDK), and hooks API.
 - **Source evidence:**
-  - **Python:** `headroom/compress.py` exports `compress()` (line 162), `headroom/compression/universal.py` has `UniversalCompressor` (line 114).
+  - **Python:** `headroom/compress.py` exports `compress()` (line 171), `headroom/compression/universal.py` has `UniversalCompressor` (line 114).
   - **TypeScript:** `sdk/typescript/src/compress.ts` exports `compress()` (line 19), `sdk/typescript/src/client.ts`, `sdk/typescript/src/hooks.ts`.
   - **Adapters:** `sdk/typescript/src/adapters/anthropic.ts`, `gemini.ts`, `openai.ts`, `vercel-ai.ts` — format conversion for each provider.
   - **Python crate:** `crates/headroom-py/` provides native Python bindings to the Rust core with `Cargo.toml` and `build.rs`.
+  - **Rust workspace:** `crates/` also contains `headroom-proxy/`, `headroom-parity/`, and `headroom-simulators/` alongside `headroom-core/` and `headroom-py/`
   - TypeScript tests: `sdk/typescript/test/compress.test.ts`, `format-integration.test.ts`.
 - **Verdict:** ✅ CORRECT
 - **Fix needed:** None
@@ -86,6 +88,7 @@ source: sources/headroom/
   - `crates/headroom-core/src/transforms/adaptive_sizer.rs` — adaptive sizing based on content.
   - `crates/headroom-core/src/transforms/recommendations.rs` — compressor recommendation engine.
   - `headroom/proxy/verbosity_controller.py:30` — `Signal` class for verbosity control signaling.
+  - File-based persistence via `--storage.file` with SQL schema in `sql/` (`create_dashboard_summary.sql`, `create_proxy_telemetry_v2.sql`, `upgrade_*` migrations); file backend at `headroom/telemetry/backends/filesystem.py`
 - **Verdict:** ✅ CORRECT
 - **Fix needed:** None
 
@@ -93,7 +96,7 @@ source: sources/headroom/
 
 All 7 key claims from the headroom wiki have been verified against the source code via codegraph exploration:
 
-- ✅ Three deployment modes: library (`headroom/compress.py`), proxy (`headroom/cli/proxy.py`), wrap (`headroom/cli/wrap.py`)
+- ✅ Four modes: library (`headroom/compress.py:171`), proxy (`headroom/cli/proxy.py`), wrap (`headroom/cli/wrap.py`), MCP server with 4 tools (`headroom/ccr/mcp_server.py`)
 - ✅ Multi-compressor pipeline: 9+ `Transform` implementations across Python and Rust crates
 - ✅ Rust core: `crates/headroom-core/` with BM25 relevance, signal detection, content detection, safety
 - ✅ Tokenizer support: Mistral, HuggingFace, and generic tokenizers in `headroom/tokenizers/`

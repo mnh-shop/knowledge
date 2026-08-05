@@ -10,8 +10,9 @@ verified_by: codegraph-verify
 # Turnstone
 
 | Field | Value |
-|---|---|
-| **Origin** | [cf-toolsuite/turnstone](https://github.com/cf-toolsuite/turnstone) |
+|---|---|---|
+| **Origin** | [turnstonelabs/turnstone](https://github.com/turnstonelabs/turnstone) |
+| **Version** | 1.8.0a5 (current; Apache-2.0 as of v1.6.0) |
 | **Source** | `sources/turnstone/` |
 | **Repomix** | `raw/turnstone/turnstone.xml` |
 | **Codegraph** | `graphs/turnstone/` |
@@ -22,7 +23,7 @@ Turnstone is a self-hosted, local-first orchestration platform for tool-using AI
 
 At its core, Turnstone implements a formal theory of agent harnesses documented in `PRIMER.md` and `HYPOTHESIS.md`. The core principle is that **the model proposes; the gate disposes** — every model output is treated as a suggestion that must pass through deterministic gating before any side effect executes. This architecture provides verifiable safety guarantees: replay invariance, deterministic tool approval, and a clear separation between untrusted content (model outputs, fetched pages) and control state (plans, permissions, authorization grants).
 
-The platform is Apache 2.0 licensed (as of v1.6.0), runs entirely on hardware the user controls with no telemetry or phone-home, and supports OpenAI-compatible APIs (vLLM, llama.cpp, NIM), Anthropic Messages API, and Google Gemini, mixable freely per role.
+The platform is Apache 2.0 licensed (current version 1.8.0a5), runs entirely on hardware the user controls with no telemetry or phone-home, and supports OpenAI-compatible APIs (vLLM, llama.cpp, NIM), Anthropic Messages API, and Google Gemini, mixable freely per role. `QUICKSTART.md` provides a fast path from install to first agent run.
 
 ## Key Features
 
@@ -35,6 +36,8 @@ The platform is Apache 2.0 licensed (as of v1.6.0), runs entirely on hardware th
 - **Governance and RBAC** — Optional role-based access control, SSO (OIDC), tool-level policies, and audit logs, all stored in your own PostgreSQL database
 - **Evaluation Harness** — `turnstone-eval` scores tool-use against expected actions, and `turnstone-optimizer` runs a UCB self-modify loop over the eval substrate to optimize prompts and tool configurations
 - **Channel Integrations** — Discord and Slack adapters via `turnstone-channel` gateway
+- **Output Guard** — A separate `output_guard` subsystem (with its own `output_guard_judge`) gates model *outputs*, complementing the Intent Validation Judge that gates tool calls
+- **Testing Module** — `turnstone/testing/` provides row-contract based test infrastructure for the harness
 
 ## Architecture
 
@@ -59,13 +62,16 @@ turnstone/
 ├── api/           — REST API definitions
 ├── channels/      — Channel adapters (Discord, Slack)
 ├── console/       — Dashboard and admin panel
-├── core/          — Engine: SessionUI, ChatSession, LLMProvider, state machines
-├── deploy/        — Production Docker Compose deployment manifests
+├── core/          — Engine: SessionUI, ChatSession, LLMProvider, state machines, judge, output_guard, MCP
+├── deploy/        — Production deployment manifests (Docker Compose, Helm chart, Terraform AWS-ECS module, systemd units)
 ├── prompts/       — Prompt templates and system messages
-├── sdk/           — Python SDK for programmatic access
+├── sdk/           — Python SDK module for programmatic access
+├── testing/       — Row-contract test infrastructure
 ├── tools/         — Built-in and MCP tool implementations
 └── ui/            — Terminal and browser UI components
 ```
+
+The TypeScript SDK lives at the top-level `sdk/typescript/` — a `TurnstoneServer` client plus console client generated from the OpenAPI schemas (`openapi-server.json`, `openapi-console.json`), with SSE event-stream support.
 
 ### The Harness Theory
 
@@ -86,6 +92,8 @@ Memory is partitioned into **data** (tool results, fetched pages, retrieved docu
 
 **Docker deployment:** One-line install via `curl -fsSL https://raw.githubusercontent.com/turnstonelabs/turnstone/main/run.sh | bash` autodetects the distro, installs git + Docker if missing, generates secrets, and starts the full stack — PostgreSQL, console, Caddy, channel gateway, and 10 server nodes — with no `.env` required (ships with insecure dev defaults).
 
+**Other deployment targets** in `deploy/`: a **Helm chart** (`deploy/helm/turnstone/`) with server + console deployments and a migrate job; **Terraform** (`deploy/terraform/`) with an AWS-ECS module and examples; **systemd** units (`deploy/systemd/turnstone-server.service`, `turnstone.slice`); plus TLS-enabled Compose (`deploy/docker-compose.tls.yml`).
+
 ## Release Tracks
 
 | Track | Install | Description |
@@ -96,7 +104,7 @@ Memory is partitioned into **data** (tool results, fetched pages, retrieved docu
 
 ## Tools and MCP Integration
 
-Built-in tools cover shell, files, search, web, memory, notifications, and autonomous sub-agents. External tools are integrated via MCP with native deferred loading — tools are fetched lazily when first needed rather than being pre-loaded into context. MCP tools are indexed through BM25 fallback for discovery when the Anthropic/OpenAI native loading mode is unavailable.
+31 built-in tools (JSON definitions in `turnstone/tools/`) cover shell, files, search, web, memory, notifications, and autonomous sub-agents. External tools are integrated via MCP with native deferred loading — tools are fetched lazily when first needed rather than being pre-loaded into context. MCP tools are indexed through BM25 fallback for discovery when the Anthropic/OpenAI native loading mode is unavailable.
 
 ## Related
 

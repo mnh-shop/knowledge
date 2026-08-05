@@ -20,6 +20,12 @@ Hermes implements ACP (Agent Communication Protocol) in two directions:
 
 See [[hermes-acp-agent]] for the full asset reference. Key architectural points:
 
+`HermesACPAgent` (`acp_adapter/server.py:565`) subclasses `acp.Agent`; the
+`SessionManager` (`acp_adapter/session.py:175`) handles ACP session CRUD and
+maps them to AIAgent sessions. The server also wires up edit approval
+(`edit_approval.py`), permissions (`permissions.py`), and provenance
+(`provenance.py`).
+
 ### Protocol mapping
 
 The `acp` Python package provides the protocol transport. `HermesACPAgent`
@@ -49,6 +55,8 @@ maintain lineage.
 
 ### Capabilities advertised to ACP clients
 
+Advertised in the `InitializeResponse` (`acp_adapter/server.py:1064-1070`):
+
 | Capability | Value |
 |---|---|
 | `load_session` | True |
@@ -57,6 +65,8 @@ maintain lineage.
 | `session_capabilities.list` | True (paginated, 50/page) |
 | `session_capabilities.resume` | True |
 | `auth_methods` | Provider-specific or terminal setup |
+
+Agent identity: `Implementation(name="hermes-agent", version=HERMES_VERSION)`.
 
 ### Tool surface
 
@@ -83,16 +93,27 @@ ACP approvals flow through `conn.request_permission()`:
 Hermes can act as an ACP *client*, communicating with GitHub Copilot via
 the ACP protocol. This lets Hermes interoperate with the Copilot ecosystem.
 
-(File not explored in detail — marked for future analysis.)
+The module docstring describes it as an **"OpenAI-compatible shim that
+forwards Hermes requests to `copilot --acp`"**: each request starts a
+short-lived ACP session, sends the formatted conversation as a single prompt,
+collects text chunks, and converts the result back into the minimal shape
+Hermes expects from an OpenAI client.
 
 ---
 
-## 3. ACP Registry
+## 3. CLI — `hermes acp` *is* the server
 
-`sources/hermes-agent/acp_registry/agent.json` — the ACP agent descriptor
-that allows Hermes to be discovered in ACP registries. Contains name,
-version, description, repository URL, and `uvx` distribution config for
-one-command installation.
+There is **no `serve` subcommand**: `hermes acp` runs the ACP server directly
+(`hermes_cli/subcommands/acp.py`, handler `cmd_acp` at `hermes_cli/main.py:10895`).
+Flags:
+
+| Flag | Purpose |
+|---|---|
+| `--version` | Print Hermes ACP version and exit |
+| `--check` | Sanity-check the ACP environment |
+| `--setup` | Interactive provider/model setup for ACP terminal auth |
+| `--setup-browser` | Browser-assisted setup |
+| `--yes` | Accept all prompts (used by `--setup-browser` to skip confirmations) |
 
 ---
 
@@ -135,4 +156,5 @@ Zed can start Hermes with its own MCP servers already registered.
 - ACP edit approval: `sources/hermes-agent/acp_adapter/edit_approval.py`
 - ACP entry point: `sources/hermes-agent/acp_adapter/entry.py`
 - ACP client (Copilot): `sources/hermes-agent/agent/copilot_acp_client.py`
-- Registry: `sources/hermes-agent/acp_registry/agent.json`
+- ACP CLI: `sources/hermes-agent/hermes_cli/subcommands/acp.py` → `cmd_acp` (`hermes_cli/main.py`)
+- Note: `acp_registry/agent.json` was removed (commit `d84e11af4`) and no longer exists.

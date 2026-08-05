@@ -61,7 +61,7 @@ Each subcommand wraps the corresponding `podlet podman run/create/kube/network/v
 
 ### Container Flag Mapping (the Core)
 
-`src/cli/container/quadlet.rs` defines the `QuadletOptions` struct -- approximately 80+ clap-derive fields, each annotated with a doc comment like `/// Converts to "ContainerName=NAME"`. This doc comment is the contract: every field maps to exactly one Quadlet key.
+`src/cli/container/quadlet.rs` defines the `QuadletOptions` struct -- 67 clap-derive fields annotated with `#[arg(...)]` (86 total struct fields), each annotated with a doc comment like `/// Converts to "ContainerName=NAME"`. This doc comment is the contract: every field maps to exactly one Quadlet key.
 
 The mapping structure separates fields into three categories within `src/cli/container.rs`:
 
@@ -107,6 +107,15 @@ Key examples of flag-to-Quadlet mapping:
 
 This is the escape hatch: if Podman adds a new flag before Quadlet supports it, Podlet passes it through `PodmanArgs=` automatically.
 
+**Native-key vs passthrough mapping criteria.** The routing decision is made at struct-definition time, not at runtime:
+
+1. **Native Quadlet key** — if Quadlet exposes a matching directive for a `podman run` flag, the flag is declared as a field on `QuadletOptions` (`src/cli/container/quadlet.rs`) with a doc comment stating the exact `"KEY=VALUE"` it converts to. E.g. `--cap-add` -> `AddCapability=`, `--publish` -> `PublishPort=`, `--secret` -> `Secret=`.
+2. **`PodmanArgs=` passthrough** — flags with no Quadlet directive (e.g. `--cgroup-conf`, `--cpu-period`, `--cpuset-cpus`, `--ipc`, `--privileged`, `--oom-score-adj`) are declared on `PodmanArgs` (`src/cli/container/podman.rs`) and serialized verbatim as `--flag value` into a single `PodmanArgs=` line via `serde::args::to_string()`.
+3. **Quadlet-managed flags** — flags that Quadlet sets automatically (`--detach`, `--replace`, `--rm`) are still parsed on `PodmanArgs` but marked `#[serde(skip_serializing)]` so they are never emitted into `PodmanArgs=`.
+4. **`--security-opt` split** — security options are parsed by `SecurityOpt` and routed per-value: known keys (`apparmor=`, `mask=`, `unmask=`, `no-new-privileges`, `seccomp=`, `label=...`) map to native Quadlet keys; unknown values fall through to `PodmanArgs=`.
+
+The passthrough is also the downgrade escape hatch: when a Quadlet-only option is removed for an older Podman version, it is converted back into a `--flag value` string and appended to `PodmanArgs=`.
+
 ---
 
 ## Stage 2: Domain Model Parsing (Map)
@@ -148,7 +157,7 @@ Each resource variant represents a Quadlet file type with its own section name (
 
 The `From<cli::Container>` impl for `quadlet::Container` (`src/cli/container.rs` line 109) performs the actual mapping:
 
-1. Takes the parsed `QuadletOptions` (80+ typed fields)
+1. Takes the parsed `QuadletOptions` (67 clap-annotated fields, 86 total)
 2. Processes `SecurityOpt` values: extracts known options (apparmor, mask, seccomp, labels, etc.) into the corresponding Quadlet struct fields; unknown security opts go into `PodmanArgs=`
 3. Converts `PodmanArgs` to a string via its `Display` impl
 4. Joins the command into `Exec=` via `command_join()` from `escape.rs`
@@ -158,11 +167,15 @@ The same pattern applies to other resource types. For example, `quadlet::Network
 
 ### Podman Version Downgrade
 
-Each resource type implements the `Downgrade` trait. The downgrade system (`src/quadlet/container.rs` lines 392-690) has per-version removal methods (e.g., `remove_v5_0_options`, `remove_v4_6_options`) that:
+Each resource type implements the `Downgrade` trait (`src/quadlet.rs:577-588`). The `PodmanVersion` enum (`src/quadlet.rs:595-654`) defines the supported ladder from `V4_4` (Podman 4.4, where Quadlet was introduced) up to `V5_8`, with `PodmanVersion::LATEST = V5_8` (quadlet.rs:658).
 
-1. Take Quadlet-only options added in that version
-2. Convert them to `--flag value` strings via `push_args()` or `push_arg()`
-3. Push those strings into `PodmanArgs=`
+**Ladder mechanics** (`impl Downgrade for Container`, `src/quadlet/container.rs:325-381`): the `downgrade()` method runs a cascading dispatch — for each version step it tests `if version < PodmanVersion::V5_8 { self.remove_v5_8_options(); }`, then `V5_7`, `V5_6`, ... down through `V4_5`, calling the matching `remove_vX_options()` method. Each removal method (`remove_v5_8_options` at container.rs:394, `remove_v5_7_options` at :400, `remove_v5_6_options` at :408, `remove_v5_5_options` at :423, `remove_v5_4_options` at :452, `remove_v5_3_options` at :470, `remove_v5_2_options` at :530, `remove_v5_1_options` at :545, `remove_v5_0_options` at :553, `remove_v4_8_options` at :589, `remove_v4_7_options` at :610, `remove_v4_6_options` at :628, `remove_v4_5_options` at :664):
+
+1. Takes the Quadlet-only options that were added in that Podman version (e.g. v5.8's `AppArmor=`; v5.7's `HTTPProxy=` negation)
+2. Converts them back to `--flag value` strings via `push_arg()` / `push_args()` or `podman_args_push_str()` (defined at `src/quadlet/container.rs:711`)
+3. Appends those strings to `PodmanArgs=`, preserving the behavior through the passthrough channel
+
+Some removals are impossible rather than representable: `remove_v5_6_options()` returns a `DowngradeError` if the file uses a `Mount=artifact:...` with a name, since no older Podman flag can express it. The downgrade is applied once in `Cli::try_into_files()` (cli.rs:453-472) when `--podman-version` is older than `LATEST`, and is a one-way transformation — re-running with a higher version cannot restore removed options.
 
 This allows generating Quadlet files compatible with specific Podman versions while still using modern features when targeting a current Podman.
 
@@ -202,6 +215,24 @@ This allows generating Quadlet files compatible with specific Podman versions wh
    - For separate files: iterates files, each calling `File::write()` which serializes then writes
 
 2. **stdout** (default): Concatenates all files into `.quadlets` format and prints to stdout
+
+### `--quadlets-file` + `podman quadlet install` workflow
+
+`--quadlets-file <NAME>` (`src/cli.rs:92`) writes a single `<NAME>.quadlets` file containing every generated section concatenated in one file, instead of separate per-type files. It conflicts with `--file` (the file name is set by the option itself) and is incompatible with `compose --kube` (cli.rs:287-291).
+
+The `.quadlets` bundle is the distribution format for whole stacks: it can be installed atomically with Podman's built-in `podman quadlet install <NAME>.quadlets`, which unpacks it into the Quadlet search path (`/etc/containers/systemd/` for root, `$XDG_CONFIG_HOME/containers/systemd/` for users). The workflow for shipping a multi-container stack:
+
+```bash
+# Generate one distributable bundle
+podlet --quadlets-file my-stack podman run ...
+
+# On the target host, install it as Quadlet units
+podman quadlet install my-stack.quadlets
+systemctl --user daemon-reload   # rootless
+systemctl daemon-reload          # rootful
+```
+
+This is the recommended path for version-controlled, single-artifact service deployment: the `.quadlets` file lives in the repo, and installation is a single command per host.
 
 ---
 

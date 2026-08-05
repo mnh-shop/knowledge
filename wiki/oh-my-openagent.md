@@ -9,17 +9,17 @@ verified_by: codegraph-verify
 
 # oh-my-openagent
 
-**oh-my-openagent** (OmO) is an OpenCode plugin that extends the harness with 11 discipline agents, 53-60 lifecycle hooks, a 3-tier MCP system, Hashline LINE#ID edit tool, IntentGate keyword detector, Team Mode (parallel multi-agent coordination), and full Claude Code compatibility. Ships in two editions: **Ultimate** (OpenCode plugin) and **Light** (Codex CLI edition via `lazycodex-ai`).
+**oh-my-openagent** (OmO) is an OpenCode plugin that extends the harness with 11 discipline agents, 53-62 lifecycle hooks, a 3-tier MCP system, Hashline LINE#ID edit tool, IntentGate keyword detector, Team Mode (parallel multi-agent coordination), and full Claude Code compatibility. Ships in two editions: **Ultimate** (OpenCode plugin) and **Light** (Codex CLI edition via `lazycodex-ai`).
 
 ## Description
 
-OmO transforms OpenCode from a single-agent harness into a multi-agent operating system. The main orchestrator (Sisyphus) delegates to specialists (Hephaestus, Oracle, Librarian, Explore, etc.) based on task category, routing automatically to the best model for each job. It features a 5-tier hook composition system with 53-60 hooks, 20-39 config-gated tools, built-in MCPs for web search (Exa), docs (Context7), code search (Grep.app), LSP, and Codegraph, plus skill-embedded MCPs that spin up on demand.
+OmO transforms OpenCode from a single-agent harness into a multi-agent operating system. The main orchestrator (Sisyphus) delegates to specialists (Hephaestus, Oracle, Librarian, Explore, etc.) based on task category, routing automatically to the best model for each job. It features a 5-tier hook composition system with 53-62 hooks, 12-38 config-gated tools, built-in MCPs for web search (Exa), docs (Context7), code search (Grep.app), LSP, and Codegraph, plus skill-embedded MCPs that spin up on demand.
 
 Built and maintained by Jobdori (an AI assistant running on a customized OpenClaw fork) in real-time, live in the project's Discord community.
 
 ## Key Features
 
-- **11 Discipline Agents** — Sisyphus (orchestrator, Claude Opus/Kimi K2.6/GLM 5.1), Hephaestus (deep worker, GPT-5.5), Oracle (architecture/debugging), Librarian (docs/code search), Explore (fast codebase grep), Atlas (research), Prometheus (strategic planner), Metis (plan consultant), Momus (critic), Multimodal Looker (vision), Sisyphus Junior (subagent router). Each tuned to its model's specific strengths.
+- **11 Discipline Agents** — Sisyphus (orchestrator, `claude-opus-5`/`kimi-k3`/`glm-5`), Hephaestus (deep worker, `gpt-5.6-sol`), Oracle (architecture/debugging), Librarian (docs/code search), Explore (fast codebase grep), Atlas (research), Prometheus (strategic planner), Metis (plan consultant), Momus (critic), Multimodal Looker (vision), Sisyphus Junior (subagent router). Each tuned to its model's specific strengths.
 - **Team Mode** (v4.0, opt-in) — Lead agent + up to 8 parallel members, real-time tmux visualization, dedicated `team_*` tools. Powers `hyperplan` (5 hostile critics) and `security-research` (3 hunters + 2 PoC engineers).
 - **`ultrawork` / `ulw`** — Single-word command that activates every agent and drives tasks to completion. Available in both Ultimate and Light editions.
 - **IntentGate** — Analyzes true user intent before classifying or acting. Recognizes `ultrawork`/`ulw`, `search`, `analyze`, `team` modes.
@@ -27,7 +27,7 @@ Built and maintained by Jobdori (an AI assistant running on a customized OpenCla
 - **LSP Integration** — Diagnostics, navigation, symbols, workspace rename via built-in MCP. Same LSP server in both editions.
 - **AST-Grep** — Pattern-aware code search and rewriting across 25+ languages (Ultimate edition).
 - **3-Tier MCP System** — Tier 1: Built-in MCPs (Exa, Context7, Grep.app, LSP, Codegraph). Tier 2: `.mcp.json` Claude Code compatibility with `${VAR}` env expansion. Tier 3: Skill-embedded MCPs via SKILL.md frontmatter with OAuth 2.0 + PKCE + DCR step-up.
-- **5-Tier Hook Composition** — Session (23) + ToolGuard (17) + Transform (4) + Continuation (7) + Skill (2) = 53 base hooks. With Team Mode: +1 ToolGuard, +2 Transform, +4 event handlers = 60 total.
+- **5-Tier Hook Composition** — Session (24) + ToolGuard (18) + Transform (7) + Continuation (7) + Skill (2) = 58 composed hook slots; 53 active on default config (5 slots config-gated: team-tool-gating, team-mode-status-injector, team-mailbox-injector, monitor-status-injector, goal). Team Mode adds +4 direct event handlers → 62 max.
 - **Prometheus Planner** — Interview-mode strategic planning before any execution. Asks questions, identifies scope, and builds a verified plan before a single line of code is touched.
 - **Ralph Loop / `/ulw-loop`** — Self-referential loop. Doesn't stop until 100% done. Durable multi-goal orchestration with evidence audit backed by `.omo/ulw-loop/`.
 - **Todo Enforcer** — Detects agent idle and yanks it back to task.
@@ -42,7 +42,7 @@ Built and maintained by Jobdori (an AI assistant running on a customized OpenCla
 
 ## Architecture
 
-The project is organized as a monorepo with 37+ workspace packages, layered as Core → MCP → Skills → Adapters → Platform/Web.
+The project is organized as a monorepo with 27 declared workspace packages (package.json `workspaces`), layered as Core → MCP → Skills → Adapters → Platform. `packages/` holds 43 directories: 27 workspaces, 12 platform binary distribution packages (`oh-my-opencode-<platform>-<arch>`), plus non-workspace `lsp-tools-mcp`/`lsp-daemon` and supporting dirs.
 
 ```
 oh-my-opencode/
@@ -52,24 +52,26 @@ oh-my-opencode/
 │   │       ├── index.ts       # Plugin entry; thin wrapper
 │   │       ├── plugin-interface.ts  # 12 OpenCode hook handlers
 │   │       ├── agents/        # 11 agent factories
-│   │       ├── hooks/         # 53-60 lifecycle hooks across 60 dirs
-│   │       ├── tools/         # 14 native tool dirs
+│   │       ├── hooks/         # 53-62 lifecycle hooks across 62 dirs
+│   │       ├── tools/         # 15 native tool dirs
 │   │       ├── features/      # 23 feature modules (team-mode, background-agent, skill-mcp-manager, etc.)
 │   │       ├── shared/        # Cross-cutting utilities
-│   │       ├── config/        # Zod v4 schema system (36 schema files)
-│   │       ├── cli/           # Commander.js CLI: install, run, doctor, mcp-oauth, boulder, sparkshell, ulw-loop
+│   │       ├── config/        # Zod v4 schema system (8 entries: schema/ + validate pipeline)
+│   │       ├── cli/           # Commander.js CLI: install, run, doctor, mcp-oauth, boulder, codex-ulw-loop (+ install-codex, install-senpi)
 │   │       ├── mcp/           # 5 built-in MCPs (3 remote HTTP + 2 local stdio)
 │   │       ├── plugin/        # OpenCode hook handlers + 6-phase config loading pipeline
 │   │       └── openclaw/      # Bidirectional Discord/Telegram/HTTP/shell integration
 │   ├── omo-codex/             # Codex CLI Light edition (lazycodex)
+│   ├── omo-senpi/             # Senpi native TS extension adapter (7 components)
+│   ├── senpi-task/            # Senpi-coupled task engine (7 task + 12 team tools)
+│   ├── pi-goal/ pi-webfetch/  # Pi extensions (goal tracking, web fetch)
 │   ├── utils/ model-core/ prompts-core/ rules-engine/ agents-md-core/
 │   │   comment-checker-core/ hashline-core/ boulder-state/ telemetry-core/
 │   │   lsp-core/ mcp-stdio-core/ tmux-core/ claude-code-compat-core/
 │   │   skills-loader-core/ mcp-client-core/ openclaw-core/ team-core/
-│   │   delegate-core/         # 18 Core (pure-TS) packages
+│   │   delegate-core/ omo-config-core/  # 19 Core (pure-TS) packages
 │   ├── lsp-tools-mcp/ git-bash-mcp/ lsp-daemon/  # 3 MCP-layer packages
-│   ├── shared-skills/         # Cross-harness SKILL.md bundle
-│   └── web/                   # Marketing site (Next.js 15 + Cloudflare Workers)
+│   └── shared-skills/         # Cross-harness SKILL.md bundle
 ├── bin/                       # Platform-detection JS shim (5 bin aliases)
 ├── script/                    # Build/publish automation
 └── docs/                      # User-facing docs
@@ -108,7 +110,7 @@ pluginModule.server(input, options)
 - OpenClaw bidirectional: outbound dispatchers fire on session events; inbound daemon polls Discord/Telegram and `send-keys` replies into tracked tmux pane
 - All internal `session.prompt` / `session.promptAsync` calls must go through the shared `prompt-async-gate` — no raw prompt calls outside it
 
-**Tool Catalog (config-gated):** 18 always-on (LSP, grep, glob, session, background, call_omo_agent, task, skill, skill_mcp) + 1-12 conditional (look_at, interactive_bash, task_system, hashline_edit, team_mode tools).
+**Tool Catalog (config-gated):** 12 always-on registry tools (grep, glob, `session_*`, `background_*`, call_omo_agent, task, skill, skill_mcp) + up to 26 conditional = 38 max, gated by config flags (team_mode +12, monitor +4, task system +4, hashline_edit +1, interactive_bash +1, look_at +1, goal +3). The 8 `lsp_*` aliases are served via the built-in lsp MCP, not registry registrations.
 
 ## Quick Start
 

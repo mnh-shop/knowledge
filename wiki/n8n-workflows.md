@@ -22,10 +22,10 @@ A curated repository containing **2,061** n8n automation workflows available fro
 
 **Key figures**:
 - **2,061** workflow JSON definitions (updated from claimed 4,343)
-- **282** unique service integrations (estimated from available files)
-- **85** category directories organized by integration type
-- **8,923** total nodes across all workflows
-- **48** distinct trigger types 
+- **319** distinct non-utility n8n-nodes-base.* service integrations (334 raw types incl. utility nodes)
+- **188** service-named category directories under `workflows/`
+- **30,774** total nodes across all workflows (avg 14.93 per workflow)
+- **85** distinct trigger node types (top: manualTrigger 927, scheduleTrigger 330, executeWorkflowTrigger 180, formTrigger 123)
 - **Analysis period:** July 2025 - November 2025
 
 ## Source Structure Analysis
@@ -35,7 +35,7 @@ The repository contains a different structure than documented:
 ```
 n8n-workflows/
 ├── workflows/
-│   └── [category]/              # 2,061 workflow JSON files
+│   └── [service]/              # 188 service-named category dirs, 2,061 workflow JSON files
 ├── src/                         # Workflow analysis scripts
 │   ├── ai_assistant.py
 │   ├── analytics_engine.py
@@ -55,30 +55,22 @@ n8n-workflows/
 
 ## Workflow Categories
 
-The available workflow categories include:
+The `workflows/` directory contains **188 service-named category directories** — one per n8n integration service, not curated topic folders. Directories take the n8n node class name (e.g. `Activecampaign`, `Awsrekognition`, `Baserow`, `Clickup`, `Emailreadimap`, `Emailsend`), alongside a small number of utility/flow dirs (e.g. `Aggregate`, `Code`, `Compression`, `Cron`, `Crypto`). Selected examples:
 
-| Category | Description |
-|----------|-------------|
-| `ai-assistant/` | AI assistant and LLM integration workflows |
-| `automation/` | General automation and scheduling workflows |
-| `business-intelligence/` | Data analysis and reporting workflows |
-| `cloud-services/` | Cloud provider integrations |
-| `communication/` | Messaging and notification workflows |
-| `e-commerce/` | E-commerce and payment processing workflows |
-| `education/` | Learning and training workflows |
-| `email/` | Email marketing and notification workflows |
-| `finance/` | Financial and accounting workflows |
-| `healthcare/` | Medical and healthcare workflows |
-| `marketing/` | Marketing automation workflows |
-| `operations/` | DevOps and operations workflows |
-| `productivity/` | Productivity and collaboration workflows |
-| `projects/` | Project management workflows |
-| `sales/` | Sales and lead management workflows |
-| `security/` | Security and monitoring workflows |
-| `social-media/` | Social media automation workflows |
-| `storage/` | File storage and management workflows |
-| `support/` | Customer support workflows |
-| `web-development/` | Web development and API workflows |
+| Category dir | Typical content |
+|--------------|-----------------|
+| `Activecampaign` | ActiveCampaign marketing automation workflows |
+| `Awsrekognition` | AWS Rekognition image analysis workflows |
+| `Baserow` | Baserow database workflows |
+| `Clickup` | ClickUp project management workflows |
+| `Emailreadimap` | Email (IMAP) trigger workflows |
+| `Emailsend` | Email (SMTP) send workflows |
+| `Gmail` | Gmail trigger/action workflows |
+| `Httprequest` | Generic HTTP request workflows |
+| `Openai` | OpenAI LLM workflows |
+| `Slack` | Slack messaging workflows |
+
+Note: the "By The Numbers" table in the upstream `README.md` (lines 46-49) claims 4,343 workflows / 365 integrations / 29,445 nodes / 15 categories — these are stale upstream claims; the filesystem holds 2,061 workflow JSONs across 188 dirs with 30,774 computed nodes.
 
 ## Technical Specifications
 
@@ -105,8 +97,8 @@ The available workflow categories include:
 
 ### Collection Characteristics
 
-- **Average complexity:** 5.4 nodes per workflow (down from claimed 14.9)
-- **Most common trigger types:** Webhook, Schedule, Cron, API Call
+- **Average complexity:** 14.93 nodes per workflow (30,774 nodes / 2,061 workflows; the upstream claim of 14.9 was accurate, an earlier wiki revision inverted it)
+- **Most common trigger types:** manualTrigger (927), scheduleTrigger (330), executeWorkflowTrigger (180), formTrigger (123)
 - **Popular integration patterns:**
   - Data pipelines (Trigger → Transform → Store/Send)
   - Integration sync (Cron → API → Compare → Update)
@@ -118,8 +110,8 @@ The interface provides:
 
 - **Full-text search** across all workflow metadata
 - **Category filtering** for 15+ use cases
-- **Trigger type filtering** (48 types available)
-- **Service filtering** (282 integrations)
+- **Trigger type filtering** (85 types available)
+- **Service filtering** (319 integrations)
 - **Complexity filtering** (Low/Medium/High)
 
 ## Usage
@@ -176,7 +168,7 @@ When analyzing workflows in this repository:
 - **Source:** `sources/n8n-workflows/`
 - **Live Interface:** [zie619.github.io/n8n-workflows](https://zie619.github.io/n8n-workflows)
 - **Search API:** FastAPI with SQLite FTS5
-- **Total Nodes:** 8,923 across all workflows
+- **Total Nodes:** 30,774 across all workflows (avg 14.93)
 - **Last Updated:** November 2025
 - **License:** MIT
 

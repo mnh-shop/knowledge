@@ -115,10 +115,10 @@ AF Deep Research uses **AgentField reasoners** and **skills** patterns:
 ## Package/Module Structure
 
 ### Core Package Structure:
-- **main.py**: Entry point, Agent instantiation, and API server
-- **reasoners/**: Meta-intelligence and universal reasoner modules
-- **skills/**: Search capabilities and utility functions
-- **packages/**: Third-party dependencies and module arrangements
+- **main.py**: Entry point, Agent instantiation, and API server (3,167 lines)
+- **reasoners/**: 7 modules — `meta_reasoners.py`, `universal_reasoners.py`, `research_orchestrator.py`, `dynamic_models.py`, `dynamic_infrastructure.py`, `research_package.py`, `example_reasoner.py` (plus `__init__.py`)
+- **skills/**: Search capabilities — `search/` provider package (`base.py`, `registry.py`, `jina.py`, `tavily.py`, `firecrawl.py`, `serper.py`) plus `jina_search.py` and `example_skill.py`
+- **packages/mcp/**: An MCP (Model Context Protocol) helper package — **not** third-party dependencies
 - **assets/**: Architecture diagrams and UI components
 - **tests/**: Unit and integration tests
 
@@ -179,7 +179,7 @@ Returns structured JSON with:
 - **Quality**: Two-tier filtering ensures only hyper-relevant content reaches models
 - **Relationships**: Multi-pass extraction: explicit → implied → indirect → emergent patterns
 - **Scaling**: Width AND depth scale with query complexity
-- **Integration**: REST API, SSE streaming, webhook-ready
+- **Integration**: REST API, SSE streaming (webhook-ready is an upstream platform claim, not in this repo)
 - **Deployment**: Self-host with local LLMs, air-gapped option
 
 ## Deployment Architecture
@@ -223,13 +223,12 @@ services:
 4. **Harness Orchestration**: Integration with Claude Code, Codex, Gemini CLI tools
 
 ### System Features:
-- **REST API**: Every reasoner exposed as HTTP endpoint with cryptographic provenance
-- **Cross-Agent Routing**: Zero-trust agent-to-agent communication through control plane
-- **W3C DID Identity**: Verifiable credentials for all agents and executions
-- **Tag-Based IAM**: Fine-grained access control and policy management
+> ⚠️ **Platform-level claims (upstream AgentField platform marketing — NOT verifiable in this repo):** W3C DID identity / verifiable credentials, zero-trust agent-to-agent routing, tag-based IAM, cryptographic provenance on REST endpoints, and cryptographically-signed audit trails are AgentField control-plane product claims. They do **not** appear in `sources/af-deep-research/` code or README — treat as upstream platform features, not this repo's behavior.
+- **REST API**: Research execution exposed over HTTP (verified — `ResearchResponse` schema, `main.py:286`)
+- **SSE streaming**: Real-time progress via `GET /api/ui/v1/workflows/{execution_id}/notes/events` (README.md:251)
+- **Cross-Agent Routing**: Reasoners coordinate through the AgentField control plane (`AGENTFIELD_SERVER`, `main.py:64`)
 - **Workflow DAG**: Complex orchestration with dependency tracking
 - **Memory Persistence**: Research state and learning insights across sessions
-- **Audit Trails**: Cryptographically-signed execution records for compliance
 
 ## Usage Examples
 

@@ -15,7 +15,10 @@ verified_by: codegraph-verify
 
 GoClaw implements MCP (Model Context Protocol) as a **client** that connects to external MCP servers and automatically discovers their tool catalog. Tools from connected MCP servers appear alongside GoClaw's 32+ built-in tools in the agent tool registry — no custom code required.
 
-GoClaw also runs an **MCP bridge server** (`internal/mcp/bridge_server.go`) that exposes GoClaw's own built-in tools (22 tools: `read_file`, `web_search`, `memory_search`, `browser`, `delegate`, etc.) as an MCP server that other MCP clients can consume.
+GoClaw also runs **two MCP server surfaces**:
+
+- **Bridge server** (`internal/mcp/bridge_server.go`) — exposes GoClaw's own built-in tools (22 tools: `read_file`, `web_search`, `memory_search`, `browser`, `delegate`, etc.) as an MCP server that other MCP clients can consume.
+- **CRUD server** (`internal/mcp/crud_server.go`) — a second, distinct MCP server mounted at `/api/mcp/` that exposes GoClaw's CRUD-style resource management surface as MCP tools backed by the same store/subsystem implementations used by the gateway's WebSocket RPC methods.
 
 ## Transport Support
 
@@ -51,6 +54,14 @@ Configure MCP servers in `config.json` under `tools.mcp_servers`:
 ```
 
 Servers can also be registered via Dashboard (Settings → MCP Servers) or HTTP API (`POST /v1/mcp/servers`).
+
+## CRUD MCP Server (`/api/mcp/`)
+
+Beyond the tool bridge, GoClaw mounts a **second, distinct MCP server** at `/api/mcp/` (`internal/mcp/crud_server.go`, wired in `BuildMux()` — `cmd/gateway.go:554`). Where the bridge exposes agent-facing *tools*, the CRUD server exposes GoClaw's **resource-management surface** as MCP tools: agents, sessions, skills, cron, config, agent links, API keys, config permissions, Bitrix24 portals, run timelines, teams, teams tasks, teams workspace, channels, channel instances, hooks, heartbeat, pairing, exec approval, usage, quota, chat/chat-behavior, LLM completion, runtime logs, outbound send, and TTS voices.
+
+- **Auth:** gated by a single shared bearer secret `gateway.mcp_server_token` (config `config_channels.go:429`) — no per-caller identity. The token is the full-trust boundary, treated like the gateway-token/owner path.
+- **Tenant scoping:** callers may optionally scope a request to a tenant via the `X-GoClaw-Tenant-Id` header (UUID or slug), with **no membership check**; absent or unresolvable headers fall back to `store.MasterTenantID`. Applied once per request via `mcpserver.WithHTTPContextFunc` in `NewCRUDServer`, so every tool handler reads `store.TenantIDFromContext(ctx)` with a concrete value.
+- **Graceful degradation:** all store dependencies are optional (`CRUDDeps`) — tool groups whose backing store is nil are simply not registered, so the server degrades gracefully across editions (e.g. SQLite/lite builds).
 
 ## Tool Discovery & Prefixes
 

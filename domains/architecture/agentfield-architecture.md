@@ -1,12 +1,12 @@
 ---
 name: agentfield-architecture
-tags: [agentfield, architecture, cli, control-plane, docker, golang, harness, identity, orchestration, plugin-sdk, quadlet, security, storage, systemd, virtualization]
-description: "AgentField architecture: AI control plane with micro-VM sandboxing, identity management, and pipeline orchestration"
+tags: [agentfield, architecture, cli, control-plane, docker, golang, harness, identity, mcp, orchestration, plugin-sdk, quadlet, security, storage, systemd]
+description: "AgentField architecture: AI control plane orchestrating agent nodes via Python/Go/TS SDKs, harness providers, DID identity, and in-process execution"
 source: sources/agentfield/
 ---
 
 # AgentField: AI Control Plane Architecture
-**Source:** `sources/agentfield/`
+**Source:** `sources/agentfield/` (v0.1.118-rc.3, Apache-2.0)
 
 **Status:** Active research target  
 **License:** Apache 2.0  
@@ -19,14 +19,19 @@ source: sources/agentfield/
 ## Table of Contents
 
 1. [Architecture Overview](#1-architecture-overview)
-2. [Three-Tier Architecture](#2-three-tier-architecture)
-3. [SDK Decorator Pattern](#3-sdk-decorator-pattern)
-4. [Cross-Agent Mesh](#4-cross-agent-mesh)
-5. [Harness Orchestration](#5-harness-orchestration)
-6. [Identity and IAM (DID/VC)](#6-identity-and-iam-didvc)
-7. [Memory System](#7-memory-system)
-8. [Deployment Architecture](#8-deployment-architecture)
-9. [Key Source Files](#9-key-source-files)
+2. [Execution & Concurrency Model](#2-execution--concurrency-model)
+3. [Binaries & Build](#3-binaries--build)
+4. [Server & API Surface](#4-server--api-surface)
+5. [SDKs](#5-sdks)
+6. [Harness Orchestration](#6-harness-orchestration)
+7. [Identity and IAM (DID/VC)](#7-identity-and-iam-didvc)
+8. [Memory System](#8-memory-system)
+9. [Node Package System](#9-node-package-system)
+10. [Desktop, Skills & Integrations](#10-desktop-skills--integrations)
+11. [Configuration System](#11-configuration-system)
+12. [Deployment Architecture](#12-deployment-architecture)
+13. [Key Source Files](#13-key-source-files)
+14. [Note on docs/ARCHITECTURE.md](#14-note-on-docsarchitecturemd)
 
 ---
 
@@ -34,7 +39,9 @@ source: sources/agentfield/
 
 AgentField is an open-source AI control plane for building and operating production-grade multi-agent systems. The project provides infrastructure that makes agents callable as REST APIs with routing, async execution, memory, cryptographic identity, tag-based IAM, harness orchestration, and observability.
 
-It competes with frameworks like LangChain on the "what runs it" axis rather than the "how you write it" axis -- AgentField cares about execution, orchestration, and governance, not agent implementation patterns.
+**AgentField does not virtualize agent execution.** A full-source verification found no hypervisor or VM-sandbox isolation code anywhere in the repository — agents are ordinary processes (Python/Go/TypeScript nodes) that register with the control plane and receive execution requests over HTTP. "Sandboxing" appears nowhere in the design; the isolation model is cryptographic identity + authorization, not process virtualization. (Correcting an earlier framing of this doc that claimed otherwise.)
+
+It competes with frameworks like LangChain on the "what runs it" axis rather than the "how you write it" axis — AgentField cares about execution, orchestration, and governance, not agent implementation patterns.
 
 **Key differentiators:**
 - Every agent execution is a REST POST endpoint with cryptographic provenance
@@ -42,74 +49,90 @@ It competes with frameworks like LangChain on the "what runs it" axis rather tha
 - W3C DID + Verifiable Credential identity for every agent, reasoner, and execution
 - Harness system treats LLM CLI tools (Claude Code, Codex, Gemini, OpenCode) as autonomous computational units
 - Stateless horizontally-scalable Go backend with agents connecting from anywhere
+- Embedded MCP server at `POST /mcp` (5 tools, enabled by default)
 
 ---
 
-## 2. Three-Tier Architecture
+## 2. Execution & Concurrency Model
 
-```
-+--------------------------------------------------------------+
-|                    Tier 3: Web UI                             |
-|         React/TypeScript embedded in Go binary               |
-|        Monitoring, workflow DAGs, audit trails, IAM          |
-+--------------------------------------------------------------+
-                            |
-                            v
-+--------------------------------------------------------------+
-|                 Tier 1: Control Plane (Go)                    |
-|    Central orchestration, execution, governance layer         |
-|    - Gin HTTP server on :8080                                |
-|    - Execution queue (goroutine worker pool, 16 workers)     |
-|    - DID services (keystore, registry, VC chain)              |
-|    - Tag-based IAM (PDP)                                     |
-|    - Workflow DAG engine                                     |
-|    - Webhook/trigger dispatchers                             |
-|    - OpenTelemetry tracing, Prometheus metrics               |
-|    - gRPC admin server on :8180                              |
-+--------------------------------------------------------------+
-          |                    |                    |
-          v                    v                    v
-+------------------+ +------------------+ +------------------+
-|    Tier 2:       | |    Tier 2:       | |    Tier 2:       |
-|   Python SDK     | |     Go SDK       | |  TypeScript SDK  |
-|   65 modules     | |   Mirror API     | |   Browser/Node   |
-|  FastAPI-based   | |   Native Go      | |   Agents         |
-+------------------+ +------------------+ +------------------+
+The execution engine is **in-process and in-memory**, not PostgreSQL-backed.
+
+### Completion Queue
+
+Asynchronous executions finish through an in-process completion queue (`control-plane/internal/handlers/execute.go`):
+
+```go
+// execute.go:174
+completionQueue chan completionJob
 ```
 
-### Tier 1: Control Plane
+- A single worker goroutine drains the channel (`ensureCompletionWorker()`, execute.go:2933-2937)
+- Queue size defaults to **2048**, overridable via `AGENTFIELD_EXEC_COMPLETION_QUEUE` (execute.go:2932)
+- `enqueueCompletion()` is non-blocking: if the queue is full it returns `"completion queue is full"` (execute.go:2957-2961)
 
-Single Go binary (`cmd/af`) that runs as:
-- `af server` -- production daemon mode
-- `af dev` -- local development mode with hot-reload and SQLite
-- `af init <name>` -- scaffold new agent projects
+### Concurrency Limiter
 
-The control plane is **stateless for horizontal scaling** -- add more replicas backed by the same PostgreSQL.
+`control-plane/internal/handlers/execution_guards.go` gates every execution via `CheckExecutionPreconditions()`:
+- **LLM health circuit breaker** — refuses execution when the LLM backend circuit is open (503 `llm_unavailable`, execution_guards.go:90-118)
+- **Per-agent concurrency limit** — `AgentConcurrencyLimiter.Acquire(agentNodeID)` (defined in `control-plane/internal/handlers/agent_concurrency.go:37-38`), refusal returns 429 `concurrency_limit`
+- Errors carry a stable machine `ErrorCategory`: `llm_unavailable`, `concurrency_limit`, `agent_timeout`, `agent_error`, `agent_unreachable`, `bad_response`, `internal_error` (execution_guards.go:127-136)
 
-### Tier 2: SDKs
+### Persistence: PostgreSQL, not a distributed queue
 
-Three SDKs implement the agent runtime:
-- **Python SDK** (65 modules, most mature) -- agents are FastAPI subclasses
-- **Go SDK** -- native Go agents using the same architectural patterns
-- **TypeScript SDK** -- browser and Node.js agents
+State persists in **PostgreSQL** (pg16 + pgvector) via GORM — 38 Goose-managed SQL migrations in `control-plane/migrations/` (000–037+). There is **no Redis, no external queue, no lease-based scheduler**:
 
-All SDKs implement the same core primitives: reasoners, skills, sessions, memory, DID identity, harness dispatch, and call routing.
+- Node **presence** uses a short lease: `DefaultLeaseTTL = 5 * time.Minute` (`control-plane/internal/handlers/nodes_rest.go:17-18`), renewed by `POST /nodes/:node_id/heartbeat` and `PATCH /nodes/:node_id/status` (NodeStatusLeaseHandler, routes_core.go:57)
+- The action-claim mechanism is explicitly unfinished — `ClaimActionsHandler` comment (nodes_rest.go:194-195):
 
-### Tier 3: Web UI
+  > "Currently the scheduler backend is under construction, so this returns an empty queue but still renews leases."
 
-React/TypeScript UI embedded in the Go binary via Go's `embed` package:
-- Workflow DAG visualization
-- Agent management dashboard
-- Execution audit trail viewer
-- Tag and policy management for IAM
+- Execution results/status/events are stored in PostgreSQL and streamed via in-memory event bus + SSE, not pulled from a queue.
 
 ---
 
-## 3. SDK Decorator Pattern
+## 3. Binaries & Build
 
-The Python SDK uses decorators as its primary developer surface, compiling to REST endpoints on a FastAPI subclass.
+The control plane builds **4 binaries**, all under `control-plane/cmd/`:
 
-### Core Decorators
+| Binary | Purpose |
+|--------|---------|
+| `af` | Unified CLI. **Bare `af` (no subcommand) = server mode** (`cmd/af/main.go`, root command `Run: runServerFunc`). Subcommands: `server`, `dev`, `init`, `run`, `call`, `wait`, `tail`, `skill`, `catalog`, `install`, `doctor`, `harness` |
+| `agentfield-server` | Standalone server binary (Docker/distroless deployments), `cmd/agentfield-server/main.go` |
+| `af-tray` | macOS menu-bar app: fleet status, 24h usage chart (`chart_render.go`), Claude Code quota read from Keychain (`claude_quota_darwin.go`), launchd autostart/bootstrap (`launchd_darwin.go`) |
+| `x25519gen` | X25519 keypair generator for DID key-agreement keys (`cmd/x25519gen/main.go`) |
+
+`control-plane/build-single-binary.sh` produces self-contained platform binaries that **embed the web UI** via Go `//go:embed` (web/client → dist; build flags `-tags "embedded sqlite_fts5"`).
+
+---
+
+## 4. Server & API Surface
+
+The server (`control-plane/internal/server/server.go`) is a single Go process that serves:
+
+- **REST API** at `/api/v1` — 10 route groups, ~127 registered routes across 13 `routes_*.go` files (Core 53, Memory 14, Triggers 18, Agentic 12, DID 9, Observability 7, Admin 6, ARD 5, Knowledge 3, MCP 3)
+- **gRPC admin** `AdminReasonerService` on **HTTP port + 100 = 8180** (`server.go:469` `adminPort := cfg.AgentField.Port + 100`, `server.go:712-738` `startAdminGRPCServer`, proto at `control-plane/proto/admin/reasoner_admin.proto`), API-key protected via `middleware/grpc_auth.go`
+- **Embedded MCP server** at `POST /mcp` (`routes_mcp.go:40-69`), streamable-HTTP JSON-RPC 2.0, enabled by default (`features.mcp.enabled`, default true), 5 tools (see [[agentfield-api]] §MCP)
+- **UI API** at `/api/ui/v1` (88 routes) + `/api/ui/v2` (3: workflow-runs list/detail/golden) (`routes_ui.go:50, 281-286`)
+- **Public endpoints** at root: `/metrics` (Prometheus), `/health` (`routes_core.go:21-22`), `/.well-known/did.json`, `/.well-known/ai-catalog.json`, `/debug/pprof` (admin-gated), and the `/ui/` SPA
+- **Knowledge base** at `/api/v1/agentic/kb` (topics/articles/guide, registered on the root router, `routes_agentic.go:40-49`)
+
+Route files: `routes_admin.go`, `routes_agentic.go`, `routes_ard.go`, `routes_connector.go`, `routes_core.go`, `routes_did.go`, `routes_knowledge.go`, `routes_mcp.go`, `routes_memory.go`, `routes_middleware.go`, `routes_observability.go`, `routes_triggers.go`, `routes_ui.go`.
+
+### MCP (correction from prior docs)
+
+The embedded MCP server was **removed** in PR #359 ("Refactor: remove all MCP code from codebase") and **re-added in PR #817**. Current state: fully present, on by default, 5 tools (`discover_agents`, `get_reasoner_schema`, `execute_reasoner`, `get_run`, `wait_run`; `docs/mcp-integration.md`), disabled via `AGENTFIELD_MCP_ENABLED=false` / `features.mcp.enabled: false`, in which case `/mcp` returns 404.
+
+---
+
+## 5. SDKs
+
+Three SDKs implement the agent runtime under `sdk/`:
+
+### Python SDK (`sdk/python/agentfield/`, 54 top-level modules)
+
+Most mature. Key modules: `agent.py` (Agent class: decorators, call(), pause(), run(), harness), `agent_ai.py` (LLM via LiteLLM), `agent_discovery.py`, `agent_field_handler.py` (registration/heartbeat/lifecycle), `agent_pause.py`, `agent_registry.py`, `agent_serverless.py`, `agent_workflow.py`, `did_manager.py`, `vc_generator.py`, `memory.py` + `memory_events.py`, `multimodal.py` / `multimodal_response.py`, `sessions.py`, `triggers.py`, `tool_calling.py`, `client.py`, `harness/` (4 providers), `verification.py`.
+
+The Python agent is a FastAPI subclass: decorators compile to REST endpoints.
 
 ```python
 app = agentfield.Agent("my-agent")
@@ -120,38 +143,18 @@ app = agentfield.Agent("my-agent")
 @app.on_change()       # Reactive memory event listener
 ```
 
-### How `@app.reasoner()` Works
-
-1. Wraps the user function in a `tracked_func` that integrates with the workflow handler
-2. Generates type-hint-driven JSON schemas on demand (avoids expensive Pydantic model creation per handler -- saves ~1.5-2 KB per handler)
+How `@app.reasoner()` works:
+1. Wraps the user function in a `tracked_func` integrated with workflow tracking
+2. Generates type-hint-driven JSON schemas on demand (avoids Pydantic model creation per handler — saves ~1.5-2 KB per handler)
 3. Creates FastAPI `@post(endpoint_path)` routes
 4. Stores input type tuples `(type, default)` for lightweight runtime validation via `_validate_handler_input()`
-5. Auto-exposes every reasoner as a REST POST endpoint at `/reasoners/{id}` and `/api/v1/execute/{agent}.{id}`
+5. Auto-exposes every reasoner as a REST POST endpoint, also callable via `POST /api/v1/execute/{agent}.{id}`
 
-### The `app.ai()` Method
+`app.ai()` provides structured LLM calling via LiteLLM (multi-provider): `schema=MyPydanticModel` typed returns, streaming, multimodal, tool use via `tools="discover"`.
 
-Provides structured LLM calling using LiteLLM for multi-provider support (Anthropic, OpenAI, Google, etc.):
-- `schema=MyPydanticModel` returns typed Pydantic instances
-- Supports streaming, multimodal inputs, and tool use via `tools="discover"`
+### Go SDK (`sdk/go/`)
 
-### Additional SDK Methods
-
-- `app.note()` -- Add execution audit notes
-- `app.pause()` -- Human-in-the-loop approval gate
-- `app.discover()` -- Query agent/reasoner capabilities across the mesh
-- `app.call("node_id.reasoner_name", input={...})` -- Cross-agent call routing
-
-### TypeScript SDK Equivalent
-
-```typescript
-const agent = new Agent({ name: "my-agent" });
-agent.reasoner({ id: "analyze" }, async (input: { text: string }) => {
-  const result = await agent.ai(input.text, { provider: "anthropic" });
-  return result;
-});
-```
-
-### Go SDK Equivalent
+Packages: `agent/` (registration, DID, harness, memory, lifecycle, cancel), `client/`, `types/`, `ai/`, `harness/`, `did/`, `inputs/`. Mirrors the Python primitives with native Go types.
 
 ```go
 agent := agent.NewAgent("my-agent")
@@ -161,161 +164,112 @@ agent.Reasoner("analyze", func(ctx context.Context, input AnalyzeInput) (*Analyz
 })
 ```
 
----
+### TypeScript SDK (`sdk/typescript/src/`)
 
-## 4. Cross-Agent Mesh
+Modules: `agent/`, `harness/`, `did/`, `memory/`, `workflow/`, `crypto/`, plus `ai/`, `approval/`, `router/`, `session.ts`, `sessionTransport.ts`, `triggers/`, `usage/`, `verification/`, `observability/`.
 
-### Call Routing
-
-`app.call("node_id.reasoner_name", input={...})` routes all cross-agent calls **through the control plane** (never direct agent-to-agent HTTP), ensuring every edge is recorded for:
-- Workflow DAGs
-- Cryptographic provenance chains (VC chain per execution)
-- Live observability (OpenTelemetry spans)
-
-### Execution Flow
-
+```typescript
+const agent = new Agent({ name: "my-agent" });
+agent.reasoner({ id: "analyze" }, async (input: { text: string }) => {
+  const result = await agent.ai(input.text, { provider: "anthropic" });
+  return result;
+});
 ```
-Agent A                    Control Plane                  Agent B
-   |                            |                            |
-   |--- app.call("B.fn") ------>|                            |
-   |                            |--- POST /execute/B.fn ---->|
-   |                            |<--- result ----------------|
-   |<--- result ----------------|                            |
-```
-
-### Key Design Decisions
-
-- **No local shortcut**: `app.call()` has no synchronous shortcut even for same-process target functions. All calls go through the control plane's execution gateway at `POST /api/v1/execute/{target}`.
-- **Async execution**: `is_async` mode fires a POST to the async execute endpoint, then polls `GET /api/v1/executions/{id}` in a wait loop.
-- **Pause propagation**: Cross-reasoner pause propagation propagates WAITING status up the call tree via `notify_awaiter_status()` -- without this, 3+-deep pause chains would time out at wallclock.
-- **Session restoration**: `resume_session_id` supports multi-turn harness sessions across service restarts.
-- **Instance tracking**: Agent instances carry an `agent_instance_id` (per-process UUID) so the control plane can detect mid-flight redeploys and fail in-flight executions from previous OS processes.
-
-### Discovery
-
-`app.discover()` queries `GET /api/v1/discovery/capabilities` with tag/name/health filters to find agents and their reasoners/skills across the mesh, returning `AgentCapability` and `ReasonerCapability` objects.
 
 ---
 
-## 5. Harness Orchestration
+## 6. Harness Orchestration
 
 The harness system treats LLM CLI tools as autonomous computational units. `app.harness(prompt, provider=...)` dispatches multi-turn tasks to external coding-agent CLIs.
 
-### Supported Providers (4 current)
+### Supported Providers (4)
 
-| Provider | Mechanism | Lazy Import | 
-|----------|-----------|-------------|
-| `claude-code` | `claude_agent_sdk` Python package | Yes |
-| `codex` | `codex exec --json` subprocess | No |
-| `gemini` | `gemini -p` subprocess | No |
-| `opencode` | `opencode run --format json` subprocess | No |
+| Provider | Mechanism | Lazy Import | Provider File |
+|----------|-----------|-------------|---------------|
+| `claude-code` | `claude_agent_sdk` Python package | Yes | `harness/providers/claude.py` |
+| `codex` | `codex exec --json` subprocess | No | `harness/providers/codex.py` |
+| `gemini` | `gemini -p` subprocess | No | `harness/providers/gemini.py` |
+| `opencode` | `opencode run --format json` subprocess | No | `harness/providers/opencode.py` |
 
-### Harness Architecture
+Factory: `harness/providers/_factory.py` (`SUPPORTED_PROVIDERS`), base class `_base.py`.
 
-```python
-class HarnessProvider:
-    async def execute(self, prompt: str, options: dict) -> RawResult:
-        """Base class for harness providers. Located in
-        harness/providers/_base.py."""
+### Harness Runner Pipeline
 
-class HarnessRunner:
-    """Wraps all providers with a common pipeline."""
-    - Transient error detection + exponential backoff (±25% jitter, 3 retries)
-    - Schema validation retry loop (2 retries for output JSON compliance)
-    - Cost capping (max_budget_usd)
-    - Turn limiting (max_turns)
-    - Tool access control
-    - System prompt injection
-```
+`HarnessRunner` wraps all providers with a common pipeline:
+- Transient error detection + exponential backoff (±25% jitter, 3 retries)
+- Schema validation retry loop (2 retries for output JSON compliance)
+- Cost capping (`max_budget_usd`)
+- Turn limiting (`max_turns`)
+- Tool access control
+- System prompt injection
 
 ### Output Recovery Pipeline (3 layers)
 
-1. **`_ai_schema_repair()`** -- Cheap LLM call (90s timeout) that reformats malformed JSON output into valid schema before doing the expensive full rerun
-2. **Schema validation retry** -- Retry with diagnostic followup prompt if `_ai_schema_repair` fails
-3. **Full harness re-run** -- Complete re-execution if both repair and retry fail
+1. **`_ai_schema_repair()`** — Cheap LLM call (90s timeout) reformats malformed JSON into valid schema before an expensive full rerun
+2. **Schema validation retry** — Retry with a diagnostic follow-up prompt if repair fails
+3. **Full harness re-run** — Complete re-execution if both repair and retry fail
 
 ### Adding New Providers
 
-1. Create `harness/providers/mytool.py` with a class implementing `async def execute(prompt, options) -> RawResult`
+1. Create `harness/providers/mytool.py` implementing `async def execute(prompt, options) -> RawResult`
 2. Add the name to `SUPPORTED_PROVIDERS` in `_factory.py`
 3. Add an import + branch in `build_provider()`
 
-The Go SDK mirrors this architecture via `harness.NewRunner()` and `agent.Harness()`.
+The Go SDK mirrors this via `sdk/go/harness/` (`harness.NewRunner()`, `agent.Harness()`).
 
 ---
 
-## 6. Identity and IAM (DID/VC)
+## 7. Identity and IAM (DID/VC)
 
 AgentField implements a complete W3C DID + Verifiable Credential identity system.
 
 ### DID Hierarchy
 
 ```
-Platform DID (auto-generated)
+Platform DID (control plane itself)
   |-- Node DID (per agent node)
        |-- Function DID (per reasoner/skill)
 ```
 
-### DID Types
+### Key Generation & Crypto
 
-- **`did:web`** (primary) -- Supports revocation. Hosted at resolution URLs by the control plane.
-- **`did:key`** (fallback) -- Self-contained but non-revocable.
-
-### Cryptographic Stack
-
-- Algorithm: Ed25519
-- Key derivation: BIP32
-- Keystore encryption: AES-256-GCM at rest
-- Auto-registration: `POST /api/v1/did/register` returns a `DIDIdentityPackage` with per-component keys
+- **Algorithm:** Ed25519 signing keys per component (`did_auth.go:172-175` signs `{timestamp}:{SHA256(body)}` with the caller's Ed25519 key)
+- **Key derivation:** BIP32 (config: `features.did.derivation_method: "BIP32"`)
+- **Keystore encryption:** AES-256-GCM at rest (`config/agentfield.yaml` `keystore.encryption: "AES-256-GCM"`; `control-plane/internal/encryption/encryption.go:5, 21, 51-58` — 32-byte key from PBKDF2)
+- **Key rotation:** 90 days default (`config.go:327` `KeyRotationDays int ... default:"90"`)
+- **Key-agreement:** X25519 (`x25519gen` binary generates keypairs; JWE over X25519 in SDK crypto, `sdk/python/agentfield/crypto.py`)
+- **DID methods:** `did:key` (config default) with `did:web` resolution endpoints (`/.well-known/did.json`, `/agents/:agentID/did.json`)
 
 ### Authentication Flow (Cross-Agent Calls)
 
 Every cross-agent call carries DID auth headers:
-- `X-Caller-DID` -- The caller's DID
-- `X-DID-Signature` -- Ed25519 signature over `{timestamp}:{SHA256(body)}`
-- `X-DID-Timestamp` -- Signing timestamp
+- `X-Caller-DID` — the caller's DID
+- `X-DID-Signature` — Ed25519 signature over `{timestamp}:{SHA256(body)}`
+- `X-DID-Timestamp` — signing timestamp
 
 ### Replay Protection
 
-In-memory signature cache with TTL equal to the timestamp window (default 300s).
+Global replay cache with TTL equal to the timestamp window (default **300s**, `did_auth.go:145-149` `TimestampWindowSeconds`). Error codes (did_auth.go:188-298): `invalid_did_format`, `did_auth_required`, `invalid_timestamp`, `timestamp_expired`, `body_read_error`, `body_too_large`, `invalid_signature_encoding`, `replay_detected`, `verification_error`, `invalid_signature`.
 
 ### Permission Model (Two-Step)
 
-**Step 1: Tag Approval**
-- Agents propose tags at registration
-- Control plane evaluates against configured rules (auto/manual/forbidden)
-- Admin approves/rejects via API
+**Step 1: Tag Approval** — agents propose tags at registration; control plane evaluates against rules (`auto`/`manual`/`forbidden` modes, sensitive tags like `financial`/`payments` require manual review); admin approves/rejects via API.
 
-**Step 2: Policy Evaluation**
-- Tag-based access policies with function-level allow/deny lists
-- Parameter constraints on allowed values
-- Priority-based first-match-wins evaluation
+**Step 2: Policy Evaluation** — tag-based access policies with function-level allow/deny lists (`allow_functions: ["query_*"]`), parameter constraints, priority-based first-match-wins (`config/agentfield.yaml` `features.did.authorization.access_policies`).
 
-### VC Hierarchy (3-Tier)
+### VC Generation
 
-```
-Platform VC (highest level governance)
-  |-- Node VC (per-agent policies)
-       |-- Function VC (per-reasoner/skill permissions)
-```
-
-All tags are:
-- Normalized (lowercased, deduplicated)
-- Travel as `AgentTagVC` -- signed Ed25519 W3C Verifiable Credentials
-- Decentralized verification: SDKs cache policies, revocation lists, and admin public keys locally (5-min refresh)
+`vc_generator.py` (Python SDK) + Go equivalents generate signed Ed25519 W3C VCs. VC hierarchy: Platform VC → Node VC → Function VC. Agent tags travel as `AgentTagVC`. SDKs cache policies, revocation lists, and admin public keys locally for decentralized verification (5-min refresh via `localVerifier.NeedsRefresh()` in Go SDK).
 
 ### Default Deny
 
-Fail-closed by default:
-- No matching policy = deny (with optional `DefaultDeny` config)
-- Expired/revoked VCs block calls
-- `pending_approval` agents return 503
+Fail-closed: no matching policy = deny; expired/revoked VCs block calls; `pending_approval` agents return 503.
 
 ---
 
-## 7. Memory System
+## 8. Memory System
 
-AgentField provides cross-agent memory with 4 scopes:
+Cross-agent memory with 4 scopes:
 
 | Scope | Visibility | Lifetime | Use Case |
 |-------|-----------|----------|----------|
@@ -326,43 +280,60 @@ AgentField provides cross-agent memory with 4 scopes:
 
 ### Memory Operations
 
-- KV store per scope
-- Vector search (cosine distance, pgvector or BoltDB)
-- Event-based subscriptions via `@app.on_change()`
-- Reactive listeners fire when memory is written in watched keys
-
-### Memory Endpoints
-
-- `POST /api/v1/executions/note` -- Add execution audit notes
+- KV store per scope (`POST /memory/set`, `/get`, `/delete`, `/list`)
+- Vector store (pgvector) with cosine similarity search (`/memory/vector/*`)
+- Event-based subscriptions via `@app.on_change()`; SSE/WebSocket streams at `/api/v1/memory/events/sse` and `/events/ws` (`routes_memory.go:50-51`), plus `/events/history` (`:52`)
 - All memory operations go through the control plane (not agent-local)
 
 ---
 
-## 8. Deployment Architecture
+## 9. Node Package System
 
-### Local Mode (`af dev` / `af server`)
+Nodes are distributed as installable packages, managed by `control-plane/internal/packages/`:
 
-```
-+------------------------------------------+
-|  Single Go Process                        |
-|  +-----------+  +-----------+             |
-|  | SQLite    |  | BoltDB    |             |
-|  | (relational)|  | (KV store) |           |
-|  +-----------+  +-----------+             |
-|  +------------------------------------+   |
-|  | Go Server                           |   |
-|  | - Gin HTTP on :8080                |   |
-|  | - Embedded React UI at /ui/        |   |
-|  | - Execution queue (goroutines)     |   |
-|  | - DID services                     |   |
-|  | - Web UI embedded via Go embed     |   |
-|  +------------------------------------+   |
-+------------------------------------------+
-```
+- **Manifest:** `agentfield-package.yaml` (e.g. `integrations/linear/agentfield-package.yaml`, `databricks`, `snowflake`) with a `config_version` schema
+- **Commands:** `af install <package-path>` (`cli/commands/install.go:43`), `af run` (`cli/agent_commands.go:260`), `af call <node>.<reasoner>` (`cli/call.go:48`), `af uninstall`
+- **Secrets:** encrypted at rest with AES-256-GCM via `encryption.EncryptionService` — `secrets/global.enc` (shared) and `secrets/<node>.enc` (per-node) under `~/.agentfield` (`packages/secrets.go:19-22, 83-104`)
+- **Env resolution:** `packages/env_resolver.go` resolves `user_environment` vars (prompt + store in encrypted secret store, `Resolve()`/`lookup()`/`promptAndStore()`)
+- **Runner:** `packages/runner.go` + `pyinterp.go`/`gointerp.go` execute installed nodes
 
-- No external dependencies (no PostgreSQL, no Redis)
-- Data path: `~/.agentfield/data/`
-- Hot-reload via Air
+---
+
+## 10. Desktop, Skills & Integrations
+
+### Desktop App (`desktop/`)
+
+Electron app (`electron.vite.config.ts`, `src/main|preload|renderer|shared`):
+- Screens: Agents list, Secrets, Activity, Install flow, Settings (`desktop/src/renderer/src/components/`)
+- Autostart + launchd integration for local agent nodes
+- Contracts with `af install/run/stop` to manage node lifecycle from the UI
+
+### Skills (`skillkit/`)
+
+3 embedded skills in `control-plane/internal/skillkit/skill_data/`: `agentfield`, `agentfield-personal`, `agentfield-use`. Installed via `af skill install --target <claude-code|codex|gemini|opencode|aider|windsurf|cursor>`. Embedded into the binary via `//go:embed` (`embed.go`), synced by `scripts/sync-embedded-skills.sh`.
+
+### Integrations & Examples
+
+- `integrations/`: databricks, linear, sentry, snowflake (each ships an `agentfield-package.yaml`)
+- `examples/`: python_agent_nodes, go_agent_nodes, ts_agent_nodes, go_harness_demo, triggers-demo, triggers-demo-ts, ts-node-examples, benchmarks, e2e_resilience_tests
+- `docs/`: 11 guides including `mcp-integration.md`, `harness-providers.md`, `installing-agent-nodes.md`, `VC_AUTHORIZATION_ARCHITECTURE.md`, `ENVIRONMENT_VARIABLES.md`
+
+---
+
+## 11. Configuration System
+
+- **YAML:** `control-plane/config/agentfield.yaml` with sections `agentfield` (port, execution queue), `ui`, `api` (auth: api_key/admin_token/internal_token), `telemetry` (tracing/OTel), `logging`, `storage`, `features` (did incl. keystore + authorization, mcp, connector)
+- **Env vars:** 43 `AGENTFIELD_*` variables documented in `control-plane/.env.example`; `AGENTFIELD_CONFIG_FILE` overrides the config path
+- **Loading:** Viper with prefix `AGENTFIELD` and `.` → `_` key replacement (`cmd/af/main.go:226-277` `loadConfig`), `AutomaticEnv`, plus explicit binds (e.g. `AGENTFIELD_API_KEY` / `AGENTFIELD_API_AUTH_API_KEY`)
+- **Config storage API:** runtime config overrides via `/api/v1/configs` CRUD (`config_storage.go`)
+
+---
+
+## 12. Deployment Architecture
+
+### Local Mode (`af dev` / bare `af`)
+
+Single process, zero external dependencies: Gin HTTP on :8080, embedded React UI, in-process execution queue, DID keystore, and either SQLite or the pure-Go `modernc.org/sqlite` driver. Data under `~/.agentfield/`.
 
 ### Production Mode (PostgreSQL)
 
@@ -390,43 +361,49 @@ AgentField provides cross-agent memory with 4 scopes:
          +-----------------+
 ```
 
-- PostgreSQL 16 with pgvector extension
-- DB migrations managed by Goose, run automatically before server start
-- Stateless control plane design means horizontal scaling by adding replicas
-- Helm chart for Kubernetes with configurable replicas, persistent volumes, ingress
-
-### Storage Abstraction
-
-The Go server initializes a `StorageFactory` abstracting SQLite vs PostgreSQL:
-- Works with `gorm.io/gorm` as primary ORM layer
-- Supports both `github.com/mattn/go-sqlite3` (CGO) and `modernc.org/sqlite` (pure Go)
-- No Redis, no RabbitMQ, no external queue -- execution queue is in-process (goroutine-based worker pool)
+- PostgreSQL 16 with pgvector extension; GORM ORM; 38 Goose migrations run automatically at startup
+- Stateless control plane → horizontal scaling by adding replicas
+- Helm chart in `deployments/helm/`; Docker Compose in `deployments/docker/`
+- Execution state lives in PostgreSQL; the completion queue is per-process in-memory (see §2)
 
 ---
 
-## 9. Key Source Files
+## 13. Key Source Files
 
 | File | Purpose |
 |------|---------|
-| `sdk/python/agentfield/agent.py` (5391 lines) | Python SDK Agent class: decorators, call(), pause(), run(), harness, workflow tracking |
-| `sdk/python/agentfield/agent_ai.py` | Python LLM integration via LiteLLM, structured output, streaming, multimodal |
-| `sdk/python/agentfield/did_manager.py` | Python DID identity package, agent registration, execution context creation |
-| `sdk/python/agentfield/vc_generator.py` | Python Verifiable Credential generation and verification |
-| `sdk/python/agentfield/memory.py` | Cross-agent memory with 4 scopes |
-| `sdk/python/agentfield/harness/` | Harness orchestration: runner, providers, schema validation |
-| `sdk/python/agentfield/agent_field_handler.py` | AgentField server communication: registration, heartbeat, lifecycle |
-| `sdk/python/agentfield/client.py` | API client: execution, memory, discovery, approvals |
-| `sdk/go/agent/` | Go SDK: registration, DID, harness, memory, lifecycle, cancel |
-| `sdk/go/harness/` | Go harness: runner, Claude Code/Codex/OpenCode/Gemini providers |
-| `sdk/go/did/` | Go DID: manager, client, VC generator, types |
-| `sdk/typescript/src/` | TypeScript SDK: Agent, harness, DID, memory, workflow, crypto |
-| `control-plane/cmd/af/main.go` | Unified CLI binary |
-| `control-plane/internal/server/server.go` | Go server: Gin router, services, DID, storage, triggers, dispatchers |
-| `control-plane/internal/server/routes_core.go` | Core REST routes |
-| `control-plane/internal/services/` | Go services: DID, VC, tags, policies, status, health, webhooks, triggers |
-| `control-plane/internal/skillkit/skill_data/agentfield/SKILL.md` | The /agentfield Claude Code skill (255-line architectural specification) |
-| `deployments/docker/docker-compose.yml` | Docker Compose: PostgreSQL + control-plane + demo agents |
-| `deployments/helm/` | Helm chart for Kubernetes deployment |
+| `control-plane/internal/handlers/execute.go` | Execution engine: completion queue (line 174), async worker pool, cancel/pause/resume/restart |
+| `control-plane/internal/handlers/execution_guards.go` | Concurrency limiter + LLM health circuit breaker |
+| `control-plane/internal/handlers/nodes_rest.go` | Node registration/heartbeat, presence lease (DefaultLeaseTTL=5min, line 17-18), ClaimActionsHandler ("scheduler backend is under construction", line 194) |
+| `control-plane/internal/server/server.go` | Server wiring: Gin router, gRPC admin on port+100 (line 469), services, startup |
+| `control-plane/internal/server/routes_mcp.go` | Embedded MCP server at POST /mcp (lines 40-69), 5 tools |
+| `control-plane/internal/server/routes_*.go` (13 files) | REST route groups |
+| `control-plane/internal/server/middleware/did_auth.go` | DID auth: headers, 300s window (line 145), error codes (188-298) |
+| `control-plane/internal/encryption/encryption.go` | AES-256-GCM keystore encryption (PBKDF2, 32-byte key) |
+| `control-plane/internal/config/config.go` | Config structs, key rotation 90 days (line 327), MCPConfig (254-275) |
+| `control-plane/internal/packages/` | Node package system: installer, secrets (AES-256-GCM), env_resolver, runner |
+| `control-plane/internal/ard/ard.go` | ARD catalog, default `application/openapi+json` (lines 454, 861) |
+| `control-plane/internal/skillkit/` | Embedded skills (agentfield, agentfield-personal, agentfield-use) + installers |
+| `control-plane/cmd/af/main.go` | Unified CLI + server mode; Viper config loading (226-277) |
+| `control-plane/cmd/af-tray/` | macOS menu-bar app (launchd, Claude quota, 24h charts) |
+| `control-plane/cmd/x25519gen/main.go` | X25519 keypair generator |
+| `control-plane/build-single-binary.sh` | Single-binary build with embedded web UI (go:embed) |
+| `sdk/python/agentfield/` (54 modules) | Python SDK: agent, agent_ai, did_manager, vc_generator, memory, harness/, triggers, sessions, multimodal, tool_calling, agent_serverless |
+| `sdk/go/` | Go SDK: agent/, client/, types/, ai/, harness/, did/ |
+| `sdk/typescript/src/` | TS SDK: Agent, harness, DID, memory, workflow, crypto |
+| `desktop/` | Electron desktop app |
+| `control-plane/migrations/` | 38 Goose SQL migrations (pg16 + pgvector) |
+| `control-plane/config/agentfield.yaml` | Default config: agentfield/ui/api/telemetry/logging/storage/features |
+| `control-plane/.env.example` | 43 AGENTFIELD_* environment variables |
+| `docs/ARCHITECTURE.md` | **STALE** — see §14 |
+
+---
+
+## 14. Note on docs/ARCHITECTURE.md
+
+The in-repo `docs/ARCHITECTURE.md` is **out of date**: it references nonexistent packages `internal/workflows`, `internal/repositories`, and `pkg/db` (lines 19-21, 50-51, 90). The actual code lives in `internal/handlers/`, `internal/server/`, `internal/services/`, `internal/packages/`, and `migrations/`. **Trust the code, not that document.** This wiki page is written from the code.
+
+---
 
 ## Related
 

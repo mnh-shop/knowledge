@@ -7,7 +7,7 @@ source: sources/clawpier/
 
 # Codegraph Verification: clawpier
 
-**Date:** 2026-07-12
+**Date:** 2026-07-30
 
 ## Claim 1: Tauri v2 Desktop Manager with Rust backend + React/TypeScript frontend
 - **Wiki says:** "ClawPier is a native desktop application (macOS, Linux, Windows) built with Tauri v2 — Rust backend for Docker management, React + Tailwind frontend for the GUI."
@@ -41,10 +41,10 @@ source: sources/clawpier/
 - **Verdict:** ✅ CORRECT
 - **Fix needed:** None
 
-## Claim 3: 58 Tauri commands for IPC
-- **Wiki says:** "58 Tauri commands — CRUD bots, Docker management, chats, terminal, logs, workspace, skills"
+## Claim 3: 56 Tauri commands for IPC
+- **Wiki says:** "56 Tauri commands — CRUD bots, Docker management, chats, terminal, logs, workspace, skills"
 - **Source evidence:**
-  - `src-tauri/src/lib.rs:70-127` — `.invoke_handler(tauri::generate_handler![...])` registers **56 commands**, not 58:
+  - `src-tauri/src/lib.rs:70-127` — `.invoke_handler(tauri::generate_handler![...])` registers exactly **56 commands**:
     1. `get_app_version`, 2. `get_system_resources`, 3. `check_docker`, 4. `check_docker_health`, 5. `check_image`,
     6. `list_bots`, 7. `create_bot`, 8. `start_bot`, 9. `stop_bot`, 10. `restart_bot`,
     11. `delete_bot`, 12. `rename_bot`, 13. `toggle_network`, 14. `set_auto_start`, 15. `auto_start_bots`,
@@ -58,8 +58,8 @@ source: sources/clawpier/
     51. `check_clawhub_available`, 52. `install_clawhub`, 53. `clawhub_inspect_skill`, 54. `check_port_available`, 55. `suggest_port`,
     56. `get_skill_requirements`
   - `src-tauri/src/commands.rs` — 53 `pub async fn` function definitions (some may be helpers, not all are registered commands)
-- **Verdict:** ⚠️ PARTIALLY ACCURATE
-- **Fix needed:** The wiki claims "58 commands" but the source code registers exactly 56 commands in `lib.rs`. Update to 56.
+- **Verdict:** ✅ CORRECT
+- **Fix needed:** None — the wiki was corrected to state exactly 56 commands, matching the source registration.
 
 ## Claim 4: OpenClaw and Hermes agent runtime support
 - **Wiki says:** "Multi-agent support — OpenClaw and Hermes agent runtimes, selectable per bot"
@@ -117,7 +117,7 @@ source: sources/clawpier/
 The ClawPier wiki is largely accurate:
 - **Tauri v2 stack:** ✅ Correct (Rust + React + Tailwind confirmed)
 - **Docker management:** ✅ Correct (bollard crate with full lifecycle)
-- **58 commands:** ⚠️ Partially accurate — 56 commands registered in source, not 58
+- **Tauri commands:** ✅ Correct — exactly 56 commands registered in source (`lib.rs:70-127`), matching the wiki
 - **OpenClaw/Hermes support:** ✅ Correct (dual AgentType enum with separate configs)
 - **Resource/health/notifications:** ✅ Correct (structs, commands, frontend hooks all present)
 - **ClawHub skills:** ✅ Correct (6 dedicated commands + frontend components + tests)

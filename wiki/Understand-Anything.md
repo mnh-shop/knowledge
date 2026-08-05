@@ -26,7 +26,7 @@ The project targets a hybrid analysis model: **tree-sitter (deterministic)** for
 
 ## Key Features
 
-- **Multi-Language Parsing** — AST-based analysis via tree-sitter WASM supporting Python, JavaScript, TypeScript, Go, Rust, Java, and more. Uses `web-tree-sitter` (WASM) instead of native bindings to avoid platform compatibility issues on darwin/arm64 + Node 24
+- **Multi-Language Parsing** — AST-based analysis via tree-sitter WASM supporting Python, JavaScript, TypeScript, Go, Rust, Java, and more. Uses `web-tree-sitter` (WASM) instead of native bindings to avoid platform compatibility issues on darwin/arm64 + Node 24. 14 language extractors (base + 13: cpp, csharp, dart, go, java, kotlin, php, python, ruby, rust, scala, swift, typescript) in `plugins/extractors/` plus 13 supplementary parsers (dockerfile, env, graphql, json, makefile, markdown, protobuf, shell, sql, terraform, toml, yaml) in `plugins/parsers/`, with dedicated WASM parser packages for Dart and Swift
 - **Interactive Knowledge Graph Dashboard** — A React + TypeScript web dashboard (React Flow, Zustand, TailwindCSS v4) with a dark luxury theme, 75% graph + 360px sidebar layout, color-coded by architectural layer, with fuzzy and semantic search
 - **Multi-Agent Analysis Pipeline** — `/understand` orchestrates 5 specialized agents: `project-scanner` (file discovery, language detection), `file-analyzer` (extract functions, classes, imports), `architecture-analyzer` (layer identification), `tour-builder` (guided learning walks), and `graph-reviewer` (structural validation). `/understand-domain` adds a 6th `domain-analyzer` agent for business domain extraction. `/understand-knowledge` adds an article-analyzer for wiki relationship extraction
 - **Incremental Analysis** — Subsequent runs only re-analyze changed files using fingerprint-based change detection. Intermediate results are cached in the data directory's `intermediate/` subdirectory and cleaned up after graph assembly
@@ -38,34 +38,57 @@ The project targets a hybrid analysis model: **tree-sitter (deterministic)** for
 
 ## Architecture
 
-Understand-Anything is a pnpm monorepo with three main packages:
+Understand-Anything is a pnpm monorepo with the plugin source under `understand-anything-plugin/`:
 
 ```
 understand-anything-plugin/
-├── packages/core/          — Shared analysis engine
-│   ├── src/search/         — Graph search implementation
-│   ├── src/schema/         — Graph schema and validation
-│   ├── src/tree-sitter/    — WASM-based parser integration
-│   └── src/tours/          — Guided tour generation
-├── packages/dashboard/     — React + TypeScript web dashboard
-│   ├── src/                — React Flow graph, Zustand state, sidebar panels
-│   └── vite.config.ts      — Dev server with file-content middleware
-├── src/                    — Skill TypeScript source
-│   ├── understand-chat/    — `/understand-chat` command
-│   ├── understand-diff/    — `/understand-diff` command
-│   └── understand-explain/ — `/understand-explain` command
-├── skills/                 — Skill definitions
-│   ├── understand.json     — `/understand` command
-│   ├── understand-dashboard.json
-│   └── ...
-├── agents/                 — Agent definitions
-│   ├── project-scanner.json
-│   ├── file-analyzer.json
-│   ├── architecture-analyzer.json
-│   ├── tour-builder.json
-│   └── graph-reviewer.json
-└── viewer/                 — Standalone graph viewer (npx-publishable)
+├── packages/
+│   ├── core/                  — Shared analysis engine
+│   │   └── src/
+│   │       ├── analyzer/      — graph-builder, layer-detector, llm-analyzer,
+│   │       │                    tour-generator (guided tours live here), normalize-graph
+│   │       ├── languages/     — language-pack: 42 language configs (languages/configs/) +
+│   │       │                    11 framework detectors (languages/frameworks/) + registries
+│   │       ├── figma/         — Figma design analysis (parse, merge, thumbnails)
+│   │       ├── persistence/   — graph persistence layer
+│   │       ├── plugins/       — tree-sitter-plugin.ts (WASM parser integration),
+│   │       │                    extractors/ (14 language extractors), parsers/
+│   │       │                    (13 supplementary parsers), registry.ts, discovery.ts
+│   │       ├── search.ts      — Graph search implementation (FILE, not a dir)
+│   │       ├── schema.ts      — Graph schema and validation (FILE, not a dir)
+│   │       ├── fingerprint.ts / staleness.ts / change-classifier.ts — incremental analysis
+│   │       └── types.ts       — KnowledgeGraph type definitions
+│   ├── dashboard/             — React + TypeScript web dashboard (React Flow, Zustand, Tailwind v4)
+│   ├── tree-sitter-dart-wasm/ — WASM parser package for Dart
+│   ├── tree-sitter-swift-wasm/— WASM parser package for Swift
+│   └── viewer/                — Standalone graph viewer (npx-publishable; repacked and
+│                                 re-uploaded each release as understand-anything-viewer.tgz)
+├── src/                       — Skill TypeScript source
+│   ├── understand-chat.ts     — `/understand-chat` command
+│   ├── diff-analyzer.ts       — `/understand-diff` command
+│   ├── explain-builder.ts     — `/understand-explain` command
+│   └── onboard-builder.ts     — `/understand-onboard` command
+├── skills/                    — 9 skill definitions (understand/, understand-chat/,
+│                                 understand-dashboard/, understand-diff/, understand-domain/,
+│                                 understand-explain/, understand-figma/, understand-knowledge/,
+│                                 understand-onboard/)
+├── agents/                    — 10 agent definitions (project-scanner, file-analyzer,
+│                                 architecture-analyzer, tour-builder, graph-reviewer,
+│                                 domain-analyzer, article-analyzer, design-analyzer,
+│                                 assemble-reviewer, knowledge-graph-guide)
+└── viewer/                    — Standalone graph viewer (npx-publishable)
 ```
+
+Repo-root helpers:
+
+```
+scripts/
+├── generate-large-graph.mjs   — fake-graph generator for performance testing
+│                                 (node scripts/generate-large-graph.mjs [nodeCount], default 3000)
+└── benchmark-large-repo.mjs   — benchmark helper for large repos
+```
+
+The viewer is published as a release tarball (`understand-anything-viewer.tgz`): on every release it is repacked (`pack:release`) and re-uploaded to the GitHub release under exactly that name, so `npx https://github.com/Egonex-AI/Understand-Anything/releases/latest/download/understand-anything-viewer.tgz` works without Claude Code (Node >= 18 only).
 
 ### Hybrid Analysis Pipeline
 
@@ -112,6 +135,7 @@ Cursor and VS Code Copilot auto-discover the plugin via `.cursor-plugin/` and `.
 | `/understand-onboard` | Generate an onboarding guide for new team members |
 | `/understand-domain` | Extract business domain knowledge (domains, flows, steps) |
 | `/understand-knowledge ~/path/to/wiki` | Analyze a Karpathy-pattern LLM wiki |
+| `/understand-figma` | Analyze Figma design files and map them to the codebase |
 
 ## Related
 

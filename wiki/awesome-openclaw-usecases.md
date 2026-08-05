@@ -34,6 +34,8 @@ The 42 use cases are organized into 6 domains:
 | **Research & Learning** | 8 | Earnings tracking, RAG knowledge bases, arXiv reader, LaTeX writing, market research, idea validation, semantic memory |
 | **Finance & Trading** | 1 | Polymarket prediction market autopilot |
 
+> **Note:** The six table rows above sum to 43, not 42 — `usecases/phone-based-personal-assistant.md` is double-listed in the README (under both Social Media and Productivity). The `usecases/` directory holds 42 unique files, matching the `usecases-42` badge.
+
 ## Key Use Case Highlights
 
 - **Self-Healing Home Server** (productivity/infra): Turn OpenClaw into a persistent infrastructure agent with SSH access, cron-based health monitoring, and autonomous remediation -- detecting and fixing issues before you know there is a problem. Inspired by a detailed community writeup with 15 active cron jobs and 24 custom scripts.

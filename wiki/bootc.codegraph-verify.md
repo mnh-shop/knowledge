@@ -22,21 +22,27 @@ source: sources/bootc/
 - **Verdict:** ✅ CORRECT
 - **Fix needed:** None
 
-## Claim 2: Subcommands include upgrade, rollback, status, install, and switch
-- **Wiki says:** "bootc provides CLI subcommands: `upgrade`, `rollback`, `status`, `install`, `switch`, `cancel`, `container`, and `image`."
+## Claim 2: CLI subcommands: upgrade, switch, rollback, edit, status, usr-overlay, install, container, image, loader-entries
+- **Wiki says:** "bootc provides CLI subcommands: `upgrade` (alias `update`), `switch`, `rollback`, `edit`, `status`, `usr-overlay`, `install`, `container`, `image`, and `loader-entries`."
 
 - **Source evidence:**
+  - `crates/lib/src/cli.rs:888-889` — `Upgrade(UpgradeOpts)` with `#[clap(alias = "update")]` — the upgrade verb with alias.
+  - `crates/lib/src/cli.rs:900` — `Switch(SwitchOpts)` — target a new container image reference.
+  - `crates/lib/src/cli.rs:924` — `Rollback(RollbackOpts)` — change bootloader entry ordering.
+  - `crates/lib/src/cli.rs:934` — `Edit(EditOpts)` — "Apply full changes to the host specification."
+  - `crates/lib/src/cli.rs:938` — `Status(StatusOpts)` — display bootc system state.
+  - `crates/lib/src/cli.rs:942-943` — `UsrOverlay(UsrOverlayOpts)` with `#[clap(alias = "usroverlay")]` — transient overlayfs on `/usr`.
+  - `crates/lib/src/cli.rs:948` — `Install(InstallOpts)` — install the running container to a target.
+  - `crates/lib/src/cli.rs:951` — `Container(ContainerOpts)` — container-build-time operations.
+  - `crates/lib/src/cli.rs:956` — `Image(ImageOpts)` — operations on container images.
+  - `crates/lib/src/cli.rs:961` — `LoaderEntries(LoaderEntriesOpts)` — Boot Loader Specification (BLS) entry operations.
+  - Upgrade flags: `--check` (`cli.rs:97-98`, conflicts with `apply`), `--apply` (`cli.rs:103-104`, conflicts with `check`), `--download-only` (`cli.rs:117-118`, conflicts with check/apply), `--from-downloaded` (`cli.rs:125-126`, applies a staged deployment without fetching).
+  - `crates/lib/src/cli.rs:369-371` — `ContainerOpts::Lint` — "Perform relatively inexpensive static analysis checks as part of a container build" (`bootc container lint`, invoked via `RUN bootc container lint` in a build).
+  - **No `cancel` subcommand exists** — a full-tree grep for a `cancel` verb returns only `gio::Cancellable` (async cancellation plumbing) and an "Edit cancelled" message; there is no `Cancel` variant in the `Opt` enum.
   - `crates/cli/src/main.rs:15` — `bootc_lib::cli::run_from_iter(std::env::args())` — thin CLI wrapper delegating to the library.
-  - `crates/lib/src/cli.rs:1-50` — Imports for `upgrade_composefs`, `composefs_rollback`, `switch_composefs`, `delete_composefs_deployment` (lines 42-49).
-  - `crates/lib/src/lib.rs:13-16` — Module `deploy` — "Deployment staging, rollback, and lifecycle management"
-  - `crates/lib/src/lib.rs:18-19` — Module `install` — "System installation (`bootc install to-disk`)"
-  - `crates/lib/src/lib.rs:19` — Module `status` — "Status reporting (`bootc status`)"
-  - `crates/lib/src/lib.rs:32` — Module `image` — "Image operations and queries"
-  - `crates/lib/src/cli.rs:334` — References `bootc install to-filesystem`
-  - `crates/lib/src/cli.rs:833,1645` — References `bootc install` execution context
 
-- **Verdict:** ✅ CORRECT
-- **Fix needed:** None
+- **Verdict:** ⚠️ CORRECT with corrections — wiki previously listed a non-existent `cancel` command and omitted `edit`/`usr-overlay`/`loader-entries`.
+- **Fix needed:** Remove `cancel`; add `edit`, `usr-overlay`, `loader-entries` (applied to wiki).
 
 ## Claim 3: Multi-backend storage with OSTree and composefs support
 - **Wiki says:** "bootc supports two storage backends: OSTree (default) and composefs (experimental). The unified storage model spans three content stores: containers-storage, composefs object store, and ostree bare repo, sharing blocks via reflink."
@@ -44,26 +50,26 @@ source: sources/bootc/
 - **Source evidence:**
   - `crates/lib/src/store/mod.rs:1-20` — "The [`Storage`] type holds references to three different types of storage that together implement the unified storage model." Documents the three-store architecture: bootc-owned containers-storage, composefs object store, and ostree bare repo with `FICLONE` ioctl for block sharing.
   - `crates/lib/src/lib.rs:13-14` — Module `deploy` covers both OSTree and composefs deployment paths.
-  - `crates/lib/src/lib.rs:21-22` — Module `bootc_composefs` is described as "Composefs backend implementation (experimental)".
+  - `crates/lib/src/lib.rs:42,66` — Module `bootc_composefs` is described as "Composefs backend implementation (experimental)".
   - `crates/lib/src/deploy.rs:1-30` — Comments document three pull paths: Unified + reflinks, Non-unified + reflinks, and No reflinks (ext4) using `pull_via_composefs_unified`, `pull_via_composefs`, and legacy `ostree_container::store::ImageImporter`.
   - `Justfile:38-39` — `variant := env("BOOTC_variant", "ostree")` and `bootloader := env("BOOTC_bootloader", "grub")` — Build system supports both ostree and composefs variants.
-  - `crates/lib/src/cli.rs:41-49` — Imports of `composefs_backend_finalize`, `composefs_rollback`, `switch_composefs`, `upgrade_composefs` — active composefs-specific code paths.
 
 - **Verdict:** ✅ CORRECT
 - **Fix needed:** None
 
-## Claim 4: System installation via `bootc install to-disk` and `to-filesystem`
-- **Wiki says:** "bootc install writes a container image to a block device in a bootable way. Supports `to-disk` (full partitioning via Discoverable Partitions Specification) and `to-filesystem` (using externally-prepared filesystems)."
+## Claim 4: System installation modes: to-disk, to-filesystem, to-existing-root, reset
+- **Wiki says:** "bootc install writes a container image to a block device in a bootable way. Supports `to-disk` (full partitioning via Discoverable Partitions Specification), `to-filesystem` (using externally-prepared filesystems), `to-existing-root` (install alongside the running host root), and `reset` (nondestructive reinstall inside an existing bootc system)."
 
 - **Source evidence:**
+  - `crates/lib/src/cli.rs:290-343` — `enum InstallOpts` with variants: `ToDisk` (:302, `InstallToDiskOpts`), `ToFilesystem` (:309, `InstallToFilesystemOpts`), `ToExistingRoot` (:316, `InstallToExistingRootOpts`), `Reset` (:322, `InstallResetOpts`, hidden), `Finalize` (:326), `EnsureCompletion` (:337), `PrintConfiguration` (:343, outputs merged install config as JSON).
+  - `crates/lib/src/cli.rs:2111-2120` — Dispatch arms: `install_to_disk`, `install_to_filesystem`, `install_to_existing_root`, `install_reset`, `print_configuration`.
   - `crates/lib/src/install.rs:1-35` — Module doc: "Writing a container to a block device in a bootable way". Lists steps: preparing environment, setting up storage (partitioning or using external filesystems), deploying the image, installing bootloader (bootupd/systemd-boot/zipl), finalizing.
-  - `crates/lib/src/install.rs:15-24` — Documents `to-disk`: "Creates a complete bootable system on a block device" with ESP, BIOS boot partition, Boot partition, and Root partition using Discoverable Partitions Specification.
-  - `crates/lib/src/install.rs:31-35` — Documents `to-filesystem`: uses externally-prepared filesystems.
-  - `crates/lib/src/install.rs:55-57` — References architecture-specific DPS type GUIDs for auto-discovery.
+  - `crates/lib/src/install.rs:15-35` — Documents `to-disk`: "Creates a complete bootable system on a block device" with ESP, BIOS boot partition, Boot partition, and Root partition using Discoverable Partitions Specification.
+  - `crates/lib/src/install.rs:31-35` — Documents `to-filesystem`: uses externally-prepared filesystems (RAID, LVM, LUKS).
   - `crates/lib/src/podman.rs:9` — `pub(crate) const CONTAINER_STORAGE: &str = "/var/lib/containers"` — Runtime storage path for `bootc install`.
 
-- **Verdict:** ✅ CORRECT
-- **Fix needed:** None
+- **Verdict:** ⚠️ PARTIAL — wiki previously mentioned only `to-disk` (and verify page only `to-disk` + `to-filesystem`).
+- **Fix needed:** Add `to-existing-root` and `reset` modes (applied to wiki).
 
 ## Claim 5: Bootloader management with GRUB, systemd-boot, and UKI support
 - **Wiki says:** "bootc manages bootloader configuration across GRUB, systemd-boot, and UKI (Unified Kernel Image) formats, with support for SecureBoot keys and kernel argument management."
@@ -94,6 +100,7 @@ source: sources/bootc/
   - `systemd/bootc-destructive-cleanup.service` — Cleanup of previous deployments
   - `systemd/bootc-publish-rhsm-facts.service` — RHSM fact publishing integration
   - `systemd/bootc-sysusers-shadow-sync.service` — Sysusers/shadow password sync
+  - Plus 1 embedded unit: `crates/lib/src/generator.rs:21` — `TRANSIENT_RELABEL_UNIT = "bootc-early-overlay-relabel.service"`, generated from `crates/lib/src/units/bootc-early-overlay-relabel.service` (:245).
 
 - **Verdict:** ✅ CORRECT
 - **Fix needed:** None
@@ -115,16 +122,27 @@ source: sources/bootc/
 - **Verdict:** ✅ CORRECT
 - **Fix needed:** None
 
+## Additional Claim: 13 crates in the Rust workspace
+- **Wiki says:** "The project ships as a Rust workspace (`crates/*`) with 13 crates."
+
+- **Source evidence:**
+  - `crates/` directory contains exactly 13 crates: `blockdev`, `cli`, `etc-merge`, `initramfs`, `lib`, `mount`, `ostree-ext`, `system-reinstall-bootc`, `sysusers`, `tests-integration`, `tmpfiles`, `utils`, `xtask`.
+  - `Cargo.toml:1-3` — Workspace `members = ["crates/*"]` glob covers all 13.
+
+- **Verdict:** ⚠️ CORRECTED — previously stated 14 crates and listed only 7.
+- **Fix needed:** Count corrected to 13 with full crate list (applied to wiki).
+
 ## Summary
 
-All 7 key claims from the bootc wiki have been verified against the source code:
+All claims from the bootc wiki have been verified against the source code:
 - ✅ **Transactional OCI updates:** README and crate docs confirm the container-native approach
-- ✅ **CLI subcommands:** `upgrade`, `switch`, `rollback`, `status`, `install` all confirmed via module structure and CLI imports
+- ⚠️ **CLI subcommands:** corrected — `cancel` does not exist; `edit`, `usr-overlay`, `loader-entries` added
 - ✅ **Multi-backend storage:** Three-store architecture documented with OSTree + composefs support
-- ✅ **System installation:** `to-disk` and `to-filesystem` modes confirmed with DPS partitioning
+- ⚠️ **System installation:** expanded from `to-disk` only to `to-disk`/`to-filesystem`/`to-existing-root`/`reset`
 - ✅ **Bootloader management:** GRUB, systemd-boot, UKI handling with SecureBoot and kernel args
-- ✅ **Systemd units:** 9 unit files confirmed in `systemd/` directory
+- ✅ **Systemd units:** 9 unit files confirmed in `systemd/` + 1 embedded relabel unit
 - ✅ **Build system:** Justfile + Makefile + Cargo layered build with multi-variant support
+- ⚠️ **Crates:** corrected from 14 to 13 with full listing
 
 ## Related
 

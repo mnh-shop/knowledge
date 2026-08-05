@@ -52,7 +52,7 @@ Key architectural properties:
                 └──┬──────────┬──────────┬──────────┘
                    │          │          │
     ┌──────────────▼──┐ ┌────▼────┐ ┌───▼────────────┐
-    │  Tools (~90+)   │ │  Skills │ │  Plugins        │
+     │  Tools (~75)    │ │  Skills │ │  Plugins        │
     │  tools/         │ │ skills/ │ │  plugins/        │
     │  Browser, code  │ │ optional│ │  Subsystems:     │
     │  exec, file ops │ │ -skills/│ │  memory, web,    │
@@ -103,11 +103,20 @@ Key architectural properties:
 | `bedrock_adapter.py` | AWS Bedrock adapter |
 | `auxiliary_client.py` | Secondary/fallback model client |
 
-### `tools/` — Model Tools (90+)
+### `tools/` — Model Tools (~75 registered)
 
-All tools are loaded on every API call (the narrow waist). Priority order for
-new capabilities: extend existing → CLI + skill → gated tool → plugin →
-MCP server → new core tool (last resort).
+The registry (`tools/registry.py`, `ToolRegistry` at `:290`) holds ~75
+registered core tools. Of those, **55 are always sent** on every API call —
+the `_HERMES_CORE_TOOLS` list (`toolsets.py:31-82`). The rest are
+conditionally included: desktop-only pane tools, `kanban_*`, `ha_*`,
+`computer_use`, and the `project` toolset are gated via `check_fn` predicates
+so they never bloat the CLI/messaging schema (narrow waist). Toolsets are
+defined in `TOOLSETS` (`toolsets.py:97`, 33 toolsets).
+
+Priority order for new capabilities: extend existing → CLI + skill → gated
+tool → plugin → MCP server → new core tool (last resort).
+
+See [[hermes-agent-tools]] for the full tool inventory and dispatch internals.
 
 Key tool categories:
 
@@ -152,6 +161,72 @@ See [[hermes-acp-agent]] for full details.
 
 See [[hermes-mcp-serve]] for full details.
 
+## Version
+
+`__version__ = "0.19.0"`, `__release_date__ = "2026.7.20"` (`hermes_cli/__init__.py:17`).
+
+## Entry points
+
+| Entry point | File | What it is |
+|---|---|---|
+| `hermes` launcher | `hermes` (repo root, `#!/usr/bin/env python3`) | Thin wrapper that calls `hermes_cli.main:main`; console script `hermes = "hermes_cli.main:main"` (`pyproject.toml:341-342`) |
+| CLI god file | `hermes_cli/main.py` (12,420 LOC) | All `hermes` subcommands (`chat`, `gateway`, `cron`, `status`, …) |
+| CLI class | `cli.py` (17,976 LOC) | `HermesCLI` class; `process_command()` at `cli.py:9560` handles interactive slash commands |
+| Interactive agent | `run_agent.py` (7,410 LOC) | `AIAgent` at `run_agent.py:409`; `run_conversation()` at `:7012`; `chat()` at `:7167` |
+| Module loop | `agent/conversation_loop.py` | Module-level `run_conversation()` at `:1084` — the shared conversation turn machinery |
+| Gateway | `gateway/run.py` (25,765 LOC) | `GatewayRunner` at `gateway/run.py:5399` — long-lived multi-platform message daemon |
+| MCP bridge | `mcp_serve.py` (982 LOC) | MCP "messaging bridge" server exposing 10 tools (`@mcp.tool()` ×10): `conversations_list`, `conversation_get`, `messages_read`, … (`create_mcp_server` at `:535`) |
+| ACP server | `acp_adapter/entry.py` | ACP stdio server (`_parse_args` at `:117`, stdout reserved for ACP frames) |
+| TUI backend | `tui_gateway/server.py` | JSON-RPC over NDJSON backend for TUI/desktop clients (`"jsonrpc": "2.0"` frames, `:1363`/`:1657`) |
+| Web dashboard | `hermes_cli/web_server.py` | FastAPI backend serving the Vite/React frontend + REST API; `python -m hermes_cli.main web` → `http://127.0.0.1:9119` (`:8-9`) |
+| Research/data-gen | `batch_runner.py`, `mini_swe_runner.py`, `trajectory_compressor.py`, `toolset_distributions.py` (repo root) | Offline batch/SWE-bench runs, trajectory post-processing, toolset distribution analysis |
+
+The dependency chain is deliberately narrow: **registry → model_tools → run_agent**.
+`model_tools.get_tool_definitions()` (`model_tools.py:288`) is the single place
+that assembles the tool schema sent with every API call. The `tool_search` /
+`tool_describe` bridge (`tools/tool_search.py`, `assemble_tool_defs` at `:772`)
+keeps the >55-tool schema small by deferring long-tail tool definitions.
+
+## Configuration
+
+- **Defaults:** `hermes_cli/config_defaults.py` — pure-data leaf module
+  (`DEFAULT_CONFIG` at `:7`, `OPTIONAL_ENV_VARS` at `:3018`). **81 top-level
+  config keys** including `model`, `providers`, `fallback_providers`,
+  `credential_pool_strategies`, `toolsets`, `database`, `agent`, `terminal`,
+  `web`, `browser`, `checkpoints`, `compression`, `prompt_caching`, `memory`,
+  `delegation`, `moa`, `skills`, `curator`, `approvals`, `security`, `cron`,
+  `kanban`, `code_execution`, `tools`, `logging`, `model_catalog`, `network`,
+  `monitoring`, `gateway`, `streaming`, `sessions`, `onboarding`, `telemetry`,
+  `updates`, `lsp`, `x_search`, `secrets`, `computer_use`, `proxy`, `desktop`,
+  `vertex`, `_config_version`.
+- **Env:** `.env.example` (496 lines) documents the environment surface.
+  `hermes_constants.py` provides `get_hermes_home()` (`:106`) and profile
+  resolution; `hermes_cli/profiles.py` handles profile roots
+  (`_get_profiles_root` `:264`, `_get_active_profile_path` `:289`).
+- **Per-key details** live in the docstrings inline — e.g. `agent.max_turns`
+  (500), `max_concurrent_sessions` (None = unbounded), `max_live_sessions` (16),
+  `database.journal_mode` (WAL), `mcp_discovery_timeout` (1.5s),
+  `tool_loop_guardrails`, `tool_output.max_bytes` (50_000),
+  `checkpoints.max_snapshots` (20), `memory.memory_char_limit` (2200),
+  `goals.max_turns` (20), `moa.presets.default` (reference models + aggregator).
+
+## Process model
+
+Three long-lived process shapes share the same agent core:
+
+1. **Gateway** — `GatewayRunner` (`gateway/run.py:5399`) runs platform
+   adapters (Slack, Discord, Telegram, WhatsApp, Matrix, …). Message
+   routing is decoupled through `GatewayEventDispatcher`
+   (`gateway/stream_dispatch.py:40`) and platform instantiation goes through
+   `PlatformRegistry` (`gateway/platform_registry.py:162`).
+2. **Interactive agent** — `AIAgent` (`run_agent.py:409`) drives one
+   conversation; CLI, TUI, and desktop all shell out to it.
+3. **TUI/desktop clients** — `tui_gateway/server.py` exposes a JSON-RPC NDJSON
+   backend; the gateway can host it in-process.
+
+A gateway restart is contractually allowed to interrupt in-flight work
+(`agent.restart_drain_timeout` defaults to 0; see `config_defaults.py`).
+
 ## Design principles (from `AGENTS.md`)
 
 1. **Per-conversation prompt caching is sacred.** Long-lived conversations
@@ -183,6 +258,8 @@ See [[hermes-mcp-serve]] for full details.
 ## Related
 
 - [[hermes-agent]] -- Wiki entry
+- [[hermes-agent-tools]] -- Full tool inventory and dispatch internals
+- [[hermes-agent-agent-core]] -- AIAgent, conversation loop, context management, delegation
 - [[hermes-profiles]] -- Agent profile / development guidelines
 - [[hermes-agent-deployment]] -- Deployment guide
 - [[hermes-acp-implementation]] -- ACP implementation patterns

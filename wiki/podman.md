@@ -45,16 +45,16 @@ Inside the namespace, the process has full root privileges — but only within i
 
 ### Requirements
 
-- **Linux kernel 4.18+** (user namespaces, cgroups v2)
-- **cgroups v2** (verify with `podman info --format '{{.Host.CgroupsVersion}}'`)
+- **Linux kernel 4.18+** (user namespaces, cgroups v2) — per upstream docs; not directly verifiable from in-repo code
+- **cgroups v2** (verify with `podman info --format '{{.Host.CgroupsVersion}}'`) — per upstream docs
 - **`/etc/subuid` and `/etc/subgid`** configured with subordinate ID ranges
 - **`fuse-overlayfs`** or native `overlay` for storage (native overlay requires kernel 5.11+)
-- **`slirp4netns` or `pasta`** for rootless networking
+- **`pasta`** for rootless networking (slirp4netns support removed in v6)
 - **`systemd --user`** sessions (for linger/Quadlet)
 
 ## Quadlet — Systemd Integration
 
-Quadlet runs Podman containers as systemd services using `.container`, `.volume`, `.network`, and `.pod` unit files placed in `~/.config/containers/systemd/`.
+Quadlet runs Podman containers as systemd services using `.container`, `.volume`, `.network`, `.pod`, `.kube`, `.image`, `.build`, and `.artifact` unit files (quadlet.go:1532-1546) placed in `~/.config/containers/systemd/`.
 
 ### Example: OpenClaw Quadlet
 
@@ -68,7 +68,7 @@ Wants=network-online.target
 [Container]
 Image=ghcr.io/openclaw/openclaw:latest
 ContainerName=openclaw
-PullPolicy=newer
+Pull=newer
 RunInit=true
 UserNS=keep-id
 User=%U
@@ -142,15 +142,15 @@ eval $(podman machine env)  # Sets DOCKER_HOST-compatible env vars
 
 | Mode | Default? | Description |
 |---|---|---|
-| **pasta** | ✅ (Podman 5+) | User-mode networking, better performance, no `tap` device needed, supports port forwarding |
-| **slirp4netns** | Older default | User-mode networking, more widely tested, slightly slower |
-| **bridge** | ❌ (requires root) | Full network bridge (only with `--network=bridge` or rootful) |
+| **pasta** | ✅ (default since Podman 5.0) | User-mode networking, no `tap` device needed; `pasta.Setup()` in `libpod/networking_pasta_linux.go` / vendored `go.podman.io/common/libnetwork/pasta/`; copies the host IP, supports port forwarding |
+| **slirp4netns** | ❌ removed in v6 | Support removed — containers still configured with it fail with "slirp4netns support has been removed, run `podman system migrate`" (`libpod/networking_linux.go:33-34`) |
+| **bridge** | ✅ (rootless via netavark + rootlessport) | Rootless bridge networks use the `rootlessport` userspace proxy for port forwarding (netavark handles bridging) |
 
 For Quadlet port publishing in rootless mode:
 ```ini
-PublishPort=127.0.0.1:18789:18789  # Published ports bind to loopback
+PublishPort=127.0.0.1:18789:18789  # Bind loopback (any address works; see below)
 ```
-Published ports are always bound to the host's loopback interface in rootless mode (cannot bind to 0.0.0.0 without root).
+Rootless port publishing is handled by the `rootlessport` proxy in the host network namespace, so binding to `0.0.0.0` (e.g. `-p 0.0.0.0:x:y` / `PublishPort=0.0.0.0:18789:18789`) works without root. The real rootless restriction is that containers cannot bind ports **below 1024** (no `CAP_NET_BIND_SERVICE`; `rootless.md:5-7`, adjustable via `net.ipv4.ip_unprivileged_port_start`).
 
 ### Security Model
 
@@ -166,8 +166,8 @@ Published ports are always bound to the host's loopback interface in rootless mo
 
 | Limitation | Impact |
 |---|---|
-| Ports bound to 127.0.0.1 only | Cannot expose services directly to the internet (use SSH tunnel or reverse proxy) |
-| No `--network=host` | Container cannot share host network namespace |
+| Ports < 1024 cannot be bound | Kernel blocks `CAP_NET_BIND_SERVICE`-less processes; raise `net.ipv4.ip_unprivileged_port_start` or use a proxy/redir (rootless.md) |
+| `--network=host` merges with the host namespace | Supported rootless since modern Podman (podman-run.1.md.in:957) — use with care |
 | No `--privileged` capability additions | Some containers expecting full root access fail |
 | cgroups v2 mandatory | Kernel must support cgroups v2 |
 | Limited `--device` passthrough | Most device passthrough requires root |

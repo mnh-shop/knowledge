@@ -8,27 +8,83 @@ source: sources/openclaw/
 # OpenClaw MCP Implementation
 **Source:** `sources/openclaw/`
 
-OpenClaw implements three distinct Model Context Protocol (MCP) servers, each serving a different purpose: channel bridging, plugin tool exposure, and built-in tool exposure. This document details the architecture, implementation, and configuration of all three MCP surfaces.
+OpenClaw's MCP surface is **bidirectional**. In one direction OpenClaw runs as an **MCP server** (`openclaw mcp serve`, plus the channel-bridge / plugin-tools / openclaw-tools stdio servers) that external clients like Claude Code or Codex connect to. In the other direction OpenClaw acts as an **MCP client-side registry**: `openclaw mcp add/set/doctor/probe` manage `mcp.servers` entries in `~/.openclaw/openclaw.json` so OpenClaw-managed agent runtimes can later consume third-party MCP servers. The docs summarize both jobs: "run OpenClaw as an MCP server with `openclaw mcp serve`" and "manage OpenClaw-managed outbound MCP server definitions with `list`, `show`, `status`, `doctor`, `probe`, `add`, `set`, `configure`, `tools`, `login`, `logout`, `reload`, and `unset`" (`docs/cli/mcp.md:11-14`).
+
+This document details the server surfaces (the three stdio MCP servers), the client-side registry, and the Gateway-side HTTP MCP surfaces.
 
 ---
 
 ## Architecture Overview
 
-OpenClaw provides three MCP server implementations in `src/mcp/`:
+OpenClaw provides three stdio MCP server implementations in `src/mcp/` (20 files total: 12 source files + 8 test files — an earlier verify-page claim of "80 files in `src/mcp/`" is incorrect):
 
 | Server | Source File | SDK Class | Purpose |
 |--------|-------------|-----------|---------|
 | Channel Bridge | `src/mcp/channel-server.ts` | `McpServer` (high-level) | Bridges messaging channels (conversations, messages, approvals) via the OpenClaw Gateway |
 | Plugin Tools | `src/mcp/plugin-tools-serve.ts` | `Server` (low-level) | Exposes plugin-registered tools (memory recall, etc.) |
 | OpenClaw Tools | `src/mcp/openclaw-tools-serve.ts` | `Server` (low-level) | Exposes built-in OpenClaw agent tools (cron) |
+| Codex Supervisor (compat) | `src/mcp/codex-supervision-tools-serve.ts` | `Server` (low-level) | Compatibility MCP server for retired Codex Supervisor tool names; tools resolved from the bundled Codex plugin |
+
+Supporting `src/mcp/` files:
+
+| File | Purpose |
+|------|---------|
+| `channel-bridge.ts` | Gateway WebSocket bridge runtime for the channel server |
+| `channel-tools.ts` | MCP tool schemas/handlers for channel conversations |
+| `channel-server-runtime.ts` | Channel server lifecycle (McpServer instance, VERSION, capability registration) |
+| `channel-shared.ts` | Shared channel MCP types (`ClaudeChannelMode`, `ClaudePermissionRequestSchema`) |
+| `tools-stdio-server.ts` | Shared stdio framework (`createToolsMcpServer`, `connectToolsMcpServerToStdio`) |
+| `plugin-tools-handlers.ts` | Plugin tool MCP handlers (shared with agent harnesses) |
+| `openclaw-tools-serve-config.ts` | Shared server-config contract, free of MCP SDK imports (injected into CLI harness runs) |
+| `agent-session-env.ts` | Resolves `OPENCLAW_TOOLS_MCP_AGENT_SESSION_KEY` env for agent-scoped tool sessions |
 
 ### SDK Versions
 
-All three servers use `@modelcontextprotocol/sdk` v1.x for MCP protocol implementation.
+All servers use `@modelcontextprotocol/sdk` v1.x for MCP protocol implementation.
 
 ### Transport
 
-All three servers use **stdio transport only** (JSON-RPC over stdin/stdout). No SSE, HTTP, or WebSocket transports are provided. This is by design -- the servers are intended to run as child processes of MCP clients (Claude Code, etc.).
+All four stdio servers use **stdio transport only** (JSON-RPC over stdin/stdout) — by design, they run as child processes of MCP clients (Claude Code, etc.). Separately, the Gateway exposes **HTTP-based MCP surfaces** (`src/gateway/mcp-http.*`) and app-server MCP surfaces (`src/gateway/mcp-app-*`) for non-stdio access; see [Gateway HTTP MCP Surface](#gateway-http-mcp-surface).
+
+---
+
+## Bidirectional MCP: Server vs Client Registry
+
+The two MCP directions are distinct products (`docs/cli/mcp.md:16`):
+
+| Direction | OpenClaw Role | Entry Point | Surface |
+|-----------|---------------|-------------|---------|
+| **Server** | OpenClaw is the MCP server | `openclaw mcp serve` | Exposes Gateway-backed channel conversations over stdio; also `src/mcp/*-serve.ts` stdio servers |
+| **Client registry** | OpenClaw is the MCP client-side registry | `openclaw mcp add/set/configure/tools/login/logout/reload/unset` | Manages `mcp.servers` entries in OpenClaw config; later projects those servers into eligible runtimes |
+| **Client inspection** | OpenClaw checks saved servers | `openclaw mcp status/doctor/probe` | `status`/`doctor` inspect config; `probe` opens a live MCP connection and lists capabilities |
+| **Gateway HTTP** | Gateway hosts MCP loopback/HTTP | `src/gateway/mcp-http.ts`, `mcp-grant-store.ts` | Process-local loopback and HTTP MCP tool invocation with grant tracking |
+
+The `mcp` root command is registered in `src/cli/program/core-command-descriptors.ts` ("Manage OpenClaw mcp.servers config and channel bridge", `hasSubcommands: true`).
+
+### Client-Side Registry (`openclaw mcp`)
+
+- `add` — builds a definition from flags and probes before saving unless `--no-probe` is set or OAuth authorization is needed first
+- `set` / `unset` — modify/remove saved definitions
+- `configure` — updates enablement, tool filters, timeouts, OAuth, TLS, and parallel-tool-call hints without replacing the whole definition
+- `status` — classifies configured transports without connecting; `--verbose` includes resolved launch, timeout, OAuth, filter, and parallel-call details
+- `doctor` — checks saved definitions for local setup problems (missing stdio commands, invalid working directories, missing TLS files, disabled servers, literal sensitive header/env values, incomplete OAuth authorization)
+- `probe` — opens a live MCP connection and lists capabilities
+- `tools` — tool-selection/visibility management
+- `login` / `logout` — MCP OAuth network flow for configured HTTP servers (`login` performs the OAuth flow and saves the resulting local credentials; `docs/cli/mcp.md:363`)
+- `list` / `show` — read OpenClaw-managed `mcp.servers` entries (does **not** include mcporter servers from `config/mcporter.json`)
+
+HTTP servers saved via `mcp.servers.<name>` can use static headers, OAuth login, TLS verification control, and mTLS certificate/key paths (`docs/cli/mcp.md:373`). A scoped `codex` block (`mcp.servers.<name>.codex`) only affects Codex app-server thread projection.
+
+The Control UI also exposes an MCP editor at `/settings/mcp` (`/mcp` alias) showing inventory, enablement, OAuth/filter summaries, command hints, and a scoped editor (`docs/cli/mcp.md:31`).
+
+### Decision Guide
+
+| Goal | Use |
+|------|-----|
+| Let an external MCP client read/send OpenClaw channel conversations | `openclaw mcp serve` |
+| Save third-party MCP servers for OpenClaw-managed agent runs | `openclaw mcp add` / `set` / `configure` |
+| Check a saved server without running an agent turn | `openclaw mcp status` / `doctor` / `probe` |
+| Run ACP-hosted harness sessions | `openclaw acp` (ACP bridge mode does not accept per-session MCP injection) |
 
 ---
 
@@ -169,7 +225,7 @@ Additional built-in tools are added as the OpenClaw tool system evolves.
 
 ### Logging
 
-All three MCP servers call `routeLogsToStderr()` to keep stdout clean. Stderr is used for all log output. Clients should read stderr for diagnostics; stdout must never be parsed for log content.
+All four stdio MCP servers call `routeLogsToStderr()` to keep stdout clean. Stderr is used for all log output. Clients should read stderr for diagnostics; stdout must never be parsed for log content.
 
 ### Lifecycle
 
@@ -193,6 +249,8 @@ All three MCP servers call `routeLogsToStderr()` to keep stdout clean. Stderr is
 - Token is sent during Gateway WebSocket handshake
 - Plugin tool approval requests are reported as errors (not relayed via approval flow)
 - Stdio transport means the MCP client's parent process controls access
+- Tool policy integrates with `src/gateway/exec-approval-manager.ts` (the approval flow the channel server's `permissions_list_open` / `permissions_respond` tools drive) and `src/security/dangerous-tools.ts` (`DEFAULT_GATEWAY_HTTP_TOOL_DENY` applies to the HTTP MCP tool-invocation surface)
+- The Gateway HTTP MCP loopback (`mcp-http.loopback-runtime.ts`) enforces per-request grant tracking via `mcp-grant-store.ts` and distinguishes blocked/cancelled/failed outcomes
 
 ### Error Handling
 
@@ -257,10 +315,31 @@ All three MCP servers call `routeLogsToStderr()` to keep stdout clean. Stderr is
 ## Known Limitations
 
 1. **Plugin tool approval over MCP** -- Plugin tools that require user approval report errors rather than opening approval flows. This is a MCP protocol limitation (no bidirectional approval flow in standard MCP).
-2. **Stdio transport only** -- No SSE/HTTP/WebSocket MCP transport. Servers must run as child processes.
-3. **Single-process design** -- Each MCP server is a single Node.js process. Scalability is limited by process resources.
+2. **Stdio transport only for `mcp serve` and the `src/mcp/` servers** -- The stdio servers must run as child processes. (HTTP access exists via the separate Gateway `mcp-http` surface, not via these servers.)
+3. **Single-process design** -- Each stdio MCP server is a single Node.js process. Scalability is limited by process resources.
 4. **Channel server startup latency** -- The channel server must establish a Gateway WebSocket connection before serving tools, adding latency to first request.
-5. **No outbound MCP client** -- OpenClaw cannot connect as a client to external MCP servers. It only serves MCP to clients.
+5. **Client-side registry is config-only by default** -- `openclaw mcp` manages `mcp.servers` definitions and OAuth credentials, but the saved servers are only projected into eligible runtimes; no generic always-on MCP client runs by default. Per-session MCP server injection is not supported in ACP bridge mode.
+6. **`mcp.servers` registry excludes mcporter** -- `list`/`show`/`set`/`unset` read only OpenClaw-managed entries; mcporter servers in `config/mcporter.json` are managed via `mcporter list`.
+
+---
+
+## Gateway HTTP MCP Surface
+
+Beyond the stdio `src/mcp/` servers, the Gateway itself hosts HTTP MCP surfaces in `src/gateway/`. These serve the MCP-over-HTTP path and the MCP app-server path used by IDE/projection runtimes:
+
+| File | Purpose |
+|------|---------|
+| `mcp-http.ts` | HTTP MCP protocol entry point |
+| `mcp-http.protocol.ts` | MCP HTTP protocol framing/negotiation |
+| `mcp-http.request.ts` | HTTP MCP request handling |
+| `mcp-http.handlers.ts` | Tool invocation handlers over HTTP |
+| `mcp-http.runtime.ts` | Runtime wiring for the HTTP surface |
+| `mcp-http.loopback-runtime.ts` | Process-local loopback runtime with owner/non-owner tokens and terminal-outcome tracking for tool calls |
+| `mcp-http.schema.ts` | Request/response schemas |
+| `mcp-grant-store.ts` | Grant store for MCP tool-call authorization (loopback/HTTP request context) |
+| `mcp-app-*.ts` | MCP app-server surface: channel actions, origins, sandbox HTTP, standalone runtime, reconstruction |
+
+The Gateway HTTP surface is hardened by the tool-policy integration in `src/security/dangerous-tools.ts`: `DEFAULT_GATEWAY_HTTP_TOOL_DENY` denies high-risk tools over HTTP `POST /tools/invoke` by default (exec, spawn, shell, fs_write/fs_delete/fs_move, apply_patch, terminal, sessions_spawn, sessions_send, etc.) because they enable session orchestration, control-plane actions, or interactive flows that do not make sense over a non-interactive HTTP surface. The `mcp-http` loopback also carries an `McpLoopbackToolCallTerminalOutcome` model that distinguishes blocked/cancelled/failed/timed-out outcomes.
 
 ---
 
@@ -271,9 +350,14 @@ All three MCP servers call `routeLogsToStderr()` to keep stdout clean. Stderr is
 | `src/mcp/channel-server.ts` | Channel bridge MCP server (McpServer SDK) |
 | `src/mcp/plugin-tools-serve.ts` | Plugin tools MCP server (Server SDK) |
 | `src/mcp/openclaw-tools-serve.ts` | Built-in tools MCP server (Server SDK) |
+| `src/mcp/codex-supervision-tools-serve.ts` | Codex Supervisor compatibility MCP server |
 | `src/mcp/channel-bridge.ts` | Gateway WebSocket bridge for channel server |
 | `src/mcp/mcp-helpers.ts` | Shared MCP utilities (logging, etc.) |
+| `src/mcp/tools-stdio-server.ts` | Shared stdio server framework |
 | `src/gateway/server-ws-runtime.ts` | Gateway WebSocket runtime that MCP servers connect to |
+| `src/gateway/mcp-http.ts` + `mcp-grant-store.ts` | Gateway HTTP MCP surface with grant tracking |
+| `src/security/dangerous-tools.ts` | `DEFAULT_GATEWAY_HTTP_TOOL_DENY` — tool policy for HTTP MCP invocation |
+| `src/cli/mcp-cli.ts` | `openclaw mcp` client-side registry (`add/set/doctor/probe/serve`) |
 
 ## Related
 
@@ -292,7 +376,7 @@ All three MCP servers call `routeLogsToStderr()` to keep stdout clean. Stderr is
 - [[domains/api/openclaw-api.md]] -- API reference
 # OpenClaw MCP Implementation
 
-OpenClaw implements **three distinct MCP server surfaces**, all using the `@modelcontextprotocol/sdk` (v1.x) library and all operating over **stdio transport only** (no SSE, no HTTP). They share a common stdio connection utility but serve different purposes. Additionally, a fourth surface is represented by the **channel bridge** that sits between the MCP layer and the Gateway.
+OpenClaw implements **three stdio MCP server surfaces** (plus a fourth, the Codex Supervisor compat server), all using the `@modelcontextprotocol/sdk` (v1.x) library and all operating over **stdio transport** (no SSE, no HTTP over the stdio servers themselves). They share a common stdio connection utility but serve different purposes. Additionally, a fourth surface is represented by the **channel bridge** that sits between the MCP layer and the Gateway, and the **Gateway HTTP MCP surface** (`src/gateway/mcp-http.*` + `mcp-grant-store.ts`) covers HTTP/loopback access. OpenClaw is also an **MCP client-side registry** via `openclaw mcp add/set/doctor/probe` managing `mcp.servers` (see the bidirectional framing at the top of this document).
 
 ## Table of Contents
 
@@ -618,7 +702,7 @@ claude mcp add openclaw-tools -- node --import tsx /path/to/openclaw/src/mcp/ope
 
 ## Integration Details
 
-1. **Stdio transport only** -- all servers communicate via stdin/stdout using JSON-RPC. No SSE or HTTP transport option.
+1. **Stdio transport for the `src/mcp/` servers** -- the four stdio servers communicate via stdin/stdout using JSON-RPC. HTTP MCP access exists separately through the Gateway `mcp-http` surface (`src/gateway/mcp-http.*`), not through these servers.
 
 2. **Log routing** -- all servers call `routeLogsToStderr()` which ensures stdout stays protocol-clean. Application logs go to stderr.
 

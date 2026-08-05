@@ -31,16 +31,15 @@ source: sources/agent-rules-books/
 - **Verdict:** ✅ CORRECT
 - **Fix needed:** None
 
-## Claim 3: Compatibility framework (`_compatibility/`) for rule set conflicts
-- **Wiki says:** The `_compatibility/` directory provides a conflict detection framework that identifies overlaps and contradictions between rule sets, helping users combine rules from different books safely.
+## Claim 3: Compatibility framework (`docs/compatibility/` + `docs/COMPATIBILITY.md`) for rule set conflicts
+- **Wiki says:** The compatibility framework identifies overlaps and contradictions between rule sets, helping users combine rules from different books safely.
 - **Source evidence:**
-  - `_compatibility/` directory exists with subdirectories for all 13 books (all except refactoring-guru).
-  - Each compatibility entry documents how rules from one book relate to rules from another.
-  - `_compatibility/PROCESS.md` documents the compatibility checking process.
-  - `_compatibility/CHECK_COMPATIBILITY.md` provides compatibility verification instructions.
-  - `_compatibility/RELEASE.md` documents release process for compatibility updates.
-- **Verdict:** ✅ CORRECT
-- **Fix needed:** None
+  - Compatibility material lives under `docs/`, NOT at a root `_compatibility/` directory (no `_compatibility/` exists at repository root).
+  - `docs/compatibility/` contains 13 book subdirectories (all except `working-effectively-with-legacy-code/`): `a-philosophy-of-software-design/`, `clean-architecture/`, `clean-code/`, `code-complete/`, `designing-data-intensive-applications/`, `domain-driven-design/`, `domain-driven-design-distilled/`, `implementing-domain-driven-design/`, `patterns-of-enterprise-application-architecture/`, `refactoring/`, `refactoring-guru/`, `release-it/`, `the-pragmatic-programmer/`.
+  - `docs/COMPATIBILITY.md` (15,957 bytes) documents conflict-aware loading guidance.
+  - The process docs are NOT in a compatibility directory — `PROCESS.md`, `RELEASE.md`, and `CHECK_COMPATIBILITY.md` live in `_rule-workbench/` (confirmed by `CHANGELOG.md` v0.5: "Added compatibility check in `_rule-workbench/CHECK_COMPATIBILITY.md`").
+- **Verdict:** ✅ CORRECT (with location correction)
+- **Fix needed:** Verify page previously cited `_compatibility/` at root — actual location is `docs/compatibility/` (13 book subdirs) + `docs/COMPATIBILITY.md`, with PROCESS/RELEASE/CHECK_COMPATIBILITY in `_rule-workbench/`.
 
 ## Claim 4: Rule workbench (`_rule-workbench/`) for testing and iterating rules
 - **Wiki says:** The `_rule-workbench/` directory provides a workspace for testing, iterating, and refining rule sets before publication, with per-book testing directories.
@@ -48,37 +47,37 @@ source: sources/agent-rules-books/
   - `_rule-workbench/` directory contains the same 14 book subdirectories as the main repository.
   - `_rule-workbench/PROCESS.md` documents the workbench process.
   - `_rule-workbench/RELEASE.md` documents the release workflow.
-  - `_rule-workbench/CHECK_COMPATIBILITY.md` provides workbench-level compatibility checking.
+  - `_rule-workbench/CHECK_COMPATIBILITY.md` provides workbench-level compatibility checking (added in CHANGELOG v0.5).
   - Each subdirectory mirrors the book directory structure for iterative development.
 - **Verdict:** ✅ CORRECT
 - **Fix needed:** None
 
-## Claim 5: Editor-specific setup guide (USAGE.md) for Claude Code, OpenAI Codex, Cursor
+## Claim 5: Editor-specific setup guide (`docs/USAGE.md`) for Claude Code, OpenAI Codex, Cursor
 - **Wiki says:** `USAGE.md` documents how to install and use the rule sets in Claude Code, OpenAI Codex, and Cursor, covering always-on vs on-demand usage, skills, scoped rules, MCP/RAG patterns, and the preferred setup for each editor.
 - **Source evidence:**
-  - `USAGE.md` (10604 bytes) exists at repository root.
+  - `docs/USAGE.md` (12,517 bytes) — NOT at repository root (root holds only `CHANGELOG.md`, `LICENSE`, `README.md`, `books-ai-rules.png`, book dirs, `docs/`, `_rule-workbench/`).
   - `README.md` references `USAGE.md`: "For editor-specific setup in Codex, Claude Code, and Cursor, see USAGE.md."
-  - `USAGE.md` covers: always-on vs on-demand usage, skills, scoped rules, MCP or RAG patterns, and preferred setup per editor.
-- **Verdict:** ✅ CORRECT
-- **Fix needed:** None
+  - `docs/USAGE.md` lines 85-180 cover the delivery patterns: `CLAUDE.md` with `@import` (lines 88, 160, 175, 203), `.claude/rules/` (lines 161, 178), `.claude/skills/<name>/SKILL.md` (lines 162, 186), `AGENTS.md` root base layer (lines 85, 98, 117), `.codex/config.toml` with `model_instructions_file` (lines 100-102, 118-119, 124), and Cursor `.cursor/rules` (line 89).
+- **Verdict:** ✅ CORRECT (with location correction)
+- **Fix needed:** Verify page previously cited `USAGE.md` at repository root — actual location is `docs/USAGE.md`.
 
 ## Claim 6: CHANGELOG.md with release history and CRITICISM.md with community feedback
 - **Wiki says:** The repository tracks release history in `CHANGELOG.md` (version v0.5) and engages with community feedback transparently in `CRITICISM.md`, which collects and addresses constructive criticism from Reddit and other forums.
 - **Source evidence:**
-  - `CHANGELOG.md` (4330 bytes) — release history documentation.
-  - `CRITICISM.md` (11561 bytes) — dedicated file for community feedback and responses.
+  - `CHANGELOG.md` (4,347 bytes) at repository root — release history documenting v0.5 dated 2026-05-04.
+  - `CRITICISM.md` (11,604 bytes) lives in `docs/`, NOT at root — dedicated file for community feedback and responses.
   - `README.md` notes version "v0.5" and links to both: "For release history, see CHANGELOG.md" and "For constructive criticism from Reddit, see CRITICISM.md."
-- **Verdict:** ✅ CORRECT
-- **Fix needed:** None
+- **Verdict:** ✅ CORRECT (with location correction)
+- **Fix needed:** Verify page previously cited `CRITICISM.md` at root — actual location is `docs/CRITICISM.md`.
 
 ## Claim 7: MIT licensed with COMPATIBILITY.md documenting cross-tool compatibility
 - **Wiki says:** The project is MIT licensed and provides a `COMPATIBILITY.md` file documenting cross-tool and cross-editor compatibility, ensuring rule sets work across agent platforms.
 - **Source evidence:**
-  - `LICENSE` (1076 bytes) — MIT license file.
-  - `COMPATIBILITY.md` (16139 bytes) — comprehensive cross-tool compatibility documentation.
+  - `LICENSE` (1076 bytes) — MIT license, Copyright (c) 2026 Maciej Ciemborowicz.
+  - `docs/COMPATIBILITY.md` (15,957 bytes) — comprehensive cross-tool compatibility documentation (located under `docs/`, not root).
   - `README.md` line: "MIT licensed universal project rules for coding agents."
-- **Verdict:** ✅ CORRECT
-- **Fix needed:** None
+- **Verdict:** ✅ CORRECT (with location correction)
+- **Fix needed:** Verify page previously cited `COMPATIBILITY.md` at root — actual location is `docs/COMPATIBILITY.md`.
 
 ## Summary
 
@@ -86,11 +85,11 @@ All 7 key claims from the agent-rules-books wiki have been verified against the 
 
 - ✅ 14 book rule sets confirmed with full/mini/nano three-tier system
 - ✅ Release matrix with quantified metrics (lines, rules, size) in README
-- ✅ Compatibility framework at `_compatibility/` with process docs
+- ✅ Compatibility framework at `docs/compatibility/` (13 book subdirs) + `docs/COMPATIBILITY.md`, with PROCESS/RELEASE/CHECK_COMPATIBILITY in `_rule-workbench/`
 - ✅ Rule workbench at `_rule-workbench/` for iterative development
-- ✅ Editor-specific setup guide at `USAGE.md`
-- ✅ Release history at `CHANGELOG.md` and community feedback at `CRITICISM.md`
-- ✅ MIT license and cross-tool compatibility documentation
+- ✅ Editor-specific setup guide at `docs/USAGE.md`
+- ✅ Release history at root `CHANGELOG.md` (v0.5, 2026-05-04) and community feedback at `docs/CRITICISM.md`
+- ✅ MIT license (© 2026 Maciej Ciemborowicz) and cross-tool compatibility documentation
 
 ## Related
 

@@ -19,15 +19,15 @@ verified_by: codegraph-verify
 
 ## What it is
 
-An autonomous engineering team runtime on AgentField. One API call spins up a coordinated factory of agents (product manager, architect, coder, QA, reviewer, merger, verifier, synthesizer) that plan, build, test, and ship code changes end-to-end.
+An autonomous engineering team runtime on AgentField. One API call spins up a coordinated factory of 24 specialized agents (product manager, environment scout, architect, tech lead, coder, QA, reviewer, merger, verifier, CI watcher/fixer, PR resolver, and more) that plan, build, test, and ship code changes end-to-end.
 
 Built on [[agentfield]] — extends AgentField's single-agent harness to factory-scale orchestration across multiple specialized roles.
 
 ## Architecture
 
-- **Factory pattern**: Coordinated control stack with role-specific agents (PM → Architect ↔ Tech Lead → Sprint Planner → Coder → QA/Reviewer/Synthesizer → Merger/Verifier)
+- **Factory pattern**: Coordinated control stack with 24 role-specific agents (PM → Environment Scout → Architect ↔ Tech Lead → Sprint Planner → Coder → QA/Reviewer/Synthesizer → Merger/Verifier → GitHub PR / CI Watcher / CI Fixer / PR Resolver)
 - **Adaptive control loops**: 
-  - Inner loop: Single issue retries via Issue Advisor
+  - Inner loop: Coder → reviewer → approve/fix/block per issue; Issue Advisor (`run_issue_advisor`) diagnoses failures while Retry Advisor (`run_retry_advisor`) retries single issues
   - Middle loop: Issue adaptation (split, retry modified, retry approach, accept with debt)
   - Outer loop: DAG-level replanning via replanner
 - **Per-issue git worktrees**: Isolated workspaces prevent branch collisions when executing hundreds of parallel agent instances
@@ -44,8 +44,9 @@ Built on [[agentfield]] — extends AgentField's single-agent harness to factory
 - **`swe_af/hitl/`**: Human-in-the-loop (HAX) integration, credential negotiation, approval workflows
 
 ### Supporting Infrastructure
-- **`Dockerfile`**, **`docker-compose.yml`**: Local deployment with AgentField control plane
-- **`pyproject.toml`**: Python package configuration
+- **`Dockerfile`**, **`docker-compose.yml`**, **`docker-compose.go.yml`**: Local deployment with AgentField control plane (the `.go` variant adds the Go fast-mode node `swe-fast-go` on `:8006`)
+- **`go/`**: Go companion port of the Python nodes — `swe-planner-go` (`:8005`) and `swe-fast-go` (`:8006`) built on the AgentField Go SDK (`go/cmd`, `go/internal`, `go/test`)
+- **`pyproject.toml`**: Python package configuration (`agentfield>=0.1.113`, `claude-agent-sdk==0.1.20`)
 - **`Makefile`**: Development/test utilities
 - **`requirements.txt`**, **`requirements-docker.txt`**: Dependencies
 - **`railway.toml`**: Railway deployment configuration
@@ -135,6 +136,7 @@ SWE-AF accepts standard AgentField configuration plus SWE-AF-specific fields:
 - **Explicit compromise tracking**: Debt typing and severity rating for relaxed requirements
 - **Long-run reliability**: Checkpointed execution supports resume after crashes
 - **SSE streaming**: Real-time build progress via Server-Sent Events
+- **Go companion port**: `swe-planner-go` (`:8005`) / `swe-fast-go` (`:8006`) nodes registered alongside the Python defaults, deployable via `docker-compose.go.yml`
 
 ## Example Use Case
 
@@ -161,6 +163,15 @@ SWE-AF accepts standard AgentField configuration plus SWE-AF-specific fields:
 13. **Integration Tester**: Verifies cross-feature interactions
 14. **Verifier**: Final acceptance against PRD
 15. **GitHub PR**: Pushes and creates PRs, monitors CI
+16. **Environment Scout**: Probes the target repository's environment (tooling, structure, conventions) before planning (`run_environment_scout`)
+17. **Retry Advisor**: Retries failed single issues with an adjusted approach, distinct from the Issue Advisor's adaptation decisions (`run_retry_advisor`)
+18. **Git Init**: Initializes the git repository in the workspace (`run_git_init`)
+19. **Workspace Setup**: Creates the per-issue git worktree workspaces (`run_workspace_setup`)
+20. **Workspace Cleanup**: Cleans up worktrees/workspaces after execution (`run_workspace_cleanup`)
+21. **Repo Finalize**: Finalizes repository state (branches, integration merges) post-execution (`run_repo_finalize`)
+22. **CI Watcher**: Watches GitHub CI status on opened PRs (`run_ci_watcher`)
+23. **CI Fixer**: Auto-fixes failing CI checks on opened PRs (`run_ci_fixer`)
+24. **PR Resolver**: Resolves/merges GitHub PRs once CI passes (`run_pr_resolver`)
 
 ## Benchmark
 

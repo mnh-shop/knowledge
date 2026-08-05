@@ -71,7 +71,15 @@ data/              Pointers to where live numbers live (never the numbers themse
 memory/            Reviewed learnings from past sessions
 outputs/           Produced artifacts with lineage metadata
 sessions/          The full audit trail of AI work sessions
+parties/           Registered parties: brands/ and clients/ (party registry + template)
+swarms/            Multi-agent execution sprints (Sprints/)
+secrets/           Pointers/references to secrets — never secret values
+synthesis/         Derived thinking surfaces
+repo-registry/     Registered external repositories (template + registry rules)
 docs/              Setup, retrieval, and onboarding documentation
+
+PROVENANCE.yml         Repo-level provenance declaration
+OBSIDIAN-DASHBOARD.md  Obsidian dashboard entry point
 ```
 
 ### The Entity Lifecycle

@@ -59,9 +59,9 @@ delegate_task(tasks=[
 
 ## Claim-3: Safety guardrails with configurable timeouts and output limits
 
-The skill enforces runtime safety controls for external agents: configurable timeout (recommended 900s), response size cap (recommended 24,000 chars), and max iteration depth (default 50).
+The skill documents runtime safety controls for external agents: configurable timeout (recommended 900s), response size cap (recommended 24,000 chars), and max iteration depth (default 50). These are **skill-level recommendations**, not verified Hermes core config keys.
 
-**Source evidence:** SKILL.md lines 78-84 (Recommended Delegation Config):
+**Source evidence:** SKILL.md lines 76-84 (Recommended Delegation Config):
 ```yaml
 delegation:
   max_iterations: 50
@@ -70,7 +70,7 @@ delegation:
   external_max_output_chars: 24000
 ```
 
-**Supporting detail:** SKILL.md lines 88-91 list troubleshooting entries for external agent timeout ("increase `delegation.external_timeout_seconds` or split the task") and oversized responses ("lower verbosity in the delegated goal and rely on concise summaries").
+**Supporting detail:** The `external_timeout_seconds` and `external_max_output_chars` keys are the skill's own recommended parameters — a grep of the hermes-agent source tree finds **no such keys** in `cli-config.yaml.example` or the config schema, so they cannot be verified as real Hermes configuration. The `max_iterations` value does correspond to the real Hermes knob `delegation.max_iterations` (per-subagent tool-calling iteration cap, default 50), enforced by `IterationBudget` in `hermes-agent/agent/iteration_budget.py` (lines 5-6, 21-26). SKILL.md lines 88-91 list troubleshooting entries referencing these keys ("increase `delegation.external_timeout_seconds` or split the task").
 
 ## Claim-4: Context isolation and structured output discipline
 
@@ -108,12 +108,25 @@ The skill enforces that tasks use `toolsets` to restrict which capabilities the 
 
 **Supporting detail:** `max_iterations=30` in the reliability-focused run example (SKILL.md line 65) demonstrates capping total delegation loop depth to prevent runaway tasks.
 
+## Claim-7: Instructions-only repository — no code or config assets
+
+The repository contains no implementation code, scripts, or config files — only skill documentation.
+
+**Source evidence:** Repository file listing:
+- `SKILL.md` — 91 lines, the skill instructions and workflow patterns (frontmatter + delegation patterns + operating rules + recommended config + troubleshooting).
+- `README.md` — 50 lines, repository overview and usage guidance.
+- `LICENSE` — MIT (SKILL.md frontmatter line 6: `license: MIT`).
+
+**Supporting detail:** The `delegate_task()` calls shown in SKILL.md invoke Hermes's native `delegate_task` tool (implemented in hermes-agent `tools/delegate_tool.py`); this repo only documents how to use it — no Python, shell, or YAML asset beyond the documented examples ships in the repository.
+
 ## Dependency Map
 
 ```
 hermes-agent-acp-skill
-  └─► hermes-agent (Hermes agent runtime that executes this skill)
-  └─► opencode (Codex CLI target — routes tasks via ACP to opencode)
+  └─► hermes-agent (Hermes agent runtime that executes this skill; provides delegate_task + delegation.max_iterations)
+  └─► codex CLI (external delegation target — the skill routes `agent="codex"` tasks to the Codex CLI)
+  └─► claude-code CLI (external delegation target — the skill routes `agent="claude-code"` tasks to the Claude Code CLI)
+  └─► opencode (separate standalone coding agent — NOT the Codex CLI route this skill uses)
   └─► openclaw-acp-agent (alternative ACP agent implementation)
   └─► hermes-agent-template (template agents can use this skill for ACP delegation)
 ```

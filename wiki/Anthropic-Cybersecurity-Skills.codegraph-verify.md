@@ -35,20 +35,22 @@ The repository ships **817 structured cybersecurity skills** organized across **
 
 ---
 
-## Claim-2: Every skill maps to six industry frameworks (MITRE ATT&CK, NIST CSF 2.0, ATLAS, D3FEND, AI RMF, F3)
+## Claim-2: Skills map to six frameworks — but coverage is partial, not universal
 
-Each skill carries framework mappings in its YAML frontmatter. The six frameworks are:
+The README's aspirational claim (line 43: "Every skill is mapped to six industry frameworks") does not hold against the actual filesystem. Measured across all **817** `skills/*/SKILL.md` files by counting which frontmatter framework key each file declares:
 
-| Framework | Version | Scope |
-|-----------|---------|-------|
-| MITRE ATT&CK | v19.1 | 15 tactics, 286 techniques, 754/754 skills mapped |
-| NIST CSF 2.0 | 2.0 | 6 functions, 22 categories |
-| MITRE ATLAS | v5.4 | 16 tactics, 84 techniques (AI/ML threats) |
-| MITRE D3FEND | v1.3 | 7 categories, 267 defensive techniques |
-| NIST AI RMF | 1.0 | 4 functions, 72 subcategories |
-| MITRE F3 (Fight Fraud) | v1.1 | 8 tactics, 123 techniques, 94 fraud-relevant skills |
+| Framework key | Skills declaring it | Coverage |
+|---------------|--------------------:|---------:|
+| `mitre_attack` | 817 | 100.0% |
+| `nist_csf` | 816 | 99.9% |
+| `d3fend_techniques` | 139 | ~17% |
+| `mitre_f3` | 94 | ~12% |
+| `nist_ai_rmf` | 85 | ~10% |
+| `atlas_techniques` | 81 | ~10% |
 
-**Source evidence:** `sources/Anthropic-Cybersecurity-Skills/README.md` lines 46–98 (six-framework table, example skill mappings, ATT&CK v19.1 details), `docs/mitre-f3-mapping.md` (F3 schema documentation).
+Only ATT&CK and (nominally) NIST CSF approach full coverage; ATLAS, D3FEND, AI RMF, and F3 appear in a small minority of skills. Framework versions/scopes per the README table: ATT&CK v19.1 (15 tactics, 286 techniques), NIST CSF 2.0 (6 functions, 22 categories), ATLAS v5.4 (16 tactics, 84 techniques), D3FEND v1.3 (7 categories, 267 techniques), AI RMF 1.0 (4 functions, 72 subcategories), F3 v1.1 (8 tactics, 123 techniques, 94 fraud-relevant skills).
+
+**Source evidence:** `sources/Anthropic-Cybersecurity-Skills/README.md` lines 43–56 (six-framework table, aspirational claim); filesystem `grep -rl "^<key>:" skills/*/SKILL.md` counts; `docs/mitre-f3-mapping.md` (F3 schema documentation).
 
 ---
 
@@ -74,9 +76,9 @@ Agent discovery is designed for ~30 tokens per skill (frontmatter only) and 500�
 
 ---
 
-## Claim-4: MITRE ATT&CK v19.1 coverage includes 754 skills mapped to 286 techniques across all 15 tactics
+## Claim-4: MITRE ATT&CK v19.1 coverage table — README totals stale, no shipped validation
 
-The README documents complete ATT&CK v19.1 coverage:
+The README documents ATT&CK v19.1 coverage (lines 81–97). The tactic table is shown below with the actual sum of its own rows:
 
 | Tactic | ID | Skills |
 |--------|----|--------|
@@ -96,9 +98,16 @@ The README documents complete ATT&CK v19.1 coverage:
 | Exfiltration | TA0010 | 82 |
 | Impact | TA0040 | 50 |
 
-Total: **3,518 skill–tactic assignments** across 754 skills. Zero revoked or deprecated IDs validated via `mitreattack-python` library. v19.1's restructured Defense Evasion (split into Stealth and Defense Impairment) is reflected in the table. An ATT&CK Navigator layer file is included at `mappings/attack-navigator-layer.json`.
+Corrections against source:
 
-**Source evidence:** `sources/Anthropic-Cybersecurity-Skills/README.md` lines 77–98 (ATT&CK coverage table, v19.1 validation), `mappings/attack-navigator-layer.json` (Navigator layer file); `mappings/mitre-attack/` directory.
+- **The table sums to 3,318 skill–tactic assignments, not 3,518.**
+- **README's "754/754 skills mapped" (line 77) is stale** — the repo now ships 817 skills; only the 817/817 ATT&CK count (line 43/Claim-2 measurement) is current.
+- **No ATT&CK ID validation is shipped.** README:79 claims IDs were "validated against ... the official `mitreattack-python` library", but no `.py` file imports `mitreattack` — `tools/validate-skill.py` validates structure only (required fields, kebab-case name ≤64, description ≥50 chars, subdomain registry, ≥2 tags; lines 182–257).
+- **The ATT&CK Navigator layer file targets v14, not v19.1**: `mappings/attack-navigator-layer.json` declares `"versions": { "attack": "14", ... }`.
+
+v19.1's restructured Defense Evasion (split into Stealth and Defense Impairment) is reflected in the table.
+
+**Source evidence:** `sources/Anthropic-Cybersecurity-Skills/README.md` lines 77–98 (ATT&CK coverage table, stale 754/754 and v19.1 validation claims), `tools/validate-skill.py` lines 182–257 (structure-only validation), `mappings/attack-navigator-layer.json` (versions block, `"attack": "14"`), `mappings/mitre-attack/` directory.
 
 ---
 

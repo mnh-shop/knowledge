@@ -8,19 +8,15 @@ source: sources/openclaw/
 # OpenClaw ACP Implementation
 **Source:** `sources/openclaw/`
 
-OpenClaw implements the Agent Client Protocol (ACP) as a stdio-based bridge that connects ACP-compatible clients to the OpenClaw Gateway. This document details the architecture, protocol surface, security model, and implementation of the ACP server.
+OpenClaw implements the Agent Client Protocol (ACP) as a **stdio-based bridge architecture** that connects ACP-compatible clients to the OpenClaw Gateway. The implementation lives at `src/acp/` (~100 files across `src/acp/` and `src/acp/control-plane/`) and uses `@agentclientprotocol/sdk`. The protocol version is pinned by the shared Gateway protocol package: `PROTOCOL_VERSION = 4` (`packages/gateway-protocol/src/version.ts:1`).
 
----
+Three files form the bridge core, each with a one-line contract from the source headers:
 
-## Architecture Overview
-
-The ACP implementation uses the `@agentclientprotocol/sdk` npm package and consists of three main components:
-
-| Component | Source | Purpose |
-|-----------|--------|---------|
-| **ACP Server** | `src/acp/server.ts` | Stdio-to-Gateway bridge. Spawns a `GatewayClient` connecting to the OpenClaw Gateway over WebSocket, translates ACP stdio JSON-RPC frames to Gateway RPC calls. |
-| **ACP Client** | `src/acp/client.ts` | Interactive stdio client. Spawns the OpenClaw CLI with "acp" subcommand args and creates a `ClientSideConnection` using the ACP SDK. |
-| **ACP Translator** | `src/acp/translator.ts` | Maps between ACP session lifecycle events and OpenClaw Gateway events. |
+| Component | Source | Bridge Role |
+|-----------|--------|-------------|
+| **ACP Server** | `src/acp/server.ts` | "ACP stdio server that **bridges Agent Client Protocol clients to the OpenClaw Gateway**." Spawns a `GatewayClient` connecting over WebSocket, translates ACP stdio JSON-RPC frames to Gateway RPC calls. |
+| **ACP Translator** | `src/acp/translator.ts` | "Agent Client Protocol bridge that **translates ACP sessions/prompts to Gateway chat sessions**." Maps ACP session lifecycle events to OpenClaw Gateway events. |
+| **ACP Client** | `src/acp/client.ts` | "Interactive stdio ACP client used to **connect a terminal session to an OpenClaw ACP server**." Spawns the OpenClaw CLI with the `acp` subcommand and creates a `ClientSideConnection` using the ACP SDK. |
 
 ### Data Flow
 
@@ -170,7 +166,7 @@ Plus plugin-registered `dock:` commands discovered at runtime.
 
 ## Event Ledger
 
-All ACP session interactions are recorded in a SQLite-backed event ledger (`src/acp/event-ledger.ts`).
+All ACP session interactions are recorded in a SQLite-backed event ledger (`src/acp/event-ledger.ts`), versioned by `LEDGER_VERSION = 1` with default caps of **200 sessions / 5,000 events per session / 16 MB total** (`event-ledger.ts:12-15`).
 
 ### Data Model
 
@@ -363,13 +359,19 @@ const replay = await ledger.readReplayBySessionKey("agent:main:acp:session-1");
 | `src/acp/server.ts` | ACP stdio-to-Gateway bridge server |
 | `src/acp/client.ts` | Interactive ACP client REPL |
 | `src/acp/translator.ts` | Mappings between ACP events and Gateway events |
-| `src/acp/event-ledger.ts` | SQLite-backed event audit trail |
+| `src/acp/event-ledger.ts` | SQLite-backed event audit trail (LEDGER_VERSION=1) |
 | `src/acp/approval-classifier.ts` | Tool classification for permission decisions |
+| `src/acp/session-mapper.ts` | ACP request metadata → Gateway session keys |
+| `src/acp/event-mapper.ts` | ACP prompt/tool events → Gateway text/files/metadata |
+| `src/acp/permission-relay.ts` | Gateway exec.approval events → ACP permission protocol |
+| `src/acp/secret-file.ts` | Secret-file reader for ACP CLI credentials |
+| `src/acp/persistent-bindings.*` | Channel-to-ACP binding lifecycle/resolution |
 | `src/acp/control-plane/` | Session management and policy enforcement |
 | `src/acp/commands.ts` | ACP command definitions |
 | `src/acp/conversation-id.ts` | Stable conversation identity across sessions |
 | `src/acp/control-plane/control-plane-connection.ts` | Gateway ACP control plane connection |
 | `src/agents/acp-spawn.ts` | ACP subagent spawning from Gateway agents |
+| `src/cli/acp-cli.ts` | `openclaw acp` sub-CLI (`--url`, `--token`, `--session`, etc.) |
 
 ## Related
 
@@ -390,7 +392,7 @@ const replay = await ledger.readReplayBySessionKey("agent:main:acp:session-1");
 - [[domains/acp/hermes-acp-implementation.md]] -- Hermes ACP implementation (interop reference)
 # OpenClaw ACP Implementation
 
-OpenClaw implements the Agent Communication Protocol (ACP) as a bidirectional bridge between ACP-compatible clients (IDEs, Claude Code, Cursor) and the OpenClaw Gateway. The implementation lives at `src/acp/` and spans approximately 71 files across the ACP runtime, session management, commands, and plugin integration.
+OpenClaw implements the Agent Communication Protocol (ACP) as a bidirectional bridge between ACP-compatible clients (IDEs, Claude Code, Cursor) and the OpenClaw Gateway. The implementation lives at `src/acp/` (~100 files across `src/acp/` and `src/acp/control-plane/`) and uses `@agentclientprotocol/sdk` with `PROTOCOL_VERSION = 4` (`packages/gateway-protocol/src/version.ts:1`).
 
 ## Table of Contents
 
@@ -411,13 +413,18 @@ OpenClaw implements the Agent Communication Protocol (ACP) as a bidirectional br
 
 ```
 src/acp/
-  server.ts                          -- ACP stdio server (NDJSON over stdin/stdout)
+  server.ts                          -- ACP stdio server (NDJSON over stdin/stdout) — bridges ACP clients to the Gateway
   client.ts                          -- Interactive stdio ACP client (terminal REPL)
-  translator.ts                      -- Core AcpGatewayAgent implementing ACP Agent interface
+  translator.ts                      -- Core AcpGatewayAgent implementing ACP Agent interface — bridges ACP sessions/prompts to Gateway chat sessions
   approval-classifier.ts             -- Tool call risk classification and auto-approval
-  event-ledger.ts                    -- Persistent SQLite-backed audit trail
+  event-ledger.ts                    -- Persistent SQLite-backed audit trail (LEDGER_VERSION=1)
   policy.ts                          -- Config-driven gates (enable/disable, dispatch, allowed agents)
   permission-relay.ts                -- Bridges Gateway exec.approval events to ACP permission protocol
+  session-mapper.ts                  -- ACP request metadata → Gateway session keys
+  event-mapper.ts                    -- ACP prompt/tool events → Gateway text/files/metadata
+  persistent-bindings.{lifecycle,resolve,types}.ts -- Channel-to-ACP binding lifecycle and resolution
+  secret-file.ts                     -- Secret-file reader for ACP CLI credentials
+  tool-status.ts                     -- ACP tool terminal-outcome normalization
   commands.ts                        -- Available command list for ACP clients
   client-helpers.ts                  -- Client-side permission resolution helpers
   control-plane/
@@ -570,6 +577,21 @@ Sessions are identified by both `sessionId` (ACP client-facing UUID) and `sessio
 **Directory:** `src/acp/control-plane/`
 
 The `AcpSessionManager` is a process-wide singleton orchestrating ACP sessions, runtime handles, and turn execution. It sits between the ACP protocol translator and configurable runtime backends contributed by OpenClaw plugins.
+
+### Bridge Support Modules
+
+Alongside `control-plane/`, the ACP bridge is assembled from these `src/acp/` modules:
+
+| Module | Bridge Role |
+|--------|-------------|
+| `session-mapper.ts` | Resolves ACP request metadata into OpenClaw Gateway session keys and reset behavior |
+| `event-mapper.ts` | Converts ACP prompt and tool-event shapes into Gateway-friendly text, files, and metadata |
+| `permission-relay.ts` | Bridges Gateway `exec.approval.*` events into ACP `request_permission` payloads and outcomes |
+| `policy.ts` | Config-driven gates (enable/disable, dispatch, allowed agents) |
+| `persistent-bindings.lifecycle.ts` / `.resolve.ts` / `.types.ts` | Ensures configured channel-to-ACP bindings have live sessions and matching runtime options |
+| `secret-file.ts` | Secret-file reader for ACP command-line credentials (shared size/symlink policy from `src/infra/secret-file.ts`) |
+| `tool-status.ts` | ACP tool terminal-outcome normalization (`completed`/`failed`/...) |
+| `conversation-id.ts` | Stable conversation identity across sessions |
 
 ### AcpSessionManager API
 

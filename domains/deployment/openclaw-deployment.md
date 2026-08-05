@@ -36,18 +36,17 @@ Comprehensive deployment and operations guide for OpenClaw -- a self-hosted AI a
 
 | Requirement | Minimum | Recommended |
 |-------------|---------|-------------|
-| Node.js | v22.19+ | Node 24 |
-| Runtime engine | Node.js (primary) | Bun (supported but not production target) |
+| Node.js | v22.22.3+, v24.15.0+, or v25.9.0 (per `openclaw.mjs:11-15`) | Node 26 |
+| Runtime engine | Node.js (primary) | Node.js (Bun not used at runtime; Docker build uses a Bun stage) |
 | Package manager | pnpm (via Corepack in Docker) | pnpm |
 
 ### Memory
 
 | Context | Requirement |
 |---------|-------------|
-| Docker build (pnpm install) | 2 GB RAM minimum (1 GB may OOM-kill) |
+| Docker build (pnpm install) | 2 GB RAM minimum (1 GB may OOM-kill); build heap `--max-old-space-size=8192` by default |
 | Production steady-state | 1-2 GB RAM |
-| Docker low-memory VM | `NODE_OPTIONS=--max-old-space-size=1536` |
-| Gateway default heap | 256 MB |
+| Gateway managed-service heap | Adaptive: floor 2048 MiB, cap 8192 MiB (`src/daemon/gateway-heap.ts`) |
 
 ### Disk
 
@@ -55,7 +54,7 @@ Comprehensive deployment and operations guide for OpenClaw -- a self-hosted AI a
 |------|-------|
 | Container image | ~1 GB |
 | `~/.openclaw` state | Grows with sessions, media, SQLite DBs, rolling logs |
-| Key hotspots | `media/`, session JSONL files, SQLite DBs, plugin roots, `/tmp/openclaw/` logs |
+| Key hotspots | `media/`, SQLite DBs, plugin roots, `/tmp/openclaw/` logs |
 
 ### OS Support
 
@@ -82,20 +81,19 @@ Comprehensive deployment and operations guide for OpenClaw -- a self-hosted AI a
 
 ## Installation
 
-### via npm/pnpm/bun
+### via npm/pnpm
 
 ```bash
 # Global npm install
 npm install -g openclaw@latest
 
-# Or via pnpm
-pnpm add -g openclaw@latest
-
-# Or via bun
-bun add -g openclaw@latest
+# Or via pnpm (explicit build-script approval required)
+pnpm add -g --allow-build=openclaw openclaw@latest
 ```
 
-The CLI binary is registered as `openclaw` via the `bin.openclaw` field in `package.json`, pointing to `openclaw.mjs`. The npm package ships as ECMAScript modules (`"type": "module"`) and includes `npm-shrinkwrap.json` for reproducible dependency installs.
+Bun is **not** a supported install method: current Bun versions cannot resolve the repo's pnpm workspace layout, so `bun install` fails (docs/install/bun.md:23). Bun remains usable only as an optional package-script runner for the source tree.
+
+The CLI binary is registered as `openclaw` via the `bin.openclaw` field in `package.json`, pointing to `openclaw.mjs`. The npm package ships as ECMAScript modules (`"type": "module"`) with pnpm-workspace-managed dependencies.
 
 ### Post-Install
 
@@ -123,21 +121,43 @@ openclaw update --channel beta
 openclaw update --channel dev
 ```
 
-`openclaw update` coordinates package swap with Gateway service lifecycle. Direct npm/pnpm/bun global updates may leave the running Gateway in an inconsistent state -- stop the Gateway service first if using manual package manager commands.
+`openclaw update` coordinates package swap with Gateway service lifecycle. Direct npm/pnpm global updates may leave the running Gateway in an inconsistent state -- stop the Gateway service first if using manual package manager commands.
 
 ### Docker Images
 
-Pre-built Docker images are published at `ghcr.io/openclaw/openclaw`:
+Pre-built Docker images are published first to **GHCR** (`ghcr.io/openclaw/openclaw`) as the primary registry for release automation, pinned deployments, and provenance checks, with a **Docker Hub mirror** at `openclaw/openclaw` (docs/install/docker.md:35-46):
+
+```bash
+export OPENCLAW_IMAGE="ghcr.io/openclaw/openclaw:latest"
+./scripts/docker/setup.sh
+
+# Or the Docker Hub mirror
+export OPENCLAW_IMAGE="openclaw/openclaw:latest"
+./scripts/docker/setup.sh
+```
+
+### Release Tags and Variants
 
 | Tag | Description |
 |-----|-------------|
-| `latest` | Latest stable release |
-| `main` | Latest from main branch |
+| `latest` / `main` | Latest stable release / latest main branch |
 | `<version>` | Specific version (e.g. `2026.2.26`) |
+| `<version>-beta.1` | Prerelease tags |
+| `slim` | Base variant (`latest-slim`, `main-slim`, `extended-stable-slim`) |
+| `*-browser` | Browser variant with Chromium baked in (`latest-browser`, `main-browser`, `extended-stable-browser`) -- enables the sandboxed browser tool without a first-run Playwright install |
+| `extended-stable` | Trailing-month Gateway releases (stable `latest`/`main` move; only `extended-stable` moves) |
 
-### Pre-built Images for Alternative Platforms
+**Bundled plugins:** default images ship the `codex` and `diagnostics-otel` plugins. The `-browser` variant additionally bakes in Chromium.
 
-OpenClaw builds for linux/amd64 and linux/arm64. Check `ghcr.io/openclaw/openclaw` for available tags.
+Build args control what gets baked in (`Dockerfile`):
+
+| Argument | Effect |
+|----------|--------|
+| `OPENCLAW_EXTENSIONS` | Space/comma-separated bundled plugin ids (e.g. "diagnostics-otel,matrix") |
+| `OPENCLAW_INSTALL_BROWSER=1` | Adds Chromium + Xvfb for browser automation |
+| `OPENCLAW_INSTALL_DOCKER_CLI=1` | Adds Docker CLI for sandbox container management |
+| `OPENCLAW_NODE_BOOKWORM_IMAGE` / `OPENCLAW_NODE_BOOKWORM_SLIM_IMAGE` | Pinned base image digests |
+| `OPENCLAW_DOCKER_BUILD_NODE_OPTIONS` | Build-time Node heap (default `--max-old-space-size=8192`) |
 
 ---
 
@@ -154,21 +174,25 @@ OpenClaw builds for linux/amd64 and linux/arm64. Check `ghcr.io/openclaw/opencla
 
 ### Dockerfile Build Stages
 
-The multi-stage Dockerfile (`Dockerfile`) has:
+The multi-stage Dockerfile (`Dockerfile`) uses base images pinned to SHA256 digests for reproducible builds (`OPENCLAW_NODE_BOOKWORM_IMAGE` / `OPENCLAW_NODE_BOOKWORM_SLIM_IMAGE`, Dockerfile:16-21):
 
-1. **`base` stage**: Node 24 bookworm-slim, installs pnpm, system dependencies
-2. **`build` stage**: Installs all dependencies, runs TypeScript build
-3. **`runtime` stage**: Minimal image with pnpm, tini, node user, and application files
+1. **`workspace-deps` stage**: Extracts only `package.json` manifests for workspace packages + selected plugins (invalidates the main build layer only on manifest changes)
+2. **`bun-binary` stage**: Extracts Bun (build-time only)
+3. **`build` stage**: Installs dependencies, runs TypeScript build (`tsdown`)
+4. **`runtime` stage**: Minimal `node:24-bookworm-slim` image with pnpm, tini, node user, and application files
 
 ### Build Arguments
 
 | Argument | Effect |
 |----------|--------|
 | `OPENCLAW_EXTENSIONS` | Space/comma-separated plugin dirs (e.g. "diagnostics-otel,matrix") |
-| `OPENCLAW_INSTALL_BROWSER=1` | Adds Chromium + Xvfb for browser automation (~300 MB) |
-| `OPENCLAW_INSTALL_DOCKER_CLI=1` | Adds Docker CLI for sandbox container management (~50 MB) |
+| `OPENCLAW_INSTALL_BROWSER=1` | Adds Chromium + Xvfb for browser automation |
+| `OPENCLAW_INSTALL_DOCKER_CLI=1` | Adds Docker CLI for sandbox container management |
 | `OPENCLAW_IMAGE_APT_PACKAGES` | Extra apt packages at build time |
 | `OPENCLAW_IMAGE_PIP_PACKAGES` | Extra Python packages at build time |
+| `OPENCLAW_NODE_BOOKWORM_SLIM_IMAGE` | Pinned `node:24-bookworm-slim` digest |
+| `OPENCLAW_DOCKER_BUILD_NODE_OPTIONS` | Build heap size (default 8192 MB) |
+| `OPENCLAW_BUNDLED_PLUGIN_DIR` | Bundled plugin source dir (default `extensions`) |
 
 ### docker-compose.yml Structure
 
@@ -204,15 +228,23 @@ services:
 
   openclaw-cli:
     image: ghcr.io/openclaw/openclaw:latest
-    profiles: ["cli"]
     network_mode: "service:openclaw-gateway"
+    env_file:
+      - path: .env
+        required: false
     volumes:
       - ~/.openclaw:/home/node/.openclaw
       - ~/.openclaw-auth-profile-secrets:/home/node/.config/openclaw
     environment:
       - OPENCLAW_GATEWAY_BIND=lan
-    command: ["node", "openclaw.mjs"]
+    stdin_open: true
+    tty: true
+    entrypoint: ["node", "dist/index.js"]
+    depends_on:
+      - openclaw-gateway
 ```
+
+The repo-root `docker-compose.yml` is the canonical source: both services pin container-side `OPENCLAW_STATE_DIR` / `OPENCLAW_CONFIG_PATH` / `OPENCLAW_WORKSPACE_DIR` to `/home/node/.openclaw*` so host paths from `.env` cannot leak into runtime code. Run CLI actions against the running gateway with `docker compose run --rm openclaw-cli <command>`.
 
 ### Volumes (Three Bind Mounts)
 
@@ -235,12 +267,15 @@ HEALTHCHECK --interval=3m --timeout=10s --start-period=15s --retries=3 \
 
 | Platform | Config |
 |----------|--------|
-| Fly.io | `fly.toml` -- shared-cpu-2x, 2048 MB, persistent volume `/data` |
-| Render.com | `render.yaml` -- starter plan, `/health` probe, 1 GB disk |
+| Fly.io | `deploy/fly.private.toml` (private deployment template) + root `fly.toml` -- hardened deployments with no public IP exposure; access via `fly proxy` or WireGuard; multi-tenant fleet hosting supported |
+| Render.com | `render.mdx` -- `/health` probe |
 | Kubernetes | `docs/install/kubernetes.md` |
 | Railway | `docs/install/railway.mdx` |
 | Northflank | `docs/install/northflank.mdx` |
 | GCP, Oracle, Hetzner, Raspberry Pi | Dedicated install docs in source tree |
+| Tank OS | bootc-based image (`sources/tank-os/`) for full-stack OS deployments |
+
+**Full stack:** `docker-compose.yml` at the repo root defines the complete `openclaw-gateway` + `openclaw-cli` two-service stack with env-file support and container-side state/config path pinning (`OPENCLAW_STATE_DIR`, `OPENCLAW_CONFIG_PATH`, etc.).
 
 ---
 
@@ -276,12 +311,10 @@ systemctl --user enable openclaw-gateway.service
 
 ### Config File
 
-Default: `~/.openclaw/openclaw.json5` (JSON5 format -- supports comments, trailing commas)
+Default: `~/.openclaw/openclaw.json` (`CONFIG_FILENAME`, `src/config/paths.ts:26`). The file is parsed as JSON5 (supports comments, trailing commas) even though the filename has no `.json5` extension.
 
 Legacy fallback paths (in order):
-- `~/.openclaw/clawdbot.json`
-- `~/.clawdbot/openclaw.json`
-- `~/.clawdbot/clawdbot.json`
+- `~/.clawdbot/clawdbot.json` (legacy state dir `.clawdbot`, legacy filename `clawdbot.json`; `LEGACY_STATE_DIRNAMES`/`LEGACY_CONFIG_FILENAMES`, `src/config/paths.ts:24-27`)
 
 Config path overrides (highest priority): `OPENCLAW_CONFIG_PATH` env var, derived from `OPENCLAW_STATE_DIR`.
 
@@ -290,16 +323,15 @@ Config path overrides (highest priority): `OPENCLAW_CONFIG_PATH` env var, derive
 Default: `~/.openclaw` (overridable via `OPENCLAW_STATE_DIR`)
 
 Contains:
-- Config file (`openclaw.json5`)
+- Config file (`openclaw.json`, JSON5-parsed)
 - Agent auth profiles (`agents/<agentId>/agent/auth-profiles.json`)
-- Session transcripts (JSONL files)
-- SQLite databases (shared state + per-agent)
+- SQLite databases -- shared state `state/openclaw.sqlite` (schema v6) + per-agent `agents/<agentId>/agent/openclaw-agent.sqlite` (schema v16). **SQLite is the only runtime-state store**; no JSON/TXT sidecar runtime state.
 - Media files
 - Plugin package roots
 - OAuth credentials (`credentials/oauth.json`)
 - Rolling logs
 
-### Config Structure (openclaw.json5)
+### Config Structure (openclaw.json)
 
 ```json5
 {
@@ -351,7 +383,7 @@ Contains:
 
 ### Config Loading Flow
 
-See `src/config/io.ts` (2984 lines):
+See `src/config/io.ts` (public facade; implementation split across `io.factory.ts`, `io.runtime.ts`, `io.read-helpers.ts`):
 
 1. Load `.env` files (process env, `./.env`, `~/.openclaw/.env`)
 2. Resolve config path from env or default
@@ -472,7 +504,12 @@ The `configure` command builds a `SecretsApplyPlan` describing every target and 
 
 ## Daemon Management
 
-OpenClaw manages the Gateway as a platform-native service.
+OpenClaw manages the Gateway as a platform-native service. The daemon subsystem lives in `src/daemon/` and is exposed through two command groups that share the same service commands (`src/cli/daemon-cli/register.ts`):
+
+- **`openclaw gateway`** -- primary service command group
+- **`openclaw daemon`** -- legacy alias for the same launchd/systemd/schtasks service commands
+
+Daemon installation is also offered during onboarding: `openclaw onboard --install-daemon` (with `--no-install-daemon` and `--skip-daemon` variants).
 
 ### Service Lifecycle Commands
 
@@ -488,11 +525,12 @@ openclaw gateway health       # Health check via WebSocket
 
 ### Platform Support
 
-| Platform | Mechanism | Config Path |
-|----------|-----------|-------------|
-| Linux | systemd user service | `~/.config/systemd/user/openclaw-gateway.service` |
-| macOS | LaunchAgent | `~/Library/LaunchAgents/ai.openclaw.gateway.<profile>.plist` |
-| Windows | Scheduled Task | Via `schtasks` |
+| Platform | Mechanism | Implementation Files |
+|----------|-----------|---------------------|
+| Linux | systemd user service | `src/daemon/systemd.ts`, `systemd-system.ts`, `systemd-unit.ts`, `systemd-linger.ts` |
+| macOS | LaunchAgent | `src/daemon/launchd.ts`, `launchd-plist.ts`, `launchd-exec.ts`, `launchd-label.ts`, `launchd-system.ts`, `launchd-current-service.ts`, `launchd-restart-handoff.ts` |
+| Windows | Scheduled Task | `src/daemon/schtasks.ts`, `schtasks-control.ts`, `schtasks-install.ts`, `schtasks-layout.ts`, `schtasks-process.ts`, `schtasks-runtime.ts`, `schtasks-exec.ts` |
+| All | Service audit | `src/daemon/service-audit.ts`, `service-layout.ts`, `service-runtime.ts`, `service-env.ts`, `service-mutation.ts` |
 
 ### macOS LaunchAgent Details
 
@@ -576,11 +614,21 @@ openclaw channels login    # Interactive QR login (WhatsApp, Signal)
 
 ### Update Channels
 
+Releases use calendar versioning `YYYY.M.PATCH` (e.g. `2026.7.2`), shared with the `@openclaw/gateway-protocol` package versions.
+
 | Channel | Behavior |
 |---------|----------|
 | `stable` | Default. `stableDelayHours` (6) + `stableJitterHours` (12) for spread rollout |
+| `extended-stable` | Trailing-month releases; selectable/retained via `openclaw update --channel extended-stable` |
 | `beta` | Every `betaCheckIntervalHours` (1 hour), applies immediately |
 | `dev` | Git checkout from `main`, no automatic apply |
+
+```bash
+openclaw update --channel stable
+openclaw update --channel extended-stable
+openclaw update --channel beta
+openclaw update --channel dev
+```
 
 ### Auto-Update Configuration
 
@@ -610,6 +658,17 @@ Disable: `OPENCLAW_NO_AUTO_UPDATE=1`.
 | Legacy config paths | `.clawdbot/` paths detected and migrated on first read |
 | Provider auth | Legacy `provider.<id>` format migrates to `models.providers.<id>` |
 | `openclaw doctor` auto-fixes | Legacy config keys, service env drift, plugin compatibility, auth profile upgrades, dead channel cleanup |
+
+### External Tooling Migration Extensions
+
+Bundled extensions for migrating from other agent tools:
+
+| Extension | Purpose |
+|-----------|---------|
+| `extensions/migrate-claude` | Migrate Claude Code configuration/settings into OpenClaw |
+| `extensions/migrate-hermes` | Migrate Hermes agent configuration/settings into OpenClaw |
+
+Installed via the plugin system (`openclaw plugins install migrate-claude` etc.).
 
 ### Rollback
 
@@ -753,7 +812,7 @@ OPENCLAW_GATEWAY_BIND=lan
 Docker bridge does not forward mDNS multicast. OpenClaw auto-sets `OPENCLAW_DISABLE_BONJOUR=1` in Docker.
 
 #### OOM-killed during build (exit 137)
-Needs 2 GB+ RAM. Use larger VM. The Dockerfile sets `NODE_OPTIONS=--max-old-space-size=2048`.
+Needs 2 GB+ RAM. Use a larger VM. The Dockerfile sets `NODE_OPTIONS=--max-old-space-size=8192` (`OPENCLAW_DOCKER_BUILD_NODE_OPTIONS`, overridable as a build arg).
 
 #### Config missing `gateway.mode` startup refusal
 ```bash
@@ -792,18 +851,26 @@ Creates a sanitized zip with config shape, log summaries, health snapshots, stab
 
 | File | Purpose |
 |------|---------|
-| `src/config/io.ts` | Config load/write with atomic safety (2984 lines) |
+| `src/config/io.ts` | Config public facade (delegates to `io.factory.ts` / `io.runtime.ts` / `io.read-helpers.ts`) |
 | `src/daemon/gateway-entrypoint.ts` | Gateway startup sequence |
 | `src/daemon/launchd.ts` | macOS LaunchAgent management |
+| `src/daemon/systemd.ts` | Linux systemd user service management |
+| `src/daemon/systemd-system.ts` | System-level systemd management |
+| `src/daemon/schtasks.ts` | Windows Scheduled Task management |
+| `src/daemon/service-audit.ts` | Service installation audit |
 | `src/daemon/service-layout.ts` | Service layout inspection |
+| `src/cli/daemon-cli/register.ts` | `openclaw daemon` (legacy) + `openclaw gateway` service commands |
 | `src/secrets/configure.ts` | Secrets configuration wizard |
 | `src/secrets/apply.ts` | Secrets plan application |
 | `src/secrets/runtime.ts` | Runtime secret resolution |
 | `src/wizard/setup.ts` | Onboarding wizard implementation |
-| `src/state/openclaw-state-db.ts` | Shared SQLite state DB |
-| `src/state/openclaw-agent-db.ts` | Per-agent SQLite DB |
+| `src/state/openclaw-state-db.ts` | Shared SQLite state DB (schema v6) |
+| `src/state/openclaw-agent-db.ts` | Per-agent SQLite DB (schema v16) |
 | `scripts/docker/setup.sh` | Docker setup automation |
-| `Dockerfile` | Multi-stage Docker build |
+| `Dockerfile` | Multi-stage Docker build (pinned base digests) |
+| `deploy/fly.private.toml` | Fly.io private deployment template |
+| `extensions/migrate-claude/` | Claude Code migration extension |
+| `extensions/migrate-hermes/` | Hermes migration extension |
 
 ## Related
 

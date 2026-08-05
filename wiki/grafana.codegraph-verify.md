@@ -28,14 +28,15 @@ source: sources/grafana/
 - **Verdict:** ✅ CORRECT
 - **Fix needed:** None
 
-## Claim 3: Time-series database query backends in pkg/tsdb/
-- **Wiki says:** TSDB query backends live in `pkg/tsdb/` supporting Prometheus, InfluxDB, Elasticsearch, SQL databases, CloudWatch, Loki, Tempo, and more.
+## Claim 3: Time-series database query backends in pkg/tsdb/ (core set reduced)
+- **Wiki says:** Core query backends in `pkg/tsdb/` cover Azure Monitor, CloudWatch, Graphite, InfluxDB, Grafana DS, and test-data; Prometheus/Loki/MySQL/MSSQL/PostgreSQL/Tempo/Jaeger/Pyroscope remain registered as datasource types but load from external plugins.
 - **Source evidence:**
-  - `pkg/tsdb/` contains backend directories: `prometheus/`, `azuremonitor/`, `cloudwatch/`, `graphite/`, `influxdb/`, `loki/`, `jaeger/`, `mysql/`, `mssql/`, `postgresql-datasource/`, `pyroscope-datasource/`, `grafanads/`, `grafana-testdata-datasource/`, and `sqlmacro/`
-  - `pkg/tsdb/prometheus/prometheus.go` confirms PromQL query implementation
+  - `pkg/tsdb/` contains exactly 6 backend directories: `azuremonitor/`, `cloudwatch/`, `grafana-testdata-datasource/`, `grafanads/`, `graphite/`, and `influxdb/` (plus `Magefile.go`)
+  - Prometheus, Loki, MySQL, MSSQL, PostgreSQL, Tempo, Jaeger, and Pyroscope were removed from core — `git log` shows `MySQL: Remove from core plugins (#129439)`, `Prometheus: Remove from core plugins (#129332)`, `Loki: Remove from core plugins (#129092)`
+  - Datasource *types* remain registered in `pkg/services/datasources/models.go:26-35` (`DS_JAEGER`, `DS_LOKI`, `DS_MSSQL`, `DS_MYSQL`, `DS_POSTGRES = "grafana-postgresql-datasource"`, `DS_PROMETHEUS`, `DS_TEMPO`) — implementations are external plugins
   - `pkg/tsdb/README.md` documents the query backend interface
-- **Verdict:** ✅ CORRECT
-- **Fix needed:** None
+- **Verdict:** ⚠️ CORRECTED (was stale: listed prometheus/loki/jaeger/mysql/mssql/postgresql/pyroscope as core `pkg/tsdb/` backends)
+- **Fix needed:** wiki updated to reflect the 6 core backends + external plugin model
 
 ## Claim 4: Plugin system in pkg/plugins/ with loader and manager
 - **Wiki says:** The plugin system lives in `pkg/plugins/` with plugin loading, management, authentication, storage, tracing, and backend plugin support.
@@ -72,7 +73,7 @@ source: sources/grafana/
 All 6 key claims from the Grafana wiki have been verified against the source code via directory exploration:
 - ✅ Plugin-based architecture: Go backend `pkg/` and TypeScript/React frontend `public/app/` confirmed
 - ✅ HTTP API handlers in `pkg/api/` and business logic services in `pkg/services/` confirmed
-- ✅ Time-series database query backends in `pkg/tsdb/` with multiple data source integrations confirmed
+- ✅ Time-series database query backends in `pkg/tsdb/` — 6 core backends (azuremonitor, cloudwatch, grafana-testdata-datasource, grafanads, graphite, influxdb) confirmed; Prometheus/Loki/MySQL/PostgreSQL/Tempo/Jaeger/Pyroscope moved to external plugins
 - ✅ Plugin system in `pkg/plugins/` with lifecycle management confirmed
 - ✅ CUE schema definitions in `kinds/` confirmed
 - ✅ Infrastructure layer in `pkg/infra/` with DB, logging, metrics, and tracing confirmed

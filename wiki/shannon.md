@@ -32,7 +32,7 @@ The project began as a standalone CLI tool and now ships in two modes: **npx mod
 - **OWASP-Focused Coverage** — Targets exploitable Injection (SQL, NoSQL, command), XSS, SSRF, Broken Authentication, and Broken Authorization vulnerabilities. Sample reports against OWASP Juice Shop (20+ findings), c{api}tal API (15+ critical/high findings), and OWASP crAPI (15+ findings) demonstrate the coverage
 - **Authenticated Testing** — YAML configuration files describe login flows, test credentials, TOTP, email-based login flows, focus areas, and rules of engagement. Browser sessions are persisted and reused across vulnerability agents
 - **Resumable Workspaces** — Named workspaces with session.json checkpointing enable interrupted scans to resume without re-running completed agents. Workspace state includes deliverables, agent logs, prompts, and browser artifacts
-- **Multi-Provider AI Support** — Officially supported with Claude models (Opus 4.6/4.7/4.8 with adaptive thinking), with documented support for AWS Bedrock, Google Vertex AI, and custom Anthropic-compatible endpoints
+- **Multi-Provider AI Support** — Officially supported with Claude models (Opus 4.6/4.7/4.8 with adaptive thinking), with documented support for AWS Bedrock and custom Anthropic-compatible endpoints
 - **Durable Workflow Execution** — Temporal orchestrates the five-phase pipeline with crash recovery, activity heartbeats, intelligent retry (3 attempts per agent), and parallel execution (5 concurrent agents in vulnerability/exploitation phases)
 
 ## Architecture
@@ -48,7 +48,7 @@ apps/worker/     — @shannon/worker (Temporal worker + pipeline logic, private)
 
 **CLI Package** — Contains only Docker orchestration logic, no business logic or prompts. Handles infrastructure lifecycle (Docker Compose for Temporal, ephemeral worker containers), credential resolution (env vars → `~/.shannon/config.toml`), and workspace management. Auto-detects npx mode vs. local mode based on the `SHANNON_LOCAL=1` environment variable.
 
-**Worker Package** — Contains the full pentesting pipeline. Uses Claude Agent SDK with `maxTurns: 10_000` and bypass-permissions mode. Browser automation via Playwright CLI with session isolation. TOTP generation for MFA-capable logins.
+**Worker Package** — Contains the full pentesting pipeline. Runs on the **pi harness** (`@earendil-works/pi-agent-core`, `pi-ai`, `pi-coding-agent` ^0.79.1 — see `apps/worker/package.json:22-24`) via `apps/worker/src/ai/pi/pi-executor.ts` (`runPiPrompt` → `createAgentSession`, retry disabled so Temporal owns retry). Adaptive thinking (pi's `medium` level) is enabled only on Opus 4.6/4.7/4.8; every other model runs with thinking `off`. Since pi ships no JSON-schema output or `Task`/`TodoWrite` built-ins, structured queues are captured via a `submit_exploitation_queue` custom tool, and `task` (child sessions) + `todo_write` are provided as custom tools; the per-phase collectors are pi custom tools defined with TypeBox `defineTool` in `apps/worker/src/collectors/`. Browser automation via a Playwright CLI skill (`pi-executor.ts:56-64`) with session isolation. TOTP generation via `apps/worker/src/scripts/generate-totp.ts`.
 
 ### Five-Phase Pipeline
 
@@ -96,9 +96,22 @@ apps/worker/     — @shannon/worker (Temporal worker + pipeline logic, private)
 
 ### Technical Architecture
 
-Infrastructure runs via Docker Compose (Temporal server on port 7233/8233). Workers are ephemeral `docker run --rm` containers, one per scan, each with a per-invocation task queue and isolated volume mounts. The worker image is pulled from Docker Hub (`keygraph/shannon:latest`) in npx mode or built locally (`shannon-worker`) in development mode.
+Infrastructure runs via Docker Compose (Temporal server on port 7233/8233). Workers are ephemeral `docker run --rm` containers, one per scan, each with a per-invocation task queue and isolated volume mounts. The worker image is pulled from Docker Hub (`keygraph/shannon:latest`) in npx mode or built locally (`shannon-worker`) in development mode. The worker image is a 2-stage build: pnpm builder stage + Chainguard Wolfi runtime stage (Dockerfile:6,44).
 
-Configuration uses YAML files with JSON Schema validation, supporting auth settings (MFA/TOTP), URL/code rule scoping (`rules.avoid`/`rules.focus`), run-scope steering (`vuln_classes`, `exploit`), free-form `rules_of_engagement`, and report filters (`min_severity`, `min_confidence`). Code path avoid rules are written into `~/.claude/settings.json` deny lists at workflow start so the SDK enforces them even in bypass-permissions mode.
+Configuration uses YAML files with JSON Schema validation, supporting auth settings (MFA/TOTP), URL/code rule scoping (`rules.avoid`/`rules.focus`), run-scope steering (`vuln_classes`, `exploit`), free-form `rules_of_engagement`, and report filters (`min_severity`, `min_confidence`). Code path avoid rules are enforced via the `@gotgenes/pi-permission-system` extension (`apps/worker/package.json:25`): `syncCodePathDenyRules` writes a global `path` deny config once per workflow (`apps/worker/src/ai/pi/permission-system.ts:syncPermissionSystemConfig`), and the pi executor loads the extension when that config is present (`apps/worker/src/ai/pi/pi-executor.ts`), so denies fire across every tool and child `task` session. `vuln_classes`/`exploit` scope is locked into `session.json` on first run; resumes with a different scope fail fast.
+
+Key source subdirectories of the worker package:
+
+| Directory | Purpose |
+|---|---|
+| `apps/worker/src/ai/pi/` | pi harness integration: `pi-executor.ts`, `permission-system.ts`, `task-tool.ts`, `session-tools.ts` |
+| `apps/worker/src/collectors/` | Per-phase pi custom tools: `pre-recon-collector.ts`, `recon-collector.ts`, `vuln-collector.ts`, `exploit-collector.ts`, `schema.ts` |
+| `apps/worker/src/ai/` | `models.ts` (ModelRegistry, adaptive-thinking gating), `queue-schemas.ts`, `submit-tool.ts`, extensions |
+| `apps/worker/src/temporal/` | Workflows, activities, worker, pipeline state, workspaces |
+| `apps/worker/src/services/` | Business logic (Temporal-agnostic): `reporting.ts`, `agent-execution.ts`, `pre-recon-renderer.ts`, `recon-renderer.ts`, `validate-authentication.ts` |
+| `apps/worker/src/session-manager.ts` | Agent definitions (`AGENTS` record, agent1..agent5) and session state |
+| `apps/worker/prompts/` | 14 phase prompt templates + `shared/` partials + `pipeline-testing/` variants |
+| `apps/worker/configs/` | `example-config.yaml` + `config-schema.json` |
 
 ## Documentation
 
@@ -106,10 +119,12 @@ Configuration uses YAML files with JSON Schema validation, supporting auth setti
 |---|---|
 | [Development](docs/development.md) | Source build, CLI commands, output paths |
 | [Configuration](docs/configuration.md) | Authenticated testing, login flows, rules of engagement |
-| [AI Providers](docs/ai-providers.md) | Anthropic, AWS Bedrock, Google Vertex AI |
+| [AI Providers](docs/ai-providers.md) | Anthropic, AWS Bedrock, custom Anthropic-compatible endpoints |
 | [Platforms](docs/platforms.md) | Windows/WSL2, Linux, macOS, Docker networking |
 | [Workspaces](docs/workspaces.md) | Named workspaces, resuming interrupted scans |
 | [Safety](docs/safety.md) | Authorized-use requirements, limitations, cost |
+| [Keygraph Platform](docs/keygraph-platform.md) | Commercial continuous pentesting/AppSec platform around Shannon |
+| [Coverage & Roadmap](docs/coverage-roadmap.md) | Current exploitability coverage and planned direction |
 
 ## Related
 
@@ -117,5 +132,5 @@ Configuration uses YAML files with JSON Schema validation, supporting auth setti
 - [[openclaw]] — Personal AI assistant with agent workspace isolation, complementary to Shannon's security focus
 - [[turnstone]] — Self-hosted agent orchestration harness with rigorous safety gating, a kindred approach to agent control
 - [[nanobot]] — Agent framework for building autonomous workers that could wrap Shannon's pipeline
-- [[pi]] — TypeScript agent harness that Shannon now runs on (beta via `npx @keygraph/shannon@beta`)
-- [[materia]] — Agent framework with composable pipelines for building security toolchains
+- [[pi]] — TypeScript agent harness that Shannon now runs on (beta via `npx @keygraph/shannon@beta`); Shannon's worker depends on `@earendil-works/pi-coding-agent` ^0.79.1
+- [[materia]] — Podman Quadlet GitOps deployment tool (not an agent framework); relevant to Shannon only as container deployment infrastructure

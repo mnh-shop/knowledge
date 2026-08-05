@@ -9,16 +9,17 @@ source: sources/nyxstrike/
 
 **Date:** 2026-07-12
 
-## Claim 1: 185+ security tools across categories with effectiveness scoring
-- **Wiki says:** "185+ Security Tools organized across 12 categories including network reconnaissance, web exploitation, wireless security, OSINT, password attacks, and cloud/API security. Each tool is registered with effectiveness scoring (0.0–1.0) for AI decision-making."
+## Claim 1: 183 security tools across 21 categories with effectiveness scoring
+- **Wiki says:** "183 Security Tools organized across 21 categories including network reconnaissance, web reconnaissance/scanning/vulnerability, wireless pentesting, OSINT, password attacks, exploitation, API testing, database, cloud, active directory, binary analysis, forensics, and vulnerability intelligence. Each tool is registered with effectiveness scoring (0.0–1.0) for AI decision-making."
 - **Source evidence:**
-  - `tool_registry.py` contains **173 tool definitions** with `"desc"` keys (not 185+)
+  - `tool_registry.py` contains **183 tool definitions** with `"desc"` keys (and 183 `"effectiveness"` entries; README's "185+" overstates the count)
   - Each tool has an `"effectiveness"` float (0.0–1.0), e.g., `nmap: 0.90`, `gobuster: 0.90`, `nuclei: 0.85`, `ffuf: 0.93`
   - Tools span **21 distinct categories**, not 12: `active_directory`, `ai_assist`, `api`, `binary`, `brute_force`, `cloud`, `data_processing`, `database`, `essential`, `exploitation`, `fingerprint`, `forensics`, `intelligence`, `lateral_movement`, `network_recon`, `osint`, `vulnerability_intelligence`, `web_recon`, `web_scan`, `web_vuln`, `wifi_pentest`
   - `tool_registry.py:34-50` — `_validate_registry()` validates every tool definition at import time, rejecting entries with missing required keys or out-of-range effectiveness
-  - 52 `mcp_tools/` directories and 56 `server_api/` endpoints implement the tool surface across Flask REST routes
+  - `mcp_tools/` = 10 tool category directories (active_directory, ai_assist, ai_payload, api_audit, bugbounty_workflow, ops, web_framework, web_scan, _generic, error_handling) + `gateway.py` + `__init__.py` = 12 items total
+  - `server_api/` = 18 files (17 module directories + `__init__.py`) registering ~184 route/blueprint decorators
 - **Verdict:** ⚠️ PARTIALLY ACCURATE
-- **Fix needed:** Actual tool count is 173 (not 185+). Actual category count is 21 (not 12). The wiki overestimates tool count but underestimates category breadth.
+- **Fix needed:** Actual tool count is 183 (not 185+). Actual category count is 21 (not 12). The wiki previously overestimated tool count but underestimated category breadth; both counts are now corrected.
 
 ## Claim 2: MCP-compatible interface with JSON-RPC tool exposure
 - **Wiki says:** "MCP-Compatible Interface — JSON-RPC tool exposure via FastMCP. Connect any MCP-compatible AI client — OpenCode, Cursor, Claude Desktop, VS Code Copilot, Roo Code."
@@ -95,14 +96,14 @@ source: sources/nyxstrike/
 
 | Claim | Verdict |
 |-------|---------|
-| 185+ security tools with effectiveness scoring (actual: 173 tools, 21 categories) | ⚠️ PARTIALLY ACCURATE |
+| 183 security tools with effectiveness scoring (actual: 183 tools, 21 categories) | ⚠️ PARTIALLY ACCURATE |
 | MCP-compatible interface with JSON-RPC | ✅ CORRECT |
 | AI Orchestration Engine with LLM integration | ✅ CORRECT |
 | Attack chain workflows with session management | ✅ CORRECT |
 | Real-time dashboard and tool profiles | ✅ CORRECT |
 | Modular plugin system and Docker deployment | ✅ CORRECT |
 
-The nyxstrike codebase is a well-structured Python offensive security orchestration engine with real multi-backend LLM support (Ollama, OpenAI, Anthropic), comprehensive attack workflow management, and a modular plugin architecture. The tool count (173) falls slightly short of the claimed 185+, and categories (21) significantly exceed the claimed 12, suggesting the wiki underrepresents the breadth of tool coverage while slightly overstating the total count.
+The nyxstrike codebase is a well-structured Python offensive security orchestration engine with real multi-backend LLM support (Ollama, OpenAI, Anthropic), comprehensive attack workflow management, and a modular plugin architecture. The tool count (183) falls slightly short of the README's claimed 185+ (tool_registry.py holds 183 definitions), and categories (21) significantly exceed the claimed 12 — the README underrepresents the breadth of tool coverage while slightly overstating the total count.
 
 ## Related
 

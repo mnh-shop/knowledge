@@ -27,7 +27,6 @@ graph TB
     subgraph "Firecracker Process"
         API[API Server<br/>micro_http]
         VMM[VMM Crate]
-        RPC[RPC Interface]
         MMDS[MMDS<br/>MicroVM Metadata Service]
     end
 
@@ -49,7 +48,7 @@ graph TB
     subgraph "Isolation"
         JAILER[Jailer Process]
         SECCOMP[Seccomp Filters]
-        CGROUP[cgroup/v2]
+        CGROUP[cgroup v1/v2]
     end
 
     subgraph "CPU & Configuration"
@@ -58,8 +57,7 @@ graph TB
         SNAP[Snapshot/Restore]
     end
 
-    API -->|JSON-RPC| RPC
-    RPC --> VMM
+    API -->|REST/HTTP<br/>JSON over UDS| VMM
     VMM --> KVM
     VMM --> BLK
     VMM --> NET
@@ -70,9 +68,9 @@ graph TB
     VMM --> MMDS
     KVM --> VCPUS
     KVM --> MEM
-    JAILER --> SECCOMP
     JAILER --> CGROUP
     JAILER --> Firecracker
+    VMM --> SECCOMP
     VMM --> CPU
     VMM --> RATELIMIT
     VMM --> SNAP
@@ -84,7 +82,7 @@ Firecracker is organized as a Cargo workspace with the following primary crates:
 
 | Crate | Path | Purpose |
 |---|---|---|
-| **firecracker** | `src/firecracker/` | Main binary — API server, entry point, capability-based seccomp |
+| **firecracker** | `src/firecracker/` | Main binary — API server, entry point, thread-category-based seccomp (vmm/api/vcpu) |
 | **vmm** | `src/vmm/` | Core VMM — KVM setup, vCPUs, memory, virtio devices, rate limiting, snapshot |
 | **jailer** | `src/jailer/` | Separate binary for process isolation (namespaces, cgroups, chroot) |
 | **seccompiler** | `src/seccompiler/` | Seccomp BPF filter generation at build time |
@@ -101,27 +99,33 @@ Firecracker is organized as a Cargo workspace with the following primary crates:
 
 ### MicroVM Sandbox (`src/vmm/`)
 
-Firecracker implements a minimal VMM focused on the needs of serverless and containerized workloads. It boots Linux microVMs using KVM via `kvm-bindings` and `kvm-ioctls` crates. The device model is intentionally small — no emulated BIOS, no PCIe topology, no graphics — keeping attack surface minimal and boot times fast (<125ms).
+Firecracker implements a minimal VMM focused on the needs of serverless and containerized workloads. It boots Linux microVMs using KVM via `kvm-bindings` and `kvm-ioctls` crates. The device model is intentionally small — no emulated BIOS, no graphics — keeping attack surface minimal and boot times fast (<125ms). Devices use the MMIO transport by default; an opt-in virtio-PCI transport (`--enable-pci`, Developer Preview) enables hot-plugging virtio devices into a running microVM. Control is exposed over a RESTful HTTP API (OpenAPI spec in `src/firecracker/swagger/firecracker.yaml`) served over a Unix Domain Socket by the `micro_http` server.
 
 ### Jailer Isolation (`src/jailer/`)
 
-The **Jailer** is a separate binary that sets up process isolation before launching the VMM. It creates a chroot jail, applies cgroup/v2 constraints, drops privileges, and joins new PID/net/mount namespaces. This prevents the VMM from accessing anything outside its jail.
+The **Jailer** is a separate binary that sets up process isolation before launching the VMM. It creates a chroot jail, applies cgroup constraints (cgroup v1 or v2, v1 by default), drops privileges/capabilities, and joins new PID/net/mount namespaces. This prevents the VMM from accessing anything outside its jail. The jailer does **not** apply seccomp filters — seccomp is the VMM's own thread-level mechanism.
 
-### Seccomp Filtering (`src/seccomp/`)
+### Seccomp Filtering (`src/firecracker/src/seccomp.rs`)
 
 Seccomp BPF (Berkeley Packet Filter) rules are applied at two levels:
-- **VMM seccomp**: `vmm/src/seccomp.rs` — filters syscalls available to the VMM process
-- **Build-time generation**: `src/seccompiler/` generates optimized BPF at compile time
-- **Jailer seccomp**: Separate filter for the jailer binary
+- **VMM seccomp**: `src/firecracker/src/seccomp.rs` — filters are organized by **thread category** (`vmm`, `api`, `vcpu`), each with its own BPF program (`BpfThreadMap`)
+- **Build-time generation**: `src/seccompiler/` generates optimized BPF at compile time (`seccompiler/src/bin.rs`; declared as a build dependency in `src/firecracker/Cargo.toml:37-39`)
+
+Capability dropping is the jailer's responsibility, not seccomp's.
 
 ### Virtio Devices (`src/vmm/src/devices/virtio/`)
 
-- **Block** (`devices/virtio/block/`) — Virtio block device with io_uring support and vhost-user
-- **Net** (`devices/virtio/net/`) — Virtio network device backed by TAP interfaces
+- **Block** (`devices/virtio/block/`) — Virtio block device with io_uring async I/O (`block/virtio/io/async_io.rs`) and vhost-user block backend (`block/vhost_user/mod.rs:8` — `VhostUserBlock`)
+- **Net** (`devices/virtio/net/`) — Virtio network device backed by TAP interfaces (`net/device.rs:256`)
 - **Vsock** (`devices/virtio/vsock/`) — VM sockets for host-guest communication
 - **Balloon** (`devices/virtio/balloon/`) — Memory balloon for hotplug
 - **RNG** (`devices/virtio/rng/`) — Entropy device
 - **PMEM** (`devices/virtio/pmem/`) — Persistent memory device
+
+### Device & Memory Hotplug
+
+- **PCI hotplug** (`docs/device-hotplug.md`, Developer Preview): with the `--enable-pci` flag, `virtio-block`, `virtio-pmem`, and `virtio-net` devices can be attached/detached on a running microVM without reboot (guest must rescan the PCI bus)
+- **Memory hotplug** (`docs/memory-hotplug.md`): `virtio-mem` para-virtualized memory device with slots for dynamic guest memory resizing
 
 ### Rate Limiting (`src/vmm/src/rate_limiter/`)
 
@@ -137,7 +141,7 @@ CPU templates allow customizing the CPU features exposed to guests. Supports bot
 
 ### MicroVM Metadata Service (MMDS)
 
-A lightweight metadata service (`src/vmm/src/mmds/`) accessible from within the guest via the link-local address `169.254.169.254`, matching the AWS EC2 metadata API pattern. Allows injecting configuration and metadata into microVMs at boot.
+A lightweight metadata service (`src/vmm/src/mmds/`) accessible from within the guest via the link-local address `169.254.169.254`, matching the AWS EC2 metadata API pattern. Allows injecting configuration and metadata into microVMs at boot. MMDS supports **session-token authentication** (`src/vmm/src/mmds/token.rs`): the guest fetches a TTL-bounded token from `/latest/api/token` and presents it via the `X-metadata-token` header on subsequent requests (`docs/mmds/mmds-user-guide.md`).
 
 ## Built for Serverless
 
@@ -152,8 +156,16 @@ The security model is defense-in-depth: Jailer + seccomp + cgroups + minimal dev
 
 - **Linux** with **KVM** support (`/dev/kvm` device)
 - **x86_64** or **aarch64** architecture
-- Linux kernel ≥ 4.14
+- Linux host/guest kernels: **5.10 / 6.1 / 6.18** (per the [kernel support policy](docs/kernel-policy.md:26-38); at least 2 major versions supported at any time)
 - Root or access to `/dev/kvm`
+
+## Production Host Setup
+
+`docs/prod-host-setup.md` documents the recommended host hardening for safe multi-tenant production deployments: seccomp filters limiting host syscalls to the required minimum, jailer-enforced isolation, and kernel/host patching per distribution security advisories. See [Prod Setup](domains/deployment/firecracker-prod-setup.md), [Devices](domains/virtualization/firecracker-devices.md), and [Snapshotting](domains/virtualization/firecracker-snapshotting.md).
+
+## Test Suite
+
+The `tests/integration_tests/` directory contains functional, performance, security, and style integration tests run via `tools/devtool test` (e.g. `tests/integration_tests/performance/test_boottime.py` measures the <125ms boot SLA).
 
 ## Build System
 
@@ -177,6 +189,9 @@ Build artifacts appear under `build/`. The devtool handles all toolchain and cro
 
 ## Related
 
+- [Devices](domains/virtualization/firecracker-devices.md) — Device model, io_uring, vhost-user, hotplug, MMDS, rate limiting
+- [Snapshotting](domains/virtualization/firecracker-snapshotting.md) — Snapshot format, diff snapshots, rebase-snap/snapshot-editor
+- [Prod Setup](domains/deployment/firecracker-prod-setup.md) — Jailer, seccomp levels, kernel policy, host hardening
 - [[deployment-architecture]] — Defense-in-depth architecture Firecracker exemplifies
 - [[seccomp]] — Seccomp BPF security filtering (domain concept)
 - [[kvm]] — KVM virtualization technology

@@ -44,8 +44,20 @@ source: sources/openclaw-plugin-claude-code/
   - `src/claude-code.ts` lines 416-417: `sessionManager.getOrCreateSession(sessionKey)` on start
   - `src/session-manager.ts` (exported class): Manages session state, job records, output files
   - README.md lines 89-95: "Session Persistence: Sessions maintain state across multiple interactions"
-  - `openclaw.plugin.json` (confirmed on disk): Plugin manifest
 - **Verdict:** ✅ CORRECT
+- **Fix needed:** None
+
+## Claim 3b: Plugin manifest, license, peer dependency, and distribution metadata
+
+- **Wiki says:** `openclaw.plugin.json` ships `id: claude-code`, the 6 tool names, a JSON-Schema `configSchema` for every option, `uiHints` labels, and `requires: { bins: ["podman"] }`; the package is Apache-2.0, requires `openclaw >= 2025.1.0`, and Node.js >= 22.
+- **Source evidence:**
+  - `openclaw.plugin.json` lines 2-6: `"id": "claude-code"`, `"version": "1.1.0"`, `"main": "claude-code.js"`, and the explicit `tools` array of all 6 registered tool names
+  - `openclaw.plugin.json` lines 7-72: `configSchema` covering `image`, `runtime`, `startupTimeout`, `idleTimeout`, `memory`, `cpus`, `sessionsDir`, `workspacesDir`, `network`, `sessionIdleTimeout`, `apparmorProfile`, `maxOutputSize` — each with type, default, and description
+  - `openclaw.plugin.json` lines 73-84: `uiHints` label map per config field; lines 85-87: `"requires": { "bins": ["podman"] }`
+  - `package.json` line 6: `"license": "Apache-2.0"` (LICENSE file present at repo root); lines 51-53: `"peerDependencies": { "openclaw": ">=2025.1.0" }`; lines 67-69: `"engines": { "node": ">=22.0.0" }`
+  - `package.json` lines 32-35: `files: ["dist", "openclaw.plugin.json"]` — manifest ships in the npm package; build script (line 37) copies it into `dist/`
+  - README.md lines 97-101 (Requirements): "OpenClaw >= 2025.1.0", "Podman (recommended) or Docker", "Node.js >= 22"
+- **Verdict:** ✅ CORRECT (new claim — manifest/license/peer dep previously missing from wiki)
 - **Fix needed:** None
 
 ## Claim 4: Real-time streaming output capture and pagination
@@ -93,20 +105,38 @@ source: sources/openclaw-plugin-claude-code/
 - **Verdict:** ✅ CORRECT
 - **Fix needed:** None
 
+## Claim 8: Split test suite and multi-arch build/publish pipeline
+
+- **Wiki says:** Vitest unit + integration configs; 9 test files total (6 unit, 3 integration); integration tests require a real Podman runtime with 30s timeouts. `scripts/build-and-push.sh` builds/pushes to ghcr.io; `--multi-arch` builds linux/arm64 + linux/amd64 and combines them into a multi-arch manifest.
+- **Source evidence:**
+  - `vitest.config.ts` lines 5-7: `include: ["src/**/*.test.ts"]`, `exclude: ["src/**/*.integration.test.ts"]`; lines 17-21: 80% coverage thresholds (lines/functions/branches/statements)
+  - `vitest.integration.config.ts` lines 5-7: `include: ["src/**/*.integration.test.ts"]`, `testTimeout: 30000` for container operations
+  - Test files on disk: unit = `claude-code.test.ts`, `podman-runner.test.ts`, `session-manager.test.ts`, `notification.test.ts`, `stream-parser.test.ts`, `format.test.ts`; integration = `job-lifecycle.integration.test.ts`, `podman-runner.integration.test.ts`, `session-manager.integration.test.ts`
+  - `package.json` lines 43-46: `test` (unit), `test:integration`, `test:all` = unit + integration; line 49: `prepublishOnly` gates releases on `npm run check` (lint + format + build + coverage)
+  - CHANGELOG.md lines 25-26: "Replace Codecov with `vitest-coverage-report-action`"
+  - `scripts/build-and-push.sh` lines 120-150: `--multi-arch` branch — `podman build --platform linux/arm64` and `linux/amd64`, pushes both arch tags, then `podman manifest create/add/push` for the combined `:latest` manifest
+  - `scripts/build-and-push.sh` lines 48-64: usage/`--tag`/env overrides (`GITHUB_USERNAME`, `IMAGE_NAME`, `IMAGE_TAG`); lines 104-110: fails fast without `GITHUB_USERNAME`; lines 159-165: single-arch build tags a local alias too
+  - README.md lines 366-374: documents single-arch `podman build` and `GITHUB_USERNAME=13rac1 ./scripts/build-and-push.sh --multi-arch`; lines 400-403: release workflow "Build and push multi-arch container images to ghcr.io" on version tags
+- **Verdict:** ✅ CORRECT (new claim — test suite and pipeline previously unmentioned in wiki)
+- **Fix needed:** None
+
 ## Summary
 
-All 7 key claims from the openclaw-plugin-claude-code wiki have been verified against the source code:
+All 8 key claims from the openclaw-plugin-claude-code wiki have been verified against the source code:
 - ✅ 6 OpenClaw tools: All registered via `api.registerTool()` in `src/claude-code.ts`
-- ✅ Rootless Podman containment: `--cap-drop ALL`, resouce limits, tmpfs confirmed in `startDetached()`
+- ✅ Rootless Podman containment: `--cap-drop ALL`, resource limits, tmpfs confirmed in `startDetached()`
 - ✅ Session persistence: Session ID capture and resume confirmed
+- ✅ Plugin manifest + distribution: `openclaw.plugin.json` (id/tools/configSchema/uiHints/requires), Apache-2.0, `openclaw >= 2025.1.0`, Node >= 22
 - ✅ Real-time streaming: `podman logs -f` + `stream-json` parsing confirmed
 - ✅ Dual auth: OAuth-first fallback to API key confirmed in `getAuth()`
 - ✅ Webhook notifications: Completion events pushed via POST confirmed
 - ✅ Orphan recovery: `recoverOrphanedJobs()` on startup confirmed
+- ✅ Test suite + pipeline: split unit/integration vitest configs, 9 test files, 30s integration timeouts, `scripts/build-and-push.sh --multi-arch` manifest flow
 
 ## Related
 
 - [[openclaw-plugin-claude-code]] -- Main wiki entry
+- [[openclaw-plugin-claude-code.integration]] -- Companion: manifest, build/publish, integration-test matrix, decision guide
 - [[openclaw]] -- Core agent platform this plugin extends
 - [[openclaw-container]] -- Container deployment for OpenClaw
 - [[claw-code]] -- Related coding agent tooling

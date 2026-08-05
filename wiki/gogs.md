@@ -33,8 +33,8 @@ It is actively compatible with our knowledge system — the repo includes `AGENT
 - **Webhooks** — repository and organization webhooks (Slack, Discord, Dingtalk, custom)
 - **Git hooks** — repository-level Git hooks and deploy keys
 - **Web editor** — quick file editing and wiki editing via browser
-- **Repository migration/mirroring** — import repos from other hosts with wiki
-- **Rendering** — Jupyter Notebook and PDF rendering
+- **Repository migration/mirroring** — mirror repositories from other hosts (`internal/database/mirror.go`)
+- **Rendering** — Markdown and Org-mode rendering (`internal/markup/`); Jupyter Notebook and PDF renderers are NOT bundled (only MIME sniffing for `application/pdf` in `internal/tool/file.go:23`)
 - **Authentication** — SMTP, LDAP, reverse proxy, GitHub.com, GitHub Enterprise, 2FA
 - **Localization** — 31+ languages
 - **API** — experimental API with [documentation](https://gogs.io/api-reference)
@@ -79,17 +79,17 @@ User → SSH / HTTP / HTTPS
 
 | Package | Purpose |
 |---|---|
-| `cmd/gogs/` | CLI entry points: `main.go`, `admin.go`, `backup.go`, `restore.go`, `hook.go`, `import.go`, `serv.go` |
+| `cmd/gogs/` | CLI entry points: `main.go`, `admin.go`, `backup.go`, `restore.go`, `hook.go`, `import.go`, `serv.go`, `cmd.go` + `internal/web/` |
 | `internal/app/` | Core application logic |
 | `internal/route/` | Web route handlers |
 | `internal/conf/` | Configuration management |
-| `internal/db/` / `internal/database/` | Database layer with migrations |
+| `internal/database/` | Database layer with migrations (GORM; `internal/db/` does NOT exist) |
 | `internal/auth/` | Authentication backends (LDAP, SMTP, OAuth, etc.) |
 | `internal/ssh/` | SSH server for Git operations |
 | `internal/repox/` | Repository management |
 | `internal/gitx/` | Git operations |
 | `internal/lfsx/` | Git LFS implementation |
-| `internal/markup/` | Rendering engine (Markdown, Jupyter, PDF) |
+| `internal/markup/` | Rendering engine (Markdown, Org-mode, sanitizer) |
 | `internal/email/` | Notification emails |
 | `internal/cron/` | Scheduled tasks |
 | `internal/template/` | HTML templates |
@@ -100,6 +100,7 @@ User → SSH / HTTP / HTTPS
 
 - **Language:** Go 1.26
 - **Web framework:** [Flamego](https://github.com/flamego/flamego) (v1.12)
+- **CLI framework:** [urfave/cli](https://github.com/urfave/cli) v3 (`cmd/gogs/cmd.go:6`, `go.mod:50`)
 - **Database:** PostgreSQL, MySQL/MariaDB, SQLite3 via GORM-compatible drivers
 - **Frontend:** React + TanStack Router (progressive migration from Semantic UI templates)
 - **SSH:** Built-in SSH server for Git protocol

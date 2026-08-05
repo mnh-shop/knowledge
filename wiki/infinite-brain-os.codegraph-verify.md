@@ -18,6 +18,7 @@ date: 2026-07-12
   - `README.md` lines 1-14: "A git-backed operating system for running a business with AI agents. Plain Markdown and YAML, readable by any file-reading agent, owned by you. No database, no server, no vendor lock-in."
   - `AGENTS.md` (Codex orientation) line 5: "Agents read git directly via Read, Grep, and Glob. The working tree is the retrieval surface; no external index is required."
   - No Dockerfile, docker-compose.yml, or database config found. The entire state is files in a git repo.
+  - Full top-level surface confirmed by listing: `parties/` (brands/, clients/), `swarms/` (Sprints/), `secrets/`, `synthesis/`, `repo-registry/`, plus root files `PROVENANCE.yml` and `OBSIDIAN-DASHBOARD.md` alongside `_system/`, `knowledge/`, `entities/`, `sessions/`, `docs/`, `automations/`, `sync-adapters.sh`, `.claude/`, `.codex/`, `.obsidian/`.
 
 - **Verdict:** ✅ CORRECT
 - **Fix needed:** None
@@ -60,12 +61,13 @@ date: 2026-07-12
 - **Wiki says:** "`_system/` holds schemas, rules, registries, and `validate.sh`. Every node-bearing file carries typed YAML frontmatter with minimum required fields. Running `bash _system/validate.sh` verifies the entire graph is consistent and all wikilinks resolve."
 
 - **Source evidence:**
-  - `_system/` directory contains 42 entries including `validate.sh`, multiple schema/rule files, `namespaces/` directory, and `surface-registry/`.
-  - `_system/validate.sh` (1381 lines) — comprehensive validation checking frontmatter keys, wikilink resolution, and consistency. Line 3: "Checks every node-bearing file in this repository for required frontmatter keys."
+  - `_system/` directory contains 49 entries including `validate.sh`, multiple schema/rule files, `namespaces/` directory, `checks/`, and `surface-registry/`.
+  - `_system/validate.sh` (1436 lines) — comprehensive validation checking frontmatter keys, wikilink resolution, and consistency. Line 3: "Checks every node-bearing file in this repository for required frontmatter keys."
   - `_system/namespace-index-schema.md` — index schema definitions.
   - `_system/canon-layer-schema.md` — canon schema definitions.
   - `_system/session-ledger-rules.md` — session audit trail rules.
   - `_system/stable-id-and-alias-rules.md` — ID stability rules.
+  - `_system/validate.sh` line 1325: "Checking for em dashes and en dashes..." — the em/en dash contract check.
   - README.md line 90-91: "Every node-bearing file carries typed YAML frontmatter; `bash _system/validate.sh` must exit 0."
 
 - **Verdict:** ✅ CORRECT
@@ -102,6 +104,20 @@ date: 2026-07-12
   - `.obsidian/` directory exists with `app.json`, `graph.json`, `README.md`.
   - README.md lines 29-30: "Or open the folder as an Obsidian vault (config ships in .obsidian/) and read START-HERE.md yourself."
   - Wikilink syntax confirmed in entity files (e.g., `edges: [[rule-studio-brand-voice]]` in `studio-inbox-triage.md`).
+
+- **Verdict:** ✅ CORRECT
+- **Fix needed:** None
+
+## Claim 8: Additional repo surface — parties/, swarms/, secrets/, synthesis/, repo-registry/, PROVENANCE.yml, OBSIDIAN-DASHBOARD.md
+- **Wiki says:** The architecture tree includes parties (brands, clients), swarms (Sprints), secrets, synthesis, repo-registry, plus root files PROVENANCE.yml and OBSIDIAN-DASHBOARD.md.
+
+- **Source evidence:**
+  - `parties/` contains `brands/`, `clients/`, `README.md`, `_template.md`.
+  - `swarms/` contains `Sprints/` and `README.md` (execution artifacts and receipts; referenced by `AGENTS.md` line 38: "trail, `swarms/Sprints/...` for execution artifacts and receipts").
+  - `secrets/` — pointer/reference surface, never secret values (backed by `_system/secret-reference-schema.md` and `_system/secret-registry-rules.md`).
+  - `synthesis/` — derived thinking surface with `README.md`.
+  - `repo-registry/` — `README.md` + `_template.md`, backed by `_system/repo-registry-rules.md`.
+  - `PROVENANCE.yml` (145 bytes) and `OBSIDIAN-DASHBOARD.md` present at repo root.
 
 - **Verdict:** ✅ CORRECT
 - **Fix needed:** None

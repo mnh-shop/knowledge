@@ -14,6 +14,7 @@ REST API references and HTTP endpoint documentation for repositories in the vaul
 |-----|------|-------------|
 | [[agentfield-api|AgentField API]] | agentfield | REST and gRPC endpoints for sandbox management and pipeline orchestration |
 | [[alphaclaw-api|AlphaClaw API]] | alphaclaw | Gateway management, agent config, MCP and channel setup |
+| [[alphaclaw-interfaces|AlphaClaw Interfaces]] | alphaclaw | REST prefixes, SSE/WS streams, /v1 proxy, Codex OAuth, Remote MCP |
 | [[free-claude-code-api|Free Claude Code API]] | free-claude-code | REST API endpoints and usage |
 | [[goclaw-api|GoClaw API]] | goclaw | Agent/tool management, webhook provisioning, SSE streaming |
 | [[gogs-api|Gogs API]] | gogs | Self-hosted Git service API |

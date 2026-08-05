@@ -11,7 +11,7 @@ verified_by: codegraph-verify
 
 **Source:** `sources/nanobot/`
 
-nanobot is an open-source, ultra-lightweight personal AI agent framework from HKUDS (University of Hong Kong). It provides a small, readable agent core with WebUI, multi-platform chat channels (Telegram, Discord, WeChat, Slack, and 15+ more), tools, memory, MCP support, model routing, automation, and deployment. Written in Python with a React/TypeScript WebUI.
+nanobot is an open-source, ultra-lightweight personal AI agent framework from HKUDS (University of Hong Kong). It provides a small, readable agent core with WebUI, multi-platform chat channels (Telegram, Discord, WeChat, Slack, and 17 channel integrations in total), tools, memory, MCP support, model routing, automation, and deployment. Written in Python with a React/TypeScript WebUI.
 
 | Field | Value |
 |---|---|
@@ -25,17 +25,17 @@ nanobot is an open-source, ultra-lightweight personal AI agent framework from HK
 ## Key Features
 
 - **Lightweight Agent Core:** Small agent loop (`nanobot/agent/loop.py`, `runner.py`) that receives messages from chat channels, invokes an LLM provider, executes tools, and manages session memory. Async MessageBus decouples channels from the agent core.
-- **Multi-Platform Channels:** 17+ channel integrations including Telegram, Discord, Slack, Feishu, Matrix, WhatsApp, QQ, WeChat, WeCom, DingTalk, Email, Signal, MoChat, MS Teams, and WebSocket. Auto-discovered via `pkgutil` scan + entry-point plugins.
-- **Broad Provider Support:** Anthropic, OpenAI-compatible, OpenAI Responses API, Azure, Bedrock, GitHub Copilot, OpenCode, Kimi, MiniMax, DeepSeek, Google Gemini, and more. Provider `factory.py` and `registry.py` handle instantiation and model discovery. Includes image generation and audio transcription.
+- **Multi-Platform Channels:** 17 channel integrations including Telegram, Discord, Slack, Feishu, Matrix, WhatsApp, QQ, WeChat, WeCom, DingTalk, Email, Signal, MoChat, MS Teams, WebSocket, Mattermost, and NapCat. Auto-discovered via `pkgutil` scan + entry-point plugins; each channel lives in its own subdirectory with `manifest.py` + `runtime.py`.
+- **Broad Provider Support:** Anthropic, OpenAI-compatible, OpenAI Responses API, Azure, Bedrock, GitHub Copilot, OpenAI Codex (`openai_codex_provider.py` — also the backend for OpenCode Zen/Go gateways per `docs/providers.md`), Kimi, MiniMax, DeepSeek, Google Gemini, xAI Grok, and more. Kimi/DeepSeek/Gemini models are served through the OpenAI-compatible spec (`openai_compat_provider.py`: `kimi-k2.x`/`k3` presets, DeepSeek wire-format handling). Provider `factory.py` and `registry.py` handle instantiation and model discovery. Includes image generation and audio transcription.
 - **Rich Tool System:** Filesystem (read/write/edit/list), shell execution (with sandbox backends), web search/fetch, MCP server integration, cron scheduling, notebook editing, subagent spawning, long-running tasks/sustained goals (`long_task.py`), image generation, and self-modification. Tools auto-discovered via plugins.
 - **Built-in WebUI:** Vite-based React SPA shipped inside the Python wheel. Speaks to the gateway over WebSocket multiplex protocol. Features live chat, file editing, model controls, project workspaces, token heatmaps, and more.
 - **Dream Memory:** Two-phase memory consolidation with atomic writes and fsync durability. Sessions auto-compact by default.
 - **Sustained Goals (`/goal`):** Long-running objectives persist across conversational turns using goal state tracking.
 - **OpenAI-Compatible API:** Exposes `/v1/chat/completions` and `/v1/models` endpoints for programmatic access.
 - **MCP Support:** Connect multiple MCP servers as tool providers.
-- **Security:** PTH file guard, shell sandbox, pairing/DM approval store, and other measures activated at CLI entry.
+- **Security:** SSRF protection (`security/network.py`), workspace access guards (`security/workspace_access.py`, `security/workspace_policy.py`), shell sandbox, pairing/DM approval store, and other measures activated at CLI entry.
 - **Docker & Deployment:** Official Docker image, `docker-compose.yml`, macOS LaunchAgent support.
-- **Active Development:** Nearly daily releases (v0.1.4 through v0.2.2), 100+ documented releases.
+- **Active Development:** Current version 0.3.0, 100+ documented releases.
 
 ## Architecture
 
@@ -78,9 +78,9 @@ The data flow: Chat channels receive messages and publish `InboundMessage` event
 | Directory | Purpose |
 |---|---|
 | `nanobot/agent/` | Agent core: loop, runner, memory, context, hooks, skills, tools, cron |
-| `nanobot/agent/tools/` | 30+ tool implementations (shell, filesystem, web, MCP, cron, spawn, etc.) |
+| `nanobot/agent/tools/` | 23 tool modules (shell, filesystem, web, MCP, cron, spawn, long_task, image_generation, search, self, apply_patch, exec_session, cli_apps, etc.) |
 | `nanobot/providers/` | LLM provider implementations (Anthropic, OpenAI, Azure, Bedrock, Gemini, and more) |
-| `nanobot/channels/` | 17+ chat channel integrations |
+| `nanobot/channels/` | 17 chat channel integrations (subdirectories with `manifest.py` + `runtime.py`) |
 | `nanobot/api/` | OpenAI-compatible HTTP API server |
 | `nanobot/config/` | Pydantic-based configuration |
 | `nanobot/session/` | Session history, context compaction, goal state |
@@ -88,12 +88,11 @@ The data flow: Chat channels receive messages and publish `InboundMessage` event
 | `nanobot/gateway/` | Gateway runtime and service |
 | `nanobot/cli/` | CLI commands and gateway |
 | `nanobot/command/` | Slash command routing |
-| `nanobot/security/` | PTH file guard and security |
+| `nanobot/security/` | SSRF protection, workspace guards, network hardening |
 | `nanobot/cron/` | Cron scheduling and automation |
 | `nanobot/pairing/` | DM sender approval store |
-| `bridge/` | TypeScript bridge services (e.g., WhatsApp) |
 | `webui/` | Vite/React SPA bundled into the Python wheel |
-| `docs/` | Full documentation suite (20+ docs in multiple languages) |
+| `docs/` | Full documentation suite (27 top-level entries plus a `guides/` directory) |
 | `tests/` | Test suite mirroring the `nanobot/` package structure |
 
 ## Interfaces

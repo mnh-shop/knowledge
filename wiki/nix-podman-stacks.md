@@ -179,7 +179,7 @@ For our **Hermes agent workspace**, nix-podman-stacks can serve as the declarati
 
 | File | Role |
 |------|------|
-| `flake.nix` | Flake entry point; defines inputs, outputs, CI config |
+| `flake.nix` | Flake entry point; inputs (`nixpkgs`, `home-manager`, `sops-nix`, `search` — the NuschtOS option-search engine); outputs `homeModules`, `templates.default` (starter template), and CI config |
 | `modules/module_list.nix` | Aggregates all stack modules into the `nps` meta-module |
 | `modules/settings.nix` | Global nps options and base Podman config |
 | `modules/extension.nix` | Container option extensions (volumeMap, extraEnv, socketActivation, etc.) |
@@ -192,8 +192,8 @@ For our **Hermes agent workspace**, nix-podman-stacks can serve as the declarati
 | `modules/homepage/` | Homepage dashboard module |
 | `modules/homepage/extension.nix` | Auto-populates homepage services from container definitions |
 | `modules/n8n/` | n8n workflow automation module |
-| `ci_config.nix` | CI test configuration enabling all stacks |
-| `docs/` | mdbook documentation |
+| `ci_config.nix` | CI test configuration enabling all stacks (916 lines) |
+| `docs/` | VitePress documentation (`docs/book/`) covering getting-started, container-options, settings-options, secrets-templating, examples, and backups; rendered via `easy-nix-documentation` from evaluated module options |
 
 ## How to Use
 

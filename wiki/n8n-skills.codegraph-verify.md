@@ -80,15 +80,27 @@ source: sources/n8n-skills/
 - **Verdict:** ✅ CORRECT
 - **Fix needed:** None
 
+## Claim 7: Support statistics — 525+ nodes, 2,653+ templates, 10 Code node patterns (no "5,700" stat exists)
+- **Wiki says:** 525+ n8n nodes supported and 2,653+ workflow templates for examples; exactly 10 production-tested Code node patterns. (A previously fabricated "5,700+ nodes discovered" figure was removed — it appears nowhere in the repo.)
+- **Source evidence:**
+  - `README.md` line 380: "**525+** n8n nodes supported"
+  - `README.md` line 381: "**2,653+** workflow templates for examples"
+  - `README.md` line 382: "**10** production-tested Code node patterns" (also line 110 under n8n Code JavaScript: "10 production-tested patterns")
+  - `README.md` line 72: "Real examples from 2,653+ n8n templates"
+  - Grep for `5,700` across the entire repository returns zero matches
+- **Verdict:** ✅ CORRECT
+- **Fix needed:** None
+
 ## Summary
 
-All 6 key claims from the n8n-skills wiki have been verified against the source code via codegraph exploration:
+All 7 key claims from the n8n-skills wiki have been verified against the source code via codegraph exploration:
 - ✅ 14 complementary skills: Confirmed in `skills/` directory with 15 directories (14 + 1 router)
 - ✅ Enforcement hooks: `hooks/` with SessionStart/PreToolUse/PostToolUse confirmed
 - ✅ Evaluations: `evaluations/` directory with 3+ per skill pattern confirmed
 - ✅ Claude Code plugin: `.claude-plugin/` config and npm distribution confirmed
 - ✅ Cross-skill integration: Progressive disclosure design confirmed in CLAUDE.md
 - ✅ MCP tools coverage: 4 categories with detailed tool descriptions confirmed
+- ✅ Statistics: 525+ nodes / 2,653+ templates / 10 Code patterns confirmed in README.md; no "5,700" stat anywhere
 
 ## Related
 

@@ -15,6 +15,8 @@ A clean, reboot-safe, headless deployment guide for Hermes Agent on dedicated Li
 
 Hermes Autonomous Server is a production-ready deployment approach that allows you to run Hermes Agent fully autonomously on your own infrastructure. This setup eliminates shell loops, TTY hacks, and third-party hosting requirements in favor of clean systemd integration and native cron scheduling.
 
+> **Note:** The repository is a single README (335 lines) — a pure prose deployment guide with the systemd unit defined inline. It ships no scripts, service files, or tests.
+
 **Key Features:**
 - ✅ Reboot-safe operation
 - ✅ Fully headless deployment
@@ -105,12 +107,13 @@ sudo systemctl enable hermes-gateway
 
 # Authentication
 hermes login
-harmes status
+hermes status
 
-# Cron management
+# Cron management — create jobs conversationally inside hermes chat
 hermes chat
-harmes cron create [schedule]
 ```
+
+> **Note:** Cron jobs are **not** created via any CLI subcommand — the `hermes cron` interface exposes no job-creation command. Jobs are created conversationally inside the interactive `hermes chat` shell — e.g. "Create a cronjob that runs every 10 minutes. The task should: Write a short reflective paragraph about technology trends. Limit response to 180 words." — and Hermes returns a job ID. The scheduler is managed read-only via `hermes cron status` and `hermes cron list` (see Monitoring & Maintenance).
 
 ## Security Guidelines
 
@@ -125,17 +128,12 @@ harmes cron create [schedule]
 ```bash
 sudo systemctl stop hermes-gateway
 sudo systemctl disable hermes-gateway
-harmes uninstall
+hermes uninstall
 ```
 
 ## Why This Approach?
 
-## Related
-
-- [[hermes-agent]] — Core Hermes agent platform
-- [[monitoring]] — Autonomous server monitoring
-- [[domains/deployment/INDEX|deployment]] — Deployment patterns
-
+The README's rationale ("Why This Approach?") makes the case for native Hermes scheduling over brittle alternatives:
 
 ✅ **Advantages:**
 - Native Hermes scheduler integration
@@ -143,14 +141,17 @@ harmes uninstall
 - No TTY emulation hacks
 - Clean systemd integration
 - Minimal operational complexity
-- Full self-hosted control
+- Fully self-hosted control
 
-✅ **Production Benefits:**
-- Automatic reboot recovery
-- Persistent background operation
-- System-level service management
-- Native cron scheduling
-- Headless operation
-- Memory leak protection
+✅ **Reboot & Crash Safety:**
+- Automatic reboot recovery — service is enabled at boot (`WantedBy=multi-user.target`)
+- Persistent background operation — no open SSH session required
+- Fully headless operation
+- Crash-restart protection — the systemd unit sets `Restart=always` with `RestartSec=10`, so the gateway auto-restarts if it crashes
 
 This autonomous server setup represents the most robust and production-ready approach for running Hermes AI agents continuously on dedicated infrastructure.
+
+## Related
+
+- [[hermes-agent]] — Core Hermes agent platform
+- [[domains/deployment/INDEX|deployment]] — Deployment patterns

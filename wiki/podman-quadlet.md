@@ -52,7 +52,7 @@ Quadlet supports both rootless and rootful container execution:
 
 ## Template Collection
 
-The repository provides production-ready Quadlet configurations for **27 self-hosted services**, each in its own directory with complete `.container`, `.network`, and `.env` files:
+The repository provides production-ready Quadlet configurations for **25 self-hosted services**, each in its own directory with complete `.container`, `.network`, and `.env` files:
 
 | Service | Type | Key Features |
 |---|---|---|
@@ -62,7 +62,7 @@ The repository provides production-ready Quadlet configurations for **27 self-ho
 | **Sonarr** | Media management | Similar pattern to Radarr with series-specific configuration |
 | **Prowlarr** | Indexer manager | Proxy configuration, custom network, API key management |
 | **Plex** | Media streaming | GPU passthrough, large volume mounts, custom network config |
-| **Lidarr** | Music management | Volume mounts, network isolation, tag-based organization |
+| **lidarr-on-steroids** | Music management | Volume mounts, network isolation, tag-based organization |
 | **Syncthing** | File synchronization | Persistent volumes, discovery server configuration |
 | **Miniflux** | RSS reader | Database backend (PostgreSQL via separate container), environment config |
 | **SearXNG** | Search engine | Reverse proxy configuration, Redis caching, custom networking |
@@ -70,7 +70,6 @@ The repository provides production-ready Quadlet configurations for **27 self-ho
 | **Tautulli** | Plex monitoring | Plex dependency, database persistence, API integration |
 | **Maintainerr** | Media management | File system access for media pruning |
 | **Kopia** | Backup | Repository persistence, snapshot scheduling, compression config |
-| **n8n (tools)** | Workflow utilities | Additional workflow automation tools and templates |
 | **WireGuard** | VPN | Host network mode, kernel module access, peer configuration |
 | **wg-easy** | VPN management | Web UI for WireGuard, persistent peer config |
 | **ntfy** | Notifications | Message persistence, topic management, web UI |
@@ -80,9 +79,10 @@ The repository provides production-ready Quadlet configurations for **27 self-ho
 | **Changedetection** | Website monitoring | Browser-based rendering, notification integration |
 | **Homepage** | Dashboard | Service discovery via container labels, widget configuration |
 | **Cloudflare** | DNS/Tunnel | API token management, tunnel configuration |
-| **plex** (models) | Media tools | Additional Plex companion tools |
 | **profilarr** | Profile management | Custom profile configuration |
 | **kopia-photos** | Photo backup | Kopia integration for photo-specific backup patterns |
+
+> **Provenance note (setup/source of truth):** the local clone at `sources/podman-quadlet/` is **corrupted** — it is a duplicate of `extension-podman-quadlet` (a TypeScript monorepo), not the original repo. All template contents on this page are documented from the upstream `fpatrick/podman-quadlet` repository (blog.nerdon.eu), which contains exactly the 25 template directories listed above. The following facts are CORRECT per the upstream README and repo structure: rootless (`~/.config/containers/systemd/`) vs rootful (`/etc/containers/systemd/`) deployment paths, `AutoUpdate=registry` for podman auto-update integration, `homepage.*` labels for the Homepage dashboard, `.pod` support for multi-container services (e.g. Immich), and the `.env` file pattern via `EnvironmentFile=`. A re-clone of the upstream repo and re-verification of these claims against the actual files is required (out of scope here). No license is declared upstream.
 
 Each template follows a consistent structure: a dedicated directory with a `.container` file, optional `.network` file for custom networking, and documentation comments explaining key configuration choices.
 

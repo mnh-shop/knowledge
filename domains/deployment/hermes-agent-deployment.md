@@ -14,7 +14,10 @@ Deployment and operations guide for Hermes Agent -- a multi-platform personal AI
 - [Overview](#overview)
 - [Prerequisites](#prerequisites)
 - [Installation](#installation)
+- [Windows and Termux Support](#windows-and-termux-support)
 - [Rootless Podman Quadlet Setup](#rootless-podman-quadlet-setup)
+- [Systemd Service Management](#systemd-service-management)
+- [Container Internals (s6-overlay)](#container-internals-s6-overlay)
 - [Configuration](#configuration)
 - [Model Provider API Keys](#model-provider-api-keys)
 - [MCP Server Configuration](#mcp-server-configuration)
@@ -25,6 +28,7 @@ Deployment and operations guide for Hermes Agent -- a multi-platform personal AI
 - [Hermzner Reference Deployment](#hermzner-reference-deployment)
 - [Environment Variables Reference](#environment-variables-reference)
 - [Updates and Maintenance](#updates-and-maintenance)
+- [Scale-to-Zero with Chronos](#scale-to-zero-with-chronos)
 - [Troubleshooting](#troubleshooting)
 - [Key Source Files](#key-source-files)
 
@@ -98,6 +102,41 @@ uv sync --all-extras
 pip install -e ".[all]"
 ```
 
+### Windows Quick Install
+
+```powershell
+# PowerShell one-liner (README.md:50)
+iex (irm https://hermes-agent.nousresearch.com/install.ps1)
+```
+
+### Clone Setup Script
+
+For a manual clone, `setup-hermes.sh` performs the platform-detected setup
+(desktop/server vs Android/Termux): creates a Python 3.11 venv, installs the
+platform-appropriate dependency set, and creates `.env` from the template if
+absent. It uses `uv` on desktop/server and stdlib `venv` + pip on Termux.
+
+```bash
+git clone https://github.com/NousResearch/hermes-agent.git
+cd hermes-agent
+./setup-hermes.sh
+```
+
+### Nix Flake
+
+Hermes ships a Nix flake (`flake.nix`) plus a `nix/` module tree
+(`nixosModules.nix`, `hermes-agent.nix`, `desktop.nix`, `tui.nix`, `web.nix`,
+`python.nix`, `devShell.nix`, `checks.nix`, `overlays.nix`, `packages.nix`,
+`lib.nix`, `configMergeScript.nix`):
+
+```bash
+nix develop            # development shell
+nix build .#hermes     # build the agent package
+```
+
+The `nixosModules.nix` provides a NixOS module for Nix-managed service
+deployment.
+
 ### Docker Image
 
 The official Docker image is available at `docker.io/nousresearch/hermes-agent`.
@@ -118,6 +157,62 @@ hermes setup
 # Verify health
 hermes gateway health
 ```
+
+---
+
+## Windows and Termux Support
+
+### Native Windows Install
+
+Windows is a first-class install target. The PowerShell one-liner
+(`install.ps1`) installs the binary natively — no WSL required (though WSL is
+supported and used by the dashboard's PTY-based embedded TUI, which requires a
+POSIX PTY).
+
+The Windows path relies on `hermes_bootstrap.py`, which must be the **very
+first import** in every entrypoint — it configures UTF-8 stdio so Unicode
+output survives Windows' legacy codepage. POSIX is unaffected (no-op there).
+Any runner that skips the bootstrap risks mojibake on Windows terminals.
+
+### Android / Termux
+
+| Artifact | Purpose |
+|----------|---------|
+| `constraints-termux.txt` | Termux-specific dependency pins for the Android setup path |
+| `setup-hermes.sh` | Detects Android/Termux and uses stdlib `venv` + pip instead of uv |
+| `hermes_cli/psutil_android.py` | Android-aware psutil shims |
+
+### CJK Full-Text Search (`native/fts5_cjk`)
+
+Hermes ships a prebuilt CJK tokenizer extension for SQLite FTS5 in
+`native/fts5_cjk/` — required for Chinese/Japanese/Korean full-text session
+search on platforms where the stock SQLite build lacks the extension. It is
+bundled for native installs; the Docker image instead builds a pinned SQLite
+from source (see `Dockerfile`) to avoid distro WAL-reset bugs.
+
+### Multi-Profile Isolation
+
+Hermes supports **profiles** — fully isolated instances, each with its own
+`HERMES_HOME` (config, API keys, memory, sessions, skills, gateway). The
+profile override is applied in `hermes_cli/main.py` (`_apply_profile_override`)
+before any module imports; all `get_hermes_home()` calls
+(`hermes_constants.py`) scope to the active profile automatically.
+
+```bash
+# Run with a specific profile
+hermes -p client-a
+
+# Create a profile during setup
+hermes setup --profile client-b
+
+# Profile registry (HOME-anchored, visible from any profile)
+hermes profile list
+```
+
+Profile roots live at `~/.hermes/profiles/<name>` and are HOME-anchored (not
+HERMES_HOME-anchored) so `hermes -p x profile list` sees every profile. This
+is what enables the multi-agent kanban worker fleets and per-client
+gateway deployments.
 
 ---
 
@@ -218,6 +313,80 @@ services:
 ```
 
 ---
+
+## Systemd Service Management
+
+Beyond Quadlet, Hermes manages its own systemd/launchd gateway service units
+directly via the CLI (`hermes_cli/gateway.py`).
+
+### Gateway Service Lifecycle
+
+```bash
+# Install the gateway as a service (user scope by default)
+hermes gateway install
+
+# System-wide (root): writes /etc/systemd/system/hermes-gateway.service
+sudo hermes gateway install --system
+
+# Control the service
+hermes gateway start | stop | restart | status
+
+# Remove the unit
+hermes gateway uninstall
+```
+
+Key behaviors:
+
+- Unit name is `hermes-gateway.service` for the default profile and
+  `hermes-gateway-<profile>.service` for named profiles, so multiple profile
+  gateways can coexist without fighting over the same bot credentials
+  (legacy `hermes.service` units are detected and cleaned up).
+- Install/uninstall is profile-aware: it will refuse to install over a
+  different profile's active service and surfaces which scope/unit is
+  currently running.
+- On systemd hosts the gateway uses `Restart=always`; macOS falls back to
+  launchd (the same `GatewayProcessManager` abstracts both).
+- For rootless container deployments, prefer Quadlet (previous section);
+  `hermes gateway install` is for native/bare-metal installs.
+
+---
+
+## Container Internals (s6-overlay)
+
+The Docker image (`Dockerfile`) is s6-overlay supervised. PID 1 is `/init`
+(s6-overlay), which runs the `cont-init.d` scripts (chown, profile reconcile,
+dashboard toggle) and then brings up the supervision tree in `docker/s6-rc.d/`:
+
+| Unit | Service |
+|------|---------|
+| `main-hermes` | Main gateway agent process |
+| `dashboard` | Web dashboard (only when `HERMES_DASHBOARD=1`) |
+| `user` | User session supervisor |
+
+Supporting scripts in `docker/`:
+
+| File | Purpose |
+|------|---------|
+| `entrypoint.sh` | Container entrypoint chain |
+| `main-wrapper.sh` | Wraps the main gateway process (default ENTRYPOINT tail) |
+| `stage2-hook.sh` | Remaps the internal `hermes` user to `HERMES_UID`/`HERMES_GID` |
+| `hermes-exec-shim.sh` | `hermes exec` shim |
+| `tini-shim.sh` | tini re-exec shim |
+| `cont-init.d/` | One-shot init scripts (chown, profile reconcile, dashboard toggle) |
+
+```bash
+# Run with host UID/GID so container-written files stay owned by you
+HERMES_UID=$(id -u) HERMES_GID=$(id -g) docker compose up -d
+
+# Or via podman
+HERMES_UID=$(id -u) HERMES_GID=$(id -g) podman compose up -d
+```
+
+**Do not bypass `/init`** — the compose file's security notes warn that
+overriding the entrypoint skips cont-init setup (chown, profile reconcile,
+dashboard toggle) and the gateway will not work correctly. `docker-compose.yml`
+is the Linux stack; `docker-compose.windows.yml` is the Windows variant. Both
+mount `~/.hermes` as `/opt/data`.
 
 ## Configuration
 
@@ -558,6 +727,37 @@ podman logs hermes
 podman stats hermes
 ```
 
+### Gateway Health & Diagnostics Export (OTLP)
+
+Hermes can export gateway health metrics and redacted diagnostics over OTLP
+to an operator-configured endpoint. The export surface is **content-free by
+construction** — no prompts, messages, tool args/results, or usage analytics.
+The implementation lives in `hermes_cli/observability/` (OTLP
+metrics/traces/logs relay, `relay_runtime.py`, `shared_metrics.py`) with a
+versioned schema at `hermes_cli/observability/schemas/hermes.shared_metrics.v1.schema.json`.
+
+```bash
+# Inspect monitoring export state and redaction posture
+hermes monitoring status
+```
+
+Configured under the `monitoring.*` keys in `config.yaml` (`hermes_cli/config_defaults.py`).
+See [[hermes-agent-observability]] for the full reference, including the
+optional `langfuse` and `nemo_relay` observability plugins
+(`plugins/observability/`).
+
+### Usage Insights
+
+```bash
+# Token usage, costs, tool patterns, and activity trends over the last 30 days
+hermes insights [--days 30] [--source telegram]
+
+# Billing: plan / top-up view, dollars-only (also /usage and /subscription in TUI)
+hermes usage
+hermes subscription
+hermes topup
+```
+
 ### Diagnostics
 
 ```bash
@@ -767,12 +967,22 @@ See `hermes_cli/main.py` for the full list of configurable environment variables
 ### Updating via Hermes CLI
 
 ```bash
-# Auto-update
+# Auto-update (managed installs: git-reset + uv pip install -e .)
 hermes update
 
 # Check version
 hermes --version
 ```
+
+### Uninstalling
+
+```bash
+# Remove the hermes binary and managed install
+hermes uninstall
+```
+
+The uninstaller (`hermes_cli/uninstall.py`) removes the managed installation;
+profile data in `~/.hermes/` is preserved by default unless explicitly removed.
 
 ### Updating Quadlet Deployment
 
@@ -810,6 +1020,45 @@ tar -xzf hermes-backup-*.tar.gz -C ~/
 # Restart
 systemctl --user start hermes-agent.service
 ```
+
+---
+
+## Scale-to-Zero with Chronos
+
+For hosted/cloud deployments where an idle gateway should not burn a VM,
+Hermes ships a **Chronos** cron provider (`plugins/cron_providers/chronos/`)
+that lets the gateway **scale to zero** while still firing scheduled jobs.
+
+### How It Works
+
+Chronos delegates the "wake me at time T" trigger to Nous infrastructure:
+
+1. The agent computes each job's next-fire time and asks NAS to arm a one-shot.
+2. The machine stays off (scaled to zero).
+3. NAS calls the agent back at fire time over an **authenticated webhook** —
+   the machine wakes only on a NAS→agent fire.
+
+The full contract is documented in `docs/chronos-managed-cron-contract.md`.
+
+### Enabling
+
+Chronos is inert unless selected as the scheduler provider:
+
+```yaml
+# config.yaml
+cron:
+  provider: chronos        # scheduler provider (Axis B), not inference
+```
+
+The agent only arms *next-fire* triggers — never a periodic wake loop, which
+would negate scale-to-zero.
+
+### Relationship to the Built-in Ticker
+
+Without a provider set, the built-in in-process scheduler ticks every 60s
+inside the gateway (there is no standalone cron daemon). Chronos replaces that
+tick loop with NAS-mediated one-shot arming, so the container can be fully
+stopped between fires. See [[hermes-agent-cron]] for the scheduler internals.
 
 ---
 
@@ -937,10 +1186,21 @@ ssh -L 9118:127.0.0.1:9119 hermes@<remote-host> -N
 | `mcp_serve.py` | MCP messaging bridge |
 | `acp_adapter/server.py` | ACP adapter |
 | `tools/mcp_tool.py` | MCP client (MCPServerTask) |
-| `Dockerfile` | Container image |
+| `Dockerfile` | Container image (pinned SQLite build, s6-overlay) |
 | `docker-compose.yml` | Docker Compose configuration |
+| `docker-compose.windows.yml` | Windows Docker Compose variant |
+| `docker/` | s6-overlay units, entrypoint, cont-init scripts |
 | `flake.nix` | Nix flake |
-| `setup-hermes.sh` | Setup script |
+| `nix/` | NixOS module tree, packages, overlays |
+| `setup-hermes.sh` | Clone setup script (desktop/server + Termux) |
+| `hermes_bootstrap.py` | UTF-8 stdio bootstrap (Windows, first import) |
+| `constraints-termux.txt` | Termux dependency pins |
+| `native/fts5_cjk/` | CJK FTS5 SQLite extension for native installs |
+| `hermes_constants.py` | `get_hermes_home()` profile-aware paths |
+| `hermes_cli/gateway.py` | `hermes gateway install/uninstall` systemd/launchd mgmt |
+| `hermes_cli/observability/` | OTLP metrics/traces/logs relay + shared metrics schema |
+| `plugins/cron_providers/chronos/` | Scale-to-zero NAS-mediated cron provider |
+| `hermes_cli/uninstall.py` | `hermes uninstall` |
 
 ---
 
@@ -970,3 +1230,7 @@ ssh -L 9118:127.0.0.1:9119 hermes@<remote-host> -N
 - [[domains/deployment/hermzner-deployment.md]] -- Hermzner deployment guide
 - [[assets/deployment/hermzner-terraform-ansible.md]] -- Hermzner infra-as-code
 - [[hermes-workspace]] -- Workspace deployment
+- [[hermes-agent-configuration]] -- Config reference
+- [[hermes-agent-cron]] -- Cron scheduler architecture
+- [[hermes-agent-kanban]] -- Multi-agent kanban architecture
+- [[hermes-agent-observability]] -- Observability architecture

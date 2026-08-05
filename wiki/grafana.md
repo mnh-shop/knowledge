@@ -30,10 +30,10 @@ Grafana is built for a data-driven culture: it allows users to create, explore, 
 ## Key Features
 
 - **Unified Dashboarding** — Create, share, and manage interactive dashboards with drag-and-drop panel editing. Supports template variables for dynamic dashboards that adapt to different environments.
-- **Multi-Data Source Support** — Native queries for Prometheus, InfluxDB, Elasticsearch, SQL databases (PostgreSQL, MySQL, SQLite), CloudWatch, Loki, Tempo, and 70+ other data sources through plugin architecture.
+- **Multi-Data Source Support** — Core query backends in `pkg/tsdb/` cover Azure Monitor, CloudWatch, Graphite, InfluxDB, Grafana DS, and the test-data datasource. Prometheus, Loki, MySQL, MSSQL, PostgreSQL, Tempo, Jaeger, and Pyroscope remain registered as datasource *types* (`pkg/services/datasources/models.go`), but their implementations now ship as external plugins from separate repos; 70+ more data sources plug in through the plugin architecture.
 - **Alerting Engine** — Unified alerting with multi-dimensional evaluation, notification routing, silence management, and group notification. Visually define alert rules for important metrics with Slack, PagerDuty, VictorOps, and OpsGenie integrations.
 - **Explore Mode** — Ad-hoc query interface for debugging and data exploration without dashboard creation. Split view compares different time ranges, queries, and data sources side by side.
-- **Logs & Traces** — Seamless switching from metrics to logs with preserved label filters. Quick search through logs or streaming live. Native Tempo and Jaeger tracing support.
+- **Logs & Traces** — Seamless switching from metrics to logs with preserved label filters. Quick search through logs or streaming live. Tempo and Jaeger tracing supported via external datasource plugins (no longer bundled in core).
 - **Mixed Data Sources** — Combine different data sources in the same graph on a per-query basis, enabling correlation across systems.
 - **RBAC & Provisioning** — Role-based access control and dashboard-as-code provisioning via YAML/JSON configuration files.
 - **Annotations** — Correlate events with metric data using event annotations from multiple sources.
@@ -52,7 +52,7 @@ Grafana uses a plugin-based architecture. The Go backend (structured under `pkg/
 | `pkg/plugins/` | Plugin system and loader |
 | `pkg/infra/` | Logging, metrics, database access |
 
-The alerting system can operate independently and supports multi-dimensional rule evaluation, notification routing through Grafana's notification system or external Alertmanager instances. Schema definitions use CUE language (in `kinds/`) to generate both Go and TypeScript type definitions.
+The alerting system can operate independently and supports multi-dimensional rule evaluation, notification routing through Grafana's notification system or external Alertmanager instances. Contact point integrations (Email, Opsgenie, Pagerduty, Slack, Victorops, Webhook, Webex) are defined in `pkg/services/ngalert/api/tooling/definitions/contact_points.go`. Grafana App SDK apps live in `apps/` (dashboard, folder, alerting, iam, and more), and the decoupled storage/search service in `pkg/storage/unified/` can be deployed as separate services at a different cadence than the API layer (AGENTS.md:147). The scene-based dashboard UI uses `@grafana/scenes/dashboard-scene`. Schema definitions use CUE language (in `kinds/`) to generate both Go and TypeScript type definitions.
 
 ## Deployment & Configuration
 
@@ -68,7 +68,7 @@ Grafana integrates with the monitoring ecosystem at multiple levels:
 - **As edge monitoring** — run Grafana as a bootc container on [[bootc]]-based systems for local observability at remote sites.
 - **With Cockpit** — manage Grafana containers through [[cockpit-podman]] web UI for container lifecycle management.
 
-Grafana is also commonly paired with Loki for logs, Tempo for traces, and supports plugin-based data sources that can be provisioned declaratively. Built-in plugins include Loki, Jaeger, Pyroscope, Postgres, MySQL, and test data sources.
+Grafana is also commonly paired with Loki for logs and Tempo for traces — both installed as external plugins, no longer bundled in core. Built-in core datasource plugins (`public/app/plugins/datasource/`) are: alertmanager, azuremonitor, cloudwatch, dashboard, grafana, grafana-testdata-datasource, graphite, influxdb, and mixed.
 
 ## Related
 

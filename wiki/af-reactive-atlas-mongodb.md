@@ -66,9 +66,11 @@ Updated on 2026-06-24 to reflect current architecture and capabilities.
 
 ## Economics
 
-- **Sub-$0.02 per document**
-- **No new infrastructure** (uses existing Atlas clusters)
-- **$400–600/mo for 10,000 documents/day**
+> ⚠️ **README marketing claims — not verifiable from source.** The "under two cents per document" / "~$400-600/mo at 10,000 documents/day" figures appear in the README (README.md: "less than a cent on budget models — under two cents on mid-tier. At 10,000 documents per day, total agent cost runs ~$400-600/mo") but no pricing model, cost benchmark, or telemetry exists in this repo's code. Treat as claimed, not source-verifiable.
+
+- **~$0.01–0.02 per document** — README claim (cost depends on LLM provider pricing)
+- **No new infrastructure** — uses existing Atlas clusters
+- **~$400–600/mo for 10,000 documents/day** — README claim, unbenchmarked in repo
 
 ## Use Cases
 
@@ -173,7 +175,7 @@ This is an **AgentField Reactive Atlas agent** — a MongoDB intelligence layer 
 
 - **Node ID:** "reactive-intelligence"
 - **Tags:** ["reactive-intelligence"]
-- **Skills:** 12+ skills for domain operations (config loading, entity context, enrichment, timeline logging)
+- **Skills:** 11 skills for domain operations (config loading, entity context, enrichment, timeline logging) — `reasoners/skills.py` registers exactly 11 `@router.skill()` handlers
 - **Reasoners:** 5 core reasoning functions (triage, analysis, policy evaluation, network insight, cascade)
 
 ### Document Enrichment Triggers

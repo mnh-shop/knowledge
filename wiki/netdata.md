@@ -23,7 +23,7 @@ source_reference: sources/netdata/README.md, sources/netdata/AGENTS.md
 
 Netdata is an open-source, real-time infrastructure monitoring platform that provides high-resolution metrics (down to 1-second granularity) for every component of a system — CPU, memory, disk, network, processes, containers, and applications. It combines a performance-optimized, zero-configuration monitoring agent written in C with a rich, interactive dashboard, ML-powered anomaly detection, and a cloud-based observability backend.
 
-According to a University of Amsterdam study, Netdata is the most energy-efficient tool for monitoring Docker-based systems, excelling in CPU usage, RAM usage, and execution time compared to other monitoring solutions. With approximately 1% CPU usage per core on a typical system, it is designed to run alongside production workloads with minimal overhead.
+According to a University of Amsterdam study, Netdata is the most energy-efficient tool for monitoring Docker-based systems, excelling in CPU usage, RAM usage, and execution time compared to other monitoring solutions. With under 1% CPU usage per core and ~100MiB RAM (measured with ML and alerts disabled and using ephemeral storage — README.md:310), it is designed to run alongside production workloads with minimal overhead.
 
 Netdata provides **instant insights** with per-second metrics and visualizations, **zero configuration** deployment, **ML-powered anomaly detection** that trains multiple models per metric at the edge, and a **distributed** architecture where each node runs its own monitoring agent and data is never centralized unless explicitly streamed to Netdata Cloud.
 
@@ -38,15 +38,16 @@ Netdata provides **instant insights** with per-second metrics and visualizations
 - **Comprehensive Visibility** — From infrastructure (CPU, memory, disk, network, hardware sensors) to applications (nginx, Apache, postgres, redis, mongodb, and hundreds more).
 - **Container & Kubernetes Monitoring** — Native support for Docker, containerd, LXC/LXD, and Kubernetes (via cgroups, kubelet, and Prometheus endpoints).
 - **Extreme Scalability** — Native horizontal scaling via parent-child streaming architecture supporting millions of samples per second.
-- **Low Overhead** — ~1% CPU usage per core, designed for production deployment alongside workloads.
+- **Low Overhead** — <1% CPU per core and ~100MiB RAM when ML and alerts are disabled and ephemeral storage is used (README.md:310), designed for production deployment alongside workloads.
 - **Logs Monitoring** — systemd-journal, Windows Event Log, and ETW log collection and visualization.
 - **Cloud Provider Support** — AWS, GCP, Azure, and more infrastructure monitoring.
 - **Synthetic Checks** — Test APIs, TCP ports, Ping, Certificates, and more.
 - **Custom Applications** — OpenMetrics and StatsD support for custom application instrumentation.
+- **OpenTelemetry (Rust)** — Native OTLP ingestion via the `src/crates/` Rust workspace: `otel-ingestor` (OTLP intake) and `otel-ledger` (ledger processing), alongside `sfsq`, `netipc`, and supporting `opentelemetry` crates.
 
 ## Architecture
 
-Netdata follows a distributed-agent model. Each monitored host runs the Netdata agent (written in C for performance), which collects metrics via multiple plugin interfaces: internal C plugins, Go plugins (go.d), Python plugins, and external plugins via the PLUGINSD protocol. The agent collects data from procfs, eBPF, cgroups, systemd-journal, and service APIs.
+Netdata follows a distributed-agent model. Each monitored host runs the Netdata agent (written in C for performance), which collects metrics via multiple plugin interfaces: 27 internal plugins in this checkout (C, Python, and shell), Go plugins via `go.d.plugin` — a separate repository (netdata/go.d.plugin) referenced here rather than vendored — and external plugins via the PLUGINSD protocol. The agent collects data from procfs, eBPF, cgroups, systemd-journal, and service APIs.
 
 **Three-component ecosystem:**
 
@@ -57,6 +58,8 @@ Netdata follows a distributed-agent model. Each monitored host runs the Netdata 
 | **Netdata UI** | Dashboards and visualizations included in standard packages. Latest version delivered via CDN. Rich interactive charts without query language. | NCUL1 |
 
 The agent serves metrics through an HTTP endpoint for the local dashboard or streams them to Netdata Cloud for centralized access. The tiered storage engine archives older data at lower resolution (~0.5 bytes per sample) for long-term retention while keeping recent data at full 1-second resolution.
+
+A Rust workspace under `src/crates/` adds native components to the agent: `otel-ingestor` and `otel-ledger` implement OpenTelemetry ingestion and ledger processing, supported by `sfsq`, `netipc`, and the `opentelemetry`/`otel-*` crates — giving the agent native OTLP intake alongside its collector plugins.
 
 ## What Can Be Monitored
 
@@ -71,7 +74,7 @@ Netdata provides comprehensive monitoring coverage across all major platforms:
 - **Applications** — nginx, Apache, PostgreSQL, Redis, MongoDB, and hundreds more through auto-detection
 - **Logs** — systemd-journal (Linux), Windows Event Log, ETW (Windows)
 - **Synthetic Checks** — API endpoints, TCP ports, ping, TLS certificate expiry
-- **Cloud Infrastructure** — AWS, GCP, Azure resource utilization
+- **Cloud Infrastructure** — AWS, GCP, Azure resource utilization. The cloud provider collectors ship in the external `go.d.plugin` repo (integrations/categories.yaml `data-collection.cloud-and-devops`), not in this checkout.
 
 ## Usage / Integration
 

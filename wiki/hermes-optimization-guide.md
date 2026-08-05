@@ -1,6 +1,6 @@
 ---
 name: hermes-optimization-guide
-description: "26-part practical guide for the Nous Research Hermes Agent: setup, optimization, security, deployment, and local hardware across CLI, TUI, desktop, and 22+ chat platforms"
+description: "29-part practical guide for the Nous Research Hermes Agent: setup, optimization, security, deployment, and local hardware across CLI, TUI, desktop, and 25+ chat platforms"
 source: sources/hermes-optimization-guide/
 verification_date: 2026-07-12
 verified_by: codegraph-verify
@@ -11,7 +11,7 @@ tags: [acp, hermes-agent, cli, dashboard, desktop, developer-tools, docker, docu
 
 **Source:** `sources/hermes-optimization-guide/`
 
-A comprehensive 26-part guide (25 numbered parts + one README-based SOUL.md section) for deploying, optimizing, and securing the [Nous Research Hermes Agent](https://github.com/NousResearch/hermes-agent). Model-agnostic -- the guide covers the harness, not specific weights. Current through Hermes Agent v0.16.0 (2026.6.5, "The Surface Release").
+A comprehensive 29-part guide (28 numbered parts + one README-based SOUL.md section) for deploying, optimizing, and securing the [Nous Research Hermes Agent](https://github.com/NousResearch/hermes-agent). Model-agnostic -- the guide covers the harness, not specific weights. Current through Hermes Agent v0.18.2 (v2026.7.7.2, the "Judgment" line).
 
 Unlike most guides, this one ships **working artifacts**: 13 installable skills, 5 opinionated config templates, Docker Compose stacks (Langfuse), systemd units, Caddyfile, cron schedules, a VPS bootstrap script, reference architectures, and even an interactive browser-based config wizard.
 
@@ -19,7 +19,7 @@ By Terp -- [Terp AI Labs](https://x.com/OnlyTerp).
 
 ## Key Features
 
-- **26 guide parts** covering every aspect of a production Hermes deployment, from fresh install to multi-agent swarms
+- **29 guide parts** covering every aspect of a production Hermes deployment, from fresh install to multi-agent swarms
 - **13 installable skills** in 3 categories (ops, dev, security) -- symlink into `~/.hermes/skills/` to activate
 - **5 opinionated config templates**: minimum, telegram-bot, production, cost-optimized, security-hardened
 - **4 reference architectures**: Homelab, Solo Developer ($25-70/mo), Small Agency, Road Warrior
@@ -27,7 +27,7 @@ By Terp -- [Terp AI Labs](https://x.com/OnlyTerp).
 - **Interactive config wizard** -- 8 questions in the browser, emits ready-to-drop `config.yaml`
 - **Self-hosted Langfuse v3 stack** via Docker Compose (ClickHouse + MinIO + Redis)
 - **6 Mermaid architecture diagrams**: top-level architecture, MCP integration flow, coding-agent delegation (OpenClaw), remote-sandbox sync, observability stack, security layers
-- **Reproducible benchmarks** (cost + latency table across 12 models x 5 tasks)
+- **Reproducible benchmarks** (cost + latency table across 13 models x 5 tasks)
 - **CI pipeline**: markdown link check, yamllint, skill frontmatter validation, prettier (advisory)
 - **Ecosystem directory** (`ECOSYSTEM.md`): curated MCP servers, coding-agent integrations, native Hermes plugins
 
@@ -36,7 +36,7 @@ By Terp -- [Terp AI Labs](https://x.com/OnlyTerp).
 The Hermes Agent is a **single-agent-through-multiple-surfaces** architecture. The guide documents the full stack:
 
 ```
-Surfaces (Desktop app, CLI/TUI, Web admin panel, 22+ chat platforms)
+Surfaces (Desktop app, CLI/TUI, Web admin panel, 25+ chat platforms)
     |
 Gateway Router
     |
@@ -90,6 +90,9 @@ Key architectural patterns:
 | 23 | Tenacity Stack | PyPI/lazy deps, `hermes proxy`, `/handoff`, durable Kanban, `/goal`, Checkpoints v2, no-agent cron, worker lanes, multi-agent swarms |
 | 24 | Hermes Desktop App | Native macOS/Windows/Linux GUI, Cmd+K palette, drag-and-drop, model picker, remote gateway, voice, self-update |
 | 25 | NVIDIA & Local Hardware | RTX/DGX Spark, OpenShell isolation, NemoClaw, model-agnostic local stack (Ollama/LM Studio/llama.cpp) |
+| 26 | MoA, Verification & Self-Improvement | Mixture-of-Agents presets as selectable models, `/moa`, `/goal` completion contracts, `/learn` + `/journey`, background fan-out, scale-to-zero |
+| 27 | Power Secrets | 25 verified non-obvious mechanics: memory snapshots, gateway token tax, cache economics, credential pools, Kanban traps, profiles-as-rooms, printable cheat sheet |
+| 28 | The Recipe Book | Twelve production builds: finance loops, staged Gmail, approval offices, overnight Kanban, GPU FIFO, content swarms, job-hunt pipelines, coaches, correlators, Blender rooms, secretary office |
 
 ## Templates
 
@@ -98,7 +101,7 @@ The repo ships production-grade infrastructure templates:
 - **systemd**: hardened `hermes.service` (4G memory limit, strict system-call filtering, address-family restrictions, `ProtectSystem=strict`) and `hermes-dashboard.service` (1G memory limit)
 - **Caddy**: auto-TLS reverse proxy with HSTS, basic auth for dashboard, body-size limits for webhooks, security headers
 - **Docker Compose**: self-hosted Langfuse v3 stack (PostgreSQL + ClickHouse + MinIO + Redis) for LLM observability
-- **cron**: 8 production cron jobs (nightly backup, weekly MCP audit, weekly bypass audit, weekly cost report, weekly dep audit, monthly secret rotation, daily injection sweep, disk watchdog)
+- **cron**: 7 active production cron jobs (nightly backup, weekly MCP audit, weekly bypass audit, weekly cost report, weekly dep audit, monthly secret rotation, disk watchdog) -- a daily injection sweep is commented out pending an `/audit-injection-attempts` skill
 
 ## Skills
 
@@ -112,9 +115,9 @@ The repo ships production-grade infrastructure templates:
 
 - **CLI** -- `hermes` command (chat, tools, config, cron, backup)
 - **TUI** -- Terminal UI with live tool cards, steer, queueing, sticky composer
-- **Web** -- Browser admin dashboard (hermes dashboard, port 8765)
+- **Web** -- Browser admin dashboard (hermes dashboard, port 9119)
 - **Desktop** -- Native macOS/Windows/Linux GUI with streaming chat, command palette, drag-and-drop
-- **Chat platforms** -- 22+ including Telegram, Discord, Slack, Teams, LINE, WeChat, iMessage, Google Chat, QQ, SimpleX, webhooks, ntfy
+- **Chat platforms** -- 25+ including Telegram, Discord, Slack, Teams, LINE, WeChat, iMessage (via Photon), Google Chat, QQ, SimpleX, webhooks, ntfy
 - **ACP** -- Agent Communication Protocol for subagent delegation
 - **MCP** -- Model Context Protocol for external tool integration (stdio + HTTP transports)
 - **API** -- OpenAI-compatible proxy (`hermes proxy`), REST webhooks, WebSocket remote backend

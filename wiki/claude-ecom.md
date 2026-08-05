@@ -20,7 +20,7 @@ verified_by: codegraph-verify
 
 Claude Ecom is an e-commerce data analytics toolkit designed for Claude Code that transforms raw order/sales CSV data into structured business reviews with KPI decomposition, prioritized findings, and concrete next actions. It follows a hybrid architecture where Python handles deterministic computation (KPIs, health checks, scoring) and Claude handles business interpretation and narrative generation.
 
-The project ships as a Claude Code plugin (`claude-ecom@claude-ecom`) with a self-bootstrapping Python backend installed into `~/.local/share/claude-ecom/`. It can also run as a standalone CLI via `pip install claude-ecom`. Inspired by [claude-ads](https://github.com/AgriciDaniel/claude-ads).
+The project ships as a Claude Code plugin (`claude-ecom@claude-ecom`) with a self-bootstrapping Python backend installed into `~/.local/share/claude-ecom/`. It can also run as a standalone CLI via `pip install claude-ecom`. Inspired by [claude-ads](https://github.com/AgriciDaniel/claude-ads) (README.md Acknowledgements).
 
 ## Key Features
 
@@ -28,7 +28,7 @@ The project ships as a Claude Code plugin (`claude-ecom@claude-ecom`) with a sel
 - **Multi-Horizon Analysis** — Automatically selects 30-day / 90-day / 365-day trailing windows. Each period gets its own review JSON and markdown report. Focused analysis available via `/claude-ecom:ecom review 30d` etc.
 - **KPI Decomposition Engine** — Python engine (`review_engine.py`) computes trailing-window KPIs including revenue trends, order counts, AOV, customer acquisition, repeat purchase rates, and cohort behavior. Health checks classify signals as pass/watch/fail with impact estimation.
 - **Natural Language Queries** — Ask questions like "how was retention last month?" and Claude invokes the skill automatically, routing the question through the Python compute engine.
-- **Plugin-First Distribution** — Install as a Claude Code plugin via `/plugin marketplace add takechanman1228/claude-ecom` and `/plugin install claude-ecom@claude-ecom`. Includes SessionStart hook for auto-bootstrapping.
+- **Plugin-First Distribution** — Install as a Claude Code plugin via `/plugin marketplace add takechanman1228/claude-ecom` and `/plugin install claude-ecom@claude-ecom`. A `SessionStart` hook (matched on `startup|resume`) runs `bin/ecom --bootstrap-only` with a 300s timeout; the launcher installs a Python venv into `~/.local/share/claude-ecom/venv` with a `.claude-ecom-version` stamp so it survives plugin updates and reinstalls only when the plugin version changes.
 - **Comprehensive Health Checks** — Python module (`checks.py`) defines check result types with three categories (Revenue, Customer, Product) and semantic snake_case check IDs. Each check returns pass/watch/fail with impact scoring and action builders.
 - **Cohort Analysis** — The `cohort.py` module provides retention cohort tracking to understand customer lifecycle behavior and repeat purchase patterns over time.
 
@@ -47,11 +47,12 @@ The Python package (`claude_ecom/`) contains:
 - **`review_engine.py`** — Unified period-based review builder for 30d/90d/365d
 - **`scoring.py`** — Health scoring, top issue identification, action candidate generation
 - **`metrics.py`** — Core metric computations (revenue, orders, AOV, customer counts)
-- **`pricing.py`** — Pricing analysis and discount impact evaluation
+- **`report.py`** — `review.json`/`REVIEW.md` filename resolution, JSON serialization, and finding-cluster grouping (Discount Dependency, Assortment, Customer, Concentration)
+- **`pricing.py`** — Price and discount analysis (`discount_dependency`, `margin_analysis`, `free_shipping_threshold`)
 - **`product.py`** — Product-level performance analysis
 - **`cohort.py`** — Customer retention cohort tracking
 
-The skill layer (`skills/ecom/SKILL.md`) provides LLM instructions with 9 reference files loaded on-demand for business interpretation context.
+The skill layer (`skills/ecom/SKILL.md`) provides LLM instructions with 9 reference files loaded on-demand for business interpretation context. A 126-test pytest suite in `tests/` covers checks, CLI, loader, metrics, periods, report, review engine, and end-to-end review generation.
 
 ## Usage
 

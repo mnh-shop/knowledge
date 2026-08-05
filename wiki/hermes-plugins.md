@@ -15,6 +15,8 @@ tags: [cli, hermes-agent, dashboard, developer-tools, docker, event-bus, git, me
 
 Repository: `42-evey/hermes-plugins` (MIT licensed).
 
+**Note:** the repo `README.md` is stale — it still claims "23 custom plugins" (README.md:6) while 34 exist. Eleven newer plugins (evey-commands, evey-github, evey-habits, evey-moltbook, evey-news, evey-proactive, evey-rag, evey-scheduler, evey-verification, evey-wallet, evey-watchdog) are absent from the README's plugin tables.
+
 ## Key Features
 
 - **Autonomous decision engine** -- priority queue with time-of-day routing, structured planning templates, and self-reflection scoring
@@ -22,7 +24,7 @@ Repository: `42-evey/hermes-plugins` (MIT licensed).
 - **Cost governance** -- daily and per-task budgets enforced via Langfuse analytics, per-model cost breakdowns, budget recommendations
 - **Self-monitoring stack** -- structured JSON telemetry for every tool call/delegation/error, auto-rotating logs, silent-period watchdog with ntfy alerts
 - **Memory system** -- importance-scored and decayed memories, nightly consolidation into MEMORY.md + Qdrant vector store, experiential learning from past interactions
-- **Safety guards** -- dual-layer prompt injection screening (regex + local LLM) for incoming email, output hallucination validation, session checkpoints, sandboxed execution
+- **Safety guards** -- dual-layer prompt injection screening (regex + local LLM) for incoming email, output hallucination validation, session checkpoints, secure read-only file access with PII scrubbing
 - **External integrations** -- MQTT event bus, bidirectional Claude Code bridge, Telegram UX, Moltbook social network, crypto wallet monitoring, GitHub repo status, web research
 - **Shared utility layer** -- `evey_utils.py` with retry logic (exponential backoff), HTTP helpers used across all plugins
 
@@ -30,12 +32,26 @@ Repository: `42-evey/hermes-plugins` (MIT licensed).
 
 Each plugin is a self-contained directory (`evey-*`) with:
 
-- `plugin.yaml` -- manifest (name, version, description, `provides_tools` list)
-- `__init__.py` -- implementation exposing a `register(ctx)` function that registers tool schemas with the hermes-agent framework
+- `plugin.yaml` -- manifest (name, version, description, optional `provides_tools` list); present in 33 of 34 plugins
+- `__init__.py` -- implementation exposing a `register(ctx)` function that registers tool schemas with the hermes-agent framework (evey-commands is the exception: it registers slash commands via the upstream `register_command()` API instead)
 
 Plugins share `evey_utils.py` for LLM calls (`call_llm`, `call_model` with retry + reasoning recovery) and HTTP helpers. Many also depend on external services (Qdrant, Langfuse, MQTT broker, SearXNG, ntfy, LiteLLM) referenced via environment variables or hardcoded Docker service names.
 
 Plugins are installed by copying each `evey-*` directory and `evey_utils.py` into `~/.hermes/plugins/`. After restarting hermes-agent, the agent discovers them at startup via `register(ctx)`.
+
+### External Service Topology
+
+Plugins depend on a fixed set of external services, referenced either by hardcoded Docker service names or environment variables (`evey_utils.py:19-20` routes all LLM calls through LiteLLM):
+
+| Service | Endpoint | Referenced by |
+|---------|----------|---------------|
+| Qdrant vector DB | `http://hermes-qdrant:6333` | evey-memory-consolidate (`QDRANT_URL`, `__init__.py:18`), evey-rag (`__init__.py:11`) |
+| ntfy push notifications | `http://hermes-ntfy:80` | evey-digest (`__init__.py:15`), evey-watchdog (`__init__.py:22`) |
+| SearXNG meta-search | `http://hermes-searxng:8080` | evey-news (`__init__.py:18`), evey-research |
+| crawl4ai scraper | `http://hermes-crawl4ai:11235` | evey-research (`CRAWL4AI_URL`, `__init__.py:16`) |
+| Hermes dashboard | `http://hermes-dashboard:8088` | evey-status (`__init__.py:16`), evey-commands (`__init__.py:19`) |
+| Ollama local models | `http://hermes-ollama:11434` | evey-memory-consolidate (`__init__.py:19`) |
+| LiteLLM gateway | `OPENAI_BASE_URL` + `OPENAI_API_KEY` env | all LLM calls via `evey_utils.py` (`LITELLM_URL`/`LITELLM_KEY`, `evey_utils.py:19-20`) |
 
 ### Plugin Categories
 
@@ -52,13 +68,13 @@ Plugins are installed by copying each `evey-*` directory and `evey_utils.py` int
 
 ### Plugin Catalog
 
-**evey-autonomy** (v1.0.0) -- Core autonomy engine. Provides `autonomous_decide` (priority-queue based on urgency x importance x recency with time-of-day profiling), `autonomous_plan` (task-type-specific planning templates up to 12 steps), and `autonomous_reflect` (heuristic quality scoring of completed tasks).
+**evey-autonomy** (v1.1.0) -- Core autonomy engine. Provides `autonomous_decide` (priority-queue based on urgency x importance x recency with time-of-day profiling), `autonomous_plan` (task-type-specific planning templates up to 12 steps), and `autonomous_reflect` (heuristic quality scoring of completed tasks).
 
 **evey-bridge** (v1.0.0) -- Bidirectional bridge to Claude Code via a file-based inbox/outbox (YAML task files + JSONL channel). Tools: `claude_bridge_task`, `claude_bridge_message`, `claude_bridge_check`. Auto-compresses old channel lines and archives after 7 days.
 
 **evey-cache** (v1.0.0) -- Smart delegation caching with 24h TTL and LRU eviction. Caches `(model, goal)` pairs to avoid redundant LLM calls. Single tool: `cached_delegate`.
 
-**evey-commands** -- Slash commands registered with hermes-agent's upstream API. Includes `stack` (Docker service health), `sites` (resource URLs), `research` (spec doc stats), and `bridge` (inbox/channel status).
+**evey-commands** -- Slash commands registered with hermes-agent's upstream `register_command()` API (hermes-agent #2359). The ONLY plugin with no `plugin.yaml` — commands appear in `/help`, tab-complete, Telegram, and gateway rather than as tool schemas. Includes `stack` (Docker service health), `sites` (resource URLs), `research` (spec doc stats), and `bridge` (inbox/channel status).
 
 **evey-cost-guard** (v2.0.0) -- Budget enforcement via Langfuse. Default $1.00 daily / $0.25 per-task budgets. Three tools: `cost_check` (spend-to-date), `cost_set_budget` (config update), `cost_analytics` (per-model breakdown with recommendations).
 
@@ -100,7 +116,7 @@ Plugins are installed by copying each `evey-*` directory and `evey_utils.py` int
 
 **evey-research** (v1.0) -- Web research pipeline. Searches via SearXNG, scrapes pages via crawl4ai, saves findings as markdown files to the knowledge library. Tools: `web_search`, `extract_page`, `save_finding`.
 
-**evey-sandbox** (v1.0) -- Sandboxed code execution with read-only folder access via Docker. Supports PII scrubbing, extension filtering, and YAML-based config. Tools: `sandbox_read`, `sandbox_search`, `sandbox_list`.
+**evey-sandbox** (v1.0) -- "Evey Secure Reader": a SECURE FILE READER that reads files from V-approved folders with automatic PII scrubbing (email, phone, ID number, card, API key, IP patterns). NO code execution, NO Docker — per the module docstring: "Fast tool. No Docker, no code execution. Just read + clean + return" (`__init__.py:1-3`). Folder access is controlled by `config/sandbox.yaml` (`allowed_folders` + PII toggle), with WSL/Windows path translation (`D:\...` → `/mnt/d/...`), a 500KB file limit, and an extension allowlist. Note: the `plugin.yaml` description ("Run code in sandboxed Docker containers") is stale — the code is authoritative. Tools: `secure_read`, `secure_search`, `sandbox_list`.
 
 **evey-scheduler** (v1.0.0) -- Schedule management with JSON-file backend. Supports natural language parsing ("tomorrow at 3pm", "next monday"). Tools: `schedule_add`, `schedule_list`, `schedule_remove`.
 

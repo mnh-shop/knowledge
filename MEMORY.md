@@ -42,10 +42,10 @@ Key rule: **No AI agent code ever runs directly on the host OS.** The host runs 
 ### Allowed top-level folders
 
 ```
-sources/       Layer 1: Git clones (gitignored, 115 repos)
+sources/       Layer 1: Git clones (gitignored, 132 repos)
 raw/           Layer 1: Repomix XML (gitignored, regeneratable)
 graphs/        Layer 1: CodeGraph DBs (gitignored, regeneratable)
-wiki/          Layer 2: 235 pages — 115 source wikis + 115 codegraph-verify + 5 companion
+wiki/          Layer 2: 243 pages — 124 source wikis + 119 codegraph-verify + 5 companion
 assets/        Layer 3: Reusable artifacts — skills, profiles, deploy templates
 domains/       Layer 2: Cross-repo deep-dive docs (6 dimensions)
 integrations/  Layer 3: System-to-system integration docs
@@ -60,12 +60,12 @@ tests/         Validation scripts
 assets/
 ├── INDEX.md                    Master catalog
 ├── agent-references/           20 agent reference profiles
-├── hermes-profiles/            40 Hermes Agent role profiles
-├── deployment/                 10 quadlet guides + 94 quadlet files
+├── hermes-profiles/            2 Hermes Agent role profiles
+├── deployment/                 11 quadlet guides + 26 container + 15 volume files
 ├── skills/                     67 skill categories across 867 files
 ├── n8n-workflows/              Sweep catalog of 9,655 workflows
-├── mcp-servers/                4 MCP server references
-├── acp-agents/                 2 ACP agent references
+├── mcp-servers/                5 MCP server references
+├── acp-agents/                 3 ACP agent references
 └── api-clients/                1 API client reference
 ```
 
@@ -83,7 +83,7 @@ domains/
 
 ### Verification coverage
 
-All 115 source repos now have codegraph-verify companion pages with 5-8 evidence-backed claims each. All wiki pages carry `verification_date: 2026-07-12` and `verified_by: codegraph-verify` in their frontmatter.
+All 132 source repos now have codegraph-verify companion pages with 5-8 evidence-backed claims each. All wiki pages carry `verification_date: 2026-07-12` and `verified_by: codegraph-verify` in their frontmatter.
 
 ### Companion page rule
 
@@ -236,10 +236,10 @@ See `assets/INDEX.md` for the master catalog. Key resources:
 |-------|----------|-------------|
 | Agent references | `assets/agent-references/` | 20 platform reference cards (hermes, openclaw, n8n, podman, etc.) |
 | Hermes profiles | `assets/hermes-profiles/` | 40 role profiles (backend-engineer, cpo, orchestrator, etc.) |
-| Deployment (Quadlet) | `assets/deployment/` | 10 guides + 94 quadlet .container/.volume files |
+| Deployment (Quadlet) | `assets/deployment/` | 11 guides + 26 container + 15 volume files |
 | Skills | `assets/skills/` | 67 categories, 867 files across engineering, security, design |
-| MCP servers | `assets/mcp-servers/` | 4 MCP server implementation references |
-| ACP agents | `assets/acp-agents/` | 2 ACP agent references |
+| MCP servers | `assets/mcp-servers/` | 5 MCP server implementation references |
+| ACP agents | `assets/acp-agents/` | 3 ACP agent references |
 | API clients | `assets/api-clients/` | Gateway platform reference |
 | n8n workflows | `assets/n8n-workflows/` | Sweep catalog of 9,655 workflows with tool breakdown |
 | Integration stacks | `integrations/` | 10 cross-system deployment stack docs (Hermes×OpenClaw×n8n×AgentField) |

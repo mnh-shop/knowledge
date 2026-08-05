@@ -36,6 +36,8 @@ The project integrates Persistent Memory, Skill Auto-Creation, Cron Scheduler, G
 | **Cron Scheduler** | Every 5 min: critical health check. Every hour: full audit. Daily 08:00: morning briefing to Telegram. |
 | **Subagent Spawning** | For multi-service environments, spawns parallel subagents to investigate nginx, database, and application layers simultaneously. |
 
+**Supporting detail:** MCP Integration is presented in the README feature table (line 68) but is listed under "What's Next" in the technical writeup (`docs/WRITEUP.md` line 127: "Cloud-native integrations via MCP servers (AWS CloudWatch, GCP Cloud Monitoring)") — planned/aspirational, not yet implemented.
+
 ## Claim-3: Ships with working demo, test suite, and installable skill
 
 The repository contains a complete, runnable project with demo scenarios, pytest tests, and a skill file ready for installation into Hermes.
@@ -49,7 +51,7 @@ python demo/demo_incident.py --scenario svc-crash-nginx
 python demo/demo_incident.py --scenario cpu-runaway-process
 ```
 
-**Supporting detail:** Lines 225-237 document the test suite: `pytest tests/ -v` with specific test classes (`TestScenarioDefinitions`, `TestRewardFunction`, `TestSkillFile`). Lines 160-169 document skill installation: `cp -r skills/incident-commander ~/.hermes/skills/`.
+**Supporting detail:** The demo CLI ships exactly **three** scenarios — `disk-full-logs`, `svc-crash-nginx`, `cpu-runaway-process` (`demo/demo_incident.py` DEMO_SCENARIOS lines 166-233; argparse `--scenario` choices at lines 400-403). Lines 225-237 of the README document the test suite: `pytest tests/ -v`; the suite (`tests/test_incident_env.py`, 365 lines) contains **four** test classes — `TestScenarioDefinitions` (line 94), `TestRewardFunction` (line 163), `TestSkillFile` (line 280), and `TestDemoScript` (line 326). Skill installation at README lines 160-169: `cp -r skills/incident-commander ~/.hermes/skills/`.
 
 ## Claim-4: Includes Atropos RL training environment for SRE tasks
 
@@ -63,13 +65,13 @@ python environments/incident_env.py process --config environments/incident_confi
 python environments/incident_env.py serve --config environments/incident_config.yaml
 ```
 
-**Supporting detail:** The reward function (lines 198-208) has five components: Resolution (50%), RCA Quality (15%), Report Quality (15%), Skill Created (10%), Response Speed (5%), Tool Efficiency (5%). Source files at `environments/incident_env.py` and `environments/incident_config.yaml` confirmed on disk.
+**Supporting detail:** The CLI subcommands are `serve | process | evaluate` (`environments/incident_env.py` argparse choices at lines 570-573); smoke-test runs via the `--smoke-test` flag (line 566) or automatically when hermes-agent is not installed (lines 575-577). The environment uses a **six-component** reward — Resolution (50%), RCA Quality (15%), Report Quality (15%), Skill Created (10%), Response Speed (5%), Tool Efficiency (5%) — confirmed in `environments/incident_config.yaml` reward_weights lines 41-47 and README lines 200-208. Sandboxing uses `terminal_backend: docker` (incident_config.yaml line 9) with GRPO training via Atropos (incident_env.py lines 377-381).
 
 ## Claim-5: Five training scenarios spanning P0-P2 severity
 
-The repository defines five incident scenarios covering different severity levels and categories.
+The RL environment defines five incident scenarios covering different severity levels and categories. Note the standalone demo CLI ships only a 3-scenario subset of this set.
 
-**Source evidence:** README lines 212-221:
+**Source evidence:** `environments/incident_env.py` INCIDENT_SCENARIOS (line 59 onward) defines `svc-crash-nginx`, `disk-full-logs`, `memory-leak-process`, `cpu-runaway-process`, and `failed-systemd-unit`; README lines 212-221:
 | ID | Severity | Category | Description |
 |---|---|---|---|
 | `svc-crash-nginx` | P0 | service | nginx crashed, website unreachable |
@@ -78,16 +80,22 @@ The repository defines five incident scenarios covering different severity level
 | `cpu-runaway-process` | P2 | cpu | 95% CPU from runaway computation |
 | `failed-systemd-unit` | P2 | service | Custom worker service in failed state |
 
-## Claim-6: Architecture follows DETECT → TRIAGE → DIAGNOSE → REMEDIATE → VERIFY → LEARN pipeline
+**Supporting detail:** The demo (`demo/demo_incident.py` DEMO_SCENARIOS, lines 166-233) contains only `disk-full-logs`, `svc-crash-nginx`, and `cpu-runaway-process` — the two RL-only scenarios are `memory-leak-process` and `failed-systemd-unit`.
+
+## Claim-6: Architecture follows DETECT → TRIAGE → DIAGNOSE → REMEDIATE → VERIFY → DOCUMENT → LEARN pipeline
 
 The incident response follows a structured pipeline documented as a Mermaid flowchart.
 
-**Source evidence:** README lines 74-106 (Mermaid flowchart):
+**Source evidence:** `skills/incident-commander/SKILL.md` lines 23-27 (Core Incident Loop):
+```
+DETECT → TRIAGE → DIAGNOSE → REMEDIATE → VERIFY → DOCUMENT → LEARN
+```
+
+**Supporting detail:** README lines 74-106 (Mermaid flowchart):
 ```
 DETECT["🔍 DETECT"] → TRIAGE["⚖️ TRIAGE"] → DIAGNOSE["🔬 DIAGNOSE"] → REMEDIATE["🔧 REMEDIATE"] → VERIFY["✅ VERIFY"] → LEARN["🧠 LEARN"]
 ```
-
-**Supporting detail:** CRON triggers DETECT; TRIAGE and VERIFY push alerts to GATEWAY (Telegram/Discord/Slack). The project structure at lines 112-140 shows directories: `skills/`, `environments/`, `demo/`, `tests/`, `docs/`.
+CRON triggers DETECT; TRIAGE and VERIFY push alerts to GATEWAY (Telegram/Discord/Slack). The project structure at README lines 112-140 shows directories: `skills/`, `environments/`, `demo/`, `tests/`, `docs/`.
 
 ## Claim-7: Self-improving — creates prevention skills and learns from each incident
 
@@ -97,6 +105,19 @@ After each novel incident, the system writes a prevention playbook skill and upd
 > "**Self-improving.** The longer Hermes runs, the better it gets at your specific infrastructure. This is Hermes's core promise - 'the agent that grows with you' - demonstrated concretely."
 
 **Supporting detail:** The LEARN phase writes post-incident reports to `~/.hermes/incidents/`, creates prevention `SKILL.md` files, updates `MEMORY.md`, and searches past incidents via FTS5 for pattern matching.
+
+## Claim-8: Docs — SETUP.md and WRITEUP.md with measured GRPO results
+
+The repository ships `docs/SETUP.md` (installation guide) and `docs/WRITEUP.md` (technical writeup with measured results from testing against the 5 RL scenarios).
+
+**Source evidence:** `docs/WRITEUP.md` lines 115-120 (Results):
+> - P0 service crash: resolved in 4–7 turns
+> - P1 disk full: identified and cleaned in 5–8 turns
+> - P2 runaway process: killed and documented in 3–5 turns
+> - Post-incident reports written in 100% of successful runs
+> - Prevention skills created in ~60% of runs (agent sometimes skips if pattern is too simple)
+
+**Supporting detail:** `docs/SETUP.md` covers demo quick-start (lines 3-18), full Hermes setup with gateway (lines 22-94), and RL training via `process`/`serve` (lines 97-131). MCP cloud integrations appear under "What's Next" in `docs/WRITEUP.md` (lines 124-127), confirming they are planned rather than implemented.
 
 ## Dependency Map
 

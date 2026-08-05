@@ -1,12 +1,12 @@
 ---
 name: agentfield-api
 tags: [agentfield, api, automation, cli, control-plane, golang, harness, identity, mcp, orchestration, plugin-sdk, quadlet, rest-api, security, systemd, webhook]
-description: "AgentField API reference: REST and gRPC endpoints for sandbox management, pipeline orchestration, and identity"
+description: "AgentField API reference: REST and gRPC endpoints for agent orchestration, execution, memory, identity, and MCP"
 source: sources/agentfield/
 ---
 
 # AgentField API Reference
-**Source:** `sources/agentfield/`
+**Source:** `sources/agentfield/` (v0.1.118-rc.3, Apache-2.0)
 
 **Status:** Active research target  
 **Control plane port:** 8080 (configurable via `AGENTFIELD_PORT`)  
@@ -28,103 +28,101 @@ source: sources/agentfield/
 8. [Observability Endpoints](#8-observability-endpoints)
 9. [Agentic API](#9-agentic-api)
 10. [Trigger/Webhook Endpoints](#10-triggerwebhook-endpoints)
-11. [HTTP Context Propagation Headers](#11-http-context-propagation-headers)
-12. [MCP Integration](#12-mcp-integration)
-13. [Harness Runtimes](#13-harness-runtimes)
-14. [The /agentfield CLI Command](#14-the-agentfield-cli-command)
-15. [Integration Patterns](#15-integration-patterns)
+11. [Connector API](#11-connector-api)
+12. [Config Storage & Serverless](#12-config-storage--serverless)
+13. [HTTP Context Propagation Headers](#13-http-context-propagation-headers)
+14. [HTTP Status Codes and Error Responses](#14-http-status-codes-and-error-responses)
+15. [Pagination and Filtering](#15-pagination-and-filtering)
+16. [SDK-Generated API Surface](#16-sdk-generated-api-surface)
+17. [MCP Integration](#17-mcp-integration)
+18. [gRPC Admin API](#18-grpc-admin-api)
+19. [Harness Runtimes](#19-harness-runtimes)
+20. [The /agentfield CLI Command](#20-the-agentfield-cli-command)
+21. [Integration Patterns](#21-integration-patterns)
 
 ---
 
 ## 1. REST API Overview
 
-AgentField exposes a REST API organized across specialized `routes_*.go` files in `control-plane/internal/server/`. Routes are composed in `server.go:setupRoutes()` and registered under the `agentAPI` Gin group at `/api/v1/`.
+AgentField exposes a REST API organized across **13 `routes_*.go` files** in `control-plane/internal/server/`. Routes are composed in `server.go:setupRoutes()` and registered under the `agentAPI` Gin group at `/api/v1/`.
 
-### Route Registration Order
+### Route Groups (10 + 3 auxiliary)
 
-```go
-func (s *AgentFieldServer) setupRoutes() {
-    s.registerPublicRoutes()      // /metrics, /health (no auth)
-    s.registerDIDWellKnownRoutes() // /.well-known/did.json, /agents/:agentID/did.json
-    s.registerARDPublicRoutes()    // /.well-known/ai-catalog.json
-    s.registerUIStatic()           // /ui/ SPA serving
-    s.registerUIAPI()              // /api/ui/v1, /api/ui/v2 (browser APIs)
-    // Then under /api/v1 with authentication:
-    s.registerCoreRoutes(agentAPI)       // execution, nodes, discovery, lifecycle
-    s.registerMemoryRoutes(agentAPI)     // KV + vector memory
-    s.registerKnowledgeRoutes(agentAPI)  // RAG knowledge store
-    s.registerDIDRoutes(agentAPI)        // DID/VC, policies, revocations
-    s.registerObservabilityRoutes(agentAPI) // observability webhook settings
-    s.registerAdminRoutes(agentAPI)      // tag approval, policy management
-    s.registerConnectorRoutes(agentAPI)  // connector API (capability-gated)
-    s.registerAgenticRoutes(agentAPI)    // /agentic/* discovery, query, batch
-    s.registerTriggerRoutes(agentAPI)    // trigger CRUD + public ingest
-    s.registerARDRoutes(agentAPI)        // ARD registry search/explore
-    s.registerKBRoutes()                 // /api/v1/agentic/kb (public, no auth)
-    s.register404()                      // Smart 404 + SPA fallback
-}
-```
+| Group | Count | Files | Coverage |
+|-------|-------|-------|----------|
+| Core | 53 | `routes_core.go` | nodes register/list/heartbeat/status-lease/start/stop, discovery, execute sync/async, executions status/events/batch/cancel/pause/resume/restart, approvals, notes, cancel-tree, session-targets, session-instances |
+| Memory | 14 | `routes_memory.go` | KV CRUD, vector store, events (SSE/WS/history) |
+| Triggers | 18 | `routes_triggers.go` | GitHub/Slack/Stripe/GenericBearer/GenericHMAC providers, SSE stream, replay |
+| Agentic | 12 | `routes_agentic.go` | discover/query/run/agent/status/batch + KB (5 routes under `/agentic/kb`) |
+| DID | 9 | `routes_did.go` | DID document, policies, revocations, registered-dids, issuer keys |
+| Observability | 7 | `routes_observability.go` | observability-webhook settings + DLQ |
+| Admin | 6 | `routes_admin.go` | /debug/pprof endpoints (admin-gated) |
+| ARD | 5 | `routes_ard.go` | /.well-known/ai-catalog.json, artifacts, search, agents, explore |
+| Knowledge | 3 | `routes_knowledge.go` | upsert/search/delete source |
+| Connector | conditional | `routes_connector.go` | capability-gated (`features.connector.capabilities`: weight, tags, config_management) |
+| MCP | 3 | `routes_mcp.go` | POST /mcp + GET/OPTIONS preflight |
+| UI v1 | 88 | `routes_ui.go` | browser-facing APIs at `/api/ui/v1` |
+| UI v2 | 3 | `routes_ui.go` | `/api/ui/v2`: workflow-runs list (`:284`), detail (`:285`), golden (`:286`) |
 
 ### Route Source Files
 
 | Route Group | File |
 |-------------|------|
 | Public & core execution | `routes_core.go` |
-| Node lifecycle | `routes_core.go` |
-| Discovery | `routes_core.go` |
+| Node lifecycle / discovery / sessions | `routes_core.go` |
 | Memory | `routes_memory.go` |
 | Knowledge (RAG) | `routes_knowledge.go` |
 | DID/VC | `routes_did.go` |
-| Admin (tags, policies) | `routes_admin.go` |
+| Admin (pprof, tag approval, policies) | `routes_admin.go` |
 | Connector (fleet management) | `routes_connector.go` |
-| Agentic (machine-friendly) | `routes_agentic.go` |
+| Agentic (machine-friendly) + KB | `routes_agentic.go` |
 | Triggers/webhooks | `routes_triggers.go` |
-| Sessions | `routes_core.go` |
 | UI API | `routes_ui.go` |
 | Observability settings | `routes_observability.go` |
 | ARD (Agent Resource Discovery) | `routes_ard.go` |
-| Knowledge Base | `routes_agentic.go` |
+| MCP (embedded) | `routes_mcp.go` |
 
-### Authentication Model (Layered)
+### Public (unauthenticated) Surface
 
-AgentField uses five authentication layers applied in order:
+- `GET /metrics` — Prometheus (`routes_core.go:21`)
+- `GET /health` — health check (`routes_core.go:22`)
+- `GET /.well-known/did.json` and `GET /agents/:agentID/did.json` — did:web resolution (`routes_did.go:28-29`)
+- `GET /.well-known/ai-catalog.json` — public ARD catalog (`routes_ard.go:25`)
+- `GET /api/v1/agentic/kb/*` — knowledge base on the root router (`routes_agentic.go:40-49`)
+- `/api/ui/v1`, `/api/ui/v2`, `/ui/` SPA
+- `/debug/pprof` — behind admin auth (`routes_admin.go:57-62`)
+- `POST /mcp` — embedded MCP server
 
-1. **API Key** (header `Authorization: Bearer <key>` or query param `api_key`): Required for all API calls unless `api.auth.insecure_disable_auth` is set. Config: `AGENTFIELD_API_AUTH_API_KEY`.
+### Authentication Model (5 Layers)
 
-2. **DID Signatures** (cross-agent calls): Every cross-agent call carries DID auth headers:
-   - `X-Caller-DID` -- The caller's W3C DID
-   - `X-DID-Signature` -- Ed25519 signature over `{timestamp}:{SHA256(body)}`
-   - `X-DID-Timestamp` -- Signing timestamp (300s window via `timestamp_window_seconds`)
-   - `X-DID-Nonce` -- Optional replay protection nonce (deduped in memory cache within window)
+1. **API Key** — header `X-API-Key` (preferred) or `Authorization: Bearer <key>` / `api_key` query param (`middleware/auth.go:104-108`). Required for all API calls unless `api.auth.insecure_disable_auth`. Env: `AGENTFIELD_API_KEY` / `AGENTFIELD_API_AUTH_API_KEY`.
 
-3. **Admin Token** (`AGENTFIELD_AUTHORIZATION_ADMIN_TOKEN`): Required for tag approval and policy management endpoints when authorization is enabled. Gated via `middleware.AdminTokenAuth()`.
+2. **DID Signatures** (cross-agent calls) — `X-Caller-DID`, `X-DID-Signature` (Ed25519 over `{timestamp}:{SHA256(body)}`), `X-DID-Timestamp` (300s window) (`middleware/did_auth.go:172-175`).
 
-4. **Internal Token** (`AGENTFIELD_AUTHORIZATION_INTERNAL_TOKEN`): Sent as `Authorization: Bearer <token>` when the control plane forwards execution requests to agents. Agents with `RequireOriginAuth` enabled validate this in their `originAuthMiddleware()`, preventing direct HTTP access to agent ports.
+3. **Admin Token** — header `X-Admin-Token` (`middleware/auth.go:173-178`), gated via `middleware.AdminTokenAuth()`, used for tag approval, policy management, and `/debug/pprof`. Env: `AGENTFIELD_AUTHORIZATION_ADMIN_TOKEN` (config default `admin-secret`).
 
-5. **Connector Token** (`features.connector.token`): Authenticates external connector integrations. Gated via `middleware.ConnectorTokenAuth()`.
+4. **Internal calls** — the control plane authenticates agent-bound internal requests (cancel dispatcher, etc.) with `Authorization: Bearer <internal_token>` (`control-plane/internal/handlers/cancel_dispatcher.go:70-73`) — **not** a separate internal-token header. Agents with `RequireOriginAuth` validate it in their `originAuthMiddleware()`. Env: `AGENTFIELD_AUTHORIZATION_INTERNAL_TOKEN`.
+
+5. **Connector Token** — header `X-Connector-Token` (`middleware/connector_auth.go:23-27`), gated via `middleware.ConnectorTokenAuth()`, authenticates external connector integrations. Config: `features.connector.token`.
 
 ### Permission Middleware (Tag-Based IAM)
 
-When DID authorization is enabled (`features.did.authorization.enabled: true`), the permission middleware `middleware.PermissionCheckMiddleware()` is applied to:
-- Execute endpoints: `POST /api/v1/execute/:target` and `POST /api/v1/execute/async/:target`
-- Legacy reasoner endpoints: `POST /api/v1/reasoners/:reasoner_id`
-- Legacy skill endpoints: `POST /api/v1/skills/:skill_id`
-- Session target endpoints: `POST /api/v1/session-targets/:target/start`
+When DID authorization is enabled (`features.did.authorization.enabled: true`), `middleware.PermissionCheckMiddleware()` applies to execute endpoints, legacy reasoner/skill endpoints, and session-target start. Memory uses a separate `middleware.MemoryPermissionMiddleware()` with scope ownership. First-match-wins policies; `default_deny: true` returns 403.
 
-Memory endpoint authorization uses a separate `middleware.MemoryPermissionMiddleware()` with scope ownership enforcement.
-
-The middleware evaluates first-match-wins access policies with function-level allow/deny lists and parameter constraints. Default deny mode (`default_deny: true`) returns 403 for unmatched requests.
-
-### DID Auth Error Responses
+### DID Auth Error Responses (did_auth.go:188-298)
 
 | HTTP | Error Code | Condition |
 |------|-----------|-----------|
-| 401 | `did_auth_required` | No `X-Caller-DID` header provided |
-| 401 | `signature_required` | `X-Caller-DID` present but no `X-DID-Signature` |
-| 401 | `signature_invalid` | Ed25519 signature verification failed |
-| 403 | `did_revoked` | Caller's DID is on the revocation list |
-| 403 | `did_not_registered` | DID not found in the control plane's registration set |
-| 403 | `policy_denied` | No matching policy or denied by tag policy |
+| 400 | `invalid_did_format` | `X-Caller-DID` is not a valid DID |
+| 401 | `did_auth_required` | `X-Caller-DID` present but `X-DID-Signature`/`X-DID-Timestamp` missing |
+| 400 | `invalid_timestamp` | Timestamp is not a valid Unix timestamp |
+| 401 | `timestamp_expired` | Timestamp outside the 300s window |
+| 400 | `body_read_error` | Request body could not be read |
+| 413 | `body_too_large` | Request body exceeds size limit |
+| 400 | `invalid_signature_encoding` | Signature is not valid base64 |
+| 401 | `replay_detected` | Signature nonce/timestamp replayed |
+| 400 | `verification_error` | Signature verification failed |
+| 401 | `invalid_signature` | Ed25519 signature mismatch |
 
 ---
 
@@ -137,69 +135,74 @@ POST /api/v1/execute/:target
 ```
 - `target` format: `agent_id.reasoner_name`
 - Body: `{"input": {...}}`
-- Returns the reasoner's output as JSON
-- Blocks until execution completes
-- Timeout: 180s (configurable)
+- Blocks until execution completes (agent call timeout configurable)
 
 ### Async Execution
 
 ```
 POST /api/v1/execute/async/:target
 ```
-- Same target format as sync
 - Returns immediately with `execution_id`
-- Response: `{"execution_id": "uuid", "status": "queued"}`
 - Long-running agents supply `webhook: {url: "https://..."}` for callback
 
-### Execution Status
+### Execution Status & Lifecycle
 
 ```
-GET /api/v1/executions/:execution_id
+GET  /api/v1/executions/:execution_id
+POST /api/v1/executions/:execution_id/status      (agent → control plane)
+POST /api/v1/executions/:execution_id/cancel
+POST /api/v1/executions/:execution_id/pause
+POST /api/v1/executions/:execution_id/resume
+POST /api/v1/executions/:execution_id/restart
+POST /api/v1/executions/:execution_id/logs        (structured NDJSON logs)
+GET  /api/v1/executions/:execution_id/events      (SSE stream, routes_core.go:121)
+GET  /api/v1/executions/active
+POST /api/v1/executions/batch-status              (routes_core.go:122)
 ```
-- Returns status and result (if completed)
-- Status values: `queued`, `running`, `completed`, `failed`, `paused`, `cancelled`
 
-```
-POST /api/v1/executions/batch-status
-```
-- Body: `{"execution_ids": ["id1", "id2", ...]}`
+Status values: `queued`, `running`, `completed`, `failed`, `paused`, `cancelled`.
 
-### Execution Lifecycle
+### SSE Endpoints (complete list — there is NO `/api/v1/events`)
 
-| Endpoint | Action |
-|----------|--------|
-| `POST /api/v1/executions/:execution_id/status` | Status callback (agent to control plane) |
-| `POST /api/v1/executions/:execution_id/cancel` | Cancel a running execution |
-| `POST /api/v1/executions/:execution_id/pause` | Pause for human approval |
-| `POST /api/v1/executions/:execution_id/resume` | Resume after human approval |
-| `POST /api/v1/executions/:execution_id/restart` | Restart an execution |
-| `POST /api/v1/executions/:execution_id/events` | SSE stream of execution events |
-| `POST /api/v1/executions/:execution_id/logs` | Structured execution logs |
+| Endpoint | Method | File |
+|----------|--------|------|
+| `/api/v1/executions/:execution_id/events` | GET (SSE) | `routes_core.go:121` |
+| `/api/v1/workflow/executions/events` | POST (SSE fan-out) | `routes_core.go:159` |
+| `/api/v1/memory/events/sse` | GET (SSE) | `routes_memory.go:51` |
+| `/api/v1/memory/events/ws` | GET (WebSocket) | `routes_memory.go:50` |
+| `/api/v1/memory/events/history` | GET | `routes_memory.go:52` |
+| `/api/v1/triggers/:trigger_id/events/stream` | GET (SSE) | `routes_triggers.go:42` |
 
 ### Workflow Tree Operations
 
 ```
 POST /api/v1/workflows/:workflowId/cancel-tree
 ```
-- Cancels an entire workflow tree (multi-hop DAG)
+Cancels an entire workflow tree (multi-hop DAG) (`routes_core.go:131`).
+
+### Execution Engine Notes
+
+Async completions flow through an **in-process completion queue** (`handlers/execute.go:174` `completionQueue chan completionJob`, default size 2048, `AGENTFIELD_EXEC_COMPLETION_QUEUE`). Execution is gated by a concurrency limiter + LLM-health circuit breaker (`handlers/execution_guards.go`). State persists in PostgreSQL — there is no distributed execution queue and no scheduler backend yet (see `nodes_rest.go:194` "scheduler backend is under construction").
 
 ---
 
 ## 3. Approval Endpoints
 
-| Endpoint | Purpose |
-|----------|---------|
-| `POST /api/v1/executions/:execution_id/request-approval` | Request human approval |
-| `GET /api/v1/executions/:execution_id/approval-status` | Poll approval status |
-| `POST /api/v1/agents/:node_id/executions/:execution_id/request-approval` | Agent-scoped approval request |
-| `POST /api/v1/agents/:node_id/executions/:execution_id/awaiter-status` | Multi-hop pause propagation |
-| `POST /api/v1/webhooks/approval-response` | Approval resolution webhook (agent or external service callback) |
+| Method | Endpoint | Purpose |
+|--------|----------|---------|
+| POST | `/api/v1/executions/:execution_id/request-approval` | Request human approval (`routes_core.go:135`) |
+| GET | `/api/v1/executions/:execution_id/approval-status` | Poll approval status (`routes_core.go:136`) |
+| POST | `/api/v1/executions/:execution_id/approval-response` | Resolve approval (`routes_core.go:140`) |
+| POST | `/api/v1/agents/:node_id/executions/:execution_id/request-approval` | Agent-scoped approval request (`:143`) |
+| GET | `/api/v1/agents/:node_id/executions/:execution_id/approval-status` | Agent-scoped status (`:144`) |
+| POST | `/api/v1/agents/:node_id/executions/:execution_id/awaiter-status` | Multi-hop pause propagation (`:151`) |
+| POST | `/api/v1/webhooks/approval-response` | External approval resolution webhook (HMAC-secret signed, `:154`) |
 
 The approval flow enables human-in-the-loop patterns:
 1. Agent calls `app.pause("Explain reasoning before proceeding")`
 2. Control plane marks execution as `paused`
-3. External system or human reviews via `/request-approval` or `/approval-status`
-4. Resolution posted to `/approval-response` webhook
+3. Human reviews via `/request-approval` or `/approval-status`
+4. Resolution posted to `/approval-response`
 5. Control plane resumes the execution
 
 ---
@@ -209,28 +212,31 @@ The approval flow enables human-in-the-loop patterns:
 ### Registration
 
 ```
-POST /api/v1/nodes/register
+POST /api/v1/nodes/register        (routes_core.go:39)
+POST /api/v1/nodes                 (alias, :40)
+POST /api/v1/nodes/register-serverless  (FaaS/serverless agents, :41)
 ```
-- Body: agent metadata, callback URL, capabilities, tags, DID keys
-- Returns: node_id, identity package
+Registration body: agent metadata, callback URL, capabilities, tags, DID keys.
 
-```
-POST /api/v1/nodes/register-serverless
-```
-- Registration without persistent HTTP listener (for FaaS/serverless agents)
+### Heartbeat, Status & Presence Lease
 
-### Heartbeat and Status
-
-| Endpoint | Purpose |
-|----------|---------|
-| `GET /api/v1/nodes` | List all registered agents |
-| `GET /api/v1/nodes/:node_id` | Get agent details |
-| `POST /api/v1/nodes/:node_id/heartbeat` | Agent heartbeat |
-| `POST /api/v1/nodes/:node_id/start\|stop\|shutdown` | Lifecycle management |
-| `POST /api/v1/nodes/:node_id/lifecycle/status` | Update lifecycle status |
-| `POST /api/v1/nodes/:node_id/status` | Update status lease |
-| `POST /api/v1/nodes/status/bulk` | Bulk status update |
-| `POST /api/v1/actions/claim` | Claim pending lifecycle actions |
+| Method | Endpoint | Purpose |
+|--------|----------|---------|
+| GET | `/api/v1/nodes` | List all registered agents |
+| GET | `/api/v1/nodes/:node_id` | Get agent details |
+| POST | `/api/v1/nodes/:node_id/heartbeat` | Agent heartbeat (renews presence lease) |
+| PATCH | `/api/v1/nodes/:node_id/status` | **Status lease** (`NodeStatusLeaseHandler`, routes_core.go:57; `DefaultLeaseTTL = 5min`, nodes_rest.go:17-18) |
+| POST | `/api/v1/nodes/status/bulk` | Bulk status update (`:50`) |
+| POST | `/api/v1/nodes/status/refresh` | Refresh all statuses (`:51`) |
+| GET | `/api/v1/nodes/:node_id/status` | Get node status (`:48`) |
+| POST | `/api/v1/nodes/:node_id/status/refresh` | Refresh single status (`:49`) |
+| POST | `/api/v1/nodes/:node_id/actions/ack` | Ack a claimed action (`:58`) |
+| POST | `/api/v1/actions/claim` | Claim pending lifecycle actions (poll mode; returns empty queue — scheduler under construction, `:60`) |
+| POST | `/api/v1/nodes/:node_id/start` | Start node (`:54`) |
+| POST | `/api/v1/nodes/:node_id/stop` | Stop node (`:55`) |
+| POST | `/api/v1/nodes/:node_id/shutdown` | Shutdown node (`:59`) |
+| POST | `/api/v1/nodes/:node_id/lifecycle/status` | Update lifecycle status (`:56`) |
+| DELETE | `/api/v1/nodes/:node_id/monitoring` | Unregister from monitoring (`:45`) |
 
 ---
 
@@ -239,97 +245,76 @@ POST /api/v1/nodes/register-serverless
 ```
 GET /api/v1/discovery/capabilities
 ```
-- Query parameters: `tag` (filter by tag), `name` (filter by name), `health` (filter by health status)
-- Returns list of `AgentCapability` and `ReasonerCapability` objects
-- Used by SDK's `app.discover()` method
+- Query parameters: `tag`, `name`, `health`
+- Returns `AgentCapability` and `ReasonerCapability` objects
+- Used by SDK's `app.discover()`
 
 ```
-GET /api/v1/reasoners
+GET /api/v1/reasoners        (routes_core.go:36)
+GET /api/v1/agents           (via Agentic/UI surfaces)
 ```
-- List all registered reasoners across all agents
 
 ---
 
 ## 6. Memory Endpoints
 
-Memory is organized in 4 scopes: `global`, `session`, `actor`, `workflow`.
+Memory is organized in 4 scopes: `global`, `session`, `actor`, `workflow`. All under `/api/v1/memory` (`routes_memory.go`).
 
-```
-POST /api/v1/executions/note
-```
-- Add an execution audit note
+### KV Store
 
-KV store operations and vector search (cosine distance) are available per scope.
+| Method | Path | Purpose |
+|--------|------|---------|
+| POST | `/memory/set` | Set key |
+| POST | `/memory/get` | Get key |
+| POST | `/memory/delete` | Delete key |
+| GET | `/memory/list` | List keys |
 
-Memory event subscriptions enable reactive patterns via `@app.on_change()` in the Python SDK.
+### Vector Store (pgvector)
+
+| Method | Path | Purpose |
+|--------|------|---------|
+| POST | `/memory/vector` / `/memory/vector/set` | Set vector |
+| GET | `/memory/vector/:key` | Get vector |
+| POST | `/memory/vector/search` | Cosine similarity search |
+| DELETE | `/memory/vector/:key` / `/memory/vector/delete` | Delete vector |
+| DELETE | `/memory/vector/namespace` | Delete namespace vectors |
+
+### Events
+
+| Method | Path | Purpose |
+|--------|------|---------|
+| GET | `/memory/events/sse` | SSE memory event stream |
+| GET | `/memory/events/ws` | WebSocket memory event stream |
+| GET | `/memory/events/history` | Event history |
+
+Notes: `POST /api/v1/executions/note` + `GET /api/v1/executions/:execution_id/notes` add/read execution audit notes (`routes_core.go:157-158`). Reactive subscriptions via `@app.on_change()` in the Python SDK.
 
 ---
 
 ## 7. Identity (DID/VC) Endpoints
 
-The DID system produces a three-tier key hierarchy: Platform DID (control plane itself) -> Node DID (per registered agent) -> Function DID (per reasoner/skill). DID methods supported: `did:web` (primary, with did:web resolution URL endpoints) and `did:key` (fallback, self-contained but non-revocable).
+The DID system produces a three-tier key hierarchy: Platform DID (control plane) → Node DID (per agent) → Function DID (per reasoner/skill). Signing keys are Ed25519 (BIP32-derived), keystore AES-256-GCM encrypted, rotated every 90 days by default.
 
-### DID Registration
-
-```
-POST /api/v1/did/register
-```
-- Body: `{"agent_id": "my-agent", "public_key_jwk": { ... }}`
-- Returns: `DIDIdentityPackage` with per-component keys
-- Keys generated with Ed25519 + BIP32 derivation (AES-256-GCM encrypted keystore)
-- Auto-registers DID document at Web resolution URLs
-- Optionally generates Verifiable Credentials for agent tags
-
-### DID Resolution
+### DID Resolution (public, did:web)
 
 ```
 GET /.well-known/did.json
-```
-- Standard `did:web` resolution endpoint (spec: `did:web:{domain} -> GET /.well-known/did.json`)
-- Serves DID documents with public keys in JWK format
-
-```
 GET /agents/:agentID/did.json
 ```
-- Per-agent `did:web` resolution (spec: `did:web:{domain}:agents:{agentID} -> GET /agents/{agentID}/did.json`)
 
-```
-GET /api/v1/did/resolve/:did
-```
-- Resolve any DID known to the control plane
-- Returns full DID document with verification methods
-
-### Complete DID Endpoint Surface
+### DID & Policy Surface (`routes_did.go`)
 
 | Method | Path | Purpose |
 |--------|------|---------|
-| POST | `/api/v1/did/register` | Register agent DID identity package |
-| GET | `/api/v1/did/resolve/:did` | Resolve DID document |
-| POST | `/api/v1/did/key-agreement/rotate` | Rotate X25519 key agreement key |
-| POST | `/api/v1/did/verify` | Verify a Verifiable Credential |
-| POST | `/api/v1/did/verify-audit` | Verify an audit bundle (VC chain) |
-| GET | `/api/v1/did/workflow/:workflow_id/vc-chain` | Get VC chain for a workflow |
-| POST | `/api/v1/did/workflow/:workflow_id/vc` | Create VC for a workflow |
-| GET | `/api/v1/did/status` | DID system status |
-| GET | `/api/v1/did/export/vcs` | Export all stored VCs |
-| GET | `/api/v1/did/document/:did` | Get DID document |
-| GET | `/api/v1/did/agentfield-server` | Get AgentField server's own DID |
-| GET | `/api/v1/did/issuer-public-key` | Get control plane issuer public key (JWK) |
-| POST | `/api/v1/execution/vc` | Create VC for an execution |
+| GET | `/api/v1/did/agentfield-server` | Server's own DID |
+| GET | `/api/v1/did/issuer-public-key` | Control plane issuer public key (JWK) |
+| GET | `/api/v1/admin/public-key` | Legacy alias |
+| GET | `/api/v1/policies` | All access policies (SDKs cache for offline verification) |
+| GET | `/api/v1/revocations` | All revoked DIDs |
+| GET | `/api/v1/registered-dids` | All active registered DIDs |
+| GET | `/api/v1/agents/:node_id/tag-vc` | Agent's verified tag VC |
 
-### Policy Distribution Endpoints (For Local Verification)
-
-These are consumed by agent SDKs for offline DID verification:
-
-| Method | Path | Purpose |
-|--------|------|---------|
-| GET | `/api/v1/policies` | List all access policies (agents cache these) |
-| GET | `/api/v1/revocations` | List all revoked DIDs |
-| GET | `/api/v1/registered-dids` | List all active registered DIDs |
-| GET | `/api/v1/admin/public-key` | Legacy alias for issuer public key |
-| GET | `/api/v1/agents/:node_id/tag-vc` | Get agent's verified tag VC |
-
-Agents refresh these on a 5-minute cycle using `localVerifier.NeedsRefresh()` in the Go SDK.
+Agents refresh these on a 5-minute cycle (`localVerifier.NeedsRefresh()` in the Go SDK). Registration/VC-chain/rotation endpoints (e.g. DID register, VC chain per workflow/execution) are served by the DID service handlers (`control-plane/internal/handlers/did_handlers.go`) and consume/generate VCs via the SDK `vc_generator.py`.
 
 ### W3C DID Document Structure
 
@@ -356,134 +341,123 @@ Agents refresh these on a 5-minute cycle using `localVerifier.NeedsRefresh()` in
 ## 8. Observability Endpoints
 
 ```
-GET /metrics
+GET /metrics        -- Prometheus (routes_core.go:21)
+GET /health         -- health check (routes_core.go:22)
+GET /debug/pprof/   -- pprof profiles (admin-gated, routes_admin.go:57-62)
 ```
-- Prometheus metrics via `github.com/prometheus/client_golang`
 
-```
-GET /health
-```
-- Combined storage + cache health check
-- Returns 200 when control plane is operational
+### Observability Webhook Settings (`routes_observability.go`)
 
-```
-GET /api/v1/workflows/:id/dag
-```
-- Workflow DAG visualization data
-- Used by the web UI for execution trace visualization
+| Method | Path | Purpose |
+|--------|------|---------|
+| GET | `/api/v1/observability-webhook` | Get webhook config |
+| POST | `/api/v1/observability-webhook` | Set webhook config |
+| DELETE | `/api/v1/observability-webhook` | Delete webhook config |
+| GET | `/api/v1/observability-webhook/status` | Forwarder status |
+| POST | `/api/v1/observability-webhook/redrive` | Redrive failed events |
+| GET | `/api/v1/observability-webhook/dlq` | Dead-letter queue contents |
+| DELETE | `/api/v1/observability-webhook/dlq` | Clear DLQ |
+
+The observability forwarder batches events (`BatchSize: 10`, `QueueSize: 1000` — `server.go:414`) and signs webhook deliveries with HMAC.
 
 ---
 
 ## 9. Agentic API
 
-Machine-friendly endpoints for external tools and automated clients:
+Machine-friendly endpoints for external tools, agents, and CI/CD (`routes_agentic.go`):
 
-| Endpoint | Purpose |
-|----------|---------|
-| `GET /api/v1/agentic/status` | System status |
-| `GET /api/v1/agentic/discover` | Endpoint catalog search |
-| `POST /api/v1/agentic/query` | Unified resource query |
-| `GET /api/v1/agentic/run/:run_id` | Run overview |
-| `GET /api/v1/agentic/agent/:agent_id/summary` | Agent summary |
-| `/api/v1/agentic/kb/` | Knowledge base search and management |
-| `POST /api/v1/agentic/batch` | Batch API operations |
+| Method | Endpoint | Purpose |
+|--------|----------|---------|
+| GET | `/api/v1/agentic/status` | System status |
+| GET | `/api/v1/agentic/discover` | Endpoint catalog search |
+| GET | `/api/v1/agentic/reasoners` | List reasoners |
+| POST | `/api/v1/agentic/query` | Unified resource query |
+| GET | `/api/v1/agentic/run/:run_id` | Run overview |
+| GET | `/api/v1/agentic/agent/:agent_id/summary` | Agent summary |
+| POST | `/api/v1/agentic/batch` | Batch API operations |
 
-The Agentic API is designed for machine consumers (other agents, automation tools, CI/CD pipelines) that need a simplified, self-describing interface to AgentField.
+### Knowledge Base (public, on root router)
+
+```
+GET /api/v1/agentic/kb/topics
+GET /api/v1/agentic/kb/articles
+GET /api/v1/agentic/kb/articles/:article_id
+GET /api/v1/agentic/kb/articles/:article_id/:sub_id
+GET /api/v1/agentic/kb/guide
+```
 
 ---
 
 ## 10. Trigger/Webhook Endpoints
 
-- Trigger registration and dispatch (source-based: GitHub, Slack, Linear, Sentry, Snowflake, Stripe, cron, generic HMAC/bearer)
-- SSE streaming for live trigger events
-- Execution webhooks with HMAC-SHA256 signing
-- `webhook_timeout`: 10s per attempt, `webhook_max_attempts`: 3 retries
+Trigger providers: **GitHub, Slack, Stripe, GenericBearer, GenericHMAC** (+ Linear/Sentry/Snowflake via integrations), cron schedules. 18 route registrations in `routes_triggers.go`.
+
+### Public Ingest (no auth)
+
+```
+POST /api/v1/sources/:trigger_id      (IngestSourceHandler, :19)
+GET  /api/v1/sources/:name            (GetSource, :37)
+GET  /api/v1/sources                  (ListSources, :45)
+```
+
+### Trigger CRUD & Ops
+
+| Method | Path | Purpose |
+|--------|------|---------|
+| GET | `/api/v1/triggers` | List triggers |
+| POST | `/api/v1/triggers` | Create trigger |
+| GET | `/api/v1/triggers/:trigger_id` | Get trigger |
+| PUT | `/api/v1/triggers/:trigger_id` | Update trigger |
+| DELETE | `/api/v1/triggers/:trigger_id` | Delete trigger |
+| GET | `/api/v1/triggers/:trigger_id/events` | List events |
+| GET | `/api/v1/triggers/:trigger_id/events/:event_id` | Get event |
+| POST | `/api/v1/triggers/:trigger_id/events/:event_id/replay` | Replay event |
+| POST | `/api/v1/triggers/:trigger_id/pause` | Pause trigger |
+| POST | `/api/v1/triggers/:trigger_id/resume` | Resume trigger |
+| POST | `/api/v1/triggers/:trigger_id/test` | Test trigger |
+| POST | `/api/v1/triggers/:trigger_id/convert-to-ui` | Convert to UI trigger |
+| GET | `/api/v1/triggers/:trigger_id/secret-status` | Secret status |
+| GET | `/api/v1/triggers/:trigger_id/events/stream` | SSE event stream |
+| GET | `/api/v1/triggers/metrics` | Trigger metrics |
+
+### Execution Webhooks
+
+Webhook dispatcher signs deliveries with **HMAC-SHA256** (`control-plane/internal/handlers/webhook_dispatcher.go`; observability forwarder too, `services/observability_forwarder.go:722`). Timeout: 10s per attempt, max 3 attempts.
 
 ---
 
-## 11. HTTP Context Propagation Headers
+## 11. Connector API
 
-These headers are passed through the cross-agent mesh for traceability:
+Conditionally registered when connector capability is enabled (`features.connector.capabilities` — `weight`, `tags`, `config_management`), behind `ConnectorTokenAuth` (`routes_connector.go:22-40`; `config_management` additionally gated by `ConnectorCapabilityCheck`). Handlers in `control-plane/internal/handlers/connector/handlers.go`.
 
-| Header | Purpose |
-|--------|---------|
-| `X-Run-ID` | Workflow run tracking |
-| `X-Workflow-ID` | Workflow DAG identification |
-| `X-Execution-ID` | Specific execution trace ID |
-| `X-Parent-Execution-ID` | Parent-child call tree linkage |
-| `X-Session-ID` | Multi-turn session tracking |
-| `X-Actor-ID` | Actor identity |
-| `X-Caller-DID` | DID of the calling agent |
-| `X-Target-DID` | DID of the target agent |
-| `X-Routed-Version` | Version traffic routing |
-| `X-AgentField-Replay-*` | Execution replay headers |
+### Traffic Weight
+
+```
+PUT /api/v1/connector/reasoners/:id/versions/:version/weight
+```
+Body: `{"weight": int}` (0–10000). Handler `SetReasonerTrafficWeight` (`handlers.go:72`, `447-488`). **Note:** rollout percentages cited in the README are marketing; there is no traffic-shaping controller — the weight field is stored per (id, version) but no scheduler consumes it yet.
 
 ---
 
-## 11.5 HTTP Status Codes and Error Responses
+## 12. Config Storage & Serverless
 
-All errors follow a consistent JSON envelope:
+### Config Storage API (`handlers/config_storage.go`, registered in routes_core.go:31-35)
 
-```json
-{
-  "error": "error_code",
-  "message": "Human-readable description"
-}
-```
+| Method | Path | Purpose |
+|--------|------|---------|
+| GET | `/api/v1/configs` | List stored config keys |
+| GET | `/api/v1/configs/:key` | Get config value |
+| PUT | `/api/v1/configs/:key` | Set config value |
+| DELETE | `/api/v1/configs/:key` | Delete config value |
+| POST | `/api/v1/configs/reload` | Reload runtime config |
 
-| Code | Meaning | Common Scenarios |
-|------|---------|-----------------|
-| 200 | Success | GET, POST (sync execution), status queries |
-| 201 | Created | POST register, POST create policy, POST create trigger |
-| 202 | Accepted | Async execution queued, heartbeat accepted |
-| 400 | Bad Request | Invalid JSON, missing required fields, validation error |
-| 401 | Unauthorized | Missing or invalid API key, DID signature failure |
-| 403 | Forbidden | DID revoked, policy denied, tag forbidden, access control violation |
-| 404 | Not Found | Agent, execution, policy, or trigger not found |
-| 409 | Conflict | Duplicate registration or trigger name |
-| 410 | Gone | Tag VC revoked |
-| 422 | Unprocessable | Input validation error (invalid type, missing field per `_HandlerInputError`) |
-| 499 | Cancelled | Execution cancelled by control plane |
-| 500 | Internal Error | Storage failure, unexpected error in service |
-| 503 | Service Unavailable | Health monitor not available, pending approval, status manager not ready |
+### Serverless Registration
 
-## 11.6 Pagination and Filtering
+`POST /api/v1/nodes/register-serverless` (routes_core.go:41) — register an agent without a persistent HTTP listener (FaaS/Lambda style; see `sdk/python/agentfield/agent_serverless.py`). CLI: `af register-serverless --url <url>`.
 
-List endpoints support these patterns:
+---
 
-**Offset-limit pagination:**
-```
-GET /api/v1/nodes?offset=0&limit=20
-```
-
-Response envelope:
-```json
-{
-  "results": [...],
-  "total": 100,
-  "offset": 0,
-  "limit": 20
-}
-```
-
-**Query parameter filtering:**
-- `tags=<glob>` -- Filter by tag glob patterns (e.g., `tags=nlp*`, `tags=production,ml`)
-- `health=<status>` -- Filter by health status (`ready`, `degraded`, `offline`, `starting`, `active`)
-- `team_id=<id>` -- Filter by team ID
-- `group_id=<id>` -- Filter by agent group
-- `name=<name>` -- Filter by name
-- `mode=<mode>` -- Filter by app mode (`user`, `admin`, `developer`)
-- `status=<status>` -- Filter by lifecycle status
-
-**Bulk operations:**
-```http
-POST /api/v1/executions/batch-status
-Content-Type: application/json
-
-{"execution_ids": ["id1", "id2", "id3"]}
-```
-
-## 11.7 HTTP Context Propagation Headers
+## 13. HTTP Context Propagation Headers
 
 These headers are passed through the cross-agent mesh for traceability:
 
@@ -503,139 +477,152 @@ These headers are passed through the cross-agent mesh for traceability:
 | `X-Team-ID` | Team ID for team-restricted memory access |
 | `X-AgentField-Replay-*` | Execution replay headers |
 
-## 11.8 SDK-Generated API Surface
+---
+
+## 14. HTTP Status Codes and Error Responses
+
+All errors follow a consistent JSON envelope:
+
+```json
+{
+  "error": "error_code",
+  "message": "Human-readable description"
+}
+```
+
+| Code | Meaning | Common Scenarios |
+|------|---------|-----------------|
+| 200 | Success | GET, POST (sync execution), status queries |
+| 201 | Created | POST register, POST create policy, POST create trigger |
+| 202 | Accepted | Async execution queued, heartbeat accepted |
+| 400 | Bad Request | Invalid JSON, missing fields, `invalid_did_format`, `invalid_timestamp` |
+| 401 | Unauthorized | Missing/invalid API key, `did_auth_required`, `invalid_signature`, `replay_detected` |
+| 403 | Forbidden | Policy denied, tag forbidden, bad admin/connector token |
+| 404 | Not Found | Agent, execution, policy, trigger not found; `/mcp` when disabled |
+| 409 | Conflict | Duplicate registration or trigger name |
+| 413 | Payload Too Large | `body_too_large` (DID auth) |
+| 422 | Unprocessable | Input validation error per `_HandlerInputError` |
+| 429 | Too Many Requests | `concurrency_limit` (execution guard) |
+| 499 | Cancelled | Execution cancelled by control plane |
+| 500 | Internal Error | Storage failure, unexpected error |
+| 503 | Service Unavailable | `llm_unavailable`, pending approval, status manager not ready |
+
+---
+
+## 15. Pagination and Filtering
+
+**Offset-limit pagination:**
+```
+GET /api/v1/nodes?offset=0&limit=20
+```
+
+```json
+{
+  "results": [...],
+  "total": 100,
+  "offset": 0,
+  "limit": 20
+}
+```
+
+**Query parameter filtering:**
+- `tags=<glob>` — tag glob patterns (e.g. `tags=nlp*`)
+- `health=<status>` — `ready`, `degraded`, `offline`, `starting`, `active`
+- `team_id`, `group_id`, `name`, `mode`, `status`
+
+**Bulk operations:**
+```http
+POST /api/v1/executions/batch-status
+Content-Type: application/json
+
+{"execution_ids": ["id1", "id2", "id3"]}
+```
+
+---
+
+## 16. SDK-Generated API Surface
 
 The Python SDK's `Agent` class (subclass of `FastAPI`) auto-generates REST endpoints from decorators:
 
 | Decorator | Generated Endpoint | Method | Purpose |
 |-----------|-------------------|--------|---------|
-| `@app.reasoner()` | `/reasoners/{id}` | POST | AI reasoning with LLM, auto-extracts type hints |
+| `@app.reasoner()` | `/reasoners/{id}` | POST | AI reasoning with LLM, type-hint-derived schema |
 | `@app.skill()` | `/skill/{id}` | POST | Deterministic logic |
 | `@app.session()` | `/session/{id}` | POST | Multi-turn conversation session |
 
-The SDK creates FastAPI routes at decoration time; each reasoner endpoint:
-1. Parses JSON body
-2. Validates input against function parameter type hints (no Pydantic model -- saves ~1.5-2 KB per handler)
-3. Wraps execution in workflow tracking (`tracked_func` with weakref-based GC)
-4. Supports sync (blocking) and async (`X-Execution-ID` triggers async path) modes
+Each reasoner endpoint: parses JSON → validates against type hints (no Pydantic model, ~1.5-2 KB saved per handler) → wraps in workflow tracking → sync or async (`X-Execution-ID` triggers async path). All are also reachable via the unified control-plane endpoint `POST /api/v1/execute/{agent_id}.{reasoner_id}`.
 
-The registered reasoner/skill is also callable via the control plane's unified execute endpoint:
-```
-POST /api/v1/execute/{agent_id}.{reasoner_id}
-```
-
-The Go SDK uses `http.ServeMux` internally with its own route set:
+The Go SDK uses `http.ServeMux` internally:
 ```
 GET  /health                  -- Agent health check
-GET  /discover                 -- Capability discovery
+GET  /discover                -- Capability discovery
 POST /execute                 -- Execute any reasoner
 POST /execute/{name}          -- Execute named reasoner
 GET  /reasoners/{id}          -- Get reasoner metadata
 POST /reasoners/{id}          -- Execute specific reasoner
 POST /_internal/executions/{id}/cancel  -- Cancel execution (control-plane only)
-POST /agentfield/v1/logs      -- Send NDJSON process logs to control plane
+POST /agentfield/v1/logs      -- NDJSON process logs
 ```
-
-The Go SDK also supports a router API (`sdk/go/agent/router.go`) with `IncludeRouter()` for nesting sub-routers and `RegisterReasoner`/`RegisterSkill` for registering handlers at specific paths, enabling complex agent architectures.
-
-## 12. MCP Integration
-
-**Current status:** AgentField had a full MCP (Model Context Protocol) implementation that was **completely removed** in a refactor (CHANGELOG entry: "Refactor: remove all MCP code from codebase (#359)").
-
-### What was removed:
-- `control-plane/internal/mcp/` -- manager, discovery, protocol client
-- `control-plane/internal/cli/mcp.go` -- CLI commands (including `af add --mcp --url <server>`)
-- `control-plane/internal/handlers/ui/mcp.go` -- HTTP handlers for `/mcp/health`, `/mcp/status`
-- `control-plane/internal/core/domain/mcp_health.go` -- domain models
-- All MCP routes from `server.go`
-- MCP methods from the `AgentClient` interface
-- MCP types from TypeScript SDK
-
-### Only remaining artifact:
-In the ARD (Agent Resource Discovery) system, `application/mcp-server+json` persists as an `ArtifactType` for catalog entries. MCP servers can still be registered and discovered as external resources through the ARD catalog, but AgentField no longer has a first-party MCP client or protocol adapter.
-
-### Reconnecting MCP today:
-
-**Option A: Implement an MCP client as a new provider in the ARD external invocation system**
-- The plumbing exists: `ExternalEntry` has a `URL` field and the `callExternalARD` handler in `execute.go` already forwards HTTP requests to external bindings
-
-**Option B: Write an MCP adapter agent**
-- Run a Python MCP client and expose its tools via `@app.reasoner()` or `@app.skill()`
-- The SDK's `tools="discover"` feature makes them available to LLM calls
 
 ---
 
-## 13. Harness Runtimes
+## 17. MCP Integration
+
+**Status: ACTIVE.** The embedded MCP server is present and enabled by default.
+
+History: MCP was removed in PR #359 ("Refactor: remove all MCP code from codebase") and **re-added in PR #817**. Current implementation (`routes_mcp.go:40-69`, `handlers/mcp.go`):
+
+- **Endpoint:** `POST /mcp` — streamable-HTTP JSON-RPC 2.0, on the same port/trust domain as the REST API. GET → 405, OPTIONS → 204 preflight (`routes_mcp.go:61-68`)
+- **Default on:** `features.mcp.enabled` (default true, `config.go:254-275`); disable with `AGENTFIELD_MCP_ENABLED=false` or `mcp.enabled: false` → `/mcp` returns 404
+- **5 tools** (`docs/mcp-integration.md`):
+
+| Tool | Input | Output |
+|------|-------|--------|
+| `discover_agents` | `health?` (`"active"`/`"all"`) | Agents with `id`, `health_status`, `last_heartbeat`, and their `reasoners` |
+| `get_reasoner_schema` | `node`, `reasoner` | Reasoner input/output JSON Schema, description, tags |
+| `execute_reasoner` | `target` (`"node.reasoner"`), `input` | Starts async execution → `{ run_id, status: "accepted" }` |
+| `get_run` | `run_id` | Run `status`, `result`/`error`, per-execution summaries |
+| `wait_run` | `run_id`, `timeout_seconds?` (default 60, max 120) | Server-side poll to terminal state, `timed_out` flag |
+
+- **Auth:** MCP requests pass the same permission middleware as REST execution (`mcpAuthorizer()`, `routes_mcp.go:69-79`) — targets come from the JSON-RPC argument, not the URL
+- The ARD catalog additionally registers `application/mcp-server+json` artifacts for external MCP servers
+
+---
+
+## 18. gRPC Admin API
+
+- **Port:** 8180 = HTTP port + 100 (`server.go:469`), listener in `startAdminGRPCServer()` (`server.go:712-738`)
+- **Service:** `AdminReasonerService` (proto: `control-plane/proto/admin/reasoner_admin.proto`), e.g. `ListReasoners`
+- **Auth:** API key via `middleware.APIKeyUnaryInterceptor` when `api.auth.api_key` is set (`grpc_auth.go`)
+
+---
+
+## 19. Harness Runtimes
 
 The Harness feature (`app.harness(prompt, provider=...)`) treats LLM CLI tools as autonomous computational units.
-
-### Provider Factory
 
 ```
 SUPPORTED_PROVIDERS = {"claude-code", "codex", "gemini", "opencode"}
 ```
 
-Implementation locations:
-- **Python SDK:** `sdk/python/agentfield/harness/` (providers, runner, schema, result)
-- **Go SDK:** `sdk/go/harness/` (mirror structure)
-
-### Provider Details
-
 | Provider | Mechanism | Options |
 |----------|-----------|---------|
-| **Claude Code** (`claude-code`) | `claude_agent_sdk` Python package (`sdk.query()`) | model, cwd, max_turns, allowed_tools, system_prompt, max_budget_usd, permission_mode, env, resume_session_id |
-| **Codex** (`codex`) | `codex exec --json` subprocess | Same interface |
-| **Gemini CLI** (`gemini`) | `gemini -p` subprocess | Same interface |
-| **OpenCode** (`opencode`) | `opencode run --format json` subprocess | Same interface, concurrency cap: 10 simultaneous |
+| **Claude Code** | `claude_agent_sdk` Python package (`sdk.query()`) | model, cwd, max_turns, allowed_tools, system_prompt, max_budget_usd, permission_mode, env, resume_session_id |
+| **Codex** | `codex exec --json` subprocess | Same interface |
+| **Gemini CLI** | `gemini -p` subprocess | Same interface |
+| **OpenCode** | `opencode run --format json` subprocess | Same interface, concurrency cap: 10 |
 
-### Common Retry Pipeline (`HarnessRunner`)
-
-1. Transient error detection with exponential backoff (±25% jitter, 3 retries)
-2. Schema validation retry loop (2 retries for output JSON compliance)
-3. Cost capping (`max_budget_usd`)
-4. Turn limiting (`max_turns`)
-5. Tool access control
-6. System prompt injection
-
-### Output Recovery (3 layers)
-
-1. **`_ai_schema_repair()`** -- Lightweight LLM call (90s timeout) that reformats malformed JSON
-2. **Schema retry** -- Retry with diagnostic followup if repair fails
-3. **Full re-run** -- Complete re-execution if both repair and retry fail
-
-### Adding a New Provider
-
-1. Create `harness/providers/mytool.py` implementing `async def execute(prompt, options) -> RawResult`
-2. Add to `SUPPORTED_PROVIDERS` in `_factory.py`
-3. Add import + branch in `build_provider()`
+Retry pipeline: transient-error backoff (±25% jitter, 3 retries) → schema validation retry (2) → `_ai_schema_repair()` (90s LLM call) → full re-run. Implementations: `sdk/python/agentfield/harness/` and `sdk/go/harness/`.
 
 ---
 
-## 14. The /agentfield CLI Command
+## 20. The /agentfield CLI Command
 
 The `/agentfield` command is a **skill-based instruction packet** for coding agents, not a built-in slash command.
 
-### How to use:
-
-```
-/agentfield Build a claims processor with risk scoring, pattern detection,
-and human approval for low-confidence decisions.
-```
-
-### How it works:
-
-1. The skill is bundled with the `af` binary as embedded markdown in `control-plane/internal/skillkit/`
-2. Installed via: `af skill install` (interactive) or `af skill install --target claude-code`
-3. The installer writes SKILL.md (and reference files) to the coding agent's instruction directory
-4. Supported targets: Claude Code, Codex, Gemini CLI, OpenCode, Aider, Windsurf, Cursor
-5. When the user types `/agentfield` in Claude Code, the active SKILL.md teaches Claude how to:
-   - Design composable multi-reasoner architectures
-   - Build deep dynamic call graphs
-   - Fetch live SDK docs from agentfield.ai
-   - Run async-first smoke tests
-   - Scaffold complete agent projects
-
-### Skill management:
+1. Bundled in the binary (`control-plane/internal/skillkit/`, embedded via `//go:embed`)
+2. Installed via `af skill install` / `af skill install --target <claude-code|codex|gemini|opencode|aider|windsurf|cursor>`
+3. Skills shipped: `agentfield`, `agentfield-personal`, `agentfield-use`
 
 | Command | Purpose |
 |---------|---------|
@@ -648,73 +635,32 @@ and human approval for low-confidence decisions.
 
 ---
 
-## 15. Integration Patterns
+## 21. Integration Patterns
 
 ### Hermes Integration
 
-**Option A: MCP Bridge (Hermes to AgentField)**
-- Write a Hermes MCP server that wraps the AgentField REST API (~100 lines of Python using FastMCP)
-- Expose AgentField's execution endpoints as MCP tools (e.g., `agentfield_execute(agent, reasoner, input)` -> tool)
-- Expose discovery as MCP resources
-- Let Hermes agents call any AgentField reasoner as an MCP tool
+**Option A: MCP Bridge (Hermes → AgentField)** — Hermes agents call AgentField's embedded `/mcp` (5 tools: `discover_agents`, `execute_reasoner`, `get_run`, `wait_run`) directly as MCP tools, or a wrapper FastMCP server can expose the REST surface.
 
-**Option B: Harness Dispatch (AgentField to Hermes)**
-- New `hermes` harness provider that runs Hermes CLI as a subprocess
-- Same pattern as the existing `opencode` provider
+**Option B: Harness Dispatch (AgentField → Hermes)** — a `hermes` harness provider mirroring the `opencode` provider.
 
-**Option C: AgentField as Hermes Agent Backend**
-- AgentField agents register as services in Hermes's workspace network
-- Hermes routes cross-agent calls through AgentField's control plane
-- Gains execution traces, DAG visualization, DID identity, cryptographically verifiable audit trails
+**Option C: AgentField as Hermes Agent Backend** — Hermes routes cross-agent calls through AgentField's control plane, gaining execution traces, DAG visualization, DID identity, and verifiable audit trails.
 
-**Option D: Webhook-based async bridge**
-- Hermes POSTs to AgentField's async execute endpoint with a webhook URL
-- AgentField executes and POSTs the result back
-- No tight coupling, works across networks
+**Option D: Webhook-based async bridge** — Hermes POSTs to async execute with a webhook URL; AgentField POSTs results back.
 
 ### n8n Integration
 
-**Pattern 1: n8n Webhook Node -> AgentField Execution (works today)**
-1. n8n workflow triggers (webhook, cron, form)
-2. n8n HTTP Request node calls `POST http://agentfield:8080/api/v1/execute/my-agent.my-reasoner`
-3. AgentField executes and returns synchronously
-4. For long-running agents, use async execute with webhook callback
+1. **n8n Webhook → Execution:** HTTP Request node calls `POST http://agentfield:8080/api/v1/execute/my-agent.my-reasoner` (sync) or async + webhook callback.
+2. **AgentField → n8n:** approval results via `/api/v1/webhooks/approval-response`; execution webhooks (HMAC-SHA256) POST completions; ARD external invocation routes to n8n endpoints.
+3. **Trigger source → n8n:** n8n POSTs to `/api/v1/sources/:trigger_id` ingest endpoints.
 
-**Pattern 2: AgentField -> n8n Webhook**
-- Approval results POST to n8n webhooks via `/api/v1/webhooks/approval-response`
-- Execution webhooks POST results to n8n endpoints when async executions complete
-- ARD external invocation system (`/api/v1/execute/external.*`) routes to n8n endpoints
-
-**Pattern 3: AgentField Trigger Source -> n8n**
-- n8n workflow POSTs to AgentField trigger endpoints to kick off agent executions
-- Trigger dispatcher runs the agent and routes results back as webhooks
-
-Architecture contract: AgentField is the **agent execution layer** (reasoning, memory, orchestration, identity). n8n is the **workflow automation layer** (business process integration, 400+ connectors, UI workflow builder).
+Architecture contract: AgentField is the **agent execution layer**; n8n is the **workflow automation layer**.
 
 ### OpenClaw Integration
 
-**Option A: OpenClaw as AgentField's Gateway Layer**
-- Rate limiting and circuit breaking for agent execution calls
-- API key authentication and tenant isolation (maps external API keys to DID identity)
-- Request routing to the correct control plane instance
-- Proxies to `POST /api/v1/execute/:target`
-
-**Option B: AgentField Agents as OpenClaw Backends**
-- Agents register as backend services behind OpenClaw
-- OpenClaw discovers agents via AgentField's discovery API
-- Canary/A/B support via AgentField's version routing
-- Metrics collected from AgentField's `/metrics` endpoint
-
-**Option C: Shared DID Identity Layer**
-- AgentField generates W3C VCs for every execution
-- OpenClaw verifies AgentField-issued VCs at the gateway edge
-- OpenClaw issues gateway-level credentials that AgentField's policy service validates
-- Unified trust chain: OpenClaw authenticates -> issues gateway VC -> AgentField validates -> grants access
-
-**Option D: Cross-Mesh Agent Calling**
-- OpenClaw-managed agents call AgentField agents via OpenClaw's routing layer
-- AgentField's `app.call()` routes through OpenClaw for non-AgentField targets
-- Transparent cross-mesh calls, unified agent mesh
+- **Option A:** OpenClaw as gateway — rate limiting, circuit breaking, API-key→DID mapping, proxying to `POST /api/v1/execute/:target`.
+- **Option B:** AgentField agents as OpenClaw backends — discovery via `/api/v1/discovery/capabilities`, metrics via `/metrics`.
+- **Option C:** Shared DID identity — OpenClaw verifies AgentField-issued VCs at the edge; unified trust chain.
+- **Option D:** Cross-mesh calling — OpenClaw-managed agents call AgentField agents via `app.call()`.
 
 ## Related
 

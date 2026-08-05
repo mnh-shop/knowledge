@@ -21,7 +21,7 @@ The Obsidian Skills project provides a modular set of specialized skills that en
 ## Core Skills
 
 ### [obsidian-markdown](skills/obsidian-markdown)
-Creates and edits [Obsidian Flavored Markdown](https://help.obsidian.md/obsidian-flavored-markdown) (`.md`) files with full support for wikilinks, embeds, callouts, properties, and other Obsidian-specific syntax.
+Creates and edits [Obsidian Flavored Markdown](https://help.obsidian.md/obsidian-flavored-markdown) (`.md`) files with full support for wikilinks, embeds, callouts, properties, tags, comments, math (LaTeX), and diagrams (Mermaid), plus other Obsidian-specific syntax.
 
 ### [obsidian-bases](skills/obsidian-bases)  
 Creates and edits [Obsidian Bases](https://help.obsidian.md/bases/syntax) (`.base`) files containing views, filters, formulas, and summaries.
@@ -85,12 +85,6 @@ Each skill includes documentation and reference materials:
 
 ## Purpose
 
-## Related
-
-- [[skills]] — Agent skills platform
-- [[hermes-agent]] — Compatible agent runtime
-
-
 The Obsidian Skills project enables AI agents to work seamlessly with Obsidian vaults by providing specialized capabilities for:
 
 - Working with Obsidian's native file formats (MD, BASE, CANVAS)
@@ -99,3 +93,8 @@ The Obsidian Skills project enables AI agents to work seamlessly with Obsidian v
 - Leveraging Obsidian-specific features like wikilinks, embeds, and metadata
 
 This collection serves as a foundation for building Obsidian-native workflows and automating content creation and management tasks within the Obsidian ecosystem.
+
+## Related
+
+- [[skills]] — Agent skills platform
+- [[hermes-agent]] — Compatible agent runtime

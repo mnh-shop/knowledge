@@ -14,7 +14,9 @@ Multi-agent orchestration skills for [Hermes Agent](https://github.com/NousResea
 
 ## Overview
 
-OMH provides composable skills for consensus planning, requirements interviewing, and verified execution, plus an optional plugin that adds hook-based role injection, atomic state management, and evidence gathering. Skills work standalone with zero dependencies.
+OMH provides composable skills for consensus planning, requirements interviewing, and verified execution, plus an optional plugin that adds hook-based role injection, atomic state management, and evidence gathering. Skills live at `plugins/omh/skills/<name>/` — one directory per skill.
+
+> **Dependency note (partial):** skills are standalone-capable by design (v1.0 skills-only lineage — see `ROADMAP.md`), but `omh-autopilot` hard-requires the plugin (`plugins/omh/skills/omh-autopilot/SKILL.md:27`: "The `omh` plugin must be installed (`~/.hermes/plugins/omh/`)"). All ten skill frontmatters declare the `omh` toolset (`requires_toolsets: [terminal, omh]`, with `web` for deep-research and `delegation` for triage). `omh-deep-research` prefers `omh_state` but falls back to manual JSON read/write when the plugin is unavailable.
 
 ## Skills
 
@@ -31,9 +33,13 @@ OMH provides composable skills for consensus planning, requirements interviewing
 | **omh-triage-driver** *(v0.1)* | Dispatcher's playbook for driving an `omh-triage` run |
 | **omh-autopilot** | Full pipeline composing all three skills end-to-end |
 
+All 10 skills ship under `plugins/omh/skills/` and install via `hermes skills tap add witt3rd/oh-my-hermes` or by copying `plugins/omh/skills/<name>/` into `~/.hermes/skills/omh/`.
+
 ### Composition Pipeline
 
 ```
+omh-deep-research   →  Phase −1: background research for unfamiliar domains (optional)
+        ↓ (skip when the domain is known)
 omh-deep-interview  →  confirmed spec (.omh/specs/)
         ↓
 omh-ralplan         →  consensus plan (.omh/plans/)
@@ -41,6 +47,8 @@ omh-ralplan         →  consensus plan (.omh/plans/)
 omh-autopilot       →  detects existing spec/plan, skips completed phases
         ↓ (internally uses)
 omh-ralph           →  one-task-per-invocation until verified complete
+        ↓
+Phase 3 QA cycle → Phase 4 multi-reviewer validation → Phase 5 cleanup
 ```
 
 ## Plugin Architecture (v2)
@@ -51,10 +59,10 @@ Install to `~/.hermes/plugins/omh/`. Requires Python 3.10+ and `pyyaml`.
 
 | Component | What It Does | Status |
 |-----------|-------------|--------|
-| `omh_state` tool (13 actions) | Atomic read/write/clear/check/cancel/lock/unlock + `load_role` action for explicit role loading | Shipped |
+| `omh_state` tool (13 actions) | `init`, `read`, `write`, `clear`, `check`, `list`, `list_instances`, `cancel`, `cancel_check`, `lock`, `unlock`, `lock_check`, `load_role` — singleton + per-instance state, advisory locks, explicit role loading (`tools/state_tool.py:52-58`) | Shipped |
 | `omh_gather_evidence` tool | Runs build/test/lint commands from an allowlist, captures + truncates output | Shipped |
 | `pre_llm_call` hook | Detects `[omh-role:NAME]` in subagent `user_message`; injects matching role prompt into system context | Shipped |
-| `pre_tool_call` hook | Validates `[omh-role:NAME]` markers in `delegate_task` goals before subagents start | Shipped |
+| `pre_tool_call` hook | Warns (non-blocking) on unknown `[omh-role:NAME]` markers in `delegate_task` goals — defense-in-depth typo check at delegation time, not a gate (`hooks/tool_hooks.py:8-9,43-56`) | Shipped |
 | `on_session_end` hook | Writes `_interrupted_at` to active mode state on unexpected exit | Shipped |
 
 ### Role Prompts
@@ -109,23 +117,41 @@ State and artifacts live in `.omh/` within the project directory:
 
 A hardened delegation wrapper at `plugins/omh/omh_delegate.py` addresses subagent output loss with a prepare/finalize split:
 
-- **prepare()** — computes paths, writes dispatched breadcrumb, injects contract
-- **finalize()** — verifies file present, writes completion breadcrumb
+- **prepare()** (`omh_delegate.py:181-192`) — computes paths, writes dispatched breadcrumb, injects `<<<EXPECTED_OUTPUT_PATH>>>` contract
+- **finalize()** (`omh_delegate.py:262-268`) — verifies file present, writes completion breadcrumb
 
-Artifacts land at: `.omh/research/{mode}/{phase}[-r{round}][-{slug}]-{ts}.md`
+Artifacts land at: `.omh/research/{mode}/{phase}[-r{round}][-{slug}]-{ts}.md` (`omh_delegate.py:24,123-131`)
 
-Breadcrumbs land at: `.omh/state/dispatched/{id}.dispatched.json` and `.omh/state/dispatched/{id}.completed.json`
+Breadcrumbs land at: `.omh/state/dispatched/{id}.dispatched.json` and `.omh/state/dispatched/{id}.completed.json` (`omh_delegate.py:220-221,242,439`)
 
 ## omh_gather_evidence Tool
 
-Runs build/test/lint commands from a configured allowlist with safety rails:
+Runs build/test/lint commands from a configured allowlist with safety rails (`tools/evidence_tool.py`):
 
-- Token-level allowlist check prevents partial-word and argument-injection bypass
-- Shell metacharacter rejection (`[\\n\\r;&|$\`<>(){}]`)
-- Output truncation (default 2000 chars, max 50KB)
-- Timeout enforcement (default 120s, max 300s)
+- Token-level allowlist check prevents partial-word and argument-injection bypass (`evidence_tool.py:28-35`)
+- Shell metacharacter rejection (`[\\n\\r;&|$\`<>(){}]`) (`evidence_tool.py:22`)
+- `shell=False` subprocess — no shell expansion (primary injection defense, `evidence_tool.py:156-158`)
+- Output truncation (default 2000 chars, max 50KB) (`evidence_tool.py:25,84-85`)
+- Timeout enforcement (default 120s, max 300s) (`evidence_tool.py:24,85,91`)
 
-Allowlist includes: `npm test`, `cargo test`, `python -m pytest`, `go test`, `ruff check`, and other common build/test tools.
+Allowlist includes: `npm test`, `cargo test`, `python -m pytest`, `go test`, `ruff check`, and other common build/test tools (`config.yaml:28-77`).
+
+## Repository Layout
+
+| Path | Contents |
+|------|----------|
+| `plugins/omh/` | The v2 plugin — hooks, tools, roles, skills, templates, tests |
+| `plugins/omh/skills/` | All 10 skills, one directory per skill (`plugins/omh/skills/<name>/SKILL.md`) |
+| `plugins/omh/references/` | 15 shared `role-*.md` role prompts |
+| `plugins/omh/templates/` | `.omh/` seed files: `dot-omh-readme.md`, `dot-omh-gitignore` |
+| `plugins/omh/omh_config.py` | Config loader — reads `config.yaml` (single source of truth, no hardcoded fallback) |
+| `plugins/omh/tools/` | `state_tool.py` (omh_state), `evidence_tool.py` (omh_gather_evidence) |
+| `plugins/omh/hooks/` | `llm_hooks.py`, `tool_hooks.py`, `session_hooks.py` |
+| `docs/` | 6 guides: `concepts.md`, `plugin.md`, `omh-delegate.md`, `omc-comparison.md`, `hermes-constraints.md`, `gaps.md` |
+| `docs/research/` | 6 reference notes (OMC internals, LobeHub skills, Hermes multiagent) |
+| `docs/upstream-prs/` | `per-tool-scoping.md` — proposed upstream change |
+| `examples/plan-and-execute/` | `demo.py` worked example |
+| `ROADMAP.md` | v1.0 skills-only → v2.0 plugin → v3.0 upstream PR |
 
 ## Known Gaps
 
@@ -144,7 +170,7 @@ hermes skills tap add witt3rd/oh-my-hermes
 hermes skills install omh-deep-research omh-ralplan omh-ralplan-driver omh-deep-interview omh-ralph omh-ralph-driver omh-ralph-task omh-autopilot
 ```
 
-Or copy `skills/<name>/` to `~/.hermes/skills/omh/` manually. Plugin: install `plugins/omh/` to `~/.hermes/plugins/omh/`.
+Or copy `plugins/omh/skills/<name>/` to `~/.hermes/skills/omh/` manually. Plugin: install `plugins/omh/` to `~/.hermes/plugins/omh/`.
 
 ## Source
 

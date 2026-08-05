@@ -111,6 +111,9 @@ src/
       style-notes.md       — gitlawb-style posting patterns
       products.md          — Product descriptions for draft context
       campaign.md          — 30-day velocity campaign briefing
+scripts/
+  shroud-sidecar.service.example      — systemd user unit template for the sidecar
+  shroud-sidecar.launchd.plist.example — macOS LaunchAgent template for the sidecar
 ```
 
 ## Key Components
@@ -123,11 +126,13 @@ Uses Zod schema validation with environment variable mapping. All env vars valid
 |----------|---------|-------------|
 | `ONECLAW_AGENT_API_KEY` | — | Agent API key (ocv_ prefix) |
 | `ONECLAW_AGENT_ID` | auto | Agent UUID from bootstrap |
+| `ONECLAW_ENV_FILE` | — | Absolute path to `.env` when not next to the package (cloud/custom layout); same as `pnpm shroud --env-file` / `pnpm setup --env-path` |
 | `ONECLAW_VAULT_ID` | auto | Vault UUID from bootstrap |
 | `ONECLAW_API_BASE` | `https://api.1claw.xyz` | Vault API base URL |
 | `ONECLAW_MCP_URL` | `https://mcp.1claw.xyz/mcp` | MCP server endpoint |
 | `ONECLAW_MCP_TOKEN` | — | Pre-exchanged JWT |
 | `SHROUD_URL` | `https://shroud.1claw.xyz/v1` | Shroud TEE proxy URL |
+| `SHROUD_TOKEN` | uses agent JWT | Bearer for `createShroudClient()`; **not** used by the sidecar binary |
 | `SHROUD_PROVIDER` | `anthropic` | Upstream LLM provider |
 | `HERMES_CONFIG_DIR` | `~/.hermes` | Hermes config directory |
 
@@ -175,6 +180,41 @@ The **setup script** (`src/setup.ts`) automates the full chain: bootstrap verifi
 
 **Middleware (`shroud/middleware.ts`):** `logShroudResponse()` parses `x-shroud-redacted-count` and `x-shroud-injection-score` response headers, logging warnings for scores above 0.7.
 
+### Shroud does not turn on by itself
+
+Shroud is **not** enabled implicitly: you either run the Shroud sidecar in front of Hermes, or call Shroud from TypeScript via `createShroudClient()`. Hermes's custom OpenAI-compatible provider only sends a base URL + API key; Shroud expects extra headers (`X-Shroud-Provider`, agent auth), so the supported Hermes pattern is to run the sidecar locally, point Hermes at `localhost`, and let the sidecar inject headers and forward to `https://shroud.1claw.xyz`.
+
+**Hermes and the sidecar are two different processes.** `pnpm setup` patches Hermes to use `model.base_url: http://127.0.0.1:8080/v1`, but Hermes does **not** start or supervise the sidecar. After a Hermes or machine restart, if nothing listens on port 8080, chat fails with `APIConnectionError` / connection refused until the sidecar is started again (run `pnpm shroud` or `pnpm setup`).
+
+### Sidecar process management
+
+Production setups run the same `pnpm shroud` / `node dist/shroud/sidecar.js` stack on Linux (servers/desktops) and macOS (developer Macs) — only the process manager differs:
+
+| Approach | When to use |
+|----------|-------------|
+| **systemd (user)** | Linux — start on login/boot, restart on crash; `loginctl enable-linger "$USER"` needed for boot-without-login |
+| **launchd** | macOS — LaunchAgent with `KeepAlive` (`scripts/shroud-sidecar.launchd.plist.example`) |
+| **tmux / screen** | Either OS — quick manual persistence without a system service |
+| **Docker / compose** | Either OS — when services already run in containers |
+
+Templates shipped in `scripts/`:
+
+- `scripts/shroud-sidecar.service.example` — systemd user unit running `node dist/shroud/sidecar.js` with `Restart=always`, `RestartSec=5`, `Environment=ONECLAW_DEFAULT_PROVIDER=google`, optional `ONECLAW_ENV_FILE`; install to `~/.config/systemd/user/1claw-shroud-sidecar.service`.
+- `scripts/shroud-sidecar.launchd.plist.example` — macOS LaunchAgent (`com.1claw.shroud-sidecar`) with `RunAtLoad` + `KeepAlive`, `WorkingDirectory`, absolute `node` path, `ONECLAW_ENV_FILE`, and stdout/stderr log paths; install to `~/Library/LaunchAgents/com.1claw.shroud-sidecar.plist`.
+
+Health check after either setup: `curl -s http://127.0.0.1:8080/healthz`.
+
+### Dotenv resolution order
+
+`pnpm setup` and `pnpm shroud` resolve credentials in this order (README:181-186):
+
+1. CLI flag: `--env-path` (setup) or `--env-file` (shroud)
+2. Environment variable: `ONECLAW_ENV_FILE=/absolute/path/.env`
+3. Walk the current working directory upward until a `.env` is found
+4. Fallback: `packages/1claw-hermes/.env` next to the package
+
+Note: the Go binary `shroud-sidecar` does **not** read `.env` files — either run it via `pnpm shroud` (Node loads the file and passes env vars to the child), or `set -a; source /path/.env; set +a` first. `pnpm shroud` may auto-append `ONECLAW_AGENT_ID` to an older `.env` that only has the `ocv_` key.
+
 ### 7. Subagents (`subagents/`)
 
 Ephemeral agent identities with scoped vault access:
@@ -204,8 +244,9 @@ Explorer URL mapping covers ethereum, base, optimism, arbitrum, polygon, sepolia
 A complete social media publishing subsystem for the `@1clawai` X account and Telegram channels. Runs through Shroud's TEE proxy for LLM draft generation so no plaintext secrets leak into generated content.
 
 **Draft generation (`draft-generator.ts`):**
-- Generates 1-12 candidate X posts using Shroud (default model: `claude-sonnet-4-20250514`, temperature 0.85).
-- 26 post formats grouped into gitlawb-style (newsdrop, stats, qt, milestone, release, dogfood, poll, shoutout, rally, thread, journal-cta, ugc-repost) and 1clawai/Bankr-ecosystem (holder-milestone, onchain-stats, listing-news, reference-demo, editorial-coverage, ecosystem-partner, essay, stack-diagram, bankr-amplified, auto).
+- Generates 1-12 candidate X posts using Shroud (default model: `claude-sonnet-4-20250514`, temperature 0.85); candidate count clamped to 1-12.
+- **23 post formats** in the `CmoPostFormat` union (draft-generator.ts:11-36): 13 gitlawb-style (newsdrop, stats, qt, qt-bigissue, milestone, release, dogfood, poll, shoutout, rally, thread, journal-cta, ugc-repost) + 9 1clawai/Bankr-ecosystem (holder-milestone, onchain-stats, listing-news, reference-demo, editorial-coverage, ecosystem-partner, essay, stack-diagram, bankr-amplified) + `auto` (model picks).
+- `qt-bigissue` (3-paragraph claim → why → product-anchor quote-tweet) is part of the gitlawb-style set.
 - System prompt built from four briefing documents: `persona.md`, `style-notes.md`, `products.md`, `campaign.md`.
 - Uses placeholder markers (`{{stat:stars}}`, `{{stat:holders}}`, `{{version}}`, etc.) for values the user fills.
 
@@ -228,7 +269,7 @@ A complete social media publishing subsystem for the `@1clawai` X account and Te
 - `persona.md` -- Brand voice: confident, low-ego, declarative. Coined lexicon: "agentic security era", "vault-native", "tool-call inspected", "shrouded". Core themes: prompt injection, JIT secrets, agent identity, open audit, TEE inspection.
 - `style-notes.md` -- 13 posting patterns extracted from @gitlawb's playbook: QT-hijacks, stats brags, milestones, release notes, dogfooding, polls, shoutouts, threaded theses, journal CTAs, single-word rallies, founder reposts, UGC reposts. Translation table to @1clawai equivalents.
 - `products.md` -- Product context: 1claw-mcp repo, killer claims, deployment modes, tool inventory.
-- `campaign.md` -- 4-week velocity campaign: Week 1 (reference agent), Week 2 (outreach + ecosystem), Week 3 (distribution + volume), Week 4 (manufactured inflection). Bankr backing confirmed. Token-specific formats. QT-hijack targets.
+- `campaign.md` -- 4-week velocity campaign: **Week 1 "Build the wedge artifact"** (ship the reference agent — 4-layer loop demo, no price talk), Week 2 (outreach + ecosystem), Week 3 (distribution + volume), Week 4 (manufactured inflection). Bankr backing confirmed. Token-specific formats. QT-hijack targets.
 
 **CLI (`cli.ts`):** Commands: `draft`, `post`, `channel`, `x`, `quotes`. All default to dry-run; pass `--send` to fire.
 
@@ -267,6 +308,7 @@ Supports overrides: `--provider`, `--model`, `--hermes-dir`, `--env-path`, `--si
 
 - [[hermes-agent]] — Parent project for secrets integration
 - [[mcp]] — MCP protocol for secrets vault integration
+- [[1claw-hermes.operations]] — Companion: sidecar process management, two-process model, dotenv resolution, scripts/ templates
 
 
 All test files in `test/`:

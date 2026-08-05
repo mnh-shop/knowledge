@@ -20,7 +20,7 @@ Analysis of ACP (Agent Communication Protocol) implementations across repositori
 | [[n8n-acp-implementation|n8n ACP]] | n8n | No ACP found; uses MCP and REST API instead |
 | [[nanobot-acp-implementation|Nanobot ACP]] | nanobot | Worker agents, task decomposition, subagent system |
 | [[oh-my-pi-acp-implementation|oh-my-pi ACP]] | oh-my-pi | No ACP found (coding agent, no agent protocol) |
-| [[openclaw-acp-implementation|OpenClaw ACP]] | openclaw | ACP server with session control plane, approval classifier, event ledger |
+| [[openclaw-acp-implementation|OpenClaw ACP]] | openclaw | ACP bridge architecture (server/translator/client), session control plane, approval classifier, event ledger |
 | [[pi-acp-implementation|Pi ACP]] | pi | No ACP found (CLI tool, no agent protocol) |
 | [[podlet-acp-implementation|Podlet ACP]] | podlet | No ACP found (Rust CLI tool, no agent protocol) |
 | [[podman-acp-implementation|Podman ACP]] | podman | No ACP found (REST API daemon, not agent protocol) |

@@ -24,7 +24,8 @@ source: sources/obsidian-skills/
 - **Wiki says:** Ships 5 skills: obsidian-markdown (Obsidian Flavored Markdown), obsidian-bases (.base database-like views), json-canvas (.canvas files), obsidian-cli (Obsidian CLI/plugin dev), defuddle (web page → clean markdown extraction).
 - **Source evidence:**
   - `README.md` lines 50-56: Table listing all 5 skills with descriptions
-  - `skills/obsidian-markdown/SKILL.md` exists — covers wikilinks, embeds, callouts, properties, tags, comments, math, diagrams
+  - `skills/obsidian-markdown/SKILL.md` exists — covers wikilinks, embeds, callouts, properties, tags, comments, math (LaTeX), diagrams (Mermaid)
+  - `skills/obsidian-markdown/SKILL.md` line 3 (description): mentions tags in the activation triggers; lines 103 (tags syntax), 105 (## Comments), 121 (## Math (LaTeX)), 132 (## Diagrams (Mermaid)) document the additional syntax coverage
   - `skills/obsidian-bases/SKILL.md` exists — covers .base files with views, filters, formulas, summaries
   - `skills/json-canvas/SKILL.md` exists — covers JSON Canvas files with nodes, edges, groups, connections
   - `skills/obsidian-cli/SKILL.md` exists — covers Obsidian CLI for plugin/theme development
@@ -46,10 +47,11 @@ source: sources/obsidian-skills/
 ## Claim 4: Skills include detailed reference documentation
 - **Wiki says:** Skills include reference files for callouts, properties, embeds, and functions that provide complete syntax coverage beyond the SKILL.md itself.
 - **Source evidence:**
-  - `skills/obsidian-markdown/skills/obsidian-markdown/references/CALLOUTS.md` exists
-  - `skills/obsidian-markdown/skills/obsidian-markdown/references/PROPERTIES.md` exists
-  - `skills/obsidian-markdown/skills/obsidian-markdown/references/EMBEDS.md` exists
-  - `skills/obsidian-bases/skills/obsidian-bases/references/FUNCTIONS_REFERENCE.md` exists
+  - `skills/obsidian-markdown/references/CALLOUTS.md` exists
+  - `skills/obsidian-markdown/references/PROPERTIES.md` exists
+  - `skills/obsidian-markdown/references/EMBEDS.md` exists
+  - `skills/obsidian-bases/references/FUNCTIONS_REFERENCE.md` exists
+  - `skills/json-canvas/references/EXAMPLES.md` exists
   - `skills/obsidian-bases/SKILL.md` references external documentation: `README.md` lines 493-498: "References" section links to official Obsidian help for Bases Syntax, Functions, Views, Formulas
   - `skills/obsidian-markdown/SKILL.md` lines 192-196: References section links to official Obsidian docs for flavored markdown, links, embeds, callouts, properties
 - **Verdict:** ✅ CORRECT

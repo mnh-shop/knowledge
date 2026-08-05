@@ -102,13 +102,13 @@ Also supports user-created systems (`user:` prefix) stored under a separate dire
 
 ## Skills
 
-100+ design skills in `skills/`. Each is a folder with a `SKILL.md` extended with Open Design frontmatter (`od:` namespace). Modes include: `prototype`, `deck`, `image`, `video`, `audio`, `template`, `design-system`, and `utility`. Scenario groups target roles: design, marketing, operation, engineering, product, finance, HR, sale, personal.
+100+ design skills (164 skill dirs) in `skills/`. Each is a folder with a `SKILL.md` extended with Open Design frontmatter (`od:` namespace). Modes include: `prototype`, `deck`, `image`, `video`, `audio`, `template`, `design-system`, and `utility`. Scenario groups target roles: design, marketing, operation, engineering, product, finance, HR, sale, personal.
 
 ---
 
 ## Plugins
 
-261 official plugins in `plugins/_official/` organized by category: scenarios (11), image templates (45), video templates (50), design systems (142), atoms (13), examples (140). Community plugins live in `plugins/community/`. Each plugin has a `SKILL.md` and an optional `open-design.json` manifest with marketplace metadata.
+461 official plugins in `plugins/_official/` organized by category: scenarios (13), image-templates (45), video-templates (64), design-systems (143), atoms (13), examples (183). (The README changelog figure of "261 official plugins" refers to the historical 0.8.0 marketplace milestone.) Community plugins live in `plugins/community/`. Each plugin has a `SKILL.md` and an optional `open-design.json` manifest with marketplace metadata.
 
 ---
 
@@ -139,13 +139,19 @@ Also supports user-created systems (`user:` prefix) stored under a separate dire
 
 ## Supporting Content
 
-- `skills/` -- agent skill definitions (100+)
+- `skills/` -- agent skill definitions (164 dirs)
 - `design-systems/` -- brand DESIGN.md files (150)
 - `design-templates/` -- render templates (web-prototype, html-ppt, hyperframes, etc.)
-- `plugins/` -- plugin marketplace (261 official, plus community)
+- `plugins/` -- plugin marketplace (461 official, plus community)
+- `prompt-templates/` -- image and video prompts (`image/` 49, `video/` 58)
+- `figma-plugin/` -- Figma plugin (manifest + UI + code.js) for importing/exporting designs
+- `clipper/` -- browser extension for capturing brand assets into Open Design
+- `charts/` -- chart rendering assets
+- `nix/` -- Nix packaging (NixOS + home-manager modules, daemon/web packages)
+- `deploy/` -- Dockerfiles, docker-compose, AWS/Azure deployment assets
+- `data/` -- dataset assets (cards, contributors, events, plugin previews)
 - `mocks/` -- replay-based mock CLIs for testing
 - `craft/` -- universal brand-agnostic craft rules
-- `prompt-templates/` -- image and video prompts (93 image, 39 Seedance, 11 HyperFrames)
 - `docs/` -- architecture, spec, protocols, i18n translations
 - `e2e/` -- end-to-end tests (Playwright + Vitest harness)
 - `scripts/` -- CI scripts, migration tools, validation guards

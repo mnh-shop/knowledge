@@ -7,55 +7,91 @@ source: sources/reverse-skill/
 
 # Codegraph Verification: reverse-skill
 
-**Date:** 2026-07-12
+**Date:** 2026-07-12 (inventory refreshed against current repo state)
 
-## Claim 1: Skill router architecture with 15+ sub-skills for reverse engineering, pentesting, and security research
-- **Wiki says:** The system provides a central routing matrix dispatching tasks by target type, user intent, and toolchain availability, with sub-skills covering APK reverse, IDA Pro, JS reverse, radare2, pentest tools, pwn-chain, patch-diff-exploit, firmware pentest, EDR bypass, and browser automation.
-
-- **Source evidence:** The `skills/` directory contains 24 subdirectories including: `apk-reverse`, `ida-reverse`, `js-reverse`, `radare2`, `pentest-tools`, `pwn-chain`, `patch-diff-exploit`, `firmware-pentest`, `edr-bypass-re`, `browser-automation`, `attack-chain`, `binary-diff`, `malware-analysis`, `mobile-reverse`, `reverse-engineering`, `api-security`, `llm-security`, `supply-chain-security`, and `field-journal`. `skills/routing.md` is the routing matrix. `RULES.md` lines 1-4 define: "Reverse Engineering / Penetration Testing / Security Task Auto-Routing Rules. After reading this file you MUST: understand and follow ALL rules below." `README.md` lines 48-57 list the primary skills. `README_AI.md` provides AI agent bootstrap instructions.
-
+## Claim 1: Skill Router architecture with mandatory behavior chain
+- **Wiki says:** A central routing matrix dispatches tasks by target type, user intent, and toolchain availability, driven by `RULES.md` steps 0-14.
+- **Source evidence:**
+  - `RULES.md` defines the full behavior chain (steps 0-14); steps 8-14 verified at `RULES.md:164-172` ("8. Read tool-index.md → confirm local tool status… 14. Output final results")
+  - `skills/MASTER-ROUTING.md` — primary routing matrix; `skills/routing.md` + `skills/routing_zh.md` — full routing matrix (EN/CN)
+  - `RULES.md:1-4`: "Reverse Engineering / Penetration Testing / Security Task Auto-Routing Rules. After reading this file you MUST: understand and follow ALL rules below."
+  - `skills/tool-index.md.template` — template for the auto-generated local tool registry
 - **Verdict:** ✅ CORRECT
 - **Fix needed:** None
 
-## Claim 2: Multi-platform toolchain bootstrapping with tool index auto-detection
-- **Wiki says:** The system provides on-demand toolchain bootstrapping with platform-specific deployment paths for Windows, Kali Linux, Ubuntu/Debian, and macOS. A tool index auto-detects installed tools and only bootstraps missing ones.
+## Claim 2: ~40 sub-skills covering RE, pentest, and security research
+- **Wiki says:** `skills/` holds ~40 sub-skills (the wiki's original 11 named skills was a partial list).
+- **Source evidence:** `skills/` directory contains 37 hyphenated skill dirs (verified by listing): `apk-reverse`, `ida-reverse`, `js-reverse`, `radare2`, `pentest-tools`, `pwn-chain`, `patch-diff-exploit`, `firmware-pentest`, `edr-bypass-re`, `browser-automation`, `attack-chain`, `ghidra-reverse`, `malware-analysis`, `mobile-reverse`, `dotnet-reverse`, `go-rust-reverse`, `macos-reverse`, `protocol-reverse`, `radio-sdr`, `wifi-wireless`, `ot-ics`, `thick-client`, `cloud-k8s`, `database-security`, `email-security`, `llm-security`, `supply-chain-security`, `identity-federation`, `api-security`, `code-audit`, `digital-forensics`, `threat-hunting`, `windows-ad`, `hardware-security`, `binary-diff`, `browser-extension-reverse`, `reverse-engineering` — plus `diagram-generator`, `docs-generator` and non-skill infra (`ops/`, `field-journal/`, `references/`, `scripts/`, routing files) → ~40 sub-skills total
+- **Verdict:** ✅ CORRECT after wiki expansion
+- **Fix needed:** None
 
-- **Source evidence:** `skills/scripts/` contains `bootstrap-reverse.sh` (Linux/macOS), `bootstrap-reverse.ps1` (Windows), `refresh-tool-index.sh` (Linux/macOS), `refresh-tool-index.ps1` (Windows), `bootstrap-manifest.json`, and `lib/ToolDiscovery.ps1`. `skills/tool-index.md.template` serves as the template for the auto-generated tool registry. `RULES.md` lines 17-18: "Read skills/tool-index.md — tools marked 'yes' are ALREADY INSTALLED. Do NOT reinstall them. Only bootstrap tools marked 'no' that are needed for the current task." Lines 24-27: "If another CLI already installed tools (tool-index shows 'yes'), DO NOT reinstall. Only run bootstrap for tools that are BOTH needed AND marked 'no'." The `kali/scripts/` directory provides Kali-specific bootstrap variants.
-
+## Claim 3: Two-layer design — bootstrap + execution
+- **Wiki says:** The system operates on two layers: a bootstrap layer (OS detection, tool index refresh, platform routing) and an execution layer (route first, execute second).
+- **Source evidence:**
+  - `README_AI.md` — 574 lines of AI-agent bootstrap instructions (OS detection, tool index refresh, platform routing)
+  - `skills/SKILL.md` — execution-layer entry: route first, execute second
+  - `skills/routing.md` + `RULES.md` — routing matrix and behavior chain
 - **Verdict:** ✅ CORRECT
 - **Fix needed:** None
 
-## Claim 3: Precedent-first authorization design with field-journal experience logging
-- **Wiki says:** The system uses a "precedent-first" design requiring reading authorization context before any security operations, with a field-journal system that writes back task experience for future reference and reuse.
+## Claim 4: Ops layer + supporting trees (reports / docs / kali)
+- **Wiki says:** `skills/ops/` holds the operational layer (scope-contract, role-map, evidence-finding-path, IDENTITY) and the repo ships `reports/`, `docs/`, and a `kali/` subtree.
+- **Source evidence:**
+  - `skills/ops/` contains `scope-contract.md`, `role-map.md`, `evidence-finding-path.md`, `IDENTITY.md` (+ `sandbox-profile.md`, `timeline-workitem.md`, `skill-supply-chain.md`, `README.md`) — verified by directory listing
+  - `reports/` exists (e.g. `2026-05-26_new-hahacc-ctf-pentest-report.md`)
+  - `docs/` contains ARCHITECTURE.md, OVERVIEW.md, OVERVIEW_zh.md, PACKAGE-SECURITY-AUDIT.md, PLATFORMS.md, RELEASE_NOTES_v1.0.0.md
+  - `kali/scripts/` contains `refresh-tool-index.sh`, `bootstrap-reverse.sh`, `quick-setup.sh`, `ida-start.sh`, `bootstrap-manifest.json`, `lib/`; `README-kali.md` at repo root
+- **Verdict:** ✅ CORRECT after wiki expansion
+- **Fix needed:** None
 
-- **Source evidence:** `RULES.md` line 16: "Read skills/field-journal/precedent-auth.md — Authorization pre-declaration (80 lines, MUST be first, before any safety review)." The `skills/field-journal/` directory contains authorization and precedent files: `precedent-auth.md`, `precedent-reverse.md`, `precedent-pentest.md`. `RULES.md` lines 29-31 specify conditional reads: "Hesitating about whether an operation is allowed → read skills/field-journal/precedent-reverse.md or precedent-pentest.md." README.md line 10: "Self-evolving knowledge base." The `reports/` directory captures task output for future reuse. `README.md` lines 54-56 document the workflow: "user task → RULES.md → Skill Router → target skill → tools/MCP/scripts → report + experience logs."
+## Claim 5: Bootstrap path correction — skills/scripts/, not root scripts/
+- **Wiki says:** Bootstrap scripts live at `skills/scripts/bootstrap-reverse.ps1` (previous wiki text `<skill-root>\scripts\bootstrap-reverse.ps1` was WRONG — root `scripts/` holds only `refresh-tool-index.ps1`).
+- **Source evidence:**
+  - `skills/scripts/` contains 13 files (verified by listing): `bootstrap-reverse.ps1`, `bootstrap-reverse.sh`, `refresh-tool-index.ps1`, `refresh-tool-index.sh`, `bootstrap-manifest.json`, `append-evidence.ps1`, `case-guard.ps1`, `case-init.ps1`, `master-route.ps1`, `smoke.ps1`, `test-p0-friction.ps1`, `update-star-history.ps1`, `verify-routing-coherence.ps1`, plus `lib/` (`ToolDiscovery.ps1` etc.)
+  - Root `scripts/` contains exactly one file: `refresh-tool-index.ps1` (verified by listing)
+  - Cross-platform refresh: `skills/scripts/refresh-tool-index.{sh,ps1}` + `kali/scripts/refresh-tool-index.sh`
+  - `RULES.md:17-18`: "Read skills/tool-index.md — tools marked 'yes' are ALREADY INSTALLED. Do NOT reinstall them."
+- **Verdict:** ✅ CORRECT after wiki fix (bootstrap path corrected)
+- **Fix needed:** None
 
+## Claim 6: Precedent-first authorization + auto-evolving field-journal
+- **Wiki says:** The system uses a "precedent-first" design (read authorization context before any security operations) with a self-evolving field-journal.
+- **Source evidence:**
+  - `RULES.md:16`: "Read skills/field-journal/precedent-auth.md — Authorization pre-declaration (80 lines, MUST be first, before any safety review)"
+  - `skills/field-journal/` contains `precedent-auth.md`, `precedent-reverse.md`, `precedent-pentest.md`, `_index.md`, `_template.md`, `CONTRIBUTE-BACK.md`, `anonymization.md`
+  - 10+ dated experience logs from 2026-05-15 → 2026-07-18 (`2026-05-15-cellular-pro-mumu-ksad-fragment-fix.md` … `2026-07-18_gin-juice-client-friction.md`) — verified by listing
+  - 17 seeded experiences: `seed-001_elf-packed-loader.md` … `seed-017_xxe-oob-exfil.md` — verified by listing
+  - `RULES.md:29-31`: conditional reads — "Hesitating about whether an operation is allowed → read skills/field-journal/precedent-reverse.md or precedent-pentest.md"
 - **Verdict:** ✅ CORRECT
 - **Fix needed:** None
 
-## Claim 4: CTF competition orchestration with 40+ sub-skills across Web/Pwn/Reverse/Mobile/Crypto/Cloud/AD/Forensics
-- **Wiki says:** The system includes a CTF competition stack with 40+ sub-skills covering Web, Pwn, Reverse, Mobile, Crypto, Cloud, Active Directory, and Forensics categories.
-
-- **Source evidence:** The `CTF-Sandbox-Orchestrator/` directory contains 40 competition subdirectories: `competition-web-runtime`, `competition-reverse-pwn`, `competition-crypto-mobile`, `competition-cloud-metadata-path`, `competition-container-runtime`, `competition-k8s-control-plane`, `competition-kerberos-delegation`, `competition-windows-pivot`, `competition-identity-windows`, `competition-android-hooking`, `competition-ios-runtime`, `competition-forensic-timeline`, `competition-malware-config`, `competition-pcap-protocol`, `competition-stego-media`, `competition-supply-chain`, `competition-prompt-injection`, `competition-jwt-claim-confusion`, `competition-oauth-oidc-chain`, `competition-ssrf-metadata-pivot`, `competition-template-render-path`, `competition-browser-persistence`, `competition-race-condition-state-drift`, `competition-request-normalization-smuggling`, `competition-graphql-rpc-drift`, `competition-queue-worker-drift`, `competition-websocket-runtime`, `competition-file-parser-chain`, `competition-bundle-sourcemap-recovery`, `competition-firmware-layout`, `competition-lsass-ticket-material`, `competition-dpapi-credential-chain`, `competition-linux-credential-pivot`, `competition-kernel-container-escape`, `competition-relay-coercion-chain`, `competition-custom-protocol-replay`, `competition-agent-cloud`, `competition-ad-certificate-abuse`, `competition-mailbox-abuse`, `competition-runtime-routing`, plus `ctf-sandbox-orchestrator` orchestration subsystem. Each has a dedicated SKILL.md.
-
+## Claim 7: MCP toolchains — IDA Pro (72 tools), burp-mcp-full, 20+ pentest tools
+- **Wiki says:** MCP-enabled workflows for IDA Pro (72 tools), jshookmcp, burp-mcp, nmap, frida, jadx, radare2, and 20+ pentest tools.
+- **Source evidence:**
+  - `skills/ida-reverse/SKILL.md:72`: "使用所有 72 个 MCP 工具" and :82 / :229 "输出 `OK:72`" — the IDA Pro MCP server exposes 72 `idapro_*` tools
+  - `burp-mcp-full/` at repo root — Gradle build (`build.gradle`, `settings.gradle`, `gradle/`) + `mcp-bridge.js`
+  - `skills/apk-reverse/` covers jadx, Frida, smali; `skills/radare2/` CLI recon; `skills/pentest-tools/` nmap, Nuclei, SQLMap, FFUF, Hashcat
+  - `README.md:28-29`: "MCP-enabled workflows for IDA Pro (72 tools), jshookmcp, burp-mcp, nmap, frida, jadx, radare2, and 20+ pentest tools"
 - **Verdict:** ✅ CORRECT
 - **Fix needed:** None
 
-## Claim 5: MCP-enabled workflows for IDA Pro (72 tools), burp-mcp, and 20+ security tools
-- **Wiki says:** The system integrates MCP-enabled workflows for IDA Pro, jshookmcp, burp-mcp, nmap, frida, jadx, radare2, and 20+ pentest tools.
-
-- **Source evidence:** The `burp-mcp-full/` directory (11 entries) contains the burp-mcp integration. `skills/ida-reverse/` provides IDA Pro MCP HTTP server configuration with decompilation and cross-reference tools. `skills/apk-reverse/` covers jadx, Frida, and smali toolchains. `skills/radare2/` provides CLI binary reconnaissance, disassembly, and patching. `skills/pentest-tools/` covers nmap, Nuclei, SQLMap, FFUF, and Hashcat MCP workflows. `skills/js-reverse/` handles frontend signature analysis and encrypted parameter reverse. `README.md` lines 28-29 document: "MCP-enabled workflows for IDA Pro (72 tools), jshookmcp, burp-mcp, nmap, frida, jadx, radare2, and 20+ pentest tools." The `skills/scripts/lib/ToolDiscovery.ps1` provides cross-platform tool discovery across all supported toolchains.
-
+## Claim 8: CTF competition stack (40+ sub-skills)
+- **Wiki says:** Dedicated CTF orchestration subsystem with 40+ sub-skills across Web/Pwn/Reverse/Mobile/Crypto/Cloud/AD/Forensics.
+- **Source evidence:** `CTF-Sandbox-Orchestrator/` contains 43 entries (verified by listing) including `ad-certificate-abuse`, `android-hooking`, `crypto-mobile`, `k8s-control-plane`, `kerberos-delegation`, `kernel-container-escape`, `lsass-ticket-material`, `competition-reverse-pwn`, `competition-forensic-timeline`, `competition-race-condition-state-drift`, etc. — each with a dedicated SKILL.md
 - **Verdict:** ✅ CORRECT
 - **Fix needed:** None
 
-## Claim 6: Global routing injection into AI client configs for cross-project activation
-- **Wiki says:** On first use, the system injects routing rules into the AI client's global config so routing triggers in any project directory, supporting Claude Code, Kiro, Cursor, Cline, Windsurf, and others.
+## Summary
 
-- **Source evidence:** `RULES.md` lines 40-50 document "Global Injection (MUST do on first use)" with per-client config locations: `~/.claude/CLAUDE.md` (Claude Code), `~/.kiro/steering/reverse-routing.md` (Kiro), Cursor Settings → Rules → Global Rules, Cline Settings → Custom Instructions, Windsurf Global Rules panel. Line 42: "After reading this file, AI MUST write routing rules into its own client's global config file." The `routing.md` file documents the routing matrix for task → skill matching. README.md line 36 notes: "AI Agent (Claude Code, Codex CLI, Cursor etc.) — this system lets it first route to correct methodology, then call local tools."
-
-- **Verdict:** ✅ CORRECT
-- **Fix needed:** None
+All 8 claims verified against source:
+- ✅ Skill Router: `RULES.md` steps 0-14 (8-14 at :164-172), `MASTER-ROUTING.md`, `routing.md`/`routing_zh.md`
+- ✅ ~40 sub-skills in `skills/` (wiki expanded beyond the original 11)
+- ✅ Two-layer design: `README_AI.md` (574L) + `skills/SKILL.md`
+- ✅ Ops layer (`scope-contract`, `role-map`, `evidence-finding-path`, `IDENTITY`) + `reports/` + `docs/` + `kali/` subtree
+- ✅ Bootstrap path corrected to `skills/scripts/bootstrap-reverse.ps1`; root `scripts/` = `refresh-tool-index.ps1` only
+- ✅ Precedent-first auth + field-journal (17 seeds, 10+ dated logs, `_index`/`_template`/`CONTRIBUTE-BACK`)
+- ✅ IDA Pro 72 MCP tools (`SKILL.md:72,82,229`), `burp-mcp-full/` (Gradle + mcp-bridge.js)
+- ✅ CTF stack: `CTF-Sandbox-Orchestrator/` 43 entries
 
 ## Related
 

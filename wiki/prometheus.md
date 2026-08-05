@@ -13,7 +13,7 @@ verified_by: codegraph-verify
 |---|---|
 | **Origin** | [prometheus/prometheus](https://github.com/prometheus/prometheus) |
 | **License** | Apache-2.0 |
-| **Stack** | Go (core), TypeScript/React (UI), Go (exporters ecosystem) |
+| **Stack** | Go (core), TypeScript/React (UI: `react-app` + `mantine-ui` v3), Go (exporters ecosystem) |
 | **Source** | `sources/prometheus/` |
 | **Repomix** | `raw/prometheus/prometheus.xml` |
 | **Codegraph** | `graphs/prometheus/` |
@@ -36,6 +36,8 @@ The project is a [Cloud Native Computing Foundation](https://cncf.io/) graduated
 - **Local Storage** — Efficient on-disk time-series storage with configurable retention and compaction. Custom storage format optimized for fast label-based querying.
 - **Federation** — Hierarchical federation allows one Prometheus server to scrape selected time series from another Prometheus server, enabling multi-level aggregation and global views.
 - **Graphing & Dashboarding** — Built-in expression browser and multiple dashboarding options through integration with [[grafana]] and other visualization tools.
+- **CLI Tooling (`promtool`)** — `cmd/promtool/` ships a CLI for checking configuration files, validating/unit-testing rules, querying servers, and debugging TSDB data on disk.
+- **Remote Read/Write** — `storage/remote/` implements the remote read/write protocol for long-term storage backends (Thanos, Cortex, Mimir) and agent-mode forwarding.
 - **Push Gateway** — Standalone intermediary service that accepts pushed metrics from batch jobs and short-lived processes, making them available for Prometheus scraping.
 
 ## Architecture
@@ -54,6 +56,8 @@ Prometheus Server ──scrape──> Targets (exporters, applications)
 Alerting rules evaluated on scraped data trigger Alertmanager for notification routing through email, Slack, PagerDuty, OpsGenie, webhook, and custom receivers. Long-term storage or horizontal scaling can be achieved via Thanos or Cortex, which extend Prometheus with global query views, durable object storage, and cross-cluster aggregation.
 
 The server binary includes an optional agent mode that reduces the footprint by omitting querying, alerting, and local storage — forwarding scraped data via remote write instead. Service discovery plugins are modular and controllable via Go build tags (`remove_all_sd`, `enable_kubernetes_sd`, etc.).
+
+The web UI is built as a pnpm workspace under `web/ui/` with two frontends: the established `react-app` (TypeScript/React) and `mantine-ui`, a v3 UI rewrite using Mantine, which ships alongside it. 29 service discovery providers are bundled under `discovery/` (aws, azure, consul, digitalocean, dns, eureka, file, gce, hetzner, http, ionos, kubernetes, linode, marathon, moby, nomad, oci, openstack, outscale, ovhcloud, puppetdb, scaleway, stackit, triton, uyuni, vultr, xds, zookeeper), each optionally compiled out via build tags in `plugins/` (27 plugin files).
 
 ## PromQL Query Language
 

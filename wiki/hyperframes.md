@@ -25,15 +25,15 @@ HyperFrames is an open-source framework for turning HTML, CSS, media, and seekab
 
 The core workflow is simple: **write HTML, render video**. Compositions use `data-*` attributes for timing, tracks, and composition metadata. Animation runtimes (GSAP, Lottie, Three.js, CSS, WAAPI, Anime.js, and others) plug in via the seek-by-frame adapter pattern. The rendering pipeline captures frames headlessly via Puppeteer (Chrome's BeginFrame API) and encodes them with FFmpeg.
 
-The framework ships 20 AI agent skills (via `vercel-labs/skills`) that guide agents through the production loop: plan → design → layout → animate → validate → render.
+The framework ships 19 AI agent skills (via `vercel-labs/skills`) that guide agents through the production loop: plan → design → layout → animate → validate → render.
 
 ## Key Features
 
 - **Write HTML, Render Video** — Compositions are authored as HTML with `data-*` timing attributes. No proprietary tooling required
 - **Deterministic Rendering** — Frame-accurate output via Chrome's BeginFrame API. No `Date.now()`, no unseeded `Math.random()`, no render-time network fetches in the animation pipeline
 - **Seekable Animations** — GSAP is the primary animation runtime with a dedicated `createGSAPFrameAdapter()`. Lottie, Three.js, CSS animations, Anime.js, WAAPI, and TypeGPU also supported via the frame adapter pattern
-- **20 AI Agent Skills** — Router skill (`/hyperframes`) dispatches to creation workflows: product-launch-video, website-to-video, faceless-explainer, pr-to-video, motion-graphics, music-to-video, slideshow, embedded-captions, talking-head-recut, general-video, plus remotion-to-hyperframes for porting
-- **Registry** — 109 installable blocks (sub-composition scenes), 25 components (effects and snippets), 13 example projects
+- **19 AI Agent Skills** — Router skill (`/hyperframes`) dispatches to creation workflows: product-launch-video, faceless-explainer, pr-to-video, motion-graphics, music-to-video, slideshow, embedded-captions, talking-head-recut, general-video, plus remotion-to-hyperframes for porting
+- **Registry** — 113 installable blocks (sub-composition scenes), 25 components (effects and snippets), 13 example projects
 - **Player Web Component** — `<hyperframes-player>` custom element for embedding and playback
 - **Studio** — Browser-based composition editor with live preview
 - **Parallel Rendering** — Distributed frame capture with smart worker distribution across CPU cores
@@ -76,12 +76,12 @@ The framework ships 20 AI agent skills (via `vercel-labs/skills`) that guide age
 │                                                                  │
 │  ┌─────────────────────────────────────────────────────────┐   │
 │  │            Registry (registry/)                           │   │
-│  │  109 Blocks · 25 Components · 13 Examples                │   │
+│  │  113 Blocks · 25 Components · 13 Examples                │   │
 │  └─────────────────────────────────────────────────────────┘   │
 │                                                                  │
 │  ┌─────────────────────────────────────────────────────────┐   │
 │  │            Skills (skills/)                               │   │
-│  │  20 AI Agent Skills · Skills Manifest                    │   │
+│  │  19 AI Agent Skills · Skills Manifest                    │   │
 │  └─────────────────────────────────────────────────────────┘   │
 │                                                                  │
 │  Additional packages:                                    │
@@ -119,7 +119,7 @@ The monorepo (bun workspaces) is organized into 14 packages under `packages/`:
 
 ## AI Agent Skills
 
-HyperFrames ships **20 AI agent skills** via [vercel-labs/skills](https://github.com/vercel-labs/skills). Skills are installable via `npx skills add heygen-com/hyperframes`.
+HyperFrames ships **19 AI agent skills** via [vercel-labs/skills](https://github.com/vercel-labs/skills). Skills are installable via `npx skills add heygen-com/hyperframes`.
 
 ### Router
 
@@ -132,7 +132,6 @@ HyperFrames ships **20 AI agent skills** via [vercel-labs/skills](https://github
 | Skill | Input → Output |
 |---|---|
 | `/product-launch-video` | Product URL / brief → product launch promo video (~30-90s) |
-| `/website-to-video` | General website URL → site tour / showcase video |
 | `/faceless-explainer` | Arbitrary text → faceless explainer video (~30-90s), LLM-invented visuals |
 | `/pr-to-video` | GitHub PR URL → code-change explainer video |
 | `/embedded-captions` | Talking-head MP4 → same footage with styled captions |
@@ -188,7 +187,7 @@ HyperFrames guarantees frame-accurate, reproducible video output:
 
 Located at `registry/`, the registry contains reusable composition assets:
 
-- **109 blocks** (`registry/blocks/`) — installable sub-composition scenes including data-chart, code-snippet themes, transitions (3D, blur, cover, destruction, dissolve, distortion, grid, light, mechanical, push, radial, scale), visual effects (liquid-glass, magnetic, portal, shatter), map visualizations (world-map, us-map, spain-map), UI elements (macos-notification, spotify-card, reddit-post), and more
+- **113 blocks** (`registry/blocks/`) — installable sub-composition scenes including data-chart, code-snippet themes, transitions (3D, blur, cover, destruction, dissolve, distortion, grid, light, mechanical, push, radial, scale), visual effects (liquid-glass, magnetic, portal, shatter), map visualizations (world-map, us-map, spain-map), UI elements (macos-notification, spotify-card, reddit-post), and more
 - **25 components** (`registry/components/`) — reusable effects including caption animations (blend-difference, clip-wipe, emoji-pop, glitch-rgb, gradient-fill, kinetic-slam, matrix-decode, neon-accent, parallax-layers, particle-burst, etc.), grain-overlay, morph-text, motion-blur, vignette, and more
 - **13 examples** (`registry/examples/`) — starter projects: warm-grain, play-mode, swiss-grid, vignelli, decision-tree, kinetic-type, product-promo, nyt-graph, airbnb-deck, motion-blur, startup-pitch, slideshow-demo, vscode-theme-visualizer
 
@@ -211,15 +210,26 @@ The `hyperframes` CLI (`packages/cli/src/cli.ts`) exposes commands for the full 
 |---|---|
 | `init` | Scaffold a new composition project |
 | `preview` | Launch browser preview with live reload |
+| `play` | Interactive composition playback |
+| `present` | Presentation/deck mode for slide compositions |
 | `lint` | Static HTML structure check |
 | `check` | Browser gate — headless Chrome runtime errors, layout, motion, WCAG contrast |
+| `validate` | Validate composition structure |
 | `render` | Full render to MP4 |
+| `batchRender` | Batch-render multiple compositions |
 | `snapshot` | Capture a single frame screenshot |
 | `doctor` | System diagnostics (Chrome, FFmpeg, GPU) |
 | `publish` | Publish composition to registry |
 | `catalog` | Browse registry catalog |
 | `add` | Install registry blocks/components |
+| `auth` | Registry/API authentication — login, logout, refresh, status |
 | `capture` | Frame capture utilities |
+| `remove-background` | Background removal from media assets |
+| `claude-design` | Claude Code design workflow support |
+| `beats` | Beat detection for music-synced videos |
+| `benchmark` | Rendering performance benchmarks |
+| `skills` | Agent skill management (list, add) |
+| `cloud` | Cloud render management (list, get, delete, render) |
 | `lambda` / `cloudrun` | Cloud rendering deploy/render/progress |
 | `figma` | Figma import workflows |
 | `compositions` | Composition management |
@@ -254,7 +264,7 @@ bun run format        # Format with oxfmt
 - [DESIGN.md](https://github.com/heygen-com/hyperframes/DESIGN.md) — Design system and style guide
 - [CLAUDE.md](https://github.com/heygen-com/hyperframes/CLAUDE.md) — Agent configuration
 - [packages/](https://github.com/heygen-com/hyperframes/packages) — Monorepo packages
-- [skills/](https://github.com/heygen-com/hyperframes/skills) — 20 AI agent skills
+- [skills/](https://github.com/heygen-com/hyperframes/skills) — 19 AI agent skills
 - [registry/](https://github.com/heygen-com/hyperframes/registry) — Blocks, components, examples
 - [registry/registry.json](https://github.com/heygen-com/hyperframes/registry/registry.json) — Registry manifest
 - [skills-manifest.json](https://github.com/heygen-com/hyperframes/skills-manifest.json) — Skills manifest with file counts and hashes

@@ -15,7 +15,8 @@ source: sources/awesome-openclaw-usecases/
   - `README.md` badge: `![Use Cases](https://img.shields.io/badge/usecases-42-blue?style=flat-square)` — 42 use cases at time of badge
   - `README.md` line 24: "This is a community collection of real-life use cases for [OpenClaw](https://github.com/openclaw/openclaw)"
   - `/usecases/` directory contains 42 markdown files: `ai-video-editing.md` through `youtube-content-pipeline.md`
-  - README organizes them into 6 categories: Social Media (5), Creative & Building (6), Infrastructure & DevOps (2), Productivity (20), Research & Learning (8), Finance & Trading (1)
+  - README organizes them into 6 categories: Social Media (5), Creative & Building (6), Infrastructure & DevOps (2), Productivity (21), Research & Learning (8), Finance & Trading (1)
+  - Note: the six README tables sum to 43 rows because `usecases/phone-based-personal-assistant.md` is double-listed (README lines 62 and 70); 42 unique files is correct.
   - `CONTRIBUTING.md` specifies guidelines for adding new use cases and the requirement that they be tested and verified in practice
 - **Verdict:** ✅ CORRECT
 - **Fix needed:** None

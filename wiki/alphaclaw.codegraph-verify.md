@@ -7,145 +7,100 @@ source: sources/alphaclaw/
 
 # Codegraph Verification: alphaclaw
 
-**Date:** 2026-07-12
+**Date:** 2026-07-30
 
-## Claim 1: OpenClaw gateway manager — spawns, monitors, and restarts gateway as a managed child process
-- **Wiki says:** "Gateway Manager — spawns, monitors, restarts, and proxies the OpenClaw gateway as a managed child process on loopback."
+## Claim 1: Node runtime floor — `engines` gate requires 22.22.3+ / 24.15.0+ / 25.9.0
+- **Wiki says:** "Stack — Node.js 22.22.3+ (22.x), 24.15.0+ (24.x), or 25.9.0+ (25.x) per `engines` gate"
 - **Source evidence:**
-  - `lib/server/gateway.js:1-80` — Imports `spawn` from `child_process`, defines `gatewayChild`, `gatewayExitHandler`, `gatewayLaunchHandler` global state; `gatewayEnv()` function constructs OpenClaw env with `OPENCLAW_CONFIG_PATH`, `OPENCLAW_STATE_DIR`, `XDG_CONFIG_HOME`
-  - `lib/server/gateway.js:181-300` — `launchGatewayProcess()` spawns `openclaw gateway` as a child process, manages PID, stderr tail, exit handler
-  - `lib/server/gateway.js:301-500` — Gateway lifecycle: start, stop, restart, health checks via `net.createConnection()` to `GATEWAY_HOST:kDefaultGatewayPort`
-  - `lib/server/gateway.js:501-700` — `ensureGatewayProxyConfig()` manages proxy configuration for gateway; supports remote MCP proxy URLs
-  - `lib/server/gateway.js:701-855` — Gateway cleanup, channel config preparation, `cleanupOpenclawPluginInstallStages()`
-  - `lib/server/constants.js:16` — `kDefaultGatewayPort = 18789`
-  - `lib/server/constants.js:17` — `GATEWAY_HOST = "127.0.0.1"`
-  - `lib/server/init/register-server-routes.js:89,279` — `proxy` object injected for gateway proxy routes
+  - `package.json:53-54` — `"engines": { "node": ">=22.22.3 <23 || >=24.15.0 <25 || >=25.9.0" }`
+  - `README.md:222` — "Requirements: Node.js ≥ 22.22.3 on Node 22, ≥ 24.15.0 on Node 24, or ≥ 25.9.0"
+  - `bin/alphaclaw.js:141-148` — `start` command calls `assertSupportedNodeVersion()` before boot; exits 1 on unsupported runtime
+- **Verdict:** ✅ CORRECT — corrects the previously wrong Node floor claim
+- **Fix needed:** None
+
+## Claim 2: Route surface — 19 route modules, ~154 route handlers, 25 setup API prefixes
+- **Wiki says:** "route modules (19 modules, ~154 handlers)" and "SETUP_API_PREFIXES … enumerates 25 protected prefixes"
+- **Source evidence:**
+  - `lib/server/routes/` contains 18 `.js` modules plus the `browse/` directory (19 modules total)
+  - Handler counts per module (matched `app.<verb>(...)` registrations): `agents.js` 19, `system.js` 18, `watchdog.js` 12, `cron.js` 12, `telegram.js` 11, `nodes.js` 11, `webhooks.js` 10, `models.js` 9, `google.js` 9, `doctor.js` 9, `gmail.js` 7, `pairings.js` 6, `onboarding.js` 6, `codex.js` 5, `usage.js` 4, `pages.js` 3, `auth.js` 3 (login/status/logout; the 3 `app.use` at `auth.js:152-154` are auth middleware), `proxy.js` 0 (middleware only) = **154 handlers**; `browse/index.js` adds 13 more
+  - `lib/server/constants.js:469-490` — `SETUP_API_PREFIXES` array with 25 prefixes (status, pairings, google, codex, models, browse, chat, gateway, restart-status, onboard, env, auth, openclaw, devices, sync-cron, telegram, webhooks, gmail, watchdog, usage, cron, agents, channels, operations, nodes)
+- **Verdict:** ✅ CORRECT — corrects the previously wrong route-count claim
+- **Fix needed:** None
+
+## Claim 3: Gateway Manager — spawns/monitors/restarts the OpenClaw gateway child process
+- **Wiki says:** "Gateway Manager — spawns OpenClaw as a managed child process bound to `127.0.0.1:18789` (`spawn("openclaw", ["gateway", "run"])`)"
+- **Source evidence:**
+  - `lib/server/gateway.js:2` — `const { spawn, execSync } = require("child_process")`
+  - `lib/server/gateway.js:352` — `const child = spawn("openclaw", ["gateway", "run"], ...)`
+  - `lib/server/gateway.js:255,269` — `execSync("openclaw gateway <cmd>")` / `execSync("openclaw gateway restart")` for lifecycle ops
+  - `lib/server/constants.js:16` — `kDefaultGatewayPort = 18789`; `lib/server/constants.js:17` — `GATEWAY_HOST = "127.0.0.1"`
+  - `lib/server/gateway.js:501-700` — `ensureGatewayProxyConfig()` manages proxy config including remote MCP proxy URLs
 - **Verdict:** ✅ CORRECT
 - **Fix needed:** None
 
-## Claim 2: Watchdog system with crash detection, crash-loop recovery, and auto-repair
-- **Wiki says:** "Watchdog — Crash detection, crash-loop recovery, auto-repair (`openclaw doctor --fix`), and Telegram/Discord/Slack notifications."
+## Claim 4: OpenAI-compatible /v1 proxy with gateway-token auth and security boundary
+- **Wiki says:** "Optional `/v1/chat/completions`, `/v1/responses`, `/v1/embeddings`, `/v1/models` endpoints on the same port as the Setup UI (disabled by default)"
 - **Source evidence:**
-  - `lib/server/watchdog.js:1-882` — Full watchdog implementation:
-    - Lines 1-8: Constants from `constants.js`: `kWatchdogCheckIntervalMs` (120s), `kWatchdogDegradedCheckIntervalMs` (5s), `kWatchdogCrashLoopThreshold` (3), `kWatchdogCrashLoopWindowMs` (300s), `kWatchdogMaxRepairAttempts` (2)
-    - Lines 35-45: `createWatchdog()` factory with state: `lifecycle`, `health`, `repairAttempts`, `crashTimestamps`, `autoRepair`, `operationInProgress`
-    - Lines 73-80: `openIncident()` / `closeIncident()` for incident lifecycle
-    - Lines 200-400: Health check polling logic, startup grace period (`kHealthStartupGraceMs` = 30s)
-    - Lines 400-600: Crash loop detection logic — timestamps within window, threshold exceeded triggers repair
-    - Lines 600-800: Auto-repair flow — triggers `openclaw doctor --fix --yes`
-  - `lib/server/watchdog.js:882` — Exports `createWatchdog`
-  - `lib/server/watchdog-notify.js` — Notification dispatcher for Telegram, Discord, Slack
-  - `lib/server/doctor/service.js:1-450` — Doctor service: `analyzeBootstrapContext()`, `buildDoctorPrompt()`, `normalizeDoctorResult()`, `calculateWorkspaceDelta()`
-  - `lib/server/doctor/service.js:450` — Main doctor run orchestration
-  - `lib/server/doctor/constants.js` — `kDoctorEngine`, `kDoctorRunStatus`, `kDoctorRunTimeoutMs`, `kDoctorStaleThresholdMs`
-  - `lib/server/doctor/prompt.js` — Builds LLM-based doctor prompt for gateway diagnosis
-  - `lib/server/db/watchdog/schema.js` — Watchdog event DB schema
-  - `lib/server/db/watchdog/index.js` — `insertWatchdogEvent()`, `getRecentEvents()`
-  - `lib/server/routes/watchdog.js:1-156` — REST routes: `/api/watchdog/status`, `/api/watchdog/events`, `/api/watchdog/logs`, `/api/watchdog/repair`
-  - `lib/server/startup.js:32-34` — `watchdog.start()` called during boot sequence
+  - `lib/server/routes/proxy.js:6` — `kOpenAiCompatProxyPathPattern = /^\/v1\/(?:chat\/completions|responses|embeddings|models(?:\/[^/?#]+)?)$/`
+  - `lib/server/routes/proxy.js:193` — `registerProxyRoutes()` registers the four endpoint groups; `proxy.js:227-228` — when disabled/missing, `/v1` returns 404
+  - `lib/server/alphaclaw-config.js:63` — `isOpenAiCompatApiEnabled()` gates enablement (persisted in `alphaclaw.json`)
+  - `README.md:187-195` — Bearer `<OPENCLAW_GATEWAY_TOKEN>` required, failed attempts rate-limited, setup-UI cookie stripped, hop-by-hop headers dropped, 50 MB body limit; security boundary: a valid token is full operator access
 - **Verdict:** ✅ CORRECT
 - **Fix needed:** None
 
-## Claim 3: Agent orchestration — multi-agent management, channel bindings, and per-agent config
-- **Wiki says:** "Multi-Agent Management — Sidebar-driven agent navigation with create, rename, and delete flows. Per-agent overview cards, channel bindings, and URL-driven agent selection."
+## Claim 5: Codex OAuth — built-in PKCE flow for OpenAI Codex CLI model access
+- **Wiki says:** "Codex OAuth: Built-in PKCE flow for OpenAI Codex CLI model access — `/auth/codex/start` → OpenAI authorize → token exchange → server-side profile, managed via `/api/codex/*` endpoints"
 - **Source evidence:**
-  - `lib/server/agents/` — Agent management sub-modules directory
-  - `lib/server/agents/shared.js` — `normalizeChannelAccountId()`, `readPairedCountsByAccount()` channel accounting logic
-  - `lib/server/routes/agents.js:19` route handlers — Agent CRUD, channel bindings, pairing section management
-  - `lib/public/js/components/agents-tab/index.js` — Agents tab root component
-  - `lib/public/js/components/agents-tab/create-agent-modal.js` — Agent creation modal
-  - `lib/public/js/components/agents-tab/edit-agent-modal.js` — Agent editing
-  - `lib/public/js/components/agents-tab/delete-agent-dialog.js` — Agent deletion
-  - `lib/public/js/components/agents-tab/use-agents.js` — Agent state management hook
-  - `lib/public/js/components/agents-tab/agent-detail-panel.js` — Per-agent detail panel
-  - `lib/public/js/components/agents-tab/agent-identity-section.js` — Agent identity config
-  - `lib/public/js/components/agents-tab/agent-bindings-section/index.js` — Channel binding UI
-  - `lib/public/js/components/agents-tab/agent-bindings-section/use-agent-bindings.js` — Binding state hook
-  - `lib/public/js/components/agents-tab/agent-pairing-section.js` — Agent pairing configuration
-  - `lib/public/js/components/agents-tab/agent-tools/index.js` — Per-agent tool catalog
-  - `lib/public/js/components/agents-tab/agent-tools/tool-catalog.js` — Tool definitions
-  - `lib/public/js/components/agents-tab/agent-overview/index.js` — Agent overview cards
-- **Verdict:** ✅ CORRECT
+  - `README.md:46` — "Codex OAuth: Built-in PKCE flow for OpenAI Codex CLI model access"
+  - `lib/server/constants.js:31-38` — `CODEX_PROFILE_ID = "openai:codex-cli"`, `CODEX_OAUTH_CLIENT_ID = "app_EMoamEEZ73f0CkXaXp7hrann"`, authorize/token URLs at `auth.openai.com`, redirect `http://localhost:1455/auth/callback`, scope `openid profile email offline_access`, `kCodexOauthStateTtlMs = 10 * 60 * 1000`
+  - `lib/server/routes/codex.js:47-72` — `/auth/codex/start` builds the authorize URL with `code_challenge_method=S256` and `codex_cli_simplified_flow=true`
+  - `lib/server/routes/codex.js:74-140` — `/auth/codex/callback` exchanges code+verifier at `CODEX_OAUTH_TOKEN_URL`, upserts profile via `authProfiles.upsertCodexProfile()`
+  - `lib/server/routes/codex.js:36,142,201` — `/api/codex/status`, `/api/codex/exchange`, `/api/codex/disconnect` management endpoints
+- **Verdict:** ✅ CORRECT — new coverage (previously absent from wiki)
 - **Fix needed:** None
 
-## Claim 4: OpenAI-compatible /v1 proxy on the same port as the Setup UI
-- **Wiki says:** "OpenAI-compatible /v1 Proxy — Optional `/v1/chat/completions`, `/v1/responses`, `/v1/embeddings`, `/v1/models` endpoints on the same port as the Setup UI (disabled by default)."
+## Claim 6: Remote MCP injection — managed `mcp.servers.<name>` entry in `openclaw.json`
+- **Wiki says:** "When `REMOTE_MCP_URL` + `REMOTE_MCP_API_TOKEN` are set, AlphaClaw writes a managed `mcp.servers.<REMOTE_MCP_NAME>` entry into `openclaw.json` on every gateway start"
 - **Source evidence:**
-  - `lib/server/routes/proxy.js:6-7` — `kOpenAiCompatProxyPathPattern = /^\/v1\/(?:chat\/completions|responses|embeddings|models(?:\/[^/?#]+)?)$/`
-  - `lib/server/routes/proxy.js:89-190` — `proxyOpenAiCompatRequest()` — full proxy implementation that forwards to OpenClaw gateway with Bearer auth
-  - `lib/server/routes/proxy.js:195-256` — `registerProxyRoutes()` registers routes:
-    - Line 213: `/v1/chat/completions` → proxy.web (non-streaming)
-    - Line 217: `/v1/responses` → proxy.web
-    - Line 220: `/v1/embeddings` → proxy.web
-    - Line 231: `/v1/chat/completions` with `stream: true` → `proxyOpenAiCompatRequest()`
-    - Line 242: `/v1/models` and `/v1/models/:id` → proxy.web
-  - `lib/server/routes/proxy.js:25-28` — `extractBearerToken()` extracts `Authorization: Bearer <OPENCLAW_GATEWAY_TOKEN>`
-  - `lib/server/alphaclaw-config.js:18` — `isOpenAiCompatApiEnabled()` controls enable/disable
-  - `lib/server/constants.js:84-99` — Rate limiting constants: `kOpenAiCompatApiRateWindowMs`, `kOpenAiCompatApiRateMaxAttempts`, etc.
-- **Verdict:** ✅ CORRECT
+  - `README.md:171` — `REMOTE_MCP_URL`: "When set together with `REMOTE_MCP_API_TOKEN`, AlphaClaw writes a managed `mcp.servers.<name>` entry to `openclaw.json` on every gateway start"
+  - `README.md:172` — `REMOTE_MCP_API_TOKEN` persisted as the `${REMOTE_MCP_API_TOKEN}` env reference, never plaintext
+  - `README.md:173` — `REMOTE_MCP_NAME` defaults to `remote`
+  - `README.md:174` — `REMOTE_MCP_PROXY_URL` routes OpenClaw through a same-host scanning proxy (e.g. `pipelock mcp proxy --listen <url> --upstream <url>`)
+  - `lib/server/gateway.js:501-700` — `ensureGatewayProxyConfig()` applies the remote MCP proxy URL during gateway startup
+- **Verdict:** ✅ CORRECT — new coverage (previously absent from wiki)
 - **Fix needed:** None
 
-## Claim 5: Google Workspace integration — Gmail, Calendar, Drive, Docs, Sheets, Tasks, Contacts, Meet
-- **Wiki says:** "Google Workspace — OAuth integration for Gmail, Calendar, Drive, Docs, Sheets, Tasks, Contacts, and Meet. Guided Gmail watch setup with Google Pub/Sub topic, subscription, and push endpoint handling."
+## Claim 7: Git auth shim + askpass — credential-free GitHub pushes for the workspace repo
+- **Wiki says:** "Git Auth Shim: Installs a managed git shim + askpass helper so the workspace repo can push to GitHub using `GITHUB_TOKEN` without storing credentials"
 - **Source evidence:**
-  - `lib/server/routes/google.js:9` routes — OAuth flow, scope management, account listing
-  - `lib/server/google-state.js` — Google OAuth state management
-  - `lib/server/gmail-watch.js` — Gmail Pub/Sub watch setup with renewal (`kGmailWatchRenewalIntervalMs`)
-  - `lib/server/gmail-serve.js` — Gmail push notification serve endpoint
-  - `lib/server/gmail-push.js:96-134` — `proxyPushToServe()` — proxies push notifications to correct serve port
-  - `lib/server/routes/gmail.js:7` routes — Gmail-specific API routes
-  - `lib/server/constants.js:373-393` — `SCOPE_MAP` defines OAuth scopes for: `gmail:read`, `gmail:write`, `calendar:read`, `calendar:write`, `tasks:read`, `tasks:write`, `docs:read`, `docs:write`, `meet:read`, `meet:write`, `drive:read`, `drive:write`, `contacts:read`, `contacts:write`, `sheets:read`, `sheets:write`
-  - `lib/server/constants.js:394-397` — `BASE_SCOPES = ["openid", "https://www.googleapis.com/auth/userinfo.email"]`
-  - `lib/server/constants.js:404-416` — `kGmailServeBasePort = 18801`, `kGmailWatchRenewalIntervalMs = 6h`
-  - `lib/server/constants.js:423-432` — `API_TEST_COMMANDS` for each service: gmail, calendar, tasks, docs, meet, drive, contacts, sheets
-- **Verdict:** ✅ CORRECT
+  - `README.md:168` — `ALPHACLAW_GIT_SHIM_PATH`: install the managed git auth shim at this path and prepend its directory to runtime `PATH` (default `/usr/local/bin/git`)
+  - `README.md:169` — `ALPHACLAW_GIT_ASKPASS_PATH`: install the git askpass helper (default `$TMPDIR/alphaclaw-git-askpass.sh`)
+  - `bin/alphaclaw.js:957-991` — copies `lib/scripts/git-askpass` and `lib/scripts/git`, substitutes `@@REAL_GIT@@` / `@@OPENCLAW_REPO_ROOT@@` / `@@ASKPASS_PATH@@`, prepends shim dir to `PATH`
+  - `bin/alphaclaw.js:325-357` — `git-sync` writes a per-PID askpass script answering `x-access-token` / `${GITHUB_TOKEN:-}` and runs git with `GIT_TERMINAL_PROMPT=0 GIT_ASKPASS=...`
+- **Verdict:** ✅ CORRECT — new coverage (previously absent from wiki)
 - **Fix needed:** None
 
-## Claim 6: Express server on port 3000 with 21+ API route modules, SQLite-backed database layer
-- **Wiki says:** "Express Server — serves the Setup UI frontend (Preact + htm), exposes JSON APIs for all management operations, proxies gateway traffic"
+## Claim 8: Deployment surface — Render/Railway templates, Docker, macOS desktop app
+- **Wiki says:** "Deploy via Render/Railway one-click templates, Docker, or the macOS desktop app"
 - **Source evidence:**
-  - `package.json:34` — Dependency on `express: ^4.21.0`
-  - `lib/server/constants.js:15` — `PORT = parseInt(process.env.PORT || "3000", 10)`
-  - `lib/server/constants.js:451-477` — `SETUP_API_PREFIXES` array with 27 API prefixes
-  - `lib/server/routes/` — 18 route modules with combined ~153 route handlers:
-    - `agents.js`: 19 routes, `auth.js`: 3, `codex.js`: 5, `cron.js`: 12, `doctor.js`: 9,
-    - `gmail.js`: 7, `google.js`: 9, `models.js`: 9, `nodes.js`: 11, `onboarding.js`: 5,
-    - `pages.js`: 3, `pairings.js`: 6, `proxy.js`: (middleware), `system.js`: 18,
-    - `telegram.js`: 11, `usage.js`: 4, `watchdog.js`: 12, `webhooks.js`: 10
-  - `lib/server/db/` — SQLite-backed database layer:
-    - `db/watchdog/schema.js`, `db/watchdog/index.js` — watchdog event log
-    - `db/webhooks/schema.js`, `db/webhooks/index.js` — webhook request log
-    - `db/usage/` — Usage tracking
-    - `db/auth/` — Authentication state
-    - `db/doctor/` — Doctor scan results
-  - `lib/server/init/register-server-routes.js:279` — `proxy` via `http-proxy` for gateway traffic forwarding
-- **Verdict:** ✅ CORRECT
-- **Fix needed:** The wiki mentions "21 routes" but the actual count across all 18 route modules is ~153 route handlers.
-
-## Claim 7: Preact + htm frontend bundled via esbuild
-- **Wiki says:** "The Setup UI frontend is an SPA built with Preact + htm (no JSX compilation needed) and bundled through esbuild."
-- **Source evidence:**
-  - `package.json:46-48` — DevDependencies: `"esbuild": "^0.25.9"`, `"htm": "^3.1.1"`, `"preact": "^10.27.2"`
-  - `package.json:52` — DevDependency: `"tailwindcss": "^3.4.17"`
-  - `package.json:28` — `"build:ui": "node scripts/build-ui.mjs"` script
-  - `scripts/build-ui.mjs` — esbuild bundle configuration
-  - `lib/public/js/app.js` — Main app entry point
-  - `lib/public/js/components/` — 197 + component directories with Preact pattern `const html = htm.bind(h)` used throughout
-  - `lib/public/js/components/` (sample) — `action-button.js`, `add-channel-menu.js`, `badge.js`, `confirm-dialog.js`, `features.js`, `file-tree.js` — 197 total frontend components
-  - Components follow pattern: `const html = htm.bind(h); return html\`<div>...</div>\``
-- **Verdict:** ✅ CORRECT
+  - `README.md:21-22` — Deploy-to-Render and Deploy-on-Railway buttons; `README.md:26` — Render sponsorship with `RENDER-ALPHACLAW` $50 credit code
+  - `README.md:63-65` — official template repo `render-examples/openclaw-render-template`; `README.md:69-73` — Railway `openclaw-fast-start` template with Hobby-plan (8 GB RAM) upgrade guidance
+  - `README.md:23` — macOS desktop app DMG at `https://updates.alphaclaw.md/desktop/prod/alphaclaw-mac-latest.dmg`
+  - `README.md:84-95` — official `node:22-slim` Dockerfile with git/curl/procps/cron/tini and `ALPHACLAW_ROOT_DIR=/data`
+- **Verdict:** ✅ CORRECT — new coverage (previously absent from wiki)
 - **Fix needed:** None
 
 ## Summary
 
-The AlphaClaw wiki is accurate regarding:
-- **Gateway manager:** ✅ Correct (child process spawning, health monitoring, restart logic)
-- **Watchdog system:** ✅ Correct (crash detection, auto-repair, notification)
-- **Agent orchestration:** ✅ Correct (multi-agent CRUD, channel bindings)
-- **OpenAI-compatible proxy:** ✅ Correct (all 4 endpoint types with auth)
-- **Google Workspace:** ✅ Correct (9 services with OAuth, Gmail watch)
-- **Express/API/SQLite:** ✅ Correct (port 3000, 18 route modules, SQLite)
-- **Preact + htm + esbuild:** ✅ Correct (build pipeline confirmed)
+The AlphaClaw wiki was corrected and expanded:
+- **Node floor:** ✅ Fixed — `engines` gate is 22.22.3+ / 24.15.0+ / 25.9.0, not the previously stated older floor
+- **Route count:** ✅ Fixed — 19 route modules / ~154 handlers / 25 setup prefixes, not the previously stated lower count
+- **Gateway manager:** ✅ Correct (spawn/execSync lifecycle, 127.0.0.1:18789)
+- **/v1 proxy:** ✅ Correct (4 endpoint groups, Bearer token, 404 when disabled, security boundary)
+- **Codex OAuth:** ✅ Added (PKCE flow, 5 handlers, constants)
+- **Remote MCP injection:** ✅ Added (4 env vars, managed `mcp.servers` entry)
+- **Git auth shim + askpass:** ✅ Added (managed shim/askpass install, cron git-sync auth)
+- **Deployment surface:** ✅ Added (Render/Railway templates, Docker, macOS desktop app)
 
 ## Related
 

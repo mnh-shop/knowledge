@@ -9,7 +9,7 @@ verified_by: codegraph-verify
 
 # NyxStrike
 
-**NyxStrike** (`github.com/CommonHuman-Lab/nyxstrike`) is an AI-powered offensive security orchestration engine that connects LLM agents to real security tools and executes full attack chains — from reconnaissance to exploitation. Previously known as Hexstrike AI Community Edition, it provides an MCP-compatible interface to 185+ security tools across 12 categories.
+**NyxStrike** (`github.com/CommonHuman-Lab/nyxstrike`) is an AI-powered offensive security orchestration engine that connects LLM agents to real security tools and executes full attack chains — from reconnaissance to exploitation. Previously known as Hexstrike AI Community Edition, it provides an MCP-compatible interface to 183 security tools across 21 categories.
 
 ## Overview
 
@@ -19,7 +19,7 @@ The project is built on Python 3.13+ and uses FastMCP for MCP server integration
 
 ## Key Features
 
-- **185+ Security Tools** — Tools organized across 12 categories including network reconnaissance, web exploitation, wireless security, OSINT, password attacks, and cloud/API security. Each tool is registered in a compact schema with effectiveness scoring (0.0–1.0) for AI decision-making.
+- **183 Security Tools** — Tools organized across 21 categories including network reconnaissance, web reconnaissance/scanning/vulnerability, wireless pentesting, OSINT, password attacks, exploitation, API testing, database, cloud, active directory, binary analysis, forensics, and vulnerability intelligence. Each tool is registered in a compact schema with effectiveness scoring (0.0–1.0) for AI decision-making.
 - **MCP-Compatible Interface** — JSON-RPC tool exposure via FastMCP. Connect any MCP-compatible AI client — OpenCode, Cursor, Claude Desktop, VS Code Copilot, Roo Code — using the universal MCP command.
 - **AI Orchestration Engine** — The intelligent decision engine (`server_core/intelligence/`) uses catalog-driven tool scoring to chain tools automatically. Includes personality profiles (`chat_personalities.py`), CVE intelligence management, and tool scoring algorithms.
 - **Attack Chain Workflows** — Full recon → enumeration → exploitation → reporting workflows. The server core includes workflow definitions, session management, process management, and a failure recovery system.
@@ -46,13 +46,13 @@ AI Client (MCP) ←→ nyxstrike_mcp.py ←→ nyxstrike_server.py (REST API)
                                     └─────────────────────┘
                                                │
                                     ┌──────────┴──────────┐
-                                    │   mcp_tools/ (52+)   │
-                                    │   server_api/ (56+)  │
+                                    │   mcp_tools/ (10)    │
+                                    │   server_api/ (18)   │
                                     │   tool_registry.py   │
                                     └─────────────────────┘
 ```
 
-The `server_core/` directory handles core server logic including the intelligent decision engine (catalog-driven tool selection and scoring), command execution with parameter validation, process pooling, session management, and failure recovery. The `mcp_tools/` directory contains over 52 tool category directories (net_scan, osint, exploit_framework, vuln_scan, wifi_pentest, etc.) each exposing tools via `mcp.tool()` decorators through gateway registration.
+The `server_core/` directory handles core server logic including the intelligent decision engine (catalog-driven tool selection and scoring), command execution with parameter validation, process pooling, session management, and failure recovery. The `mcp_tools/` directory contains 10 tool category directories (active_directory, ai_assist, ai_payload, api_audit, bugbounty_workflow, ops, web_framework, web_scan, plus _generic and error_handling helpers) alongside `gateway.py` and `__init__.py` (12 items total), with tools exposed via `mcp.tool()` decorators through gateway registration. The `server_api/` directory holds 18 Flask modules (17 blueprints + `__init__.py`) registering ~184 routes/blueprints. The central `tool_registry.py` defines all 183 tool schemas, validated at import time.
 
 ## Usage
 

@@ -7,72 +7,97 @@ source: sources/openclaw/
 
 # Codegraph Verification: openclaw
 
-**Date:** 2026-06-24
+**Date:** 2026-07-30
 
-## Claim 1: 30+ messaging channels in extensions/
-- **Wiki says:** "30+ messaging channels including: WhatsApp, Telegram, Slack, Discord, Google Chat, Signal, iMessage, IRC, Microsoft Teams, Matrix, Feishu, LINE, Mattermost, Nextcloud Talk, Nostr, Synology Chat, Tlon, Twitch, Zalo, Zalo Personal, WeChat, QQ, WebChat. Each is a plugin under `extensions/`"
-- **Source evidence:** Codegraph exploration found 195 symbols across 37 files under `extensions/`. The exploration shows `extensionKey()` function that determines channel identification from filenames, with live test shards covering various extensions (a-z ranges, media extensions, XAI, etc.). Multiple extension directories exist like `acpx`, `active-memory`, `admin-http-rpc`, `alibaba`, `amazon-bedrock`, etc.
+## Claim 1: Node version floors and recommendation
+- **Wiki says:** "Runtime: Node 26 (recommended); floors 22.22.3+ / 24.15.0+ / 25.9.0+"
+- **Source evidence:**
+  - `openclaw.mjs:11-15` — `MIN_NODE_22 = { major: 22, minor: 22, patch: 3 }`, `MIN_NODE_24 = { major: 24, minor: 15, patch: 0 }`, `MIN_NODE_25 = { major: 25, minor: 9, patch: 0 }`, `RECOMMENDED_NODE_MAJOR = 26`, `SUPPORTED_NODE_RANGE = ">=22.22.3 <23, >=24.15.0 <25, or >=25.9.0"`
+  - `README.md:83` — "Runtime: **Node 24.15+ (recommended), Node 22.22.3+, or Node 25.9+**"
+  - `sources/openclaw/AGENTS.md` Commands section — "Runtime: Node 22.22.3+, 24.15+, or 25.9+; Node 26 recommended"
 - **Verdict:** ✅ CORRECT
-- **Fix needed:** None
+- **Fix needed:** None (this corrects the previous wiki's Node-floor errors)
 
-## Claim 2: ACP implementation in `src/acp/` with ~35 files
-- **Wiki says:** "OpenClaw implements an Agent Communication Protocol surface at `src/acp/` with 6 specific components: approval-classifier.ts, event-ledger.ts, control-plane/, client.ts, commands.ts, conversation-id.ts"
-- **Source evidence:** Codegraph exploration found 229 symbols across 71 files in `src/acp/`. This significantly exceeds the claimed ~35 files. The actual implementation includes comprehensive ACP types (`AcpConfig`, `AcpStreamConfig`, `AcpRuntimeConfig`, `AcpDispatchConfig`), session management, runtime interfaces, and extensive command handling. The structure is much more extensive than described.
-- **Verdict:** ⚠️ PARTIALLY ACCURATE
-- **Fix needed:** The wiki underestimates the scale - there are 71 files in `src/acp/` not ~35
-
-## Claim 3: MCP implementation in `src/mcp/`
-- **Wiki says:** "OpenClaw implements MCP at `src/mcp/` with 4 specific components: channel-bridge.ts, plugin-tools-serve.ts, tools-stdio-server.ts, openclaw-tools-serve.ts"
-- **Source evidence:** Codegraph exploration found 202 symbols across 80 files in `src/mcp/`. The exploration reveals extensive MCP infrastructure including OAuth handling (`McpOAuthStore`, `McpOAuthConfig`), UI components (`McpViewProps`, `McpServerRow`), command parsing (`McpCommand`), and runtime integration. This goes far beyond the 4 mentioned files.
-- **Verdict:** ⚠️ PARTIALLY ACCURATE
-- **Fix needed:** The wiki underestimates the MCP implementation scale - there are 80 files in `src/mcp/` not 4
-
-## Claim 4: Gateway runs on port 18789 with health endpoints
-- **Wiki says:** "The Gateway runs on port **18789** by default (loopback bind). Health endpoints: `/healthz`, `/readyz`, `/health`, `/ready`. Supports Tailscale integration and remote exposure."
-- **Source evidence:** Codegraph exploration found multiple references to port 18789:
-  - `scripts/e2e/lib/openai-chat-tools/write-config.mjs:20` - `const gatewayPort = readTcpPortEnv("PORT", 18789);`
-  - `extensions/diffs/src/url.ts:4` - `const DEFAULT_GATEWAY_PORT = 18789;`
-  - `src/cli/error-format.ts:4` - `const DEFAULT_GATEWAY_PORT_EXAMPLE = 18789;`
-  - `extensions/qa-lab/src/qa-gateway-config.ts:18-23` - Includes 18789 in allowed origins list
-  - `src/daemon/service-audit.ts:293-323` - Contains `auditGatewayServicePort` function with logic for port validation including 18789
-  - `src/config/gateway-control-ui-origins.ts` - Service configuration for gateway port handling
+## Claim 2: Channel ecosystem is tiered, not "each is a plugin under extensions/"
+- **Wiki says:** "The README advertises '25+ channels'; ~30-32 total, tiered: core channels (Telegram, iMessage, WebChat), ~23 official channel plugins in extensions/, external npm plugins, and voice/meeting extensions"
+- **Source evidence:**
+  - `README.md:22` — channel list ending "ClickClack, Raft, Reef, QQ, and the built-in WebChat"
+  - `README.md:172` — "25+ channels through bundled plugins"
+  - `src/channels/plugins/catalog.ts:78` — `ORIGIN_PRIORITY` distinguishes `config/workspace/global/bundled` origins from `EXTERNAL_CATALOG_PRIORITY` (line 106), i.e. bundled channels are distinct from external plugins
+  - `extensions/` listing — `buzz`, `clickclack`, `discord`, `feishu`, `googlechat`, `irc`, `line`, `matrix`, `mattermost`, `msteams`, `nextcloud-talk`, `nostr`, `qqbot`, `raft`, `signal`, `slack`, `sms`, `synology-chat`, `tlon`, `twitch`, `whatsapp`, `zalo`, `zalouser` (23 official channel plugins) plus `voice-call`, `google-meet`, `teams-meetings`, `zoom-meetings`
 - **Verdict:** ✅ CORRECT
-- **Fix needed:** None
+- **Fix needed:** None (this corrects the previous wiki's "Each is a plugin under extensions/" framing and adds missing channels)
 
-## Claim 5: Live Canvas (A2UI) exists in the source
-- **Wiki says:** "OpenClaw has a Live Canvas (A2UI) for agent-driven visual workspaces"
-- **Source evidence:** Codegraph exploration found extensive A2UI implementation:
-  - `apps/shared/OpenClawKit/Sources/OpenClawKit/CanvasA2UICommands.swift` - Contains `OpenClawCanvasA2UICommand`, `OpenClawCanvasA2UIPushParams`, `OpenClawCanvasA2UIPushJSONLParams`
-  - `apps/shared/OpenClawKit/Sources/OpenClawKit/CanvasA2UIJSONL.swift` - Contains parsing/validation for A2UI messages
-  - `apps/shared/OpenClawKit/Sources/OpenClawKit/CanvasA2UIAction.swift` - Contains `OpenClawCanvasA2UIAction` enum with `formatAgentMessage` and `jsDispatchA2UIActionStatus`
-  - Cross-platform implementations in Android (`ai.openclaw.app.protocol.OpenClawCanvasA2UIAction.kt`) and iOS/Mac apps
-  - Integration with gateway and runtime systems
+## Claim 3: Daemon is a sub-CLI (launchd/systemd/schtasks)
+- **Wiki says:** "Daemon: `openclaw daemon` sub-CLI — launchd (macOS), systemd (Linux), schtasks (Windows)"
+- **Source evidence:**
+  - `src/cli/daemon-cli/register.ts:10-13` — `.command("daemon").description("Manage the Gateway service (launchd/systemd/schtasks)")`
+  - `src/cli/daemon-cli/register-service-commands.ts:68-139` — subcommands `status`, `install`, `uninstall`, `start`, `stop`, `restart`
+  - `src/daemon/` — `launchd.ts`, `launchd-plist.ts`, `launchd-system.ts`, `systemd.ts`, `systemd-system.ts`, `systemd-unit.ts`, `schtasks.ts`, `schtasks-install.ts`, `schtasks-control.ts` (plus Windows `schtasks-exec.ts`)
 - **Verdict:** ✅ CORRECT
-- **Fix needed:** None
+- **Fix needed:** None (this corrects the previous wiki's daemon-surface claim — the real surface is `openclaw daemon`)
 
-## Claim 6: Plugin SDK exists
-- **Wiki says:** "OpenClaw has a Plugin SDK at `src/plugin-sdk/` for building plugins and extensions"
-- **Source evidence:** Codegraph exploration found substantial plugin SDK infrastructure:
-  - `src/config/types.plugins.ts` - Extensive plugin configuration types (`PluginEntryConfig`, `PluginSlotsConfig`, `PluginsConfig`, `PluginInstallRecord`)
-  - `src/plugin-sdk/plugin-entry.ts` - `PluginLogger` type definition and numerous plugin-related exports
-  - `src/plugins/slots.ts` - Plugin slot management system
-  - Plugin authoring commands and initialization functions
-  - Integration with extensions and bundling systems
-  - SDK documentation and tooling
+## Claim 4: MCP is bidirectional (client registry + server), 20 files in src/mcp/
+- **Wiki says:** "MCP is bidirectional — client registry (`mcp.servers`, `openclaw mcp add/set/list/probe/doctor`) AND server (`openclaw mcp serve`) at `src/mcp/` (20 files including tests)"
+- **Source evidence:**
+  - `src/cli/mcp-cli.ts:600-1379` — `mcp` command group with `serve`, `list`, `show`, `status`, `probe`, `doctor`, `add`, `set`, `tools`, `configure`, `login`, `logout`, `reload`, `unset` subcommands
+  - `src/cli/mcp-cli.ts:37` — imports `serveOpenClawChannelMcp` from `../mcp/channel-server.js` (the server side)
+  - `src/mcp/` contains exactly 20 files (12 non-test source files, 8 tests): `channel-bridge.ts`, `channel-server.ts`, `channel-tools.ts`, `plugin-tools-serve.ts`, `tools-stdio-server.ts`, `openclaw-tools-serve.ts`, `codex-supervision-tools-serve.ts`, etc.
 - **Verdict:** ✅ CORRECT
-- **Fix needed:** None
+- **Fix needed:** None (this corrects the previous wiki's MCP file-count claim — actual count is 20 including tests, and the wiki now reflects the client side too)
+
+## Claim 5: ACP is ~100 files with a stdio server bridge and capped event ledger
+- **Wiki says:** "ACP surface at `src/acp/` (~100 files, 57 non-test) using `@agentclientprotocol/sdk` with PROTOCOL_VERSION 4; server.ts bridge, translator, client, approval-classifier, event-ledger (200 sessions / 5000 events / 16MB), control-plane, commands, conversation-id"
+- **Source evidence:**
+  - `src/acp/` contains 104 `.ts` files (57 non-test) including `server.ts`, `translator.ts`, `client.ts`, `approval-classifier.ts`, `event-ledger.ts`, `commands.ts`, `conversation-id.ts`, `types.ts`, and the `control-plane/` directory (40 files)
+  - `src/acp/event-ledger.ts:13-15` — `DEFAULT_MAX_SESSIONS = 200`, `DEFAULT_MAX_EVENTS_PER_SESSION = 5_000`, `DEFAULT_MAX_SERIALIZED_BYTES = 16 * 1024 * 1024`
+  - `src/acp/client.ts:10,172` and `src/acp/server.ts:8` — import/pass `PROTOCOL_VERSION` from `@agentclientprotocol/sdk`
+  - `src/acp/server.ts` — ACP stdio server bridging Agent Client Protocol to the Gateway
+- **Verdict:** ✅ CORRECT
+- **Fix needed:** None (this corrects the previous "~35 ACP files" claim — actual is ~100; also adds the server bridge and ledger caps)
+
+## Claim 6: Memory is a 5-tier subsystem with Dreaming/REM/QMD, not "a word"
+- **Wiki says:** "5-tier memory model (Instructions/Curated Core/Episodic/Prospective/Review), Dreaming consolidation, REM, QMD engine, memory-core (89+ files), memory-host-sdk, MEMORY.md/USER.md/DREAMS.md surfaces"
+- **Source evidence:**
+  - `src/memory-host-sdk/` — 13 modules: `dreaming.ts`, `engine-qmd.ts`, `engine-storage.ts`, `event-store.ts`, `event-types.ts`, `events.ts`, `host/`, `multimodal.ts`, `query.ts`, `secret.ts`, `status.ts`
+  - `extensions/memory-core/src/` — 227 files including `dreaming.ts`, `dreaming-consolidation.ts`, `dreaming-phases.ts`, `cli-rem.runtime.ts` (REM), `memory/manager.ts`, `memory/embeddings.ts`, `memory/hybrid.ts`, `memory/temporal-decay.ts`, `memory/qmd-document-resolver.ts`, `memory/index.ts`
+  - `extensions/memory-core/src/dreaming.ts`, `cli-runtime-common.ts`, `flush-plan.ts` — reference the `MEMORY.md` / `USER.md` / `DREAMS.md` surfaces
+  - Companion plugins in `extensions/`: `active-memory`, `memory-lancedb`, `memory-wiki`
+- **Verdict:** ✅ CORRECT
+- **Fix needed:** None (this replaces the previous one-word reduction with the actual subsystem)
+
+## Claim 7: Docker facts — registries, variants, node user, healthcheck, tini; sponsors include Blacksmith
+- **Wiki says:** "GHCR primary + Docker Hub mirror; slim/*-browser/extended-stable variants; default images bundle codex + diagnostics-otel; node:24-bookworm-slim, USER node uid 1000, HEALTHCHECK 3m, tini entrypoint. Sponsors: OpenAI, GitHub, NVIDIA, Vercel, Blacksmith, Convex."
+- **Source evidence:**
+  - `.github/workflows/docker-release.yml:31` — `DOCKERHUB_IMAGE_NAME: openclaw/openclaw` (Docker Hub mirror alongside GHCR)
+  - `Dockerfile` — multi-stage build from `node:24-bookworm-slim` (ARG at lines 12-13), `USER node` (line 369), `HEALTHCHECK --interval=3m ...` (line 383), `ENTRYPOINT ["tini", "-s", "--"]` (line 385)
+  - `extensions/codex/` and `extensions/diagnostics-otel/` exist as bundled plugins
+  - `.github/workflows/docker-channel-promote.yml:7,55` — `extended-stable` release channel tags; `docker-release.yml:239` — `*-browser` variant tags
+  - `README.md:26-79` — sponsors table includes OpenAI, GitHub, NVIDIA, Vercel, **Blacksmith** (`blacksmith.sh`), Convex
+- **Verdict:** ✅ CORRECT
+- **Fix needed:** None (this adds Blacksmith to the sponsor list and drops the unverifiable image-size figure)
+
+## Claim 8: src/tools/ and src/memory/ are near-empty; real implementations live elsewhere
+- **Wiki says:** "`src/tools/` contains only `types.ts`; `src/memory/` contains only `root-memory-files.ts`; tool system lives in `src/agents/tools/` (~100+ files); memory lives in `src/memory-host-sdk/` + `extensions/memory-core/`"
+- **Source evidence:**
+  - `src/tools/` contains exactly one file: `types.ts`
+  - `src/memory/` contains exactly one file: `root-memory-files.ts`
+  - `src/agents/tools/` contains 217 files (the actual tool system: browser, canvas, cron, nodes, etc.)
+  - `src/memory-host-sdk/` (13 modules) + `extensions/memory-core/src/` (227 files) hold the memory subsystem
+- **Verdict:** ✅ CORRECT
+- **Fix needed:** None (this fixes the misleading "Tool system" and "Memory subsystem" rows in the Key Source Directories table)
 
 ## Summary
 
-The OpenClaw wiki is largely accurate but **underestimates the scale** of several implementations:
-- **Channels:** ✅ Correct (evidence supports 30+ channels)
-- **ACP:** ✅ Correct but underestimated (71 files vs ~35 claimed)
-- **MCP:** ✅ Correct but underestimated (80 files vs 4 claimed)
-- **Gateway Port:** ✅ Correct (18789 with health endpoints confirmed)
-- **Live Canvas (A2UI):** ✅ Correct (cross-platform implementation verified)
-- **Plugin SDK:** ✅ Correct (comprehensive SDK structure confirmed)
-
-The codebase demonstrates enterprise-scale architecture with extensive cross-channel support, protocol implementations, and platform integrations.
+The corrected OpenClaw wiki now matches the source:
+- **Node versions:** ✅ floors 22.22.3/24.15.0/25.9.0, Node 26 recommended (`openclaw.mjs:11-15`)
+- **Channels:** ✅ tiered ecosystem (~30-32): core + 23 official plugins + external npm + voice/meeting
+- **Daemon:** ✅ `openclaw daemon` sub-CLI (launchd/systemd/schtasks)
+- **MCP:** ✅ bidirectional client+server, `src/mcp/` = 20 files (was wrongly inflated)
+- **ACP:** ✅ ~100 files (was "~35"), server bridge + capped event ledger documented
+- **Memory:** ✅ 5-tier subsystem with Dreaming/REM/QMD — no longer reduced to one word
+- **Docker/Sponsors:** ✅ GHCR + Docker Hub, tini/node/healthcheck verified; Blacksmith added; unverifiable image-size figure removed
+- **Directories:** ✅ `src/tools/` and `src/memory/` correctly shown as near-empty stubs
 
 ## Related
 

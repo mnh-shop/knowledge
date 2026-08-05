@@ -31,9 +31,10 @@ Platform D (WhatsApp) ───┤
 
 ## Core infrastructure (`gateway/`)
 
-### `run.py` — Gateway bootstrap
+### `run.py` — Gateway bootstrap (`GatewayRunner`)
 
-The gateway runner:
+`GatewayRunner` (defined at `gateway/run.py:5399`; the file is 25,765 LOC —
+the largest module in the repo) is the long-lived process core. It:
 1. Loads config from config.yaml via `gateway/config.py`
 2. Scans `plugins/platforms/` for plugin-based platform adapters
 3. Instantiates and connects each configured platform adapter
@@ -50,14 +51,15 @@ The gateway runner:
 
 ### `platform_registry.py` — `PlatformRegistry`
 
-Dynamic registry that maps platform names to their adapter classes.
-Supports late-binding registration for tool use (e.g., `send_message_tool`
-needs to find a platform by name).
+Dynamic registry (`gateway/platform_registry.py:162`) that maps platform names
+to their adapter classes. Supports late-binding registration for tool use
+(e.g., `send_message_tool` needs to find a platform by name).
 
 ### `stream_dispatch.py` — `GatewayEventDispatcher`
 
-Routes streaming events from the agent core to the correct platform's
-output channel. Handles message chunks, tool progress, interruptions.
+`GatewayEventDispatcher` (`gateway/stream_dispatch.py:40`) routes streaming
+events from the agent core to the correct platform's output channel. Handles
+message chunks, tool progress, interruptions.
 
 ### `delivery.py` — Message delivery
 
@@ -67,11 +69,47 @@ Routes completed messages to their target platform. Handles:
 - Cross-platform delivery (relay)
 - Post-delivery callbacks
 
-### `relay/` — Cross-platform relay
+### `relay/` — Cross-platform relay + connector contract
 
 Allows messages received on one platform to be forwarded to another:
 e.g., "Monica sent a Telegram message that Hermes relays to a Slack thread."
 Uses the adapter pattern (`RelayAdapter`).
+
+**Experimental connector contract.** `gateway/relay/` also implements the
+*Relay ↔ Connector Contract v1* (`docs/relay-connector-contract.md`, marked
+EXPERIMENTAL). The gateway runs a generic `RelayAdapter` that dials **out** to
+an external connector (`NousResearch/gateway-gateway`, Node/TypeScript) and
+exchanges normalized `MessageEvent`s over a per-turn bidirectional WebSocket.
+At handshake the connector returns a `CapabilityDescriptor`
+(`gateway/relay/descriptor.py`) describing the fronted platform — the gateway
+never learns which concrete platform it is talking to. `contract_version`
+(now `1`) is carried in the descriptor and evolution is additive-only. The
+production transport is `WebSocketRelayTransport`
+(`gateway/relay/ws_transport.py`).
+
+### `hooks.py` / `builtin_hooks/` — Message pipeline hooks
+
+- `gateway/hooks.py` — `HookRegistry` (`:52`) with
+  `_register_builtin_hooks()` (`:72`) registers built-in hook handlers that
+  run per incoming message.
+- `gateway/builtin_hooks/` — bundled built-in hook definitions.
+- Hooks are configured in `config.yaml` under a `hooks:` key, and
+  `hooks_auto_accept: true` (default `False`, `hermes_cli/config_defaults.py`)
+  auto-accepts hook prompts for CI/headless runs (equivalent to
+  `HERMES_ACCEPT_HOOKS=1`).
+
+## Platform adapter inventory
+
+The gateway connects through **30 adapter classes** split across two locations:
+
+| Source | Count | Adapters |
+|---|---|---|
+| `plugins/platforms/` (bundled plugins) | 21 | buzz, dingtalk, discord, email, feishu, google_chat, homeassistant, irc, line, matrix, mattermost, ntfy, photon, raft, simplex, slack, sms, teams, telegram, wecom, whatsapp |
+| `gateway/platforms/` (core) | 9 | api_server, signal, weixin, yuanbao, qqbot, bluebubbles, whatsapp_cloud, msgraph_webhook, webhook |
+
+The base class for all of them is `BasePlatformAdapter`
+(`gateway/platforms/base.py:2626`); `WebhookAdapter`
+(`gateway/platforms/webhook.py:177`) is one of the core nine.
 
 ## Platform adapters
 
@@ -91,7 +129,7 @@ class BasePlatformAdapter(ABC):
     """
 ```
 
-Key behavioral flags:
+(The canonical class is `gateway/platforms/base.py:2626`.)
 
 | Flag | Purpose |
 |---|---|
@@ -123,12 +161,24 @@ The `WebhookAdapter` is a special adapter:
 ## CLI integration
 
 ```bash
-hermes gateway                   # Start the gateway
+hermes gateway [run|start|stop|restart|status|install|uninstall|setup|enroll|list]
 hermes gateway enroll            # Enroll a platform
 hermes slack                     # Configure Slack
 hermes whatsapp                  # Configure WhatsApp Cloud
 hermes webhook                   # Manage webhooks
+hermes approvals                 # Mine approval history into allowlist proposals
+hermes pairing [list|approve]    # DM pairing codes for user authorization
+hermes dashboard                 # Web UI dashboard (port 9119)
 ```
+
+`hermes gateway` has a full service lifecycle (`run`, `start`, `stop`,
+`restart`, `status`, `install`, `uninstall`), plus `setup` (interactive
+platform configuration), `enroll`, `list` (profile gateway status), and
+`migrate-legacy` (`hermes_cli/subcommands/gateway.py`). Pairing
+(`hermes_cli/subcommands/pairing.py`) manages DM pairing codes used for user
+authorization on direct-message platforms; approvals
+(`hermes_cli/subcommands/approvals.py`) mines past approval decisions from the
+session DB into `command_allowlist` proposals.
 
 ## Related
 
@@ -139,10 +189,17 @@ hermes webhook                   # Manage webhooks
 
 ## Links
 
-- Gateway bootstrap: `sources/hermes-agent/gateway/run.py`
+- Gateway bootstrap (`GatewayRunner`): `sources/hermes-agent/gateway/run.py`
 - Base adapter: `sources/hermes-agent/gateway/platforms/base.py`
 - Platform config: `sources/hermes-agent/gateway/config.py`
 - Platform registry: `sources/hermes-agent/gateway/platform_registry.py`
 - Stream dispatch: `sources/hermes-agent/gateway/stream_dispatch.py`
 - Delivery: `sources/hermes-agent/gateway/delivery.py`
-- Built-in hooks: `sources/hermes-agent/gateway/builtin_hooks/`
+- Relay connector contract: `sources/hermes-agent/docs/relay-connector-contract.md`
+- WebSocket relay transport: `sources/hermes-agent/gateway/relay/ws_transport.py`
+- Hooks: `sources/hermes-agent/gateway/hooks.py` + `gateway/builtin_hooks/`
+- Plugin platforms: `sources/hermes-agent/plugins/platforms/`
+- Core platforms: `sources/hermes-agent/gateway/platforms/` (incl. `webhook.py`)
+- Gateway CLI: `sources/hermes-agent/hermes_cli/subcommands/gateway.py`
+- Approvals CLI: `sources/hermes-agent/hermes_cli/subcommands/approvals.py`
+- Pairing CLI: `sources/hermes-agent/hermes_cli/subcommands/pairing.py`

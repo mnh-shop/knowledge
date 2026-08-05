@@ -14,7 +14,7 @@ Base manifest configuration for Fedora CoreOS. Provides the declarative configur
 | Field | Value |
 |---|---|
 | **Origin** | [coreos/fedora-coreos-config](https://github.com/coreos/fedora-coreos-config) |
-| **License** | COPYING (BSD-style) |
+| **License** | COPYING (MIT-style) |
 | **Build Tool** | coreos-assembler, rpm-ostree |
 | **Source** | `sources/fedora-coreos-config/` |
 | **Related** | [[podman]], [[buildah]], [[nix-podman-stacks]] |
@@ -44,23 +44,26 @@ Configuration is organized into numbered overlay directories:
 | 05core | Core Ignition+ostree bits, shared with RHCOS |
 | 08nouveau | Blacklists nouveau driver for NVidia GPU compatibility |
 | 09misc | etc/sysconfig warning |
+| 10aarch64 | aarch64-specific configuration |
 | 10disk-images | bootc and image-builder configuration |
 | 15fcos | FCOS-specific: SSH key enforcement, MOTD branding, health warnings |
+| 16fcos-sshd-workaround | systemd generator patching sshd `AuthorizedKeysFile` so ignition/afterburn SSH keys are honored |
 | 17fcos-container-signing | Container signature verification setup |
 | 20platform-chrony | Static chrony config for cloud NTP servers |
 | 30lvmdevices | LVM device autoactivation limits |
 | 35container-signing-migration | Migration to container signature verification |
+| 40import-virtiofs-systemd-credentials | Expose systemd-credentials via virtiofs (non-Ignition path) |
 
 ### Image Building
 
-The build process uses a multi-stage Containerfile:
+The build process uses a multi-stage Containerfile (builder image `quay.io/bootc-devel/fedora-bootc-44-standard`, set via `build-args.conf`):
 1. Builder stage runs `build-rootfs` to assemble the rootfs from RPMs
 2. `rpm-ostree compose build-chunked-oci` creates OCI archive with bootc metadata
 3. Final stage produces a bootable OCI image with proper labels
 
 ### Platform Support
 
-Cloud platform configurations in `platforms.yaml` specify GRUB commands and kernel arguments per architecture. Supports AWS, Azure, GCP, OpenStack, VMware, DigitalOcean, Hetzner, and AppleHV (macOS virtualization).
+Cloud platform configurations in `platforms.yaml` specify GRUB commands and kernel arguments per architecture. Supports AWS, Azure, GCP, OpenStack, VMware, Hetzner, AppleHV (macOS virtualization), IBM Cloud, Oracle Cloud, KubeVirt, ProxmoxVE, VirtualBox, and QEMU.
 
 ## Tests
 

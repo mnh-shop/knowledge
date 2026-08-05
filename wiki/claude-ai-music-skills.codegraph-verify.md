@@ -7,61 +7,54 @@ source: sources/claude-ai-music-skills/
 
 # Codegraph Verification: claude-ai-music-skills
 
-**Date:** 2026-07-12
+**Date:** 2026-07-30
 
-## Claim 1: 53 Markdown skill files organized as a Claude Code plugin with auto-discovery
-- **Wiki says:** The repository provides 90+ music skills for Claude Code organized as a plugin with auto-discovery via `/plugin marketplace`.
+## Claim 1: 53 skills, not "90+", and plugin version 0.101.0
+- **Wiki says:** The plugin ships 53 skills at version 0.101.0.
+- **Source evidence:** `ls skills/ | wc -l` = 53. README.md:59: "### Skill System (53 Skills)"; README.md:136 lists "All 53 skills". `.claude-plugin/plugin.json` declares `"version": "0.101.0"` and `"skills": "./skills/"`. CHANGELOG.md:9: "## [0.101.0] - 2026-07-21".
+- **Verdict:** ✅ CORRECT
+- **Fix needed:** Wiki corrected from "90+ skills" / version 2.0.0 / AgriciDaniel origin → 53 skills / 0.101.0 / bitwize-music-studio.
 
-- **Source evidence:** The `skills/` directory contains exactly 53 subdirectories (each with a `SKILL.md` file), including: `lyric-writer`, `mastering-engineer`, `mix-engineer`, `album-conceptualizer`, `promo-writer`, `pronunciation-specialist`, `suno-engineer`, `plagiarism-checker`, `voice-checker`, `verify-sources`, `researcher`, and 42 more. `.claude-plugin/plugin.json` (line 2, line 11) declares `"name": "bitwize-music"` with `"skills": "./skills/"`, enabling Claude Code's auto-discovery of all 53 skills. `.claude-plugin/marketplace.json` registers the plugin for `/plugin marketplace add` installation. README.md line 43-45 confirms: "Each skill is a self-contained markdown file with a YAML frontmatter... Claude routes to skills automatically based on context, or you invoke them directly with `/bitwize-music:<name>`."
+## Claim 2: Origin is bitwize-music-studio, not AgriciDaniel; Python + Markdown + shell stack
+- **Wiki says:** The repository is `bitwize-music-studio/claude-ai-music-skills`, built on Python + Markdown + shell — no TypeScript/Web Audio/AudioWorklet/IndexedDB/SQLite.
+- **Source evidence:** `.claude-plugin/plugin.json` `repository` and `homepage` fields point to `https://github.com/bitwize-music-studio/claude-ai-music-skills`; README install snippet (line 47 area) uses `/plugin marketplace add bitwize-music-studio/claude-ai-music-skills`. Grep across all `.md`/`.py`/`.json`/`.toml`/Makefile for `TypeScript`, `\.ts`, `Web Audio`, `AudioWorklet`, `IndexedDB`, `SQLite`, `/api/melodies`, `ws://localhost:8080`, `daniel@musicclaude`, `AgriciDaniel` → 0 files. The only "quantum" hits are genre-reference content (e.g. `genres/gqom/README.md:9` "quantum sound" subgenre, song/album titles) — not a roadmap feature. `pyproject.toml`, `requirements.txt`, `Makefile` confirm Python toolchain; skills are markdown.
+- **Verdict:** ✅ CORRECT
+- **Fix needed:** Fabricated tech stack (TypeScript primary, Web Audio API, AudioWorklet, IndexedDB, SQLite), REST/WebSocket API sections, and daniel@musicclaude.com contact removed from wiki.
 
-- **Verdict:** ✅ CORRECT (53 skills confirmed; "90+" in wiki is aspirational)
-- **Fix needed:** The wiki says "90+ music skills" — the source tree has 53 skill directories. Either the wiki overcounts or some skills are generated at install time. Recommend wiki update to reflect actual count.
+## Claim 3: Multi-model tier orchestration (Opus 4.8 / Sonnet 4.6 / Haiku 4.5)
+- **Wiki says:** Skills declare their required Claude model across three tiers — Creative (Opus 4.8, 7 skills), Reasoning (Sonnet 4.6, 30 skills), Mechanical (Haiku 4.5, 16 skills).
+- **Source evidence:** README.md:67 "### Multi-Model Orchestration"; README.md:73-75 table rows: "| Creative | Opus 4.8 | 7 | ... |", "| Reasoning | Sonnet 4.6 | 30 | ... |", "| Mechanical | Haiku 4.5 | 16 | ... |". CLAUDE.md:109 (step 5 note): "skills use tier aliases (`opus`/`sonnet`/`haiku`) that auto-track the frontier model". Per-skill rationale in `reference/model-strategy.md`.
+- **Verdict:** ✅ CORRECT
+- **Fix needed:** This headline feature was absent from the wiki — added.
 
-## Claim 2: Album production pipeline from concept through research, lyrics, Suno generation, mastering, and release
-- **Wiki says:** The system handles concept development, research, lyrics, composition, performance, and mastering with quality gates at every stage.
+## Claim 4: MCP server for state via stdio; preferred data access
+- **Wiki says:** `servers/bitwize-music-server/` implements a stdio MCP server (bitwize-music-mcp) exposing structured state tools; it is the preferred way to query project state. No HTTP server exists.
+- **Source evidence:** `servers/bitwize-music-server/` contains `run.py`, `server.py`, `handlers/`, `mcp-launch`. `.mcp.json` registers `"bitwize-music-mcp"` with `"type": "stdio"`. CLAUDE.md:52-62: "The `bitwize-music-mcp` server is the **preferred way to query project state**" with tool list `list_albums`, `find_album`, `get_track`, `list_skills`, `get_skill`, `get_ideas`, `get_pending_verifications`, `get_config`, `get_session`, `update_session`, `search`, `rebuild_state`. `reference/state-schema.md` documents the cache schema. README.md:77 "### MCP Server (80+ Tools)".
+- **Verdict:** ✅ CORRECT
+- **Fix needed:** Fabricated REST (`GET /api/melodies`) and WebSocket (`ws://localhost:8080/music`) API sections removed — repo has only stdio MCP.
 
-- **Source evidence:** CLAUDE.md lines 17-28 document the complete workflow: "Concept → Research → Write (+Suno Prompt) → [Refine] → QC/Verify → Generate → [Polish] → Master → Promo Videos → Promo Copy → Release." The `skills/` directory confirms each phase has a dedicated skill: `album-conceptualizer` (Phase 1-7 planning), `researcher` and `researchers-*` variants (biographical, financial, gov, historical, journalism, legal, primary-source, security, tech, verifier), `lyric-writer` (13-point quality checklist), `lyric-refiner`, `suno-engineer`, `pronunciation-specialist`, `plagiarism-checker`, `voice-checker`, `verify-sources`, `mix-engineer`, `mastering-engineer`, `promo-writer`, `release-director`. The `genres/` directory contains 388 genre reference files, confirming broad musical style support. README.md lines 4-5: "a Claude Code plugin that turns a conversation into a full album production pipeline."
+## Claim 5: Album production pipeline with source verification gate
+- **Wiki says:** Core workflow is Concept → Research → Write (+Suno Prompt) → QC/Verify → Generate → Master → Release, gated by a human source-verification step that blocks generation.
+- **Source evidence:** CLAUDE.md:143: "Concept → Research → Write (+Suno Prompt) → [Refine] → QC/Verify → Generate → [Polish] → Master → Promo Videos (optional) → Promo Copy (optional) → **Release**". CLAUDE.md:145: "Human source verification is required before generation — never skip this gate." CLAUDE.md:175-180 "### Source Verification Gate": capture sources as clickable markdown links, save RESEARCH.md/SOURCES.md, `❌ Pending` → human verifies via `/bitwize-music:verify-sources` → `✅ Verified (DATE)`, "Block generation if verification incomplete — `/bitwize-music:pre-generation-check` enforces this". `skills/verify-sources/SKILL.md` and `skills/pre-generation-check/` implement the gate. README.md:4-5: "a Claude Code plugin that turns a conversation into a full album production pipeline" with "quality gates and source verification at every stage".
+- **Verdict:** ✅ CORRECT
+- **Fix needed:** None (line refs corrected to 143/175-180).
 
+## Claim 6: Genre library (388 files) and cross-platform matrix
+- **Wiki says:** `genres/` holds 388 genre reference files; platform support spans macOS/Linux/WSL2/Windows with a compatibility matrix in `reference/`.
+- **Source evidence:** `ls genres/ | wc -l` = 388 (includes `INDEX.md`). README.md:51 documents full support for macOS, Linux, WSL2, and native Windows with CI on windows-latest, and points to `reference/cross-platform/tool-compatibility-matrix.md`. `reference/` also contains `state-schema.md`, `model-strategy.md`, `mastering`, `suno`, `release`, `workflows`, `cloud`, `promotion`, `quick-start`, `sheet-music`, `terminology.md`, `distribution.md`, `streaming-mastering-specs.md`, `overrides`, `SKILL_INDEX.md`.
 - **Verdict:** ✅ CORRECT
 - **Fix needed:** None
 
-## Claim 3: MCP server providing structured state access for albums, tracks, skills, and config
-- **Wiki says:** The system uses a MCP server for preferred data access using tools like list_albums, find_album, get_track, list_skills, get_skill, get_config, search, and rebuild_state.
-
-- **Source evidence:** `servers/bitwize-music-server/` directory exists containing the MCP server implementation. `.mcp.json` (line 1) configures an MCP server. CLAUDE.md lines 21-28 list available MCP tools: "list_albums, find_album, get_track, list_skills, get_skill, get_ideas, get_pending_verifications, get_config, get_session, update_session, search, rebuild_state" — and state: "The bitwize-music-mcp server is the preferred way to query project state." Lines 54-69 document the session start health check sequence using MCP for state queries. The `reference/state-schema.md` file documents the cache schema that MCP returns.
-
+## Claim 7: Python 3.11+ toolchain; Makefile lint/check; migrations and hooks
+- **Wiki says:** Python 3.11+ (not 3.10+); `make lint` runs ruff + bandit + mypy; `make check` = lint + test; `migrations/` has 7 entries; `hooks/` has 6 entries.
+- **Source evidence:** README.md:51: "Python 3.11+ for the MCP server and audio tools." Makefile:48 `lint:` runs `$(RUFF) check tools/ servers/ hooks/` + scoped PLW1514 ruff + `$(BANDIT) -r tools/ servers/ -ll -q -s B108,B608` + `$(MYPY)`; Makefile:62 `check: lint test`; `test:` runs pytest with `--cov-fail-under=75`. `migrations/` lists 7 entries (`0.40.0.md`, `0.43.0.md`, `0.44.0.md`, `0.59.0.md`, `0.90.0.md`, `0.91.0.md`, `README.md`). `hooks/` lists 6 entries (`README.md`, `check_version_sync.py`, `hooks.json`, `install.sh`, `pre-commit`, `validate_track.py`). CLAUDE.md:100-107 documents `get_pending_migrations` / `acknowledge_migrations` handling.
 - **Verdict:** ✅ CORRECT
-- **Fix needed:** None
-
-## Claim 4: Source verification gate that blocks audio generation until human review
-- **Wiki says:** The system includes research source verification with a human-in-the-loop gate that blocks generation until sources are reviewed and confirmed.
-
-- **Source evidence:** CLAUDE.md lines 100-109 define the "Source Verification Gate": "Capture sources FIRST — every source must be a clickable markdown link [Name](URL). Save RESEARCH.md and SOURCES.md to album directory. After adding sources → status: ❌ Pending — human verifies via `/bitwize-music:verify-sources` → ✅ Verified (DATE). Block generation if verification incomplete — `/bitwize-music:pre-generation-check` enforces this." The `skills/verify-sources/` skill directory implements this gate. Track statuses include `Sources Pending` and `Sources Verified` states. README.md line 5 confirms: "with quality gates and source verification at every stage."
-
-- **Verdict:** ✅ CORRECT
-- **Fix needed:** None
-
-## Claim 5: Genre reference library with 388 genre-specific files for musical style guidance
-- **Wiki says:** The system supports multiple musical genres with style-specific generation — classical, jazz, pop, rock, electronic.
-
-- **Source evidence:** The `genres/` directory contains 388 entries including a `INDEX.md` plus directories for `2-step-garage`, `a-cappella`, `abstract-hip-hop`, `acid-jazz`, `afro-cuban`, `afro-house`, `afrobeats`, `afropop`, `afroswing`, and hundreds more. The `genres/INDEX.md` provides a master index. README.md lines 47-55 describe skill auto-discovery based on genre detection. CLAUDE.md references genre-based routing through `album-conceptualizer` planning phases that determine genre defaults. The `reference/` directory contains genre-agnostic reference files (mastering specs, pronunciation guides, workflow docs) and genre-specific `suno/` references.
-
-- **Verdict:** ✅ CORRECT
-- **Fix needed:** None
-
-## Claim 6: Python 3.10+ audio toolchain with MCP server and quality enforcement via Makefile
-- **Wiki says:** The system uses Python for backend processing, Web Audio API, and includes testing with pytest.
-
-- **Source evidence:** `pyproject.toml`, `requirements.txt`, and `requirements-test.txt` confirm Python dependency management. `Makefile` (line 1) provides quality gates: `make check` runs ruff + bandit + mypy + pytest. CLAUDE.md lines 161-163 state: "make check runs the same ruff + bandit + mypy + pytest suite that CI runs." README.md line 49: "Python 3.10+ for the MCP server and audio tools." The `hooks/` directory (8 entries) contains quality gate hooks. `migrations/` directory (9 entries) tracks plugin upgrades checked via `get_pending_migrations` MCP tool (CLAUDE.md lines 51-53).
-
-- **Verdict:** ✅ CORRECT
-- **Fix needed:** None
+- **Fix needed:** Wiki corrected from Python 3.10+ → 3.11+.
 
 ## Related
 
 - [[claude-ai-music-skills]] -- Main wiki entry
 - [[claude-seo]] -- Claude SEO skill plugin
-- [[openai-skills]] -- OpenAI skill collections
 - [[ai-marketing-claude-code-skills]] -- AI marketing skills
 
 ## Cross-project

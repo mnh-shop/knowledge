@@ -27,9 +27,10 @@ llmtrim is a local proxy that compresses LLM API requests before they reach the 
 - **Lossless Guarantee:** Every compression step is re-measured with the provider's real tokenizer. If a step does not actually save tokens, it is reverted. If the provider rejects the compressed request, the original is resent verbatim. Worst case is zero savings, never a worse outcome.
 - **Multi-Form Usage:** Runs as a local HTTPS proxy (intercepting proxy), MCP server, CLI tool (`llmtrim compress`), or library via UniFFI bindings. ~5 ms overhead per call with no model to load.
 - **Provider Support:** Intercepts Anthropic, OpenAI, Google, OpenRouter, and any custom OpenAI-compatible endpoint. Preserves prompt-cache discounts.
-- **Live Dashboard:** `llmtrim status --watch` shows a real-time dashboard with tokens trimmed, dollars saved, input/output savings bars, and per-model breakdown.
+- **Live Dashboard:** `llmtrim status` shows a real-time dashboard with tokens trimmed, dollars saved, input/output savings bars, and per-model breakdown (aliases: `monitor`, `gain`).
 - **Hermes Integration:** Ships a dedicated `HERMES.md` guide for seamless setup with Hermes Agent via `HTTPS_PROXY` environment variables and CA certificate trust.
-- **Benchmark Suite:** Includes a comprehensive benchmarking system (`llmtrim-cli bench/`) with named benchmarks (BFCL, SQuAD, TruthfulQA), A/B comparisons vs. competitors (caveman, entroly, headroom, leanctx), and per-agent scenario tests.
+- **Benchmark Suite:** Includes a comprehensive benchmarking system (`crates/llmtrim-cli/bench/`) with named benchmarks (BFCL, SQuAD v2, TruthfulQA), A/B comparisons vs. 4 competitors (caveman, entroly, headroom, leanctx), and per-agent scenario tests.
+- **System Tray:** `llmtrim-tray` — a Tauri system-tray app (macOS + Windows) showing per-agent compression savings, backed by the shared ledger.
 
 ## Architecture
 
@@ -67,23 +68,30 @@ llmtrim is a local proxy that compresses LLM API requests before they reach the 
                     └─────────────────────────────┘
 ```
 
-The project is organized as a Rust workspace with four crates:
+The project is organized as a Rust workspace with six crates (`Cargo.toml:3-10`):
 
-1. **`llmtrim-cli`** -- The CLI binary with proxy, MCP server, compress, status, doctor, setup, uninstall, and benchmark subcommands.
-2. **`llmtrim-core`** -- The library with the compression pipeline, provider tokenizers, quality gating, IR (internal representation), and all 10 compressor stages. Tests include conformance suites against Anthropic and OpenAI request formats.
-3. **`llmtrim-uniffi`** -- UniFFI bindings for Python, Ruby, Swift, Kotlin with packaging scripts for gems, Maven, wheels, and XCFrameworks.
-4. **`llmtrim-wasm`** -- WebAssembly bindings for JavaScript/TypeScript.
+1. **`llmtrim-core`** -- The library with the compression pipeline, provider tokenizers, quality gating, IR (internal representation), and all 10 compressor stages. Tests include conformance suites against Anthropic and OpenAI request formats.
+2. **`llmtrim-cli`** -- The CLI binary with proxy daemon, MCP server, compress, status dashboard, doctor, setup, ensure, update, bench, and subscription-reroute subcommands.
+3. **`llmtrim-ledger`** -- SQLite ledger (data layer) shared by `llmtrim-cli` and `llmtrim-tray`; tracks sessions, tokens, and savings.
+4. **`llmtrim-uniffi`** -- UniFFI bindings for Python, Ruby, Swift, Kotlin with packaging scripts for gems, Maven, wheels, and XCFrameworks.
+5. **`llmtrim-wasm`** -- WebAssembly bindings for JavaScript/TypeScript.
+6. **`llmtrim-tray`** -- Tauri system-tray app (macOS + Windows) showing per-agent compression savings; compiled only by `cargo build -p llmtrim-tray` or the dedicated `tray.yml` CI workflow (needs webkit2gtk / WKWebView, absent on Linux CI).
 
 ### Key Source Directories
 
 | Directory | Purpose |
 |---|---|
-| `crates/llmtrim-cli/src/` | CLI: proxy daemon, MCP server, monitor, quality checks, doctor, setup |
-| `crates/llmtrim-cli/bench/` | Benchmark suite (7 competitors, 3 named benchmarks, agent scenarios) |
 | `crates/llmtrim-core/src/` | Core compression engine, pipeline, 10 compressor stages, tokenizers |
+| `crates/llmtrim-core/src/stages/` | Stage modules: cache, dedup, hygiene, image, jsoncrush, ngram, output, retrieve (BM25), serialize, skeleton (tree-sitter), tool_schema, tools |
 | `crates/llmtrim-core/src/stages/toolout/` | Tool output compressors (detect, diff, generated, grep, log, normalize, plaintext, signals, template) |
+| `crates/llmtrim-cli/src/` | CLI: proxy daemon, MCP server, monitor, quality checks, doctor, setup, ensure, update |
+| `crates/llmtrim-cli/src/reroute/` | Subscription reroute subsystem (`sub` command: codex, grok, kimi backends) |
+| `crates/llmtrim-cli/bench/` | Benchmark suite (4 competitors, 3 named benchmarks, agent scenarios) |
+| `crates/llmtrim-ledger/` | SQLite ledger data layer |
+| `crates/llmtrim-tray/` | Tauri system-tray app |
 | `crates/llmtrim-uniffi/` | Polyglot bindings (Python, Ruby, Swift, Kotlin) |
 | `crates/llmtrim-wasm/` | WASM/JS/TS bindings |
+| `docs/tray-app/` | Tray app documentation |
 | `tools/` | npm package builder, CI checker, third-party license generator |
 
 ## Interfaces
@@ -97,17 +105,24 @@ Sits between AI tools and LLM providers as a local HTTPS proxy. Set `HTTPS_PROXY
 | Command | Description |
 |---|---|
 | `llmtrim setup` | Start proxy, install CA cert, configure shell profile |
-| `llmtrim status` | Live dashboard of tokens saved and dollars trimmed |
-| `llmtrim status --watch` | Interactive real-time dashboard |
+| `llmtrim status` | Live dashboard of tokens saved and dollars trimmed (aliases: `monitor`, `gain`) |
 | `llmtrim compress < <request.json>` | Compress a single request body |
 | `llmtrim doctor` | End-to-end diagnostic of proxy setup |
 | `llmtrim serve` | Run as MCP server |
 | `llmtrim uninstall` | Reverse all setup changes |
-| `llmtrim monitor` | Track compression savings over time |
+| `llmtrim compact` | Configure cheaper models for Claude Code `/compact` |
+| `llmtrim recall` | Recall previously compressed requests |
+| `llmtrim sub` | Subscription reroute: use another subscription's backend (codex, grok, kimi) for Claude Code |
+| `llmtrim window_sub` | Window-level subscription routing controls |
+| `llmtrim autostart` | Manage autostart of the proxy daemon |
+| `llmtrim tray` | Run the system-tray app |
+| `llmtrim ensure` | Bring the machine to the recommended current state |
+| `llmtrim update` | Update to the latest release and refresh integrations |
+| `llmtrim bench` | Run the benchmark suite |
 
 ### MCP Server
 
-Runs as an MCP server providing compression tools to MCP-compatible agents.
+Runs as an MCP server providing compression tools to MCP-compatible agents (`llmtrim mcp` over stdio, or `llmtrim mcp install` to register it with a client).
 
 ### Library
 

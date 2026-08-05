@@ -9,7 +9,7 @@ tags: [automation, cli, desktop, electron, mcp, react, typescript, ui, AionUi]
 
 # AionUi
 **License:** Apache-2.0
-**Current version:** 2.1.24
+**Current version:** 2.1.44
 
 ## Overview
 
@@ -66,16 +66,20 @@ Key sub-directories under `src/`:
 5. **Scheduled automation** -- cron-based 24/7 unattended task execution
 6. **Office document generation** -- integrates with [OfficeCLI](https://github.com/iOfficeAI/OfficeCLI) for PPT (Morph), Word (`.docx`), and Excel (`.xlsx/.xlsm/.csv`) creation
 7. **Remote channels** -- accessible via Telegram, Lark, DingTalk, WeChat
-8. **Internationalization** -- full i18n support with English, Simplified Chinese, Traditional Chinese, Japanese, Korean, Spanish, Portuguese, Turkish, Russian, and Ukrainian translations
+8. **Internationalization** -- full i18n support with 13 locales (English, Simplified Chinese, Traditional Chinese, Japanese, Korean, Spanish, Portuguese, Turkish, Russian, Ukrainian, German, French, and Persian/Farsi)
 9. **MCP (Model Context Protocol)** support -- extensible tool system for AI agents
+10. **Team Mode via ACP** -- Leader/Teammate multi-agent orchestration over the Agent Communication Protocol (`@agentclientprotocol/sdk` dependency); supported backends include Claude Code, Codex, Hermes Agent, Gemini, Snow CLI, and Aion CLI, with parallel subtask delegation and per-agent permission dialogs
+11. **YOLO / Full-Auto mode** -- one click to auto-approve all agent actions without manual confirmation; all agents support full-auto mode for unattended execution
+12. **Aion CLI (aionrs)** -- Rust-based backend service shipped with AionUi; also integrates the AionCore local backend (pinned via `aioncoreVersion` in package.json, e.g. v0.1.55)
+13. **Kimi partnership** -- free premium Kimi "Allegretto" plans for contributors; Kimi K3 works out of the box
 
 ## Notable Code Symbols (surface area from CodeGraph analysis)
 
-- **React hooks:** `useConversationListSync`, `useModelProviderList`, `useAssistantList`, `useUploadState`, `useWorkspaceEvents`, `useWorkspaceFileOps`
-- **Components:** `FileChangeList`, `WorkspaceTabBar`, `ChatWorkspace`, `ModalWrapper`, `StepsWrapper`, `ComponentsShowcase`, `FileChangeItem`, `CronJobSiderItem`
-- **Main process services:** `BetterSqlite3Driver` (database driver implementing `ISqliteDriver` contract), startup architecture compatibility checks (`assertStartupArchitectureCompatible`)
+- **React hooks:** `useConversationListSync`, `useModelProviderList`, `useAssistantList`, `useUploadState`
+- **Components:** `ModalWrapper`, `StepsWrapper`
+- **Main process services:** `BetterSqlite3Driver` (database driver implementing `ISqliteDriver` contract; `process/services/database/drivers/BetterSqlite3Driver.ts:23`), startup architecture compatibility checks (`assertStartupArchitectureCompatible`; `process/startup/architectureCompatibility.ts:76`)
 - **Scripts:** `webui.ts` (standalone web host launcher), `resetpass.ts` (admin password reset), `run-benchmarks.ts`
-- **Startup:** Rosetta/architecture mismatch detection on macOS (`detectStartupArchitectureMismatch`)
+- **Startup:** Rosetta/architecture mismatch detection on macOS (`detectStartupArchitectureMismatch`; `process/startup/architectureCompatibility.ts:48`)
 
 ## Coding Conventions (from `AGENTS.md`)
 

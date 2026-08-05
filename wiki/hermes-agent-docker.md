@@ -19,14 +19,14 @@ verified_by: codegraph-verify
 
 ## Overview
 
-A minimal Dockerfile that packages [Hermes Agent](https://github.com/NousResearch/hermes-agent) into a Docker image. It installs Hermes via the official upstream install script at a configurable `HERMES_REF` (branch or tag), includes `mini-swe-agent` and `@openai/codex` CLI, handles Hermes state persistence through a seed-on-first-start entrypoint, and is designed for straightforward local builds and multi-arch publishing. The image is based on `docker/sandbox-templates:shell` and includes `ffmpeg` for media/codec handling.
+A minimal Dockerfile that packages [Hermes Agent](https://github.com/NousResearch/hermes-agent) into a Docker image. It installs Hermes via the official upstream install script at a configurable `HERMES_REF` (branch or tag) and the `@openai/codex` CLI, handles Hermes state persistence through a seed-on-first-start entrypoint, and is designed for straightforward local builds and multi-arch publishing via a GitHub Actions workflow. The image is based on `docker/sandbox-templates:shell` and includes `ffmpeg` for media/codec handling. `mini-swe-agent` is listed in the README's image-contents but has **no explicit install step** in the Dockerfile and no corresponding directory in current hermes-agent `main` — treat that claim as README-stated/unverified.
 
 ## Key Features
 
 - **Configurable version pinning** — Build any Hermes version via `--build-arg HERMES_REF` (defaults to `main`; accepts branches or tags like `v2026.3.30`)
 - **State persistence with seed-on-first-start** — The `docker-entrypoint.sh` script checks if the mounted `/home/agent/.hermes` directory is empty; if so, it copies prepared defaults from `/usr/local/share/hermes-home/` and writes a `.docker-defaults-seeded` marker file to prevent re-seeding
-- **Multi-component image** — Includes Hermes Agent (from upstream install script), `mini-swe-agent` for SWE-bench-style tasks, `@openai/codex` CLI (v0.118.0 by default) for AI-powered terminal commands, and ffmpeg for media handling
-- **Dockerfile layers** — Multi-stage Dockerfile with separate RUN instructions for apt packages, Hermes install, npm global tools (`@openai/codex`), npm audit fixes, skills list pre-caching, and entrypoint setup
+- **Multi-component image** — Includes Hermes Agent (from upstream install script) and `@openai/codex` CLI (v0.118.0 by default) for AI-powered terminal commands, plus ffmpeg for media handling. `mini-swe-agent` is claimed in README.md:9 for SWE-bench-style tasks, but there is NO explicit install step for it in the Dockerfile and current hermes-agent `main` has no `mini-swe-agent/` directory — the claim is README-stated and unverified
+- **Single-stage Dockerfile** — One `FROM` (Dockerfile:1) with multiple `RUN` layers: apt packages + ffmpeg (Dockerfile:10-14), Hermes install from the upstream script (Dockerfile:21-22), npm global `@openai/codex` (Dockerfile:24), npm audit fixes for hermes-agent and whatsapp-bridge (Dockerfile:26-30), skills-list pre-cache (Dockerfile:32), and entrypoint setup + default-state staging (Dockerfile:34-38). The base image switches `USER root` → `USER agent` twice to run privileged and non-privileged steps
 - **Entrypoint design** — The `docker-entrypoint.sh` uses a two-phase approach: seeds empty Hermes home from defaults if needed, then `exec "$@"` to pass through to the user's command (Hermes CLI, doctor, or any other command)
 
 ## Usage
@@ -66,9 +66,17 @@ docker run --rm \
 
 Hermes config, sessions, memories, and related state live in `/home/agent/.hermes` inside the container. Mount that path to keep state across runs. On first start with an empty mount, the container seeds defaults from image-prepared Hermes defaults. If you do not mount `/home/agent/.hermes`, Hermes will still start, but its state will be lost when the container exits. Run `hermes setup` inside the container and persist `/home/agent/.hermes`, or place expected config files inside that mounted directory.
 
-### CI/CD usage
+### CI/CD workflow (`.github/workflows/docker.yml`)
 
-The image can be built in CI pipelines with multi-arch support for amd64 and arm64. The `HERMES_REF` build arg enables pinning to specific releases for reproducible deployments. The seed-on-first-start pattern ensures fresh volumes work without manual initialization steps.
+The repo ships a GitHub Actions workflow that builds and publishes the image to **GHCR** (`ghcr.io/<owner>/hermes-agent-docker`):
+
+- **Triggers** (docker.yml:3-16): push to `main`, tags matching `v*`, pull requests (build-only, no push), and `workflow_dispatch` with a `hermes_ref` input (branch or tag, default `main`) for manual builds of any Hermes ref
+- **Platforms** (docker.yml:66): `linux/amd64,linux/arm64` via QEMU + Buildx
+- **Tag scheme** (docker.yml:52-57): branch ref, tag ref, commit SHA, `latest` on default branch, and the `hermes_ref` input value on manual dispatch
+- **Push gating** (docker.yml:40,67): GHCR login and `push: true` only when the event is not a pull request
+- **Build args** (docker.yml:64-65): `HERMES_REF` flows from the dispatch input or defaults to `main`; cache via `type=gha` (docker.yml:70-71)
+
+The `HERMES_REF` build arg enables pinning to specific releases for reproducible deployments, and the seed-on-first-start pattern ensures fresh volumes work without manual initialization steps.
 
 ## Related
 

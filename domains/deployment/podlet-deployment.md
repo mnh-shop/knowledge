@@ -155,9 +155,60 @@ podlet -u generate network my-network
 # From a volume
 podlet -u generate volume my-volume
 
-# From an image
+# From an image in local storage (uses `podman image inspect`)
 podlet -u generate image my-image
+
+# From an artifact (e.g. a downloaded artifact bundle)
+podlet -u generate artifact my-artifact
 ```
+
+`generate image` deserializes `podman image inspect` output via `ImageInspect::from_image()` (src/cli/generate.rs:760) and reconstructs the equivalent Quadlet file — useful for converting images already pulled into local storage. `generate artifact` follows the same inspect-and-map pattern for artifacts.
+
+---
+
+## Key Deployment Flags
+
+### `--skip-services-check`
+
+Skipping the systemd D-Bus conflict check is useful where the check cannot run or is not wanted:
+
+```bash
+# CI/CD: no systemd D-Bus session available
+podlet --skip-services-check -u podman run -d --name hermes-agent ghcr.io/hermes/agent:latest
+
+# When you know the unit names are unique in the target environment
+podlet --skip-services-check --quadlets-file stack podman run ...
+```
+
+On Unix, Podlet otherwise connects to both system and user systemd instances (via `zbus` D-Bus) and refuses to write files whose names collide with existing non-`generated` unit files (cli.rs:298-304, `check_existing()` at cli.rs:951-983). In containers or minimal CI runners without a D-Bus session this check fails, so `--skip-services-check` is required there.
+
+### `--absolute-host-paths`
+
+Resolve relative host paths against a given directory instead of leaving them relative:
+
+```bash
+# Relative volumes in the command get rewritten relative to ./host-storage
+podlet --absolute-host-paths ./host-storage -u podman run \
+  -v ./data:/var/lib/service:Z \
+  ghcr.io/service:latest
+# -> Volume=/abs/path/to/host-storage/data:/var/lib/service:Z
+```
+
+`--absolute-host-paths` takes an optional directory argument; without one it resolves against the current directory (cli.rs:190, 382, 417). This prevents broken relative paths when the generated Quadlet file is deployed to a different working directory or machine.
+
+### `--name`
+
+Control the output filename (and therefore the systemd service name, since Quadlet derives it from the filename minus extension):
+
+```bash
+# Generates openclaw-acp.container regardless of any container name in the command
+podlet --name openclaw-acp -u podman run --name something-else ghcr.io/openclaw/acp:latest
+
+# With --file / --unit-directory, --name overrides the default per-resource naming
+podlet --file ./quadlets --name hermes-stack podman run -d --name hermes ghcr.io/hermes/agent:latest
+```
+
+`--name` conflicts with `--quadlets-file` (which sets the file name itself) and is the recommended way to keep filenames stable across command changes (cli.rs:98-106).
 
 ---
 

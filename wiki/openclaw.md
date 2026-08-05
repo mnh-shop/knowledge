@@ -13,7 +13,7 @@ verified_by: codegraph-verify
 |---|---|
 | **Origin** | [openclaw/openclaw](https://github.com/openclaw/openclaw) |
 | **License** | MIT |
-| **Stack** | TypeScript, Node.js 22.19+/24, pnpm workspace |
+| **Stack** | TypeScript, Node.js 22.22.3+ / 24.15.0+ / 25.9.0+ (Node 26 recommended), pnpm workspace |
 | **Source** | `sources/openclaw/` |
 | **Wanted** | Personal AI assistant on your own devices — full agent platform with multi-channel messaging, ACP, MCP, Live Canvas, plugin system |
 
@@ -23,17 +23,17 @@ OpenClaw is a **personal AI assistant** you run on your own devices. It answers 
 
 At architecture level, OpenClaw and [[hermes-agent]] occupy the same category: **agent gateways**. Both act as the runtime/control-plane for personal AI agents with multi-platform messaging, plugin systems, and external protocol surfaces (ACP, MCP). They are likely competing implementations of the same concept, not complementary systems.
 
-**Key differentiator vs Hermes:** OpenClaw has a larger official channel ecosystem (30+ vs ~20), a Live Canvas (A2UI) for agent-driven visual workspaces, and is built as a single-instance personal assistant rather than a multi-platform gateway that also supports workspaces. Hermes, by contrast, has a dedicated workspace/web dashboard ([[hermes-workspace]]) and a startup architect skill ([[hermes-startup-architect]]).
+**Key differentiator vs Hermes:** OpenClaw has a larger official channel ecosystem (~30-32 channels vs ~20), a Live Canvas (A2UI) for agent-driven visual workspaces, and is built as a single-instance personal assistant rather than a multi-platform gateway that also supports workspaces. Hermes, by contrast, has a dedicated workspace/web dashboard ([[hermes-workspace]]) and a startup architect skill ([[hermes-startup-architect]]).
 
 ## Architecture
 
 ### Core Runtime
 
 ```
-Runtime: Node 24 (recommended) or Node 22.19+
+Runtime: Node 26 (recommended); floors 22.22.3+ / 24.15.0+ / 25.9.0+
 Package manager: pnpm workspace
 CLI: npm install -g openclaw@latest → openclaw command
-Daemon: launchd/systemd user service (via openclaw onboard --install-daemon)
+Daemon: openclaw daemon sub-CLI — launchd (macOS), systemd (Linux), schtasks (Windows)
 ```
 
 ### Key Source Directories (`src/`)
@@ -41,45 +41,74 @@ Daemon: launchd/systemd user service (via openclaw onboard --install-daemon)
 | Directory | Purpose |
 |---|---|
 | `gateway/` | Control plane — auth, sessions, commands, agent lifecycle |
-| `agents/` | Agent management, spawning, per-workspace isolation |
-| `channels/` | Channel bridge, channel-server, protocol adapters |
-| `mcp/` | MCP server — channel-bridge, plugin-tools-serve, stdio-server |
-| `acp/` | Agent Communication Protocol — approval-classifier, event-ledger, client, control-plane |
+| `agents/` | Agent management, spawning, per-workspace isolation; **tool system lives in `agents/tools/` (~100+ files)** |
+| `channels/` | Channel framework — plugin registry, adapters, bindings, catalog |
+| `mcp/` | MCP surface — client registry + channel MCP server (20 files including tests) |
+| `acp/` | Agent Communication Protocol — server bridge, translator, client, approval-classifier, event-ledger, control-plane (~100 files) |
 | `plugin-sdk/` | Public SDK for building plugins and extensions |
 | `plugins/` | Plugin loader, activation, state |
-| `extensions/` | Bundled official plugins (WhatsApp, Telegram, Discord, Slack, etc.) |
-| `skills/` | Skills system |
-| `tools/` | Tool system (browser, canvas, cron, nodes, etc.) |
-| `memory/` | Memory subsystem |
+| `extensions/` | Bundled official plugins (channels, providers, memory, skills, voice, etc.) |
+| `skills/` | Skills system — loading, discovery, workshop, ClawHub |
+| `tools/` | **Only `types.ts`** — the tool system itself lives in `src/agents/tools/` |
+| `memory/` | **Only `root-memory-files.ts`** — the memory subsystem lives in `src/memory-host-sdk/` + `extensions/memory-core/` |
 | `llm/` | LLM runtime and model integration |
-| `config/` | Configuration management |
-| `cli/` | CLI command definitions |
+| `config/` | Configuration management (JSON5, hot reload) |
+| `cli/` | CLI command definitions (~55 commands) |
 | `state/` | State management |
 | `security/` | Security controls |
 | `ui/` | Control UI |
+| `daemon/` | Gateway service management — launchd/systemd/schtasks implementations |
+| `tasks/` | TaskFlow — cron, detached/background tasks, task registry |
+| `commitments/` | Standing commitments system |
+| `memory-host-sdk/` | Memory host SDK — event store, QMD engine, dreaming, queries |
 
 ### Multi-Channel Support
 
-30+ messaging channels including: WhatsApp, Telegram, Slack, Discord, Google Chat, Signal, iMessage, IRC, Microsoft Teams, Matrix, Feishu, LINE, Mattermost, Nextcloud Talk, Nostr, Synology Chat, Tlon, Twitch, Zalo, Zalo Personal, WeChat, QQ, WebChat. Each is a plugin under `extensions/`.
+The README advertises **"25+ channels"**; the actual ecosystem is roughly 30-32 channels, tiered:
+
+- **Core channels (not extension plugins):** Telegram, iMessage, and the built-in WebChat are part of the core runtime (`src/channels/`), not installable extensions.
+- **~23 official channel plugins in `extensions/`:** Buzz, ClickClack, Discord, Feishu, Google Chat, IRC, LINE, Matrix, Mattermost, Microsoft Teams, Nextcloud Talk, Nostr, QQ Bot, Raft, Signal, Slack, SMS/Twilio, Synology Chat, Tlon, Twitch, WhatsApp, Zalo, Zalo Personal.
+- **External npm plugins (not in this repo):** WeChat (`@tencent-weixin/openclaw-weixin`), Yuanbao, Zalo ClawBot, WeCom.
+- **Voice/meeting extensions:** `voice-call`, `google-meet`, `teams-meetings`, `zoom-meetings`.
+
+### Memory System
+
+Memory is a first-class subsystem, not a single concept:
+
+- **5-tier memory model:** Instructions / Curated Core / Episodic / Prospective / Review.
+- **Dreaming consolidation:** periodic offline consolidation (`dreaming.ts`, `dreaming-consolidation.ts`) that distills experiences into durable memories, with **REM** support (`cli-rem.runtime.ts`).
+- **QMD engine:** query/merge/decay engine (`src/memory-host-sdk/engine-qmd.ts`) over a typed event store (`event-store.ts`, `event-types.ts`).
+- **Surfaces:** `MEMORY.md`, `USER.md`, and `DREAMS.md` files per agent.
+- **Implementation split:** `src/memory-host-sdk/` (host SDK, ~12 modules) + `extensions/memory-core/` (89+ file plugin: manager, embeddings, hybrid search, temporal decay, migration) + companion plugins `active-memory`, `memory-lancedb`, `memory-wiki`.
+
+### Skills
+
+- **Format:** each skill is a directory with a `SKILL.md` frontmatter file (name + description).
+- **6-tier loading precedence:** workspace > `.agents/skills` > `~/.agents/skills` > managed > bundled > `extraDirs`.
+- **ClawHub marketplace:** search/install/verify/update/publish skills via the bundled `clawhub` skill.
+- **Skill Workshop:** `src/skills/workshop/` — auto-apply, curator, experience review.
+- **Scale:** ~60 bundled skills in the repo's `skills/` directory (51 `SKILL.md` files; 117 `SKILL.md` files repo-wide counting extension skill sets).
 
 ### State and Storage
 
 - **Shared state DB**: `state/openclaw.sqlite` — global runtime state
 - **Per-agent DB**: `agents/<agentId>/agent/openclaw-agent.sqlite` — agent-scoped data
-- **Config file**: `~/.openclaw/openclaw.json`
-- **Secrets**: `~/.openclaw/credentials/`
+- **Config file**: `~/.openclaw/openclaw.json` (JSON5, hot-reloaded)
+- **Secrets**: `~/.openclaw/credentials/` is now **legacy** — model auth profiles live in `~/.openclaw/agents/<agentId>/agent/auth-profiles.json`
 - **Cache/transient state**: SQLite — no JSON/TXT sidecar files in runtime
 
 ## Interfaces
 
 ### ACP (Agent Communication Protocol)
 
-OpenClaw implements an Agent Communication Protocol surface at `src/acp/`:
+OpenClaw implements an Agent Communication Protocol surface at `src/acp/` (~100 files, 57 non-test) using `@agentclientprotocol/sdk` with `PROTOCOL_VERSION` 4:
 
-- **Approval Classifier**: `approval-classifier.ts` — determines whether agent actions need human approval
-- **Event Ledger**: `event-ledger.ts` — tamper-proof audit trail of agent events
-- **Control Plane**: `control-plane/` — cross-agent coordination
+- **Core bridge**: `server.ts` — ACP stdio server bridging Agent Client Protocol to the Gateway
+- **Translator**: `translator.ts` — maps ACP sessions/messages/events to gateway sessions, with replay and session-list/update support
 - **Client**: `client.ts` — ACP client for connecting to other agent systems
+- **Approval Classifier**: `approval-classifier.ts` — determines whether agent actions need human approval
+- **Event Ledger**: `event-ledger.ts` — SQLite-backed tamper-proof audit trail of agent events, with session rehydration and hard caps (200 sessions / 5000 events per session / 16MB serialized)
+- **Control Plane**: `control-plane/` — cross-agent coordination (session manager, failover, identity reconcile)
 - **Commands**: `commands.ts` — ACP command definitions
 - **Conversation ID**: `conversation-id.ts` — stable conversation identity
 
@@ -87,31 +116,28 @@ This means OpenClaw can participate in the same ACP ecosystem as Hermes — they
 
 ### MCP (Model Context Protocol)
 
-OpenClaw implements MCP at `src/mcp/`:
+MCP is **bidirectional** — OpenClaw is both an MCP client and an MCP server:
 
-- **Channel Bridge**: `channel-bridge.ts` — MCP tools bridge to messaging channels
-- **Plugin Tools Serve**: `plugin-tools-serve.ts` — serve plugin tools as MCP tools
-- **Tools STDIO Server**: `tools-stdio-server.ts` — stdio-based MCP server
-- **OpenClaw Tools Serve**: `openclaw-tools-serve.ts` — expose MCP tools as OpenClaw tools
+- **As a client:** a registry of external MCP servers configured under `mcp.servers`, managed via `openclaw mcp add/set/list/show/status/probe/doctor/configure/login/logout/reload/unset`. The `mcp` CLI provides OAuth auth, diagnostics, and server testing.
+- **As a server:** `openclaw mcp serve` exposes OpenClaw channel tools and agent capabilities to external MCP clients. Implementation in `src/mcp/` (20 files including tests): `channel-bridge.ts` (MCP tools ↔ messaging channels), `channel-server.ts`, `plugin-tools-serve.ts` (serve plugin tools as MCP tools), `tools-stdio-server.ts` (stdio-based MCP server), `openclaw-tools-serve.ts` (expose MCP tools as OpenClaw tools), plus `codex-supervision-tools-serve.ts`.
 
 ### Gateway Protocol
 
-The Gateway runs on port **18789** by default (loopback bind). Health endpoints: `/healthz`, `/readyz`, `/health`, `/ready`. Supports Tailscale integration and remote exposure.
+The Gateway runs on port **18789** by default (loopback bind). Health endpoints: `/healthz`, `/readyz`, `/health`, `/ready`. WebSocket protocol **v4** (`@openclaw/gateway-protocol`, `PROTOCOL_VERSION = 4`). Supports **Tailscale** integration plus the `openclaw dns` sub-CLI for remote exposure.
 
 ### CLI
 
-```
-openclaw gateway ...    — gateway management
-openclaw agent ...      — agent operations
-openclaw message ...    — message sending
-openclaw secrets ...    — credential management
-openclaw browser ...    — browser automation
-openclaw nodes ...      — node operations
-openclaw onboard        — guided setup wizard
-openclaw doctor         — system diagnostics
-openclaw dashboard      — launch control UI
-openclaw devices        — device management
-```
+The CLI surface is ~55 commands. Core commands: `setup`, `onboard`, `configure`, `config`, `claws`, `backup`, `migrate`, `doctor`, `dashboard`, `reset`, `uninstall`, `message`, `mcp`, `transcripts`, `agent`, `agents`, `status`, `health`, `audit`, `sessions`, `commitments`, `tasks`.
+
+Sub-CLIs and specialized groups: `acp`, `gateway`, `daemon`, `logs`, `system`, `models`, `promos`, `infer`, `capability`, `approvals`, `exec-approvals`, `exec-policy`, `nodes`, `devices`, `users`, `node`, `worker`, `sandbox`, `fleet`, `worktrees`, `attach`, `tui`, `terminal`, `chat`, `cron`, `dns`, `docs`, `qa`, `proxy`, `hooks`, `webhooks`, `qr`, `clawbot`, `pairing`, `plugins`, `channels`, `directory`, `security`, `secrets`, `skills`, `update`, `completion`, `browser`.
+
+### Automation
+
+- **Cron:** scheduled jobs (`openclaw cron`, `src/cron/`) with history retention and continuation cleanup.
+- **Webhooks:** inbound/outbound webhook integration (`openclaw webhooks`).
+- **Hooks:** plugin hook phases — `before-tool-call`, `before-agent-reply`, `after-tool-call` (`src/plugins/hook-types.ts`).
+- **TaskFlow:** `src/tasks/` — task registry, detached/background task contracts, harness-owned subagent tasks.
+- **Standing intents & commitments:** `src/commitments/` — extraction, storage, model selection; commitments surface as first-class CLI commands.
 
 ## Deployment
 
@@ -124,7 +150,9 @@ openclaw onboard --install-daemon
 
 ### Docker (production)
 
-OpenClaw publishes multi-stage Docker builds with a minimal runtime image (~183MB). Base: `node:24-bookworm-slim`. Runs as `node` (uid 1000). Health check every 3 minutes.
+OpenClaw publishes multi-stage Docker builds (a minimal runtime image without build tools, source code, or Bun — the exact image size is **not** documented in the repo or Dockerfile, so any specific size figure is approximate/external). Base: `node:24-bookworm-slim`. Runs as `node` (uid 1000). Health check every 3 minutes. Entrypoint: `tini`.
+
+**Registries:** primary on GHCR (`ghcr.io/openclaw/openclaw`) plus a Docker Hub mirror (`openclaw/openclaw`). **Variant tags:** `slim`, `*-browser`, and `extended-stable` release channel. **Default images bundle** the `codex` and `diagnostics-otel` plugins.
 
 ```bash
 # From source:
@@ -136,15 +164,16 @@ docker pull ghcr.io/openclaw/openclaw:latest
 
 ### Container host management
 
-- **System**: OpenClaw publishes a `service` command for systemd user service
-- **macOS**: launchd daemon via `openclaw onboard`
+- **Linux**: systemd user service via the `openclaw daemon` sub-CLI (`openclaw daemon install/start/stop/restart/status`)
+- **macOS**: launchd daemon via `openclaw daemon`
+- **Windows**: Scheduled Task (schtasks) via `openclaw daemon`
 - **Tank OS**: Fedora bootc image with rootless Podman (see [[tank-os]])
 
 ### Requirements
 
 - No external database needed (SQLite only)
 - No Redis needed
-- Node 24 or Node 22.19+
+- Node 22.22.3+ / 24.15.0+ / 25.9.0+ (Node 26 recommended)
 - npm/pnpm/bun for install
 
 ## Compatibility with Core Systems
@@ -161,17 +190,17 @@ docker pull ghcr.io/openclaw/openclaw:latest
 |---|---|---|
 | **License** | MIT | MIT |
 | **Language** | TypeScript | Python |
-| **Channels** | 30+ | ~20 |
-| **ACP** | ✅ (`src/acp/`) | ✅ (ACP server + client) |
-| **MCP** | ✅ (`src/mcp/`) | ✅ (MCP client + server) |
-| **Gateway** | Port 18789, health endpoints | Ports vary by gateway |
+| **Channels** | ~30-32 (tiered: core + 23 official plugins + external) | ~20 |
+| **ACP** | ✅ (`src/acp/`, ~100 files) | ✅ (ACP server + client) |
+| **MCP** | ✅ (client registry + `mcp serve`) | ✅ (MCP client + server) |
+| **Gateway** | Port 18789, health endpoints, WS protocol v4 | Ports vary by gateway |
 | **Storage** | SQLite (shared + per-agent) | SQLite (state), files (cache) |
 | **Plugin System** | Plugin SDK (`src/plugin-sdk/`), extensions dir | Plugin system, skills |
 | **UI** | Built-in control UI | Hermes Workspace (separate project) |
 | **Live Canvas** | ✅ Built-in (A2UI) | ❌ (via workspace) |
-| **Daemon** | Systemd/launchd via onboard | Systemd via hermes-install |
-| **Docker** | Multi-stage, 183MB, slim | Docker published |
-| **Sponsors** | OpenAI, GitHub, NVIDIA, Vercel, Convex | Nous Research |
+| **Daemon** | `openclaw daemon` — launchd/systemd/schtasks | Systemd via hermes-install |
+| **Docker** | Multi-stage, GHCR + Docker Hub mirror, slim | Docker published |
+| **Sponsors** | OpenAI, GitHub, NVIDIA, Vercel, Blacksmith, Convex | Nous Research |
 
 ## Related
 

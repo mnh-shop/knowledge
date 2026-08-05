@@ -22,19 +22,22 @@ source: sources/awesome-openclaw-skills/
 - **Fix needed:** None
 
 ## Claim 2: 30 organized categories with per-category skill counts
-- **Wiki says:** Skills are organized into 30 categories with per-category counts in the Table of Contents and dedicated category pages in `categories/`. Largest categories include Coding Agents & IDEs (1184), Web & Frontend Development (920), and DevOps & Cloud (393).
+- **Wiki says:** Skills are organized into 30 categories with per-category counts in the Table of Contents and dedicated category pages in `categories/`. Largest categories include Coding Agents & IDEs (1184), Web & Frontend Development (920), and DevOps & Cloud (392).
 - **Source evidence:**
-  - `categories/` directory contains exactly 30 `.md` files: `ai-and-llms.md`, `apple-apps-and-services.md`, `browser-and-automation.md`, `calendar-and-scheduling.md`, `clawdbot-tools.md`, `cli-utilities.md`, `coding-agents-and-ides.md`, `communication.md`, `data-and-analytics.md`, `devops-and-cloud.md`, `gaming.md`, `git-and-github.md`, `health-and-fitness.md`, `image-and-video-generation.md`, `ios-and-macos-development.md`, `marketing-and-sales.md`, `media-and-streaming.md`, `moltbook.md`, `notes-and-pkm.md`, `pdf-and-documents.md`, `personal-development.md`, `productivity-and-tasks.md`, `search-and-research.md`, `security-and-passwords.md`, `self-hosted-and-automation.md`, `shopping-and-e-commerce.md`, `smart-home-and-iot.md`, `speech-and-transcription.md`, `transportation.md`, `web-and-frontend-development.md`
-  - `README.md` line 199-211: Table of Contents with 30 categories and per-category counts
-  - `categories/coding-agents-and-ides.md` line 5: "**1202 skills**" (matches README ToC count of 1184)
-  - `categories/web-and-frontend-development.md` line 5: "**925 skills**"
-  - `categories/devops-and-cloud.md` line 5: "**392 skills**"
-  - `categories/git-and-github.md` line 5: "**159 skills**"
-  - `categories/browser-and-automation.md` line 5: "**323 skills**"
-  - `categories/search-and-research.md` line 5: "**354 skills**"
-  - `categories/image-and-video-generation.md` line 5: "**172 skills**"
-- **Verdict:** ✅ CORRECT
-- **Fix needed:** None
+  - `categories/` directory contains exactly 30 `.md` files: `ai-and-llms.md`, `apple-apps-and-services.md`, `browser-and-automation.md`, `calendar-and-scheduling.md`, `clawdbot-tools.md`, `cli-utilities.md`, `coding-agents-and-ides.md`, `communication.md`, `data-and-analytics.md`, `devops-and-cloud.md`, `gaming.md`, `git-and-github.md`, `health-and-fitness.md`, `image-and-video-generation.md`, `ios-and-macos-development.md`, `marketing-and-sales.md`, `media-and-streaming.md`, `moltbook.md`, `notes-and-pkm.md`, `pdf-and-documents.md`, `personal-development.md`, `productivity-and-tasks.md`, `search-and-research.md`, `security-and-passwords.md`, `self-hosted-and-automation.md`, `shopping-and-e-commerce.md`, `smart-home-and-iot.md`, `speech-and-transcription.md`, `transportation.md`, `web-and-frontend-development.md` — including `moltbook.md` (Moltbook, ToC count 29).
+  - `README.md` lines 199-212: Table of Contents with 30 categories and per-category counts.
+  - **ToC-vs-file-header count drift (source-side):** README ToC counts do not always match the per-category file headers:
+    - Coding Agents & IDEs: ToC 1184 vs `categories/coding-agents-and-ides.md` header **1202 skills**
+    - DevOps & Cloud: ToC 393 vs file header **392 skills**
+    - Git & GitHub: ToC 167 vs file header **159 skills**
+    - Search & Research: ToC 345 vs file header **354 skills**
+    - Image & Video Generation: ToC 170 vs file header **172 skills**
+    - CLI Utilities: ToC 180 vs file header **179 skills**
+    - Web & Frontend Development: ToC 920 vs file header **925 skills**
+    - Browser & Automation: ToC 323 vs file header 323 (consistent)
+  - The wiki's Key Features numbers cite the ToC counts; per-category file headers carry the authoritative per-category lists.
+- **Verdict:** ✅ CORRECT (count drift documented)
+- **Fix needed:** None (drift is in the source itself, not the wiki)
 
 ## Claim 3: Skills sourced exclusively from ClawHub public registry
 - **Wiki says:** Every listed skill must be published on ClawHub (OpenClaw's public skills registry). The list only accepts links to ClawHub, not personal repos, gists, or external sources. Links use the `clawskills.sh` domain.
@@ -80,26 +83,26 @@ source: sources/awesome-openclaw-skills/
 - **Fix needed:** None
 
 ## Claim 6: Security-first curation with ecosystem tool recommendations
-- **Wiki says:** The list includes ecosystem tool sections for external service auth (Composio), hosting/deployment (MyClaw), search data APIs (SerpApi), and security auditing (trentclai). These are sponsored/affiliate sections designed to help users manage their OpenClaw setup.
+- **Wiki says:** The list includes ecosystem tool sections for external service auth (Composio), hosting/deployment (MyClaw), search data APIs (SerpApi), and security auditing (trentclaw). These are sponsored/affiliate sections designed to help users manage their OpenClaw setup.
 - **Source evidence:**
   - `README.md` line 94-101: "Connecting to External Services" — Composio: "Managed OAuth, scoped permissions, and logged native toolcalls across 1000+ apps"
   - `README.md` line 104-111: "Hosting & Deployment" — MyClaw: "Run these skills without managing a server"
   - `README.md` line 120-128: "Search & Web Data" — SerpApi: "Give OpenClaw agents access to real-time Google Search"
-  - `README.md` line 130-137: "Security & Config Auditing" — trentclai: "maps config, installed skills, custom code, secrets, and permissions"
+  - `README.md` line 130-137: "Security & Config Auditing" — trentclaw: "audits your OpenClaw config, installed skills and custom code, then returns fixes as diffs"
   - `README.md` line 142-154: "Model Providers" — 25+ LLM providers, OpenAI model examples with config
   - `README.md` line 163: "You can feature your OpenClaw ecosystem tool in the section above" — sponsored placement section
 - **Verdict:** ✅ CORRECT
-- **Fix needed:** None
+- **Fix needed:** None (tool name is **trentclaw**, not "trentclai" as previously noted)
 
 ## Summary
 
 All 6 key claims from the awesome-openclaw-skills wiki have been verified against source code:
-- ✅ 5000+ curated skills confirmed from badges and README claims
-- ✅ 30 organized categories confirmed from `categories/` directory (30 files) and README ToC
+- ✅ 5,300+ curated skills confirmed from badges and README claims (skills-5199 badge); "12,415+ total registrations" claim removed from wiki — not present in source (5,300 + 7,215 excluded = 12,515, not 12,415)
+- ✅ 30 organized categories confirmed from `categories/` directory (30 files, incl. moltbook.md) and README ToC, with documented ToC-vs-file-header count drift
 - ✅ ClawHub-only sourcing confirmed from README and CONTRIBUTING.md
-- ✅ Vetting filters and security warnings confirmed with exact 7,215 exclusion count
+- ✅ Vetting filters and security warnings confirmed with exact counts (4,065 spam / 1,040 dup / 851 low-quality / 886 crypto / 373 malicious / 7,215 total excluded)
 - ✅ Multiple installation methods confirmed: OpenClaw CLI, ClawHub CLI, manual copy
-- ✅ Ecosystem tool sections confirmed: Composio, MyClaw, SerpApi, trentclai
+- ✅ Ecosystem tool sections confirmed: Composio, MyClaw, SerpApi, trentclaw
 
 ## Related
 

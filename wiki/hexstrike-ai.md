@@ -60,8 +60,12 @@ The platform consists of:
 - `feroxbuster_scan()` — Recursive content discovery
 - `nuclei_scan()` — Vulnerability scanning with templates
 - `sqlmap_scan()` — SQL injection testing
-- `prowler_assess()` — AWS/Azure/GCP security assessment
-- `ghidra_analyze()` — Software reverse engineering
+- `prowler_scan()` — AWS/Azure/GCP security assessment (code name; README documents it as `prowler_assess()` at README.md:540)
+- `ghidra_analysis()` — Software reverse engineering (code name; README documents it as `ghidra_analyze()` at README.md:533)
+
+> **Note on tool naming:** The README (`README.md:533,540`) documents the reverse-engineering and cloud-assessment tools as `ghidra_analyze()` and `prowler_assess()`, but the actual code functions are `ghidra_analysis` (`hexstrike_mcp.py:2012`) and `prowler_scan` (`hexstrike_mcp.py:422`). Prefer the code-accurate names when calling the MCP surface.
+
+> **Repository hygiene:** The repo ships no test suite, no CI configuration (no `.github/`), and no Docker/Containerfile assets — just the two Python modules, `requirements.txt`, README, and the MCP client config JSON.
 
 ## Deployment
 

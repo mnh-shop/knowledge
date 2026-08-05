@@ -12,8 +12,8 @@ verified_by: codegraph-verify
 | Field | Value |
 |---|---|
 | **Origin** | [LobsterTrap/tank-os](https://github.com/LobsterTrap/tank-os) |
-| **License** | Not specified (likely MIT) |
-| **Stack** | Bootc (container→bootable OS), Fedora 41, Rootless Podman 5, Quadlet |
+| **License** | MIT (`LICENSE:1`) |
+| **Stack** | Bootc (container→bootable OS), Fedora 44 (pinned), Rootless Podman, Quadlet, NVIDIA OpenShell sandboxing |
 | **Source** | `sources/tank-os/` |
 | **Wanted** | Bootable Linux appliance running OpenClaw as rootless Podman |
 
@@ -25,152 +25,201 @@ This is an exemplar of the [[deployment-architecture]] pattern: the host OS plus
 
 ## Containerfile Details
 
-Based on `quay.io/fedora/fedora-bootc:latest` (Fedora bootc base):
+Based on `quay.io/fedora/fedora-bootc:44` — **pinned to Fedora 44, not `latest`**, because the OpenShell RPM filenames are hardcoded to the `fc44` build (the only Fedora release OpenShell currently publishes RPMs for) (`bootc/Containerfile:1-6`). The image is marked with `LABEL containers.bootc=1` (`bootc/Containerfile:8`).
 
 ### Packages Installed
 
+10 packages installed via dnf (`bootc/Containerfile:34-44`):
+
 ```
 cloud-init          — First-boot initialization (SSH keys, user-data)
+curl                — Download tooling (OpenShell RPMs at build time)
 openssh-server      — SSH daemon for remote access
 podman              — Rootless container runtime
+python3             — Config-rewrite engine for sync-podman-secrets / bootstrap scripts
+qemu-guest-agent    — VM guest agent for hypervisor integration (KubeVirt, QEMU)
+shadow-utils        — useradd/groupadd for the openclaw user + subuid/subgid
+sudo                — Passwordless sudo for the openclaw user
+vim-enhanced        — Basic editor
 ```
 
-Notably minimal — only 3 packages beyond the bootc base, keeping the image small.
+Plus **NVIDIA OpenShell RPMs** (`openshell` + `openshell-gateway`, version `0.0.92`) downloaded from GitHub releases and **checksum-verified** against the published `openshell-checksums-sha256.txt` before install (`bootc/Containerfile:45-54`).
+
+### Derived OpenClaw Image
+
+The gateway no longer runs the stock OpenClaw image. A derived image — **OpenClaw + the `openshell` CLI + an SSH client**, published to `quay.io/redhat-et/tank-claw-openshell:2026.7.1` — is built first (`bootc/openclaw-openshell/Containerfile:15-44`, `make build-openclaw-openshell`), and the main image's Quadlet `Image=` line is rewritten to it at build time via sed (`bootc/Containerfile:28,82-83`). Pinned to `OPENCLAW_REF=2026.7.1` (fixes CVE-2026-27002 and the sandbox bind-mount escape chain; 2026.7.2 exists but is still beta).
 
 ### User Setup
 
-- Creates `openclaw` user (UID 1000, matching the OpenClaw container's `node` user)
+- Creates `openclaw` user (UID/GID 1000, matching the OpenClaw container's `node` user), home at `/var/home/openclaw` (`bootc/Containerfile:57-59`)
 - Sets up passwordless sudo via `/etc/sudoers.d/openclaw`
-- Home directory at `/home/openclaw/`
+- Allocates **subuid/subgid ranges** `100000-65536` for rootless Podman (`bootc/Containerfile:61-64`)
+- Enables **linger** for the user so rootless systemd services start at boot (`bootc/Containerfile:66-67`)
 
 ### Quadlet Files
 
-Two systemd user services defined as Quadlet `.container` files in `/etc/containers/systemd/`:
+Two systemd user services defined as Quadlet `.container` files in `/etc/containers/systemd/users/1000/`:
 
 #### `openclaw.container`
 
-Runs the official OpenClaw container image:
-
 ```ini
 [Unit]
-Description=OpenClaw service
-After=network-online.target
-Wants=network-online.target
+Description=OpenClaw gateway (rootless Podman)
+After=openshell-gateway.service
+Wants=openshell-gateway.service
 
 [Container]
-Image=ghcr.io/openclaw/openclaw:latest
+Image=ghcr.io/openclaw/openclaw:latest   # rewritten at build → quay.io/redhat-et/tank-claw-openshell:2026.7.1
 ContainerName=openclaw
-PullPolicy=newer
+Pull=newer
 RunInit=true
 UserNS=keep-id
-Volume=%h/.openclaw:/home/node/.openclaw
-PublishPort=127.0.0.1:18789:18789
-PublishPort=127.0.0.1:18790:18790
+Network=host
+User=%U:%G
+Volume=%h/.openclaw:/home/node/.openclaw:Z
+Environment=HOME=/home/node
+Environment=TERM=xterm-256color
+Environment=NPM_CONFIG_CACHE=/home/node/.openclaw/.npm
+Environment=OPENCLAW_NO_RESPAWN=1
+EnvironmentFile=%h/.openclaw/openclaw.env
 Exec=node dist/index.js gateway --allow-unconfigured --bind lan --port 18789
-HealthCmd=curl -f http://localhost:18789/healthz
-HealthInterval=30s
-HealthRetries=3
-Notify=healthy
 
 [Service]
+ExecStartPre=/usr/libexec/tank-os/bootstrap-openclaw
+ExecStartPre=/usr/libexec/tank-os/bootstrap-openshell-sandbox
+TimeoutStartSec=900
 Restart=on-failure
-TimeoutStartSec=300
 
 [Install]
 WantedBy=default.target
 ```
 
-Key Quadlet patterns:
-- `UserNS=keep-id` — maps host UID 1000 into the container (avoids file permission issues with mounted volumes)
-- `Volume=%h/.openclaw` — stores OpenClaw state persistently under the user's home
-- All ports bind to `127.0.0.1` (rootless Podman constraint — cannot bind to 0.0.0.0)
-- `PullPolicy=newer` — auto-updates container image on restart
-- `HealthCmd` + `Notify=healthy` — systemd healthcheck integration
+Key Quadlet patterns (`bootc/rootfs/etc/containers/systemd/users/1000/openclaw.container`):
+- **`Network=host`** — required so the `openshell` CLI inside the container can reach the host-side `openshell-gateway` at `https://127.0.0.1:17670` (a container-namespaced network can't see the host loopback). Trade-off documented in `docs/openshell.md`: the OpenClaw container gets the host network namespace, but untrusted tool-call code is sandboxed by OpenShell inside the sandbox container instead.
+- `UserNS=keep-id` + `User=%U:%G` — maps host UID 1000 into the container (avoids file permission issues with mounted volumes)
+- `Volume=%h/.openclaw:...:Z` — persistent OpenClaw state under the user's home, SELinux-relabeled
+- `Pull=newer` — auto-updates container image on restart
+- **Two `ExecStartPre` bootstrap scripts**: `bootstrap-openclaw` (writes `openclaw.json` + gateway token) and `bootstrap-openshell-sandbox` (installs the OpenShell plugin, registers the gateway, pre-creates the sandbox)
+- `TimeoutStartSec=900` — generous timeout for first-boot image/sandbox pulls
+- `After=openshell-gateway.service` — the sandbox gateway must be up first
 
 #### `service-gator.container`
 
-Runs the service-gator MCP proxy (Go-based, exposes scoped tool access):
-
 ```ini
 [Unit]
-Description=Service Gator MCP server
-After=network-online.target openclaw.service
+Description=service-gator scoped service MCP server (rootless Podman)
+After=network-online.target
 
 [Container]
 Image=ghcr.io/cgwalters/service-gator:latest
 ContainerName=service-gator
-PullPolicy=newer
+Pull=newer
 RunInit=true
-UserNS=keep-id
-Volume=%h/.config/service-gator/:/etc/service-gator:ro
-Volume=%h/.openclaw/:/workspaces:ro
+Volume=%h/.config/service-gator:/etc/service-gator:Z
+Volume=%h/.openclaw:/workspaces:Z
+Environment=GH_TOKEN_FILE=/run/secrets/gh_token
+Environment=GITLAB_TOKEN_FILE=/run/secrets/gitlab_token
+Environment=FORGEJO_TOKEN_FILE=/run/secrets/forgejo_token
+Environment=JIRA_API_TOKEN_FILE=/run/secrets/jira_api_token
 PublishPort=127.0.0.1:8080:8080
 Exec=--mcp-server 0.0.0.0:8080 --scope-file /etc/service-gator/scopes.json
-HealthCmd=curl -f http://localhost:8080/health
-HealthInterval=30s
-HealthRetries=3
-Notify=healthy
 
 [Service]
-Restart=on-failure
+ExecStartPre=/usr/libexec/tank-os/bootstrap-service-gator
 TimeoutStartSec=300
+Restart=on-failure
 
 [Install]
 WantedBy=default.target
 ```
 
+Note: **only `service-gator` binds to loopback** (`PublishPort=127.0.0.1:8080:8080`). `openclaw` runs with `Network=host`, so the old "all ports bind to 127.0.0.1" claim applies only to service-gator (and to the OpenShell gateway, which binds loopback-only by design). `service-gator` mounts scoped token files via `Environment=*_TOKEN_FILE=/run/secrets/...` and has its own `bootstrap-service-gator` ExecStartPre that writes a default `scopes.json`.
+
 ### CLI Integration
 
-A host-level `openclaw` command delegates into the running container:
+A host-level `openclaw` command delegates into the running container — but it is now a **sudo-delegating wrapper** (`bootc/rootfs/usr/local/bin/openclaw`):
 
-```bash
-#!/bin/sh
-# /usr/local/bin/openclaw
-exec podman exec -it openclaw node dist/index.js "$@"
-```
+- Runs as the `openclaw` user if invoked by that user; otherwise re-executes via `sudo -iu openclaw` (so any admin user can use it)
+- Supports a `--container` flag (`--container NAME` or `--container=NAME`) to target a differently-named container; `OPENCLAW_CONTAINER` env var overrides the default
+- Checks the container is actually running (`podman inspect ... .State.Running`) before delegating, with a hint to start `openclaw.service`
+- Executes the container's own `openclaw` binary: `podman exec [-it] <container> openclaw "$@"`
 
-This means from the host shell (SSH'd in as `openclaw`), you run `openclaw gateway status --deep`, `openclaw doctor`, `openclaw dashboard --no-open` etc. and it executes inside the container.
+From the host shell you run `openclaw gateway status --deep`, `openclaw doctor`, `openclaw dashboard --no-open` etc. and it executes inside the container.
 
 ### Secret Management
 
-APIs keys are stored in rootless Podman secrets (never baked into the image):
+API keys are stored in rootless Podman secrets (never baked into the image). **7 OpenClaw secrets** and **4 service-gator secrets** are supported:
 
 ```bash
-# Create a secret
+# Create a secret (as the openclaw user)
 printf '%s' "$ANTHROPIC_API_KEY" | podman secret create anthropic_api_key -
 
-# Generate Quadlet drop-in secrets and update openclaw.json
-tank-openclaw-secrets    # Custom script — generates config from active secrets
+# Regenerate Quadlet drop-ins + rewrite openclaw.json
+tank-openclaw-secrets    # sudo-delegating wrapper → sync-podman-secrets
 
 # Restart services
 systemctl --user restart openclaw.service service-gator.service
 ```
 
-Supported secret names: `anthropic_api_key`, `openai_api_key`, `gemini_api_key`, `google_api_key`, `openrouter_api_key`.
+OpenClaw secret names: `anthropic_api_key`, `openai_api_key`, `gemini_api_key`, `google_api_key`, `openrouter_api_key`, `model_endpoint_api_key`, `telegram_bot_token`.
+
+Service-gator secret names: `gh_token`, `gitlab_token`, `forgejo_token`, `jira_api_token`.
+
+`sync-podman-secrets` (`bootc/rootfs/usr/libexec/tank-os/sync-podman-secrets`) does two jobs:
+1. **Writes Quadlet drop-ins** (`~/.config/containers/systemd/openclaw.container.d/10-secrets.conf` and `service-gator.container.d/10-secrets.conf`) mounting each detected secret as `Secret=<name>,type=env,target=<ENV>`.
+2. **Rewrites `~/.openclaw/openclaw.json`** via an embedded python3 script (`sync-podman-secrets:65-211`): builds the model-provider allowlist (`anthropic/claude-sonnet-4-6`, `openai/gpt-5.4`, `google/gemini-3.1-pro-preview`, `openrouter/google/gemma-4-26b-a4b-it`), picks the primary model by preference order, backfills provider `baseUrl`/`api` (anthropic, openai, google, openrouter), and wires the Telegram channel `botToken` when `telegram_bot_token` is present.
+
+## NVIDIA OpenShell Integration
+
+tank-os uses [NVIDIA OpenShell](https://github.com/NVIDIA/OpenShell) as OpenClaw's native sandbox backend — application-layer filesystem/network/process policy on top of the VM's kernel isolation, replacing OpenClaw's built-in Docker sandbox (`agents.defaults.sandbox.backend: "openshell"`):
+
+- **`openshell-gateway`** runs on the VM host as a rootless systemd *user* service under the `openclaw` user. Its unit ships inside the `openshell-gateway` RPM (not checked into the repo); the Containerfile symlinks it into `default.target.wants` (`bootc/Containerfile:88-89`). It manages the sandbox containers using the user's rootless Podman.
+- **The `openshell` CLI** lives inside the derived OpenClaw container (`bootc/openclaw-openshell/Containerfile`) — OpenClaw's plugin shells out to it and opens an SSH session into the sandbox. This is why `openclaw.container` uses `Network=host`.
+- **The sandbox** is pre-created under the fixed name `tankos-openclaw` by `bootstrap-openshell-sandbox`, from a digest-pinned image `ghcr.io/lobstertrap/openshell-hummingbird-images/sandboxes/openclaw@sha256:...` (Project Hummingbird-based, rebased from NVIDIA's Ubuntu community sandbox images).
+- **First-boot sequence**: `bootstrap-openclaw` writes `openclaw.json` (gateway token, sandbox config, openshell plugin entry) → `bootstrap-openshell-sandbox` installs the `@openclaw/openshell-sandbox` plugin into the persisted volume, waits for `openshell-gateway.service`, registers the local gateway with `openshell gateway add`, and pre-creates the sandbox. Both idempotent.
+- **Config backfill**: on upgrade from a pre-OpenShell config, `bootstrap-openclaw` backfills the `agents.defaults.sandbox` + `plugins.entries.openshell` blocks in place, preserving user customizations (`bootstrap-openclaw:71-109`).
+- **Known limitation**: the sandbox's OPA-based network supervisor needs `CAP_SYS_PTRACE` for `/proc/<pid>/root` binary-path resolution, which rootless Podman doesn't grant by default — egress denial was not fully verified fail-closed in nested-virtualization test environments (`docs/openshell.md:171-194`).
+
+## Cloud-Init
+
+Tank OS includes cloud-init for first-boot configuration (`bootc/Containerfile:90-101` enables `cloud-init-local`, `cloud-init-network`, `cloud-init`, `cloud-config`, `cloud-final`, `cloud-init.target`):
+- Injects SSH public key
+- The `openclaw` user is pre-configured in the image
+- Additional customization via `bootc-config.toml` (`examples/bootc-config.toml`, `examples/cloud-init/`)
 
 ## Build
 
 ```bash
-make build                  # Build container image locally (localhost/tank-os:latest)
-make build-qcow2            # Build QCOW2 disk image (requires bootc-image-builder)
-make build-iso              # Build ISO installer
+make build-openclaw-openshell     # Build the derived OpenClaw+openshell image FIRST
+make push-openclaw-openshell      # Push it to quay.io/redhat-et/tank-claw-openshell
+make build                        # Build container image locally (localhost/tank-os:latest)
+make build-qcow2                  # Build QCOW2 disk image (requires bootc-image-builder + config.toml)
+make build-containerdisk          # Wrap qcow2 as a KubeVirt containerDisk (run build-qcow2 first)
+make push-containerdisk           # Push containerDisk to quay.io/redhat-et/tank-os-containerdisk
+make push-containerdisk-arch      # Push containerDisk under arch tag (safe for multi-arch merge)
+make build-iso                    # Build ISO installer
+make verify COSIGN_PUBLIC_KEY=... # Verify image signature with cosign
 ```
 
-The Makefile uses `pyproject.toml` for tool dependencies. The examples/ directory provides QEMU boot scripts and bootc config templates.
+The Makefile (`Makefile:89-208`) auto-detects architecture (`uname -m` → amd64/arm64), drives multi-arch `bootc-image-builder` (QCOW2 `--type qcow2`, ISO `--type anaconda-iso`, both `--rootfs xfs`), and requires a rootful Podman machine on macOS for disk-image builds (`docs/build.md`). `OPENCLAW_REF` (2026.7.1) and `OPENSHELL_VERSION` (0.0.92) are the single points of control for both Containerfiles. CI/CD: PR validation, `python-semantic-release` versioning (VERSION file), cosign signing + SBOM + provenance + Trivy in the release workflow, OpenSSF Scorecard weekly.
 
-## Cloud-Init
+## KubeVirt / OpenShift Virtualization
 
-Tank OS includes cloud-init for first-boot configuration:
-- Injects SSH public key 
-- The `openclaw` user is pre-configured in the image
-- Additional customization via bootc-config.toml
+A per-user VM deployment path is provided under `deploy/`:
+- `deploy/applicationset.yaml` — ArgoCD ApplicationSet (one Application per user, goTemplate engine, list generator) patching a shared Kustomize base per user
+- `deploy/base/virtualmachine.yaml` — KubeVirt `VirtualMachine` with `containerDisk` (tank-os qcow2 wrapped as `/disk/disk.qcow2`, `deploy/containerdisk/Containerfile`) + `cloudInitNoCloud` user-data
+- `examples/lima/{tank-os-qemu,tank-os-krunkit,tank-os-vz}.yaml` — Lima configs (QEMU on macOS/Linux, libkrun, Apple Virtualization.framework) for local prebuilt-disk testing, all confirmed on Lima 2.2.0 / macOS M3
+- `qemu-guest-agent` included in the image for hypervisor integration
 
 ## Updates
 
 Transactional OS updates via bootc:
 
 ```bash
-bootc switch --apply quay.io/sallyom/tank-os:latest
+sudo bootc status
+sudo bootc switch --apply quay.io/sallyom/tank-os:latest   # README.md:90 (legacy namespace)
+sudo bootc switch --apply quay.io/redhat-et/tank-os:latest # docs/build.md:21,407 (mid-namespace-migration)
+sudo bootc upgrade --apply                                 # future updates against tracked tag
 ```
 
 The new bootc image is pulled, staged, and applied on next reboot. On failure, bootc rollback restores the previous image.

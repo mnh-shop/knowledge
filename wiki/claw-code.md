@@ -28,8 +28,8 @@ The project is built around a three-part coordination system: **OmX** (oh-my-cod
 - **Interactive REPL** — Full conversational REPL with advanced slash commands (`/ultraplan`, `/teleport`, `/bughunter`, `/skills`, `/doctor`)
 - **One-Shot Prompts** — Direct `claw prompt "text"` execution for scripting and CI pipelines, with `--output-format json` support
 - **Session Persistence** — Conversations saved under `.claw/sessions/` with `--resume latest` support
-- **Permission Modes** — Three-tier security: `read-only` (inspection only), `workspace-write` (safe default with file editing), `danger-full-access` (arbitrary execution)
-- **Model Aliases** — Built-in aliases for `opus`, `sonnet`, `haiku`, `grok`, `qwen-plus`, with user-defined alias support in settings JSON
+- **Permission Modes** — Five-mode security: `read-only`, `workspace-write`, `danger-full-access`, plus `prompt` (interactive approval) and `allow` (unconditional grant), with a `PermissionPrompter` decision layer for interactive approval
+- **Model Aliases** — Built-in aliases for `opus`, `sonnet`, `haiku`, `grok`, `grok-3`, `grok-mini`, `grok-2`, `kimi` (note: `qwen-plus` is NOT a builtin alias — it is a DashScope model name routed by prefix), with user-defined alias support in settings JSON
 - **Skills System** — Install, list, and invoke skills from disk or companion repositories (`/skills install`, `/skills list`)
 - **MCP Server Integration** — Loads `mcpServers` from config with per-entry validation, distinguishing valid/invalid entries with structured JSON output
 - **Hook Configuration** — Pre/post tool-use hooks with matcher-based filtering, supporting legacy and object-style hook entries
@@ -40,6 +40,9 @@ The project is built around a three-part coordination system: **OmX** (oh-my-cod
 - **Workspace Init** — `claw init` scaffolds `.claw/settings.json`, `.claw.json`, `.gitignore`, and `CLAUDE.md` with idempotent tracking
 - **JSON Output** — Machine-readable structured output for `doctor`, `status`, `config`, `state`, `init`, `mcp`, and diagnostic commands
 - **Agent Authoring** — `claw agents create <name>` scaffolds local agent definitions as `.toml` files
+- **ACP Status Surface** — `claw acp` (or `claw --acp`) reports the current ACP/Zed status; no ACP daemon/JSON-RPC entrypoint ships yet, so the command is status-only until real ACP support lands
+- **RAG Service** — `claw-rag-service` HTTP daemon for repository indexing (chunking + embeddings in SQLite, optional Qdrant), semantic search, and a minimal web UI
+- **Containerized Deploy** — `Containerfile`, `docker-compose.yml` (qdrant + rag-serve + rag-ingest), and `install.sh` for reproducible installs
 
 ## Architecture
 
@@ -63,11 +66,27 @@ The logical architecture follows a layered design: a provider abstraction layer 
 
 ### Provider Routing
 
-Model selection follows a cascading priority: CLI flag → environment variable → config file → built-in default. The runtime detects the provider via model name prefix (`claude` → Anthropic, `grok` → xAI, `openai/`/`gpt-` → OpenAI-compatible, `qwen/`/`kimi/` → DashScope) before falling back to credential-based detection.
+Model selection follows a cascading priority: CLI flag → environment variable → config file → built-in default. The runtime detects the provider via model-name prefix **before** falling back to credential sniffing (`metadata_for_model` in `rust/crates/api/src/providers/mod.rs`):
+
+| Prefix | Provider | Auth env var |
+|--------|----------|--------------|
+| `claude` / `anthropic/` | Anthropic | `ANTHROPIC_API_KEY` |
+| `grok` | xAI | `XAI_API_KEY` |
+| `openai/` / `gpt-` | OpenAI-compatible | `OPENAI_API_KEY` |
+| `local/` | OpenAI-compatible (local) | `OPENAI_API_KEY` |
+| `qwen/` / `qwen-` | DashScope (compatible-mode) | `DASHSCOPE_API_KEY` |
+| `kimi/` / `kimi-` | DashScope (compatible-mode) | `DASHSCOPE_API_KEY` |
+
+Prefix routing wins over the auth-sniffer so explicit provider-namespaced models (e.g. `openai/gpt-4.1-mini`) are never misrouted to Anthropic when `ANTHROPIC_API_KEY` is also present.
 
 ### Permission System
 
-The `PermissionMode` enum supports three levels: `read-only` (file reads, glob/grep, local skills, status reporting only), `workspace-write` (adds write/edit/notebook/config/plan-mode updates while gating network tools and shell execution), and `danger-full-access` (every registered tool including arbitrary commands, web fetch, subagents, and subprocess REPLs).
+The `PermissionMode` enum (`rust/crates/runtime/src/permissions.rs`) supports **five** levels: `read-only` (file reads, glob/grep, local skills, status reporting only), `workspace-write` (adds write/edit/notebook/config/plan-mode updates while gating network tools and shell execution), `danger-full-access` (every registered tool including arbitrary commands, web fetch, subagents, and subprocess REPLs), plus:
+
+- `prompt` — requires interactive approval via the `PermissionPrompter` trait (`decide(&mut self, request: &PermissionRequest) -> PermissionPromptDecision`), which evaluates an `allow`/`deny` decision per `PermissionRequest`
+- `allow` — unconditional grant for the tool invocation
+
+`PermissionPolicy` evaluates a `PermissionOverride` (Allow/Deny/Ask) supplied by hooks, per-tool mode requirements, allow/deny/ask rule lists, and an unconditional `denied_tools` list — the prompter is the decision layer used when policy requires interactive approval, and `PermissionOutcome` (Allow/Deny) is the final result.
 
 ## Usage
 
@@ -108,6 +127,7 @@ export ANTHROPIC_API_KEY="sk-ant-..."
 | `claw agents list/create` | Manage local agent definitions |
 | `claw skills install/list` | Manage installed skills |
 | `claw mcp` | Validate MCP server entries |
+| `claw acp` | Report ACP/Zed status (status-only; no ACP daemon yet) |
 | `claw sandbox` | Open sandboxed workspace |
 | `claw system-prompt` | Print the resolved system prompt |
 
@@ -128,7 +148,41 @@ export ANTHROPIC_API_KEY="sk-ant-..."
 
 ### Config File Resolution
 
-Config is loaded in ascending precedence order: `~/.claw.json` → `~/.config/claw/settings.json` → `<repo>/.claw.json` → `<repo>/.claw/settings.json` → `<repo>/.claw/settings.local.json`. Project-local files override user-level files.
+User settings live at **`~/.claw/settings.json`** — the config home resolves from `$CLAW_CONFIG_HOME` when set, otherwise `~/.claw` (`default_config_home()` in `config.rs`). The 5-file discovery chain (`ConfigManager::discover()`), in ascending precedence order:
+
+1. `~/.claw.json` (legacy user-level file)
+2. `~/.claw/settings.json` (user settings; `$CLAW_CONFIG_HOME/settings.json` when the env var is set)
+3. `<repo>/.claw.json`
+4. `<repo>/.claw/settings.json`
+5. `<repo>/.claw/settings.local.json`
+
+Project-local files override user-level files. `claw --output-format json config` reports each file's `precedence_rank`, `wins_for_keys`, and `shadowed_keys` so automation can see which file controls each effective key. `save_user_provider_settings()` writes `~/.claw/settings.json` with mode `0o600` to protect stored API keys.
+
+### Dual-Language Repository
+
+The repo contains two parallel implementations:
+
+- **Python reference tree (`src/`)** — ~100 files: `main.py` (argparse entrypoint: `summary`, `manifest`, `parity-audit`, `setup-report`, `command-graph`, `tool-pool`, `bootstrap-graph`), `permissions.py` (`ToolPermissionContext` with `deny_names`/`deny_prefixes`), `session_store.py`, `query_engine.py` (`QueryEnginePort`), `tool_pool.py`, `tools.py`, `hooks/`, `voice/`, `vim/`, `server/`, `remote/`, `bootstrap_graph.py`, `command_graph.py`, `parity_audit.py`. Described in `CLAUDE.md` as the companion/reference workspace — **not the primary runtime surface**.
+- **Rust rewrite (`rust/`)** — the canonical implementation per `CLAUDE.md`/README ("The canonical implementation lives in `rust/`"), producing the `claw` binary. `PARITY.md` tracks port parity between the two surfaces; `tests/` contains the Python-side validation suite.
+
+The Python tree is a porting/reference workspace (audit helpers and parity harnesses); all active development targets the Rust workspace.
+
+## RAG Service (`claw-rag-service`)
+
+A separate HTTP service (crate `claw-rag-service`, port **8787**) for repository indexing and semantic search, keeping heavy embedding storage out of the main agent process:
+
+- **SQLite index** (`db.rs`): `chunks`, `embeddings`, and `files` tables; chunk/embedding blobs stored as f32 vectors; `file_is_unchanged`/`upsert_file_meta`/`delete_file_and_chunks` for incremental re-ingest
+- **Embeddings** (`embed.rs`): `EmbedConfig::from_env()` with provider support plus a deterministic `mock_vector_for_text()` for offline dev (`CLAW_RAG_MOCK_PROVIDERS=1`)
+- **Routes** (`main.rs`): `GET /` (embedded web UI via `static/index.html`), `GET /health`, `GET /v1/stats` (chunk count, phase), `POST /v1/query` (semantic search → `QueryResponse` with `hits[]` with path/snippet/score)
+- **Ingest**: `claw-rag-service ingest --db ...` CLI walks a workspace root, chunks files, embeds, upserts; query phase reports `1-sqlite` vs `1-sqlite-no-db`/`1-sqlite-empty`
+- **Qdrant optional**: `--features qdrant-index` enables the Qdrant vector index (used by the compose stack)
+
+## Deployment
+
+- **`Containerfile`** (repo root): `rust:bookworm` build image, installs ca-certificates/git/libssl-dev/pkg-config, `WORKDIR /workspace`, `CMD ["bash"]`
+- **`docker-compose.yml`**: three services — `qdrant` (vector store on 6333/6334), `rag-serve` (`claw-rag-service serve --db /data/index.sqlite` on 8787, mock embeddings by default), and `rag-ingest` (one-shot `ingest` over the mounted workspace `./:/workspaces/main:ro`)
+- **`install.sh`**: OS-detecting installer (Linux/macOS/WSL) that verifies the Rust toolchain, builds the `claw` binary from `rust/`, and runs post-install verification; flags `--release`, `--no-verify`, env overrides `CLAW_BUILD_PROFILE`/`CLAW_SKIP_VERIFY`
+- **Windows**: PowerShell-first path documented in `docs/windows-install-release.md` (`claw.exe`)
 
 ## Related
 
@@ -138,3 +192,4 @@ Config is loaded in ascending precedence order: `~/.claw.json` → `~/.config/cl
 - [[hermes-agent]] — Alternative agent gateway with its own CLI
 - [[alphaclaw]] — OpenClaw agent harness
 - [[oh-my-openagent]] — Multi-agent coordination layer for claw-code
+- [[claw-code.python-legacy]] — Companion: Python reference tree map, Rust-rewrite relationship, correction appendix

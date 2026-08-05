@@ -11,6 +11,8 @@ verified_by: codegraph-verify
 
 **Package:** `@13rac1/openclaw-plugin-claude-code`  
 **Version:** 1.1.0  
+**License:** Apache-2.0 (package.json)  
+**Peer Dependency:** `openclaw >= 2025.1.0` (OpenClaw 2025.1.0+, Node.js >= 22, Podman or rootless Docker)  
 **Source:** `sources/openclaw-plugin-claude-code/`
 
 An OpenClaw plugin that executes Claude Code CLI sessions in rootless Podman containers with secure isolation, session persistence, and real-time streaming output.
@@ -173,6 +175,23 @@ List all active sessions with age, last activity, message count, and active job 
 | `apparmorProfile` | `""` | AppArmor profile name (empty = disabled) |
 | `maxOutputSize` | 10485760 | Maximum output size (0 = unlimited) |
 
+## Plugin Manifest
+
+`openclaw.plugin.json` ships at the package root (and is copied into `dist/` on build) so OpenClaw can introspect the plugin without loading it:
+
+| Field | Value |
+|-------|-------|
+| `id` | `claude-code` |
+| `version` | `1.1.0` (matches package version) |
+| `description` | "Run Claude Code sessions in isolated Podman containers" |
+| `main` | `claude-code.js` (the bundled plugin entry) |
+| `tools` | The 6 registered tools listed explicitly |
+| `configSchema` | JSON Schema for every config option (image, runtime, timeouts, memory, cpus, sessions/workspaces dirs, network, apparmorProfile, maxOutputSize) with defaults and per-field descriptions |
+| `uiHints` | Human-readable labels for each config field (used by OpenClaw's config UI) |
+| `requires` | `bins: ["podman"]` — OpenClaw can warn when the runtime binary is missing |
+
+The manifest is published to npm (`files: ["dist", "openclaw.plugin.json"]`) and shipped in GitHub release zips, so `openclaw plugins install` can validate the plugin and surface config schema before any code runs.
+
 ## Security Model
 
 The plugin implements defense-in-depth through multiple layers:
@@ -221,6 +240,18 @@ This plugin extends OpenClaw's capabilities by adding a **contained coding agent
 - Structured job management with status, output pagination, activity detection
 - Hard resource limits for untrusted code
 
+### Decision guide: coding-agent skill vs this plugin
+
+The README (lines 57-85) frames the choice explicitly:
+
+**Use the coding-agent skill when** you want multi-agent support (Codex, Claude Code, Pi), quick setup matters more than isolation, you're comfortable with OpenClaw's sandbox mode, or tasks are short-lived and don't need session persistence.
+
+**Use this plugin when** you run Claude Code with `--dangerously-skip-permissions` and want real containment, need persistent sessions across interactions, want structured job management (status, output pagination, activity detection, crash recovery), or are running untrusted/experimental code needing hard resource limits.
+
+The two can be combined: use the skill for quick Codex tasks, route longer Claude Code sessions through this plugin for isolation.
+
+**Why Podman instead of Docker:** Podman is rootless by default — no daemon, no root process, no privilege-escalation path. Docker's default mode runs a root daemon, so a container escape gives full host root. `runtime: "docker"` is supported for rootless-Docker users, but Podman is strongly recommended.
+
 ## Relationship to Other Projects
 
 | Project | Relationship |
@@ -243,6 +274,23 @@ The included Dockerfile creates a Debian Bookworm-based image with:
 
 Build: `podman build -t ghcr.io/13rac1/openclaw-claude-code:latest .`
 
+## Testing
+
+The test suite is split into unit and integration configs:
+
+| Suite | Config | Scope |
+|-------|--------|-------|
+| Unit | `vitest.config.ts` (`src/**/*.test.ts`) | Mocked — no container required; 80% coverage thresholds enforced (lines/functions/branches/statements) |
+| Integration | `vitest.integration.config.ts` (`src/**/*.integration.test.ts`) | Real Podman containers; 30s per-test timeout |
+
+9 test files total — 6 unit (`claude-code.test.ts`, `podman-runner.test.ts`, `session-manager.test.ts`, `notification.test.ts`, `stream-parser.test.ts`, `format.test.ts`) and 3 integration (`job-lifecycle.integration.test.ts`, `podman-runner.integration.test.ts`, `session-manager.integration.test.ts`). `npm test` runs prettier + eslint before vitest; `npm run test:all` runs unit then integration. Coverage reports are published via `vitest-coverage-report-action` (CHANGELOG 1.1.0).
+
+## Build & Publish Pipeline
+
+- **npm:** `npm run build` = `tsc` + `esbuild` bundle (`--external:openclaw`) + copy of `openclaw.plugin.json` into `dist/`. `prepublishOnly` gates releases on lint/format/build/coverage (`npm run check`). CI publishes to npm with provenance on version tags.
+- **Container image:** `scripts/build-and-push.sh` builds and pushes to `ghcr.io/<GITHUB_USERNAME>/openclaw-claude-code`. Default builds `linux/arm64`; `--multi-arch` builds `linux/arm64` + `linux/amd64`, pushes both, and creates a combined multi-arch manifest (`podman manifest create/add/push`). Env overrides: `IMAGE_NAME`, `IMAGE_TAG`; requires `GITHUB_USERNAME` and a ghcr.io login (PAT with `write:packages` scope).
+- The GitHub release workflow runs tests, publishes to npm with provenance, and builds/pushes the multi-arch images automatically when a `v*` tag is pushed.
+
 ## Source Layout
 
 | File | Purpose |
@@ -254,6 +302,9 @@ Build: `podman build -t ghcr.io/13rac1/openclaw-claude-code:latest .`
 | `src/notification.ts` | Webhook POST for job completion |
 | `src/format.ts` | Duration and byte formatting utilities |
 | `src/test-harness.ts` | Test utilities for mocking |
+| `scripts/build-and-push.sh` | Multi-arch container image build + ghcr.io push |
+| `openclaw.plugin.json` | Plugin manifest (id, tools, configSchema, uiHints, requires) |
+| `vitest.config.ts` / `vitest.integration.config.ts` | Unit vs integration test configs |
 
 ## Authentication
 
@@ -296,3 +347,4 @@ podman pull ghcr.io/13rac1/openclaw-claude-code:latest
 - [[buildah]] — Image builder (used by podman build)
 - [[n8n]] — Workflow automation that can trigger Claude Code tasks
 - [[nix-podman-stacks]] — Declarative container management
+- [[openclaw-plugin-claude-code.integration]] — Plugin manifest, build/publish pipeline, and integration-test matrix

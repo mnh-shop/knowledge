@@ -49,7 +49,7 @@ The key problem it solves: AI agents have OS-level access (email, files, messagi
 │  ┌─────────────────┐  ┌──────────────────────┐  │
 │  │  React Frontend  │  │  Rust Backend         │  │
 │  │  (Vite + TSX)    │◄─►  (Tauri IPC Bridge)  │  │
-│  │                   │  │  58 Tauri commands   │  │
+│  │                   │  │  56 Tauri commands   │  │
 │  │  Components:      │  │                      │  │
 │  │  • BotList/Card   │  │  Modules:            │  │
 │  │  • BotDetail      │  │  • docker_manager    │  │
@@ -79,7 +79,7 @@ The Tauri backend (`src-tauri/src/`) manages all Docker interactions through the
 | Module | Purpose |
 |---|---|
 | `lib.rs` | App setup, IPC handler registration, background status polling (5s interval) |
-| `commands.rs` | 58 Tauri commands — CRUD bots, Docker management, chats, terminal, logs, workspace, skills |
+| `commands.rs` | 56 Tauri commands — CRUD bots, Docker management, chats, terminal, logs, workspace, skills |
 | `docker_manager.rs` | Docker API wrapper via bollard: pull images, create/start/stop/exec containers, stats streams |
 | `bot_store.rs` | Bot profile persistence (local file-based on disk) |
 | `chat_store.rs` | Chat session persistence |
@@ -126,8 +126,6 @@ Prerequisite: Docker must be installed and running.
 ## Related
 
 - [[hermes-profiles]] — Agent profile
-- [[clawpier-architecture]] — Architecture documentation
-- [[clawpier-deployment]] — Deployment guide
 - [[openclaw]] — The primary agent runtime ClawPier manages
 - [[hermes-agent]] — The secondary agent runtime ClawPier manages
 - [[hermes-agent-docker]] — Alternative Docker packaging for Hermes (without the desktop GUI)

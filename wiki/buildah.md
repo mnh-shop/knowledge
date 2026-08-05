@@ -63,14 +63,14 @@ containers/image    (image pulling, pushing, format conversion)
 
 1. **Entry point**: `buildah build [CONTEXT]` → `cmd/buildah/build.go` → `buildCmd()` → `imagebuildah.BuildDockerfiles()` (`imagebuildah/build.go:73`)
 2. **Dockerfile parsing**: Uses `openshift/imagebuilder` library (`imagebuilder.ParseDockerfile()`) to parse the Dockerfile(s) into an AST of `parser.Node` objects. Supports `.in` suffix Dockerfiles preprocessed with `cpp`.
-3. **Executor creation**: `newExecutor()` (`imagebuildah/executor.go:210`) creates an `executor` struct holding all build options, caches, stages map, and semaphore for concurrent stage execution.
+3. **Executor creation**: `newExecutor()` (`imagebuildah/executor.go:209`) creates an `executor` struct holding all build options, caches, stages map, and semaphore for concurrent stage execution.
 4. **Stage creation**: For each multi-stage target, `startStage()` creates a `stageExecutor` that wraps an `imagebuilder.Stage`.
-5. **Per-stage execution**: `stageExecutor.execute()` (`imagebuildah/stage_executor.go:1286`) processes instructions sequentially:
+5. **Per-stage execution**: `stageExecutor.execute()` (`imagebuildah/stage_executor.go:1283`) processes instructions sequentially:
    - `FROM` → `ib.From()` → pulls base image or references prior stage
    - `RUN` → `stageExecutor.Run()` → `b.Run()` → chroot/OCI runtime execution
    - `COPY/ADD` → content injection via the `copier` package
    - `commit()` → `b.Commit()` → creates layer in containers/storage
-6. **Layer commit**: `Builder.Commit()` (`commit.go`) takes the mounted container rootfs, diffs it against the parent layer, compresses the diff, and writes it as a new image layer. The `commit()` method in `stage_executor.go` (`stage_executor.go:2576`) handles configuration (env, labels, cmd, ports, volumes, etc.) before committing.
+6. **Layer commit**: `Builder.Commit()` (`commit.go`) takes the mounted container rootfs, diffs it against the parent layer, compresses the diff, and writes it as a new image layer. The `commit()` method in `stage_executor.go` (`stage_executor.go:2586`) handles configuration (env, labels, cmd, ports, volumes, etc.) before committing.
 7. **Output**: Returns image ID and optional canonical reference.
 
 ### Scripted build (lower-level)
@@ -197,10 +197,10 @@ Buildah runs in CI/CD (GitHub Actions, GitLab CI) or as part of a local build wo
 
 ## Installation Methods
 
-- **brew** (macOS): `brew install buildah`
+- **brew** (macOS): `brew install buildah` — commonly cited, but *not mentioned anywhere in the repo's own documentation* (`install.md` and `docs/`); treat as community knowledge, not source-verified.
 - **Linux packages**: Available in all major distros (`dnf install buildah`, `apt install buildah`)
-- **Containerized**: `docker.io/containers/buildah` or `quay.io/buildah/stable`
-- **From source**: `make buildah` (uses Go modules)
+- **Containerized**: `quay.io/buildah/stable` (used in the official rootless-build tutorial, `docs/tutorials/05-openshift-rootless-build.md:68`). Note: the `docker.io/containers/buildah` reference is *not* found in the repo docs — use `quay.io/buildah/stable` as the canonical container image.
+- **From source**: `make && sudo make install` after cloning (`install.md:163-169` shows the Fedora flow: `git clone`, `cd buildah`, `make`, `sudo make install`, `buildah --help`).
 
 See `install.md` in the repo for full details.
 

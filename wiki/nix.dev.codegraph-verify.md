@@ -50,11 +50,11 @@ verified_by: codegraph-verify
 
 - **Source evidence:**
   - `source/tutorials/` directory exists with subdirectories and tutorial content
-  - `source/tutorials/first-steps/` — ad-hoc shells, declarative shells, reproducible scripts, pinning nixpkgs
+  - `source/tutorials/first-steps/` — 4 tutorials + `index.md`: ad-hoc shells (`ad-hoc-shell-environments.md`), declarative shells (`declarative-shell.md`), reproducible scripts (`reproducible-scripts.md`), pinning nixpkgs (`towards-reproducibility-pinning-nixpkgs.md`)
   - `source/tutorials/nix-language.md` — complete Nix language tutorial
   - `source/tutorials/module-system/` — module system tutorial
   - `source/tutorials/nixos/` — NixOS deployment tutorials
-  - `source/guides/` directory with `best-practices.md`, `faq.md`, `troubleshooting.md`, `recipes/` (8 recipe files)
+  - `source/guides/` directory with `best-practices.md`, `faq.md`, `troubleshooting.md`, `recipes/` (7 recipe files + `index.md`: add-binary-cache, continuous-integration-github-actions, dependency-management, direnv, post-build-hook, python-environment, sharing-dependencies)
   - `source/concepts/` with `flakes.md` (deep dive on Nix flakes), `faq.md`, `index.md`
   - `source/reference/` with glossary, manual index, nixpkgs pinning
   - `source/index.md` line 93-103: Diataxis toctree with `install-nix.md`, `tutorials/index.md`, `guides/index.md`, `reference/index.md`, `concepts/index.md`, `contributing/index.md`, `acknowledgements/index.md`
@@ -68,8 +68,8 @@ verified_by: codegraph-verify
 
 - **Source evidence:**
   - `.vale.ini` exists at repo root — Vale configuration file
-  - `vale/` directory exists with custom Nix vocabulary rules
-  - GitHub Actions includes `vale.yml` workflow (confirmed via `.github/` directory)
+  - `vale/` directory exists with custom Nix vocabulary rules (`vale/Style`, `vale/config`)
+  - GitHub Actions includes 6 workflows in `.github/workflows/`: `build-and-deploy.yml`, `test.yml`, `vale.yml`, `update-nix-releases.yml`, `deploy-site-poc.yml`, `editorconfig.yml`
   - CI runs Vale prose checks on every PR (referenced in wiki and README)
 
 - **Verdict:** ✅ CORRECT

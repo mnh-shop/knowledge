@@ -15,10 +15,11 @@ source: sources/Understand-Anything/
   - `understand-anything-plugin/packages/core/src/plugins/tree-sitter-plugin.ts` — `TreeSitterPlugin` class and `TreeSitterParser` integration (line 31 and line 16)
   - `understand-anything-plugin/packages/core/src/plugins/extractors/` — 14 language-specific extractors: `python-extractor.ts`, `typescript-extractor.ts`, `go-extractor.ts`, `rust-extractor.ts`, `java-extractor.ts`, `cpp-extractor.ts`, `csharp-extractor.ts`, `dart-extractor.ts`, `kotlin-extractor.ts`, `php-extractor.ts`, `ruby-extractor.ts`, `scala-extractor.ts`, `swift-extractor.ts`, `base-extractor.ts`
   - `understand-anything-plugin/packages/core/src/plugins/parsers/` — 13 supplementary parsers for non-tree-sitter formats: `dockerfile-parser.ts`, `env-parser.ts`, `graphql-parser.ts`, `json-parser.ts`, `makefile-parser.ts`, `markdown-parser.ts`, `protobuf-parser.ts`, `shell-parser.ts`, `sql-parser.ts`, `terraform-parser.ts`, `toml-parser.ts`, `yaml-parser.ts`, `index.ts`
+  - `understand-anything-plugin/packages/tree-sitter-dart-wasm/` and `understand-anything-plugin/packages/tree-sitter-swift-wasm/` — dedicated WASM parser packages for Dart and Swift
   - `understand-anything-plugin/packages/core/src/plugins/discovery.ts` — Plugin discovery mechanism
   - `understand-anything-plugin/packages/core/src/plugins/registry.ts` — Plugin registry
   - `understand-anything-plugin/packages/core/src/plugins/tree-sitter-plugin.test.ts` — Test coverage
-- **Verdict:** ✅ CORRECT (14 extractors + 13 supplementary parsers confirmed)
+- **Verdict:** ✅ CORRECT (14 extractors + 13 supplementary parsers + 2 WASM parser packages confirmed)
 - **Fix needed:** None
 
 ## Claim 2: Interactive knowledge graph dashboard (React + TypeScript)
@@ -102,15 +103,42 @@ source: sources/Understand-Anything/
 - **Verdict:** ✅ CORRECT
 - **Fix needed:** None
 
+## Claim 7: Architecture layout — search.ts/schema.ts are files, tree-sitter under plugins/, tours under analyzer/
+- **Wiki says:** The architecture tree locates graph search at `src/search.ts` (file), schema at `src/schema.ts` (file), WASM parser integration at `src/plugins/tree-sitter-plugin.ts`, and guided tour generation at `src/analyzer/tour-generator.ts`, with additional `analyzer/`, `languages/`, `figma/`, and `persistence/` directories.
+- **Source evidence:**
+  - `understand-anything-plugin/packages/core/src/search.ts` — Graph search implementation (single file, NOT a directory)
+  - `understand-anything-plugin/packages/core/src/schema.ts` — Graph schema validation (single file, NOT a directory)
+  - `understand-anything-plugin/packages/core/src/plugins/tree-sitter-plugin.ts` — WASM parser integration (under `plugins/`, NOT a top-level `src/tree-sitter/` dir)
+  - `understand-anything-plugin/packages/core/src/analyzer/tour-generator.ts` — Guided tour generation (under `analyzer/`, NOT a top-level `src/tours/` dir)
+  - `understand-anything-plugin/packages/core/src/languages/` — language-pack: `configs/` (42 language configs: `python.ts`, `typescript.ts`, `go.ts`, `rust.ts`, ...) + `frameworks/` (11 detectors: `django.ts`, `react.ts`, `nextjs.ts`, ...) + `language-registry.ts`, `framework-registry.ts`
+  - `understand-anything-plugin/packages/core/src/figma/` — Figma design analysis (`index.ts`, `merge.ts`, `parse/parse-document.ts`, `parse/tokens.ts`, `thumbnails.ts`)
+  - `understand-anything-plugin/packages/core/src/persistence/` — Graph persistence layer (`index.ts`)
+  - `understand-anything-plugin/packages/core/src/fingerprint.ts`, `staleness.ts`, `change-classifier.ts` — incremental analysis modules (top-level files)
+- **Verdict:** ✅ CORRECT (earlier wiki tree claiming `src/search/`, `src/schema/`, `src/tree-sitter/`, `src/tours/` directories was fixed to match reality)
+- **Fix needed:** Applied to wiki
+
+## Claim 8: Viewer tarball release process and repo-root scripts
+- **Wiki says:** The viewer is published as a release tarball `understand-anything-viewer.tgz` (repacked on every release and re-uploaded to GitHub Releases so `npx .../releases/latest/download/understand-anything-viewer.tgz` works), and `scripts/generate-large-graph.mjs` generates fake graphs for performance testing.
+- **Source evidence:**
+  - `understand-anything-plugin/packages/viewer/` — viewer package (`bin/viewer.mjs`, `build.mjs`, `package.json` named `understand-anything-viewer`)
+  - `sources/Understand-Anything/CLAUDE.md` — Viewer Package section: "On every release, repack (`pack:release` script) and re-upload the tarball to the GitHub release as `understand-anything-viewer.tgz` — exactly that name, the READMEs' `releases/latest/download/` URL depends on it"
+  - `README.md` lines 306-310 — `npx https://github.com/Egonex-AI/Understand-Anything/releases/latest/download/understand-anything-viewer.tgz /path/to/analyzed/project`, "Only Node.js (>= 18) is required"
+  - `scripts/generate-large-graph.mjs` — fake-graph generator; CLAUDE.md: "Usage: `node scripts/generate-large-graph.mjs [nodeCount]` (default: 3000 nodes)... Not part of the production pipeline"
+  - `scripts/benchmark-large-repo.mjs` — benchmark helper
+- **Verdict:** ✅ CORRECT
+- **Fix needed:** None (content added to wiki)
+
 ## Summary
 
-All 6 key claims from the Understand-Anything wiki have been verified against the source code:
-- ✅ **Multi-language tree-sitter parsing:** 14 language extractors + 13 supplementary parsers confirmed
+All 8 key claims from the Understand-Anything wiki have been verified against the source code:
+- ✅ **Multi-language tree-sitter parsing:** 14 language extractors + 13 supplementary parsers + 2 WASM parser packages confirmed
 - ✅ **Knowledge graph dashboard:** React + TypeScript dashboard with Zustand, React Flow confirmed
-- ✅ **Multi-agent pipeline:** 10 agent definitions + 9 skill commands confirmed
+- ✅ **Multi-agent pipeline:** 10 agent definitions + 9 skill commands (incl. `/understand-figma`) confirmed
 - ✅ **Incremental analysis:** Fingerprint-based change detection infrastructure confirmed
 - ✅ **Knowledge graph format:** `KnowledgeGraph` type, schema validation, graph builder confirmed
 - ✅ **Multi-platform install:** Universal install.sh + platform-specific plugin directories confirmed
+- ✅ **Architecture layout:** search.ts/schema.ts as files, tree-sitter under plugins/, tours under analyzer/ confirmed
+- ✅ **Viewer tarball + scripts:** release tarball process and generate-large-graph.mjs confirmed
 
 ## Related
 

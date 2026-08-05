@@ -78,20 +78,21 @@ OpenClaw Container provides a production-ready deployment of OpenClaw using cont
 
 #### 3. LiteLLM Proxy
 - **Purpose**: External API proxy for Claude models
-- **Network**: Google Vertex AI dedicated network
+- **Network**: Pre-existing `google-vertex` network (10.89.0.0/24) — LiteLLM's own, not created by this repo
 - **Existing**: Already deployed, referenced by OpenClaw
 
 #### 4. Network Architecture
 
-**OpenClaw Networks:**
+**Repo-owned networks** (created by `setup-networks.sh:11-21`):
 - `openclaw-external` (10.92.0.0/24): Primary internet access
-  - Services: Telegram APIs, Brave API, Red Hat Jira, Google Vertex AI
+  - Services: Telegram APIs, Brave API, Red Hat Jira, Google APIs
   - Blocking: All other internet traffic
 - `internal-services` (10.93.0.0/24): Container isolation
   - Access: OpenClaw ↔ Whisper ↔ LiteLLM only
   - Security: No external internet access
-- `google-vertex` (10.89.0.0/24): Litellm external access
-  - Purpose: Google Cloud/Vertex AI only
+
+**Pre-existing (referenced, NOT created by this repo):**
+- `google-vertex` (10.89.0.0/24): LiteLLM's existing network — `README.md:18` marks it "already deployed". This repo only joins containers onto `internal-services`; it never creates or manages `google-vertex`. Its purpose is Google Cloud/Vertex AI access for LiteLLM.
 
 ## Container Definitions
 
@@ -164,12 +165,20 @@ cmd ["openclaw", "gateway", "--bind", "lan"]
 -v ~/.openclaw/exec-approvals.json:/app/openclaw-data/exec-approvals.json:ro,z
 ```
 
-**Other RW Mounts**:
-- Workspace, logs, skills, cron, memories, subagents, telegram, scripts, settings, devices, delivery-queue, media
+**As actually implemented** (`start-containers.sh:54-62`): there are **no additional per-subdirectory mounts**. The single `rw` base mount (`~/.openclaw:/app/openclaw-data:rw,z`) makes every `~/.openclaw/` subdirectory (workspace, logs, agents, cron, memories, subagents, telegram, scripts, settings, devices, delivery-queue, media, ...) writable at once; the three `ro` overlays protect only `openclaw.json`, `credentials/`, and `exec-approvals.json`. The README's per-directory mount table (workspace, logs, agents, cron, memories, subagents, telegram, scripts, settings, devices, delivery-queue, media, identity/) is the stale pre-simplification design — it does not match the running script.
 
-**OAuth Credentials** (`rw` for refresh):
-- Google Cloud: `~/.config/gcloud:/root/.config/gcloud:rw`
-- GitHub: `~/.config/gh:/root/.config/gh:rw`
+**Whisper model mount** (whisper-service only, `start-containers.sh:10,30`):
+```bash
+-v ~/.local/share/whisper-cpp:/app/models:ro
+```
+
+**SSH keys are NOT mounted** (`start-containers.sh:121-124`) — the firewall blocks port 22 anyway; git and gh use HTTPS/OAuth instead.
+
+**Optional credential mounts** (conditional on the host dir existing, `start-containers.sh:68-119`):
+- `~/.config/gcloud:/root/.config/gcloud:rw` (Google OAuth token refresh)
+- `~/.config/gh:/root/.config/gh:rw` (GitHub OAuth refresh)
+- `~/.gitconfig:/root/.gitconfig:ro` (static)
+- `~/.config/.jira:/root/.config/.jira:ro`, `~/.config/jira:/root/.config/jira:ro`, `~/.config/notion:/root/.config/notion:ro`, `~/.config/todoist:/root/.config/todoist:ro` (static)
 
 ### SELinux Labels
 
@@ -302,14 +311,31 @@ podman machine ssh "sudo journalctl -k --since '10 minutes ago' | grep openclaw-
 
 ### Firewall Policies
 
-Applied by `setup-firewall-policies.sh`:
-- Allowed from openclaw-external network:
-  - HTTPS to GitHub (for gh CLI, git)
-  - HTTPS to Red Hat/Jira (issues.redhat.com)
-  - HTTPS to Google Vertex AI (via separate network)
-  - DNS queries
-  - Internal container communication
-- Blocked: Port 22 (SSH)
+Applied by `setup-firewall-policies.sh` (run inside the Podman VM). Two iptables chains on the FORWARD table:
+
+**`PODMAN_ZONE_OPENCLAW`** (`setup-firewall-policies.sh:65-109`) — applies to the `openclaw-external` subnet (10.92.0.0/24):
+- Allow DNS (UDP/TCP 53) + established/related (`:72-76`)
+- Allow HTTPS (443) to Telegram (`:79-81`), Google (`:84-86`), Red Hat/Jira (`:89-91`), Brave (`:94-96`), GitHub (`:99-101`)
+- Log (`openclaw-blocked:`) and DROP everything else (`:104-105`)
+- Port 22 (SSH) not allowed — SSH keys are not mounted
+
+**`PODMAN_ZONE_INTERNAL_SVC`** (`setup-firewall-policies.sh:114-132`) — applies to the `internal-services` subnet (10.93.0.0/24):
+- Allow only intra-subnet traffic (10.93.0.0/24) + established (`:121-124`)
+- Log (`internal-svc-blocked:`) and DROP everything else — no internet (`:127-128`)
+
+**Persistence** — `install-persistent-firewall.sh` installs a systemd service inside the Podman VM:
+- Applies the current policies first (`:11-12`), plus the pre-existing LiteLLM policies (`:15-17`)
+- Saves the live rules to `/etc/podman-firewall-rules.v4` via `iptables-save` (`:45-47`)
+- Installs restore script `/etc/podman-firewall-rules-restore.sh` (`:21-42`)
+- Creates `podman-firewall.service` (oneshot, `iptables-restore` at boot, `WantedBy=multi-user.target`) (`:51-66`)
+- Enables + starts the service (`:70-72`); re-run the script to re-save updated rules (`:90-91`)
+
+### Deferred Features (Phase 2)
+
+Per `README.md:178-188`:
+
+- **Browser tool** — currently disabled in the container; requires a Chrome/Chromium install (~500MB). Deferred to a future phase if needed.
+- **Google OAuth re-auth** — the current setup reuses existing tokens from `~/.openclaw/identity/` (covered by the base `~/.openclaw` rw mount); refresh tokens should auto-renew. If a full re-auth becomes necessary, it is deferred to Phase 2.
 
 ## Monitoring
 
@@ -351,7 +377,7 @@ lsof -i :18789
 podman machine ssh "sudo iptables -L PODMAN_ZONE_OPENCLAW -n -v"
 ```
 
-**See** `MIGRATION-GUIDE.md` for detailed troubleshooting steps.
+**See** [[openclaw-container.migration]] — the operations/troubleshooting companion (firewall persistence, OAuth re-auth, SELinux, volume mounts). Note: `MIGRATION-GUIDE.md` does **not** exist in this repo — it is a stale reference in `README.md:64,97,212,270`.
 
 ## Success Criteria
 
@@ -372,8 +398,8 @@ After containerization, all of the following should be verified:
 
 ### Main Scripts
 
-- `README.md`: User documentation and quick start
-- `MIGRATION-GUIDE.md`: Migration instructions
+- `README.md`: User documentation and quick start (contains stale refs to a non-existent `MIGRATION-GUIDE.md` and a pre-simplification mount table)
+- `CLAUDE.md`: AI-assistant context — architecture, volume/SELinux conventions, troubleshooting
 - `openclaw.Containerfile`: Gateway container definition
 - `whisper.Containerfile`: Whisper service definition
 - `whisper-api.py`: Whisper HTTP API
@@ -395,7 +421,8 @@ After containerization, all of the following should be verified:
 - `internal-services`: 10.93.0.0/24
 
 **Volume Mappings** (`start-containers.sh`):
-- `~/.openclaw/*` → `/app/openclaw-data/*`
+- `~/.openclaw/*` → `/app/openclaw-data/*` (1 rw base + 3 ro overlays)
+- `~/.local/share/whisper-cpp` → `/app/models` (ro, whisper-service only)
 - With proper SELinux labels (`:z` flag)
 
 ## Important Conventions
@@ -437,6 +464,7 @@ Wrapper intercepts and calls: `http://whisper-service:8080/transcribe`
 
 - [[openclaw]] — Parent project
 - [[podman]] — Container runtime platform
+- [[openclaw-container.migration]] — Operations/troubleshooting companion
 - [[domains/deployment/INDEX|deployment]] — Container deployment patterns
 
 ## Related Resources

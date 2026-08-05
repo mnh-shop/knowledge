@@ -12,15 +12,15 @@ verified_by: codegraph-verify
 
 ## Claim-1: 17 specialized agents coordinated by a master orchestrator
 
-The system defines 17 AI agents in a strict pipeline architecture. The master orchestrator (Hermes, model `openai/gpt-5.2-high`) routes requests, manages pipelines, and coordinates agents across six domains: research (3 agents), planning (2), implementation (4), quality (4), documentation (2), and infrastructure (2).
+The system defines 17 AI agents in a strict pipeline architecture. The master orchestrator (Hermes, model `openai/gpt-5.2-high`) routes requests, manages pipelines, and coordinates agents across six domains: research (3 agents), planning (2), implementation (4), quality (4), documentation (2), and infrastructure (2). `@debugger` lives in the QUALITY domain — `agent/subagents/quality/debugger.md` — alongside reviewer, tester, and security.
 
-**Source evidence:** `README.md` lines 18-22 ("Hermes is a sophisticated multi-agent orchestration system designed for OpenCode AI. It coordinates 17 specialized AI agents"), lines 59-110 (agent tables listing all 17 agents with models and roles), and lines 26-55 (architecture diagram showing the master orchestrator delegating to six domains). The `opencode.json` file lines 3-22 define the hermes agent with `mode: "primary"` and all subagents declared with `mode: "subagent"`.
+**Source evidence:** `README.md` lines 18-22 ("Hermes is a sophisticated multi-agent orchestration system designed for OpenCode AI. It coordinates 17 specialized AI agents"), lines 59-110 (agent tables listing all 17 agents with models and roles), lines 26-55 (architecture diagram showing the master orchestrator delegating to six domains with @debugger under QUALITY), lines 236-240 (project structure: `quality/` contains reviewer.md, tester.md, debugger.md, security.md). The `agent/core/hermes.md` QUALITY registry at lines 58-64 lists `@debugger | Find root cause of bugs`. The `opencode.json` file lines 3-22 define the hermes agent with `mode: "primary"` and all subagents declared with `mode: "subagent"` (17 `mode: subagent` entries total, 18 agent blocks with hermes).
 
 ## Claim-2: Strict pipeline architecture with mandatory quality gates
 
-Every pipeline enforces mandatory quality gates: `@reviewer` and `@tester` run after every code change. For security-related work, `@security` is mandatory. Seven named pipelines are documented: New Feature, New Feature (Security-Related), Bug Fix (Unknown Cause), Bug Fix (Known Cause), Refactoring, Performance Optimization, and Infrastructure Changes.
+Every pipeline enforces mandatory quality gates: `@reviewer` and `@tester` run after every code change. For security-related work, `@security` is mandatory. Ten pipelines are documented in `agent/core/hermes.md`: the seven named in the README (New Feature, New Feature (Security-Related), Bug Fix (Unknown Cause), Bug Fix (Known Cause), Refactoring, Performance Optimization, Infrastructure Changes) plus Analysis Only, Documentation Only, and Comments Only.
 
-**Source evidence:** `README.md` lines 113-146 (seven pipeline definitions showing ordered agent sequences), lines 150-151 ("Mandatory Quality Gates: @reviewer and @tester run after every code change", "Security First: @security is mandatory for auth, user data, secrets").
+**Source evidence:** `README.md` lines 113-146 (seven pipeline definitions showing ordered agent sequences), lines 150-151 ("Mandatory Quality Gates: @reviewer and @tester run after every code change", "Security First: @security is mandatory for auth, user data, secrets"). `agent/core/hermes.md` lines 166-175 add the three non-code pipelines: "**Analysis Only (no code changes):** @finder → @analyst (skip reviewer/tester — no changes made)", "**Documentation Only:** @finder → @documenter", "**Comments Only (after reviewer request):** → @commenter (optional, after @tester)". `hermes.md` lines 112-132 document the mandatory security rules and lines 135-141 the mandatory chains ("If @coder, @editor, @fixer, or @refactorer was called: → @reviewer (ALWAYS) → @tester (ALWAYS)").
 
 ## Claim-3: OpenCode platform plugin with configurable model routing
 
@@ -28,11 +28,11 @@ The system is an OpenCode AI plugin that uses `opencode.json` for configuration.
 
 **Source evidence:** `opencode.json` lines 1-2 (`$schema` reference to opencode.ai), lines 25-39 (finder agent with `google/gemini-3-flash`, tools restricted to `read/list/glob/grep`), lines 78-94 (architect with `gemini-claude-opus-4-5-thinking-medium`), lines 340-525 (provider model definitions for OpenAI GPT-5.2 variants and Google Gemini variants). `package.json` line 9 confirms `@opencode-ai/plugin: "1.0.218"` dependency.
 
-## Claim-4: Agent tools are role-scoped per pipeline stage
+## Claim-4: Agent tools are role-scoped per agent, not per domain
 
-Each agent has a carefully scoped toolset matching its role. The master orchestrator only has `task`, `todowrite`, `todoread` tools with all file/read/write/edit tools disabled. Research agents have `read/list/glob/grep` but no `write` tools. Implementation agents have full tool access including `bash/read/write/edit`. Quality agents (reviewer, security) are read-only with no `write` or `bash` access.
+Each agent has a carefully scoped toolset matching its role. The master orchestrator only has `task`, `todowrite`, `todoread` tools with all file/read/write/edit tools disabled. Research and planning agents have `read/list/glob/grep` but no `write` tools. Implementation agents have full tool access including `bash/read/write/edit`. The quality domain is NOT uniformly read-only: `@tester` carries the full implementation toolset (`bash/read/write/edit`), `@debugger` has `bash` but no `write`/`edit` (diagnosis-only), and only `@reviewer` and `@security` are strictly read-only with no `write`, `edit`, or `bash` access.
 
-**Source evidence:** `opencode.json` lines 5-22 (hermes tools: only `task/todowrite/todoread`), lines 23-39 (finder: `read/list/glob/grep`, no write), lines 114-131 (coder: full `bash/read/write/edit/list/glob/grep/lsp`), lines 190-207 (reviewer: `read/list/glob/grep/lsp/todoread`, no write/bash), lines 247-264 (security: same read-only restriction as reviewer).
+**Source evidence:** `opencode.json` lines 5-22 (hermes tools: only `task/todowrite/todoread`), lines 23-39 (finder: `read/list/glob/grep`, no write), lines 114-131 (coder: full `bash/read/write/edit/list/glob/grep/lsp`), lines 209-227 (tester: full `bash/read/write/edit/list/glob/grep/lsp/todoread`), lines 228-246 (debugger: `bash: true` but `write: false`, `edit: false`), lines 190-207 (reviewer: `read/list/glob/grep/lsp/todoread`, no write/bash), lines 247-264 (security: same read-only restriction as reviewer).
 
 ## Claim-5: Revision loops and conflict resolution with checkpoints
 
@@ -51,3 +51,9 @@ The README provides complete bilingual documentation with English and Russian se
 The repository is structured as a template or reference for multi-agent orchestration patterns. It includes MCP server configuration for `@researcher` (Context7 for library documentation, fetch for web pages). Files are organized as markdown agent definition files in a hierarchical directory structure ready for `cp -r agent ~/.config/opencode/`.
 
 **Source evidence:** `README.md` lines 160-186 (installation instructions: `cp -r agent ~/.config/opencode/`, MCP server setup with `npx -y @upstash/context7-mcp`), lines 220-247 (project structure showing `agent/core/hermes.md` and hierarchical subagent directories). `opencode.json` lines 341-344 show plugin configuration for authentication providers.
+
+## Claim-8: MIT license and automatic activation (no `--swarm` flag)
+
+The repository is MIT-licensed and the multi-agent system activates automatically inside OpenCode AI — there is no `--swarm` CLI flag anywhere in the repo.
+
+**Source evidence:** `README.md` line 9 badge (`License-MIT`), line 487-489 ("## License\n\nMIT"). `README.md` line 190: "The system activates automatically when you use OpenCode AI. Hermes analyzes your request and routes it to the appropriate pipeline." A repo-wide search for `--swarm` returns no matches; activation is via `opencode.json` (`default_agent: hermes`, line 3) plus `cp -r agent ~/.config/opencode/` (README.md:176).

@@ -24,7 +24,7 @@ The project is designed to be simple, reliable, and comprehensive. It supports b
 
 ## Key Features
 
-- **Full Quadlet Type Coverage** — Supports containers, networks, pods, volumes, images, builds (inlined Containerfile or git repository), and Kubernetes YAML (`.kube`) units
+- **Full Quadlet Type Coverage** — Supports containers, networks, pods, volumes, images, builds, and Kubernetes YAML (`.kube`) units. The build submodule (`build.nix`) exposes a Containerfile path via `buildConfig.file` and an options file via `buildConfig.modules` (`ContainersConfModule`); there is **no** dedicated inline-text or git-context option — git-context builds only work by passing the repository URL through the `File=` passthrough
 - **NixOS Module** — `virtualisation.quadlet` module with declarative options for all resource types, auto-enables Podman, integrates with systemd, and injects config-change detection hashes
 - **Home Manager Module** — Same interface for rootless user-scoped containers with `xdg.configFile` deployment, systemd user service management, and Podman auto-update support
 - **Cross-Resource References** — Type-safe `.ref` syntax for referencing other Quadlet resources (containers referencing networks, pods, volumes, images, builds) with automatic systemd dependency resolution
@@ -54,7 +54,7 @@ network.nix            — Network submodule with 20+ typed options (Driver, Sub
 volume.nix             — Volume submodule
 pod.nix                — Pod submodule
 image.nix              — Image submodule (pull from registries or docker-archive)
-build.nix              — Build submodule (Containerfile from text or git repo)
+build.nix              — Build submodule (Containerfile path via `file`, `ContainersConfModule` via `modules`; no inline-text or git-context option)
 kube.nix               — Kubernetes YAML submodule
 ```
 

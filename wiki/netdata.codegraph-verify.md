@@ -14,10 +14,11 @@ source: sources/netdata/
 - **Source evidence:**
   - `src/` contains all core agent code: `daemon/`, `collectors/`, `database/`, `web/`, `health/`, `streaming/`, `ml/`, `exporting/`, `plugins.d/`, `registry/`, `aclk/`, `cli/`, `claim/`, `libnetdata/`, `go/`, and more
   - `src/daemon/` contains the agent daemon lifecycle, analytics, build info, and commands
-  - `src/collectors/` contains 30+ collector plugins including `proc.plugin/`, `cgroups.plugin/`, `ebpf.plugin/`, `apps.plugin/`, `statsd.plugin/`, `systemd-journal.plugin/`, `python.d.plugin/`, `charts.d.plugin/`, `debugfs.plugin/`, `freebsd.plugin/`, `macos.plugin/`, `windows.plugin/`, `ioping.plugin/`, `nfacct.plugin/`, `perf.plugin/`, `slabinfo.plugin/`, `tc.plugin/`, `xenstat.plugin/`, and `timex.plugin/`
+  - `src/collectors/` contains 27 internal plugins in this checkout: `proc.plugin/`, `cgroups.plugin/`, `ebpf.plugin/`, `apps.plugin/`, `statsd.plugin/`, `systemd-journal.plugin/`, `python.d.plugin/`, `charts.d.plugin/`, `debugfs.plugin/`, `freebsd.plugin/`, `macos.plugin/`, `windows.plugin/`, `ioping.plugin/`, `nfacct.plugin/`, `perf.plugin/`, `slabinfo.plugin/`, `tc.plugin/`, `xenstat.plugin/`, and `timex.plugin/`
+  - The Go-based `go.d.plugin` is a **separate repository** (netdata/go.d.plugin) referenced from `src/collectors/README.md:33` — cloud provider collectors (AWS/GCP/Azure) live there per `integrations/categories.yaml` (`data-collection.cloud-and-devops`), not in this checkout
   - `src/plugins.d/` provides the external plugin protocol interface
-- **Verdict:** ✅ CORRECT
-- **Fix needed:** None
+- **Verdict:** ⚠️ CORRECTED (was "30+ collector plugins including go.d" — actual: 27 internal plugins in this checkout, go.d.plugin is external)
+- **Fix needed:** wiki updated to qualify the plugin count and go.d.plugin's separate-repo status
 
 ## Claim 2: ML-powered anomaly detection at src/ml/
 - **Wiki says:** Netdata performs unsupervised anomaly detection using multiple ML models trained per metric at the edge. This lives in `src/ml/`.
@@ -73,15 +74,26 @@ source: sources/netdata/
 - **Verdict:** ✅ CORRECT
 - **Fix needed:** None
 
+## Claim 7: Rust crates — OpenTelemetry ingestor/ledger at src/crates/
+- **Wiki says:** A Rust workspace under `src/crates/` adds native OTLP ingestion (`otel-ingestor`, `otel-ledger`) alongside `sfsq`, `netipc`, and supporting `opentelemetry` crates.
+- **Source evidence:**
+  - `src/crates/` is a Cargo workspace (`Cargo.toml`) with 30+ crates including `otel-ingestor/`, `otel-ledger/`, `sfsq/`, `sfsq-cli/`, `netipc/`, plus supporting OpenTelemetry crates: `otel-catalog/`, `otel-plugin/`, `otel-streams/`, `flatten-otel/`, `otel-legacy-logs/`, `otel-logs-identity/`, and `journal-*` logging crates
+  - `src/crates/otel-ingestor/` implements OTLP ingest into the agent
+  - `src/crates/otel-ledger/` implements ledger processing for ingested telemetry
+  - Additional crates: `ferryboat`, `file-cache`, `netflow-plugin`, `treight`, `wal`, `chunk-file`, `file-lifecycle`, `file-registry`
+- **Verdict:** ✅ CORRECT
+- **Fix needed:** None
+
 ## Summary
 
-All 6 key claims from the Netdata wiki have been verified against the source code via directory exploration:
-- ✅ C agent with 30+ collector plugins in `src/collectors/` confirmed
+All 7 key claims from the Netdata wiki have been verified against the source code via directory exploration:
+- ✅ C agent with 27 internal collector plugins in `src/collectors/` (go.d.plugin external) confirmed
 - ✅ ML-powered anomaly detection in `src/ml/` with training and inference confirmed
 - ✅ Distributed parent-child streaming in `src/streaming/` confirmed
 - ✅ Alerting engine in `src/health/` with dynamic thresholds confirmed
 - ✅ Interactive dashboard served from `src/web/` with real-time updates confirmed
 - ✅ Tiered storage engine in `src/database/` with multi-resolution retention confirmed
+- ✅ Rust workspace in `src/crates/` with OpenTelemetry ingestor/ledger confirmed
 
 ## Related
 

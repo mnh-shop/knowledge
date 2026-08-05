@@ -40,7 +40,13 @@ Mnemosyne is a layered SQLite-backed memory system organized into several core s
 ### Core Abstractions: `Mnemosyne` (legacy) vs `BeamMemory`
 
 - **`Mnemosyne`** (`mnemosyne/core/memory.py`): High-level facade wrapping BeamMemory with streaming, compression, pattern detection, delta sync, and plugin support. The class `Mnemosyne` instantiates a `BeamMemory` internally.
-- **`BeamMemory`** (`mnemosyne/core/beam.py`): The core engine — owns the connection, manages working memory, entity/fact extraction, deduplication, and the E6 auto-migration.
+- **`BeamMemory`** (`mnemosyne/core/beam.py`): The core engine — owns the connection, manages working memory, entity/fact extraction, deduplication, and the E6 auto-migration. BEAM = **Bilevel Episodic-Associative Memory** (beam.py docstring).
+
+### Reasoning & Orchestration
+
+- **AAAK Dialect** (`mnemosyne/core/aaak.py`): AAAK (compression dialect) — a full-fledged, lossless shorthand compression scheme for AI memory context that LLMs parse efficiently without a decoder. Maps category prefixes to codes (`PREFERENCE→PREF`, `TRAIT→TRAIT`, `STATUS→STAT`, `INSTRUCTION→INST`, ...) and compresses common structural phrases (`"User asked " → "ASK "`, `"User prefers " → "PREF "`, `"Married to " → "MARRIED→"`).
+- **SHMR** (`mnemosyne/core/shmr.py`): **Self-Harmonizing Memory Reasoning** — the signature reasoning layer. Related memories "echo" each other in the background, negotiating contradictions, surfacing hidden patterns, and converging into stable beliefs stored in a `harmonic_beliefs` table. Built on ECHO-OR research (AxDSan/ECHO-OR) but rearchitected for continuous local orchestration inside BEAM. Tunable via env vars (`MNEMOSYNE_SHMR_BATCH_SIZE`, `MNEMOSYNE_SHMR_MAX_ITERATIONS`, `MNEMOSYNE_SHMR_SIMILARITY_THRESHOLD`, ...).
+- **Orchestrator** (`mnemosyne/core/orchestrator.py`): Expert recall orchestrator — a compatibility entry point exposing a single "best available" recall function (`orchestrate_recall`) that routes through the best BeamMemory path without callers depending directly on `BeamMemory`.
 
 ### Extraction & Entity Systems
 
@@ -78,7 +84,7 @@ Mnemosyne is a layered SQLite-backed memory system organized into several core s
 
 ### Integrations & Protocol
 
-- **MCP Server** (`mnemosyne/mcp_server.py`, `mnemosyne/mcp_tools.py`): Model Context Protocol server supporting both stdio and SSE transports. Exposes 30+ memory tools (remember, recall, forget, search, etc.).
+- **MCP Server** (`mnemosyne/mcp_server.py`, `mnemosyne/mcp_tools.py`): Model Context Protocol server supporting both stdio and SSE transports. Tool schemas are centralized in `mnemosyne/tool_schemas.py` — the single source of truth defining 36 tool schemas, migrated to the MCP SDK 2.x `Tool.input_schema` model field.
 - **CLI** (`mnemosyne/cli.py`): Direct command-line interface for memory operations, MCP server launch, install, uninstall.
 - **OpenWebUI Tool** (`mnemosyne/integrations/openwebui_tool.py`): Single-file bridge for OpenWebUI custom tools.
 - **OpenClaw Provider** (`mnemosyne/integrations/openclaw.py`): Native OpenClaw memory provider.
@@ -129,6 +135,7 @@ mnemosyne/
   install.py               # Install/uninstall scripts
   mcp_server.py            # MCP protocol server
   mcp_tools.py             # MCP tool definitions
+  tool_schemas.py          # Single source of truth for MCP tool schemas (36 tools, MCP SDK 2.x)
   core/
     __init__.py
     aaak.py                # AAAK architecture utilities
@@ -182,13 +189,13 @@ mnemosyne/
     openwebui_tool.py
   migrations/
     e6_triplestore_split.py
-tests/                       # 60+ test files
+tests/                       # 151 test files (144 test_*.py + 6 benchmark + conftest.py)
 tools/                       # Benchmark and diagnostic scripts
 ```
 
 ### Tests
 
-Over 60 test files covering:
+151 test files (144 `test_*.py`, 6 `benchmark_*.py`, `conftest.py`) covering:
 - BEAM benchmark tests (comprehensive, SOTA, pure recall gate)
 - Identity memory, provider tools across 15 tools
 - E6 migration, vector rewiring, cross-tier dedup
@@ -220,8 +227,10 @@ Over 60 test files covering:
 | **OpenAI Codex CLI** | MCP (`.codex/mcp.json`) |
 | **Windsurf** | MCP (`.windsurf/mcp_config.json`) |
 | **OpenWebUI** | `@tool` bridge file |
+| **Pi** | Pi extension + skill (`pi install npm:@mnemosyne-oss/pi-mnemosyne`) |
 | **OpenClaw** | Native provider plugin |
-| **Hermes Agent** | MCP + Plugin (ships enabled) |
+| **Hermes Agent** | MCP + Plugin (ships enabled) — native plugin exposes 20 tools + 3 hooks (`pre_llm_call`, `on_session_start`, `post_tool_call`) per `hermes_memory_provider/plugin.yaml` |
+| **Hermes Tweet** | Companion plugin (adds X/Twitter post, account, trend, and search context to remembered sessions) |
 | **Any MCP client** | stdio or SSE transport |
 | **Any Python agent** | `import mnemosyne` |
 

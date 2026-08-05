@@ -13,7 +13,7 @@ A lightweight, type-safe Python library (Python >=3.10) that implements the [Age
 
 - **Repository:** <https://github.com/dougtrajano/pydantic-ai-skills>
 - **Author:** Douglas Trajano
-- **Version:** 0.11.0
+- **Version:** 1.3.0
 - **License:** MIT
 - **Docs site:** <https://dougtrajano.github.io/pydantic-ai-skills>
 
@@ -302,7 +302,7 @@ pip install -e ".[test]"
 pytest
 ```
 
-Test files in `tests/`:
+Test files in `tests/` (17 `.py` files — 16 test modules plus `__init__.py`):
 
 | File | Coverage |
 |------|----------|
@@ -321,12 +321,13 @@ Test files in `tests/`:
 | `test_reload.py` | auto_reload behavior |
 | `test_coverage_improvements.py` | Coverage improvements |
 | `test_toolset_coverage.py` | Additional toolset coverage |
+| `test_pydantic_ai_compat.py` | Private pydantic-ai symbol compatibility (fails loudly on upstream moves) |
 
 ## Dependencies
 
 **Required:**
 - `anyio>=4.0.0`
-- `pydantic-ai-slim>=1.74`
+- `pydantic-ai-slim>=1.105`
 - `pyyaml>=6.0`
 
 **Optional extras:**

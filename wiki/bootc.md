@@ -28,7 +28,7 @@ Major adopters include **Red Hat** (Image Based Linux), **Universal Blue** (Auro
 
 ### Versioning
 
-bootc follows [semantic versioning](https://semver.org/) standards since version 1.2.0. The project ships as a Rust workspace (`crates/*`) with 14 crate crates including `cli`, `lib`, `mount`, `ostree-ext`, `initramfs`, and `blockdev`.
+bootc follows [semantic versioning](https://semver.org/) standards since version 1.2.0. The project ships as a Rust workspace (`crates/*`) with 13 crates: `blockdev`, `cli`, `etc-merge`, `initramfs`, `lib`, `mount`, `ostree-ext`, `system-reinstall-bootc`, `sysusers`, `tests-integration`, `tmpfiles`, `utils`, and `xtask`.
 
 ## Key Features
 
@@ -58,9 +58,13 @@ The primary user interface is the `bootc` CLI:
 | `bootc status` | Show current boot image, staged deployment, and update status |
 | `bootc rollback` | Revert to the previous deployment |
 | `bootc edit` | Declarative interface for configuration management |
-| `bootc install` / `bootc install to-disk` | Install bootc to a target disk |
+| `bootc install to-disk` | Install to a target block device (DPS/ESP/BIOS-Boot/Boot/Root partitioning) |
+| `bootc install to-filesystem` | Install to externally prepared filesystems (RAID, LVM, LUKS) |
+| `bootc install to-existing-root` | Install alongside the running host root filesystem |
+| `bootc install reset` | Nondestructively reinstall state inside an existing bootc system |
 | `bootc usr-overlay` | Create a writable overlay on `/usr` (development) |
 | `bootc container lint` | Validate a container image for bootc compatibility |
+| `bootc loader-entries` | Manage Boot Loader Specification (BLS) entries |
 
 There is also a `bootc-fetch-apply-updates.timer` and corresponding systemd service for automated periodic update checks.
 
@@ -89,7 +93,7 @@ bootc exposes a D-Bus API for programmatic control, allowing management agents t
 
 ### Build Pipeline
 
-The project is written in Rust with a Cargo workspace of 14 crates. Notable crates include:
+The project is written in Rust with a Cargo workspace of 13 crates. Notable crates include:
 
 - `lib/` — Core library with the high-level bootc logic
 - `cli/` — CLI argument parsing and dispatch via clap
@@ -98,6 +102,12 @@ The project is written in Rust with a Cargo workspace of 14 crates. Notable crat
 - `initramfs/` — Initramfs generation hooks
 - `blockdev/` — Block device handling for `bootc install`
 - `etc-merge/` — Configuration file merging across deployments
+- `system-reinstall-bootc/` — System reinstallation tooling
+- `sysusers/` — sysusers.d handling
+- `tmpfiles/` — tmpfiles.d handling
+- `utils/` — Shared utility helpers
+- `xtask/` — Build/dev workflow tasks
+- `tests-integration/` — Integration test harness
 
 Integration with systemd is deep — bootc ships multiple systemd units for boot failure detection, destructive cleanup, root setup, and fetch-apply-update timers.
 

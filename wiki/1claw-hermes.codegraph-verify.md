@@ -23,8 +23,10 @@ date: 2026-07-12
 
 - **Source evidence:** `package.json` lines 15-19 define CLI aliases as npm scripts: `bootstrap`, `bootstrap:enroll`, `bootstrap:complete`, `setup`. `README.md` lines 12-20 document the two-phase bootstrap flow: `pnpm bootstrap enroll` sends email + agent name, then `pnpm bootstrap complete` reads `ONECLAW_AGENT_API_KEY` from `.env`. Lines 129-141 document `pnpm setup --provider google` which in one command reads the API key, patches Hermes YAML config for MCP, patches the model provider to point at the sidecar, downloads and starts the sidecar binary, and waits for `/healthz`. Source file `src/bootstrap.ts` implements `needsBootstrap()`, `bootstrapEnroll()`, and `completeBootstrapFromEnv()`. Source file `src/setup.ts` implements the unified CLI. Source file `src/bootstrap-cli.ts` implements the TTY/non-TTY CLI handler. Source file `src/dotenv-path.ts` implements dotenv resolution with ONECLAW_ENV_FILE, cwd walk, and package fallback.
 
+- **Dotenv resolution order (README:181-186):** (1) CLI flag `--env-path`/`--env-file`; (2) `ONECLAW_ENV_FILE` env var; (3) walk cwd upward for `.env`; (4) fallback `packages/1claw-hermes/.env`. README.md line 73 documents `ONECLAW_ENV_FILE` ("Absolute path to `.env` when it is not next to this package"). README.md line 188 notes the Go `shroud-sidecar` binary does not read `.env` files itself — `pnpm shroud` loads the file and passes env vars to the child, and may auto-append `ONECLAW_AGENT_ID` to older files.
+
 - **Verdict:** ✅ CORRECT
-- **Fix needed:** None
+- **Fix needed:** Wiki now documents the resolution order and `ONECLAW_ENV_FILE`
 
 ## Claim 3: Subagent identity lifecycle with scoped access
 - **Wiki says:** The package supports ephemeral subagent identity provisioning with scoped policy-based access to vault secrets.
@@ -50,17 +52,37 @@ date: 2026-07-12
 - **Verdict:** ✅ CORRECT
 - **Fix needed:** None
 
-## Claim 6: CMO talent subsystem for automated social media content
-- **Wiki says:** The package contains a "CMO talent" subsystem for automated social media content generation and posting to X/Twitter and Telegram.
+## Claim 6: CMO talent subsystem — 23 post formats, wedge-artifact campaign, Shroud drafts
+- **Wiki says:** The package contains a "CMO talent" subsystem for automated social media content generation and posting to X/Twitter and Telegram, with 23 post formats and a 4-week campaign whose Week 1 is "Build the wedge artifact".
 
-- **Source evidence:** Source files under `src/talents/cmo/` include: `persona.md` (brand voice definition), `style-notes.md` (writing style guide), `products.md` (product catalog), `campaign.md` (campaign templates), `draft-generator.ts` (content generation), `x-poster.ts` (X/Twitter posting via `twitter-api-v2`), `snap-poster.ts` (Telegram posting), `cli.ts` (CLI entry point), and `index.ts` (orchestration). The `build` script in `package.json` line 13 copies these Markdown files to `dist/talents/cmo/`. Test files `test/cmo.test.ts`, `test/snap-poster.test.ts`, `test/x-poster.test.ts` validate the subsystem. The `package.json` dependency `"twitter-api-v2": "^1.29.0"` confirms X/Twitter API integration.
+- **Source evidence:**
+  - `src/talents/cmo/draft-generator.ts` lines 11-36: `CmoPostFormat` union — 13 gitlawb-style (`newsdrop`, `stats`, `qt`, `qt-bigissue`, `milestone`, `release`, `dogfood`, `poll`, `shoutout`, `rally`, `thread`, `journal-cta`, `ugc-repost`) + 9 1clawai/Bankr-ecosystem (`holder-milestone`, `onchain-stats`, `listing-news`, `reference-demo`, `editorial-coverage`, `ecosystem-partner`, `essay`, `stack-diagram`, `bankr-amplified`) + `auto` = **23 formats**. `qt-bigissue` (line 16) is the "3-paragraph claim → why → product-anchor QT" previously missing from the wiki's list.
+  - `draft-generator.ts` lines 147-154: candidate count clamp `if (n < 1 || n > 12)`; default model `claude-sonnet-4-20250514`, `temperature: 0.85`; system prompt built from `persona.md` + `style-notes.md` + `products.md` + `campaign.md` (lines 71-113)
+  - `src/talents/cmo/campaign.md` line 88: "### Week 1 (Days 1-7): Build the wedge artifact" — theme "ship the reference agent" (line 90); Weeks 2-4 at lines 106, 124, 139
+  - `src/talents/cmo/x-poster.ts`, `snap-poster.ts`, `cli.ts`, `index.ts`, `persona.md` (brand voice), `style-notes.md` (13 gitlawb patterns), `products.md` (product catalog) — full talent tree
+  - `package.json` dependency `"twitter-api-v2": "^1.29.0"` confirms X/Twitter integration; build script copies the Markdown briefings to `dist/talents/cmo/`
+  - Test files `test/cmo.test.ts`, `test/snap-poster.test.ts`, `test/x-poster.test.ts` validate the subsystem
+- **Verdict:** ✅ CORRECT (format count corrected 26 → 23, `qt-bigissue` added, Week 1 theme corrected)
+- **Fix needed:** Wiki updated
 
-- **Verdict:** ✅ CORRECT
+## Claim 7: Sidecar operations — two-process model, process managers, and troubleshooting
+- **Wiki says:** Shroud does not turn on by itself; Hermes and the sidecar are two separate processes (Hermes does not supervise the sidecar); process-manager guidance (systemd user / launchd / tmux / Docker) with `scripts/` templates; `APIConnectionError` diagnosis; `SHROUD_TOKEN` config.
+
+- **Source evidence:**
+  - README.md line 3: "**Shroud does not turn on by itself:** you either run the Shroud sidecar in front of Hermes, or call Shroud from TypeScript via `createShroudClient()`"
+  - README.md lines 143-149: "Hermes and the sidecar are two different processes" — `pnpm setup` patches `model.base_url: http://127.0.0.1:8080/v1`, but "Hermes does not start or supervise the sidecar"; restart → `APIConnectionError` / connection refused until sidecar restarted
+  - README.md lines 151-177: process-manager table (systemd user, launchd, tmux/screen, Docker/compose) with step-by-step Linux (systemd + `loginctl enable-linger`) and macOS (launchd LaunchAgent) setup; health check `curl -s http://127.0.0.1:8080/healthz`
+  - README.md lines 238-248: troubleshooting table — `APIConnectionError` to `localhost:8080/v1` = sidecar not running/wrong port/different host; `SHROUD_PROVIDER` under `mcp_servers.oneclaw.env` only configures the MCP subprocess, not Hermes's model HTTP client; Docker note on network namespaces
+  - `scripts/shroud-sidecar.service.example` lines 14-31: systemd user unit — `ExecStart=/usr/bin/node dist/shroud/sidecar.js`, `Restart=always`, `RestartSec=5`, `Environment=ONECLAW_DEFAULT_PROVIDER=google`, optional `ONECLAW_ENV_FILE`
+  - `scripts/shroud-sidecar.launchd.plist.example` lines 15-43: LaunchAgent `com.1claw.shroud-sidecar` with `RunAtLoad` + `KeepAlive`, `WorkingDirectory`, absolute `node` path, `ONECLAW_ENV_FILE`, stdout/stderr log paths
+  - README.md line 79: `SHROUD_TOKEN` — "Bearer for Shroud (`createShroudClient`); not used by the sidecar binary"
+- **Verdict:** ✅ CORRECT (new claim — operational content previously absent from wiki)
 - **Fix needed:** None
 
 ## Related
 
 - [[1claw-hermes]] -- Main wiki entry
+- [[1claw-hermes.operations]] -- Companion: sidecar process management, two-process model, dotenv resolution, CMO format catalog
 - [[hermes-agent]] -- Hermes Agent upstream
 - [[mcp]] -- Model Context Protocol
 - [[hermes-workspace]] -- Hermes Workspace

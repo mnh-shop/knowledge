@@ -28,8 +28,8 @@ Quadlet LSP is a Language Server Protocol (LSP) implementation for [Podman Quadl
 - **Go Definition / References** — Jump to referenced Quadlet files (e.g., clicking `Pod=nc.pod` opens the `.pod` file). Find all files referencing a Quadlet resource from its `[Unit]` section.
 - **Formatting** — Document formatting with 80-character line width, `\` continuation for long lines, comment filtering, property grouping by topic, and alphabetical ordering within groups.
 - **Semantic Tokens** — Syntax highlighting via semantic tokens that distinguish image owners, environment variable names, and other important fields beyond generic keyword highlighting.
-- **Built-in Commands** — Editor-triggerable commands: `QuadletListJobs` (list running background tasks), `QuadletPullAll` (pull all images defined in directory), `QuadletGenerateHTML`/`QuadletGenerateMd`/`QuadletGenerateJSON` (generate documentation from Quadlet files).
-- **CLI Syntax Checker** — The binary can be used standalone as a CLI syntax checker (`quadlet-lsp check .`) for CI/CD pipelines, returning exit code 4 when issues are found.
+- **LSP Workspace Commands** — Editor-triggerable commands registered in the LSP `ExecuteCommandProvider`: `pullAll` (pull all images defined in the directory) and `listJobs` (list running background tasks). These are workspace commands, not CLI commands — no other built-in commands exist.
+- **CLI Syntax Checker** — The binary can be used standalone as a CLI syntax checker (`quadlet-lsp check .`) for CI/CD pipelines, returning exit code 8 when the CLI reports an error (invalid command, unreadable config, missing directory).
 - **Drop-in Directory Support** — Understands Quadlet drop-in files (`foo.container.d/10-ports.conf`) for overriding settings without modifying the original file.
 - **Configurable** — `.quadletrc.json` configuration for disabling specific QSR rules, specifying `podmanVersion` for cross-version validation, and `project.rootDir`/`project.dirLevel` for multi-project workspaces.
 - **File Watcher** — Watches `.quadletrc.json` for changes and hot-reloads the configuration during the session.
@@ -38,7 +38,7 @@ Quadlet LSP is a Language Server Protocol (LSP) implementation for [Podman Quadl
 
 The language server is structured as a Go application with a layered architecture:
 
-- **Entry Point** (`main.go`) — Routes between CLI mode (commands like `check`) and LSP server mode based on argument count
+- **Entry Point** (`main.go`) — Routes between CLI mode (only `help`, `version`, `check`) and LSP server mode based on argument count
 - **LSP Core** (`internal/lsp/`) — Implements the GLSP protocol handler with registered capabilities for completion, hover, definition, references, formatting, semantic tokens, diagnostics (on open/change/save), and workspace commands. Uses the `tliron/glsp` library for protocol 3.16.
 - **Syntax Checker** (`internal/syntax/`) — 26 independent rule modules (qsr001–qsr026), each with its own test file. Rules check for invalid properties, deprecated options, missing `Image=` fields, port range validity, volume path integrity, secret name formats, and cross-file reference consistency.
 - **Parser** (`pkg/parser/`) — Quadlet file parsing logic that builds an AST and symbol table
@@ -47,7 +47,7 @@ The language server is structured as a Go application with a layered architectur
 - **Data Layer** (`internal/data/`) — Version information and program constants
 - **Format Module** (`internal/format/`) — Document formatting with line width constraints and property organization
 - **Hover Module** (`internal/hover/`) — Directive documentation, value explanations, and cross-file peek previews
-- **Command Executor** (`internal/commands/`) — Background task management for pull operations and documentation generation
+- **Command Executor** (`internal/commands/`) — Background task management for the `pullAll` and `listJobs` LSP workspace commands
 - **Utilities** (`internal/utils/`) — File watching, document tracking, configuration loading, and OS command execution
 - **CLI** (`internal/cli/`) — Command-line argument processing for non-LSP modes
 

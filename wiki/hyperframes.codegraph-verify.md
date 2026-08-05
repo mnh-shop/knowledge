@@ -19,22 +19,23 @@ source: sources/hyperframes/
 - **Verdict:** ✅ CORRECT
 - **Fix needed:** None
 
-## Claim 2: CLI commands — hyperframes init, preview, lint, check, render, snapshot, doctor, publish
-- **Wiki says:** "CLI commands for the full production loop: init, preview, lint, check, render, snapshot, doctor, publish, catalog, add, capture, lambda, cloudrun, figma, compositions, compare, keyframes, tts, transcribe, upgrade"
+## Claim 2: CLI commands — hyperframes init, preview, lint, check, render, snapshot, doctor, publish, plus auth, batchRender, claude-design, play, present, remove-background, skills, validate, beats, benchmark, cloud
+- **Wiki says:** "CLI commands for the full production loop: init, preview, lint, check, render, snapshot, doctor, publish, catalog, add, capture, lambda, cloudrun, figma, compositions, compare, keyframes, tts, transcribe, upgrade, auth, batchRender, claude-design, play, present, remove-background, skills, validate, beats, benchmark, cloud"
 - **Source evidence:**
-  - `packages/cli/src/commands/` — 45+ command modules including: `init.ts`, `preview.ts`, `lint.ts`, `check.ts`, `render.ts`, `snapshot.ts`, `doctor.ts`, `publish.ts`, `catalog.ts`, `add.ts`, `capture.ts`, `lambda.ts`, `cloudrun.ts`, `figma.ts`, `compare.ts`, `keyframes.ts`, `tts.ts`, `transcribe.ts`, `upgrade.ts`, `compositions.ts`, `batchRender.ts`, `browser.ts`, `beats.ts`, `benchmark.ts`, `present.ts`, `remove-background.ts`, `skills.ts`, `validate.ts`, `docs.ts`, `feedback.ts`, `events.ts`, `info.ts`, `inspect.ts`, `layout.ts`, `play.ts`, `grade-compare.ts`, `auth.ts`, `telemetry.ts`, `contrast-bg.ts`, `contrast-fg.ts`, `contrast-sample.ts`, `motionShot.ts`, `motionShotLayout.ts`, `deprecationTestHarness.ts`, `coreSkillContent.ts`
+  - `packages/cli/src/commands/` — 45+ command modules including: `init.ts`, `preview.ts`, `lint.ts`, `check.ts`, `render.ts`, `snapshot.ts`, `doctor.ts`, `publish.ts`, `catalog.ts`, `add.ts`, `capture.ts`, `lambda.ts`, `cloudrun.ts`, `figma.ts`, `compare.ts`, `keyframes.ts`, `tts.ts`, `transcribe.ts`, `upgrade.ts`, `compositions.ts`, `batchRender.ts`, `browser.ts`, `beats.ts`, `benchmark.ts`, `present.ts`, `remove-background.ts`, `skills.ts`, `validate.ts`, `play.ts`, `auth.ts` (with `auth/` subcommands `login.ts`, `logout.ts`, `refresh.ts`, `status.ts`), `claude-design/` (sendToGuideContract), `cloud.ts` (with `cloud/` subcommands `delete.ts`, `get.ts`, `list.ts`, `render.ts`)
   - `packages/cli/src/cli.ts` — CLI entry point that imports and dispatches commands
 - **Verdict:** ✅ CORRECT
-- **Fix needed:** None
+- **Fix needed:** None (auth, batchRender, claude-design, play, present, remove-background, skills, validate, beats, benchmark, cloud confirmed in `packages/cli/src/commands/`)
 
-## Claim 3: 20 AI agent skills in skills/ directory
-- **Wiki says:** "20 AI agent skills via vercel-labs/skills: router (/hyperframes), creation workflows (product-launch-video, website-to-video, faceless-explainer, embedded-captions, talking-head-recut, pr-to-video, motion-graphics, music-to-video, slideshow, general-video, remotion-to-hyperframes), domain skills (hyperframes-core, hyperframes-animation, hyperframes-keyframes, hyperframes-creative, media-use, hyperframes-cli, hyperframes-registry, figma)"
+## Claim 3: 19 AI agent skills in skills/ directory
+- **Wiki says:** "19 AI agent skills via vercel-labs/skills: router (/hyperframes), creation workflows (product-launch-video, faceless-explainer, embedded-captions, talking-head-recut, pr-to-video, motion-graphics, music-to-video, slideshow, general-video, remotion-to-hyperframes), domain skills (hyperframes-core, hyperframes-animation, hyperframes-keyframes, hyperframes-creative, media-use, hyperframes-cli, hyperframes-registry, figma)"
 - **Source evidence:**
-  - `skills/` directory — 20 skill subdirectories confirmed: `embedded-captions/`, `faceless-explainer/`, `figma/`, `general-video/`, `hyperframes/`, `hyperframes-animation/`, `hyperframes-cli/`, `hyperframes-core/`, `hyperframes-creative/`, `hyperframes-keyframes/`, `hyperframes-registry/`, `media-use/`, `motion-graphics/`, `music-to-video/`, `pr-to-video/`, `product-launch-video/`, `remotion-to-hyperframes/`, `slideshow/`, `talking-head-recut/`, `website-to-video/`
-  - `skills-manifest.json` — 20 entries with hashes and file counts (confirms exactly 20 skills)
-  - `README.md:54` — "HyperFrames ships 20 skills agents load on demand"
-- **Verdict:** ✅ CORRECT
-- **Fix needed:** None
+  - `skills/` directory — 19 skill subdirectories confirmed: `embedded-captions/`, `faceless-explainer/`, `figma/`, `general-video/`, `hyperframes/`, `hyperframes-animation/`, `hyperframes-cli/`, `hyperframes-core/`, `hyperframes-creative/`, `hyperframes-keyframes/`, `hyperframes-registry/`, `media-use/`, `motion-graphics/`, `music-to-video/`, `pr-to-video/`, `product-launch-video/`, `remotion-to-hyperframes/`, `slideshow/`, `talking-head-recut/`
+  - `website-to-video/` is **absent** — no references anywhere in the repo (grep returns zero hits outside stale release notes/docs index)
+  - `skills-manifest.json` — 19 entries with hashes and file counts (confirms exactly 19 skills)
+  - `README.md:54` — "HyperFrames ships 19 skills agents load on demand" (README was updated; the old "20 skills" claim is stale)
+- **Verdict:** ✅ CORRECT (was 20; corrected to 19)
+- **Fix needed:** Wiki previously said 20 — now fixed
 
 ## Claim 4: GSAP frame adapter — seekable animation via FrameAdapter pattern
 - **Wiki says:** "GSAP is the primary adapter. The `createGSAPFrameAdapter()` function wraps a GSAP timeline into a `FrameAdapter`. At each capture frame, the engine calls `seekFrame(n)`, which delegates to `timeline.seek(n / fps, false)`"
@@ -87,28 +88,28 @@ source: sources/hyperframes/
 - **Verdict:** ✅ CORRECT
 - **Fix needed:** None
 
-## Claim 8: Registry — 50+ blocks, 25 components, 13 examples
-- **Wiki says:** "109 installable blocks, 25 components, 13 example projects" and "109 blocks, 25 components, 13 examples"
+## Claim 8: Registry — 113 blocks, 25 components, 13 examples
+- **Wiki says:** "113 installable blocks, 25 components, 13 example projects" and "113 blocks, 25 components, 13 examples"
 - **Source evidence:**
-  - `registry/blocks/` — 109 block directories confirmed, including: data-chart, 34+ code-snippet themes, transitions (3D, blur, cover, destruction, dissolve, distortion, grid, light, mechanical, push, radial, scale), visual effects (liquid-glass, magnetic, portal, shatter), map visualizations (world-map, us-map, spain-map), UI elements (macos-notification, spotify-card, reddit-post), video effects (glitch, cross-warp-morph, whip-pan, light-leak), and more
+  - `registry/blocks/` — 113 block directories confirmed, including: data-chart, 34+ code-snippet themes, transitions (3D, blur, cover, destruction, dissolve, distortion, grid, light, mechanical, push, radial, scale), visual effects (liquid-glass, magnetic, portal, shatter), map visualizations (world-map, us-map, spain-map), UI elements (macos-notification, spotify-card, reddit-post), video effects (glitch, cross-warp-morph, whip-pan, light-leak), and more
   - `registry/components/` — 25 component directories confirmed: caption-blend-difference, caption-clip-wipe, caption-editorial-emphasis, caption-emoji-pop, caption-glitch-rgb, caption-gradient-fill, caption-highlight, caption-kinetic-slam, caption-matrix-decode, caption-neon-accent, caption-neon-glow, caption-parallax-layers, caption-particle-burst, caption-pill-karaoke, caption-texture, caption-weight-shift, grain-overlay, grid-pixelate-wipe, morph-text, motion-blur, parallax-unzoom, parallax-zoom, shimmer-sweep, texture-mask-text, vignette
   - `registry/examples/` — 13 example directories: airbnb-deck, decision-tree, kinetic-type, motion-blur, nyt-graph, play-mode, product-promo, slideshow-demo, startup-pitch, swiss-grid, vignelli, vscode-theme-visualizer, warm-grain
-  - `registry/registry.json:1-575` — Registry manifest file with all items listed
-- **Verdict:** ✅ CORRECT
-- **Fix needed:** None
+  - `registry/registry.json` — 146 total items: 113 `hyperframes:block` + 25 `hyperframes:component` + 8 `hyperframes:example` entries (manifest example entries are a subset of the 13 example directories)
+- **Verdict:** ✅ CORRECT (was 109; corrected to 113)
+- **Fix needed:** Wiki previously said 109 blocks — now fixed
 
 ## Summary
 
 All 8 key claims from the HyperFrames wiki have been verified against the source code:
 
 - ✅ **Monorepo structure:** 14 packages confirmed in `packages/` with workspace declaration in `package.json`
-- ✅ **CLI commands:** 45+ command modules in `packages/cli/src/commands/` verified
-- ✅ **20 AI agent skills:** 20 skill directories in `skills/` + 20 entries in `skills-manifest.json` confirmed
+- ✅ **CLI commands:** 45+ command modules in `packages/cli/src/commands/` verified (incl. auth, batchRender, claude-design, play, present, remove-background, skills, validate, beats, benchmark, cloud)
+- ✅ **19 AI agent skills:** 19 skill directories in `skills/` + 19 entries in `skills-manifest.json` confirmed; website-to-video removed; README:54 "19 skills"
 - ✅ **GSAP frame adapter:** `packages/core/src/adapters/gsap.ts` with `createGSAPFrameAdapter()` and `FrameAdapter` interface verified
 - ✅ **Puppeteer-based engine:** `frameCapture.ts` and `browserManager.ts` confirmed Puppeteer + BeginFrame API usage
 - ✅ **Producer pipeline:** `renderOrchestrator.ts`, `htmlCompiler.ts`, `audioMixer.ts` confirmed full rendering pipeline
 - ✅ **Player web component:** `HyperframesPlayer extends HTMLElement` in `hyperframes-player.ts` confirmed
-- ✅ **Registry count:** 109 blocks + 25 components + 13 examples confirmed by directory listing
+- ✅ **Registry count:** 113 blocks + 25 components + 13 examples confirmed by directory listing; registry.json = 146 items
 
 ## Related
 

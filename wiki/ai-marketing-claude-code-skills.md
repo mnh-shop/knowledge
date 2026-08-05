@@ -1,27 +1,20 @@
 ---
 name: ai-marketing-claude-code-skills
-tags: [ai-marketing-claude-code-skills, agent, skill, marketing, ai-llm, automation, cli, typescript, python, authorization]
-description: "AI marketing agent skills for Claude Code: automated marketing workflows, content generation, lead nurturing, and campaign optimization"
+tags: [ai-marketing-claude-code-skills, agent, skill, marketing, ai-llm, automation, cli, bash]
+description: "AI marketing agent skills for Claude Code: 23 free skills across 5 marketing domains with quick/standard/deep execution modes"
 source: sources/ai-marketing-claude-code-skills/
 verification_date: 2026-07-12
 verified_by: codegraph-verify
-updated: 2026-07-06
+updated: 2026-07-30
 ---
 
 # AI Marketing Claude Code Skills
 
-**AI Marketing Claude Code Skills** is a comprehensive suite of agent skills for Claude Code that automates marketing workflows, content generation, and campaign optimization. Built around the SKILL_MODE pattern, this repository provides specialized skills for marketing teams and AI practitioners.
+**AI Marketing Claude Code Skills** is a suite of 23 free marketing skills for Claude Code that turns the agent into an executable marketing playbook. Skills live at the **repository root** (one directory per skill), each shipping dual files — `SKILL.md` (Claude Code, verbose) and `SKILL-OC.md` (OpenClaw, condensed). All skills follow the **SKILL_MODE pattern** (quick|standard|deep) and a structured INTAKE→ANALYZE→OUTPUT format. The repo is pure **Markdown + 3 bash scripts** — no application code, no database.
 
 ## What it is
 
-AI Marketing Claude Code Skills transforms Claude Code into a powerful marketing automation platform. Instead of manually crafting marketing campaigns, creating content, or analyzing data, users simply describe what they want to achieve and the skills handle the entire workflow.
-
-Key capabilities include:
-- **Content Creation:** Automated writing of articles, social media posts, emails, and marketing copy
-- **Campaign Management:** End-to-end marketing funnel automation from lead generation to conversion
-- **Data Analysis:** Real-time insights from marketing performance, sentiment analysis, and competitive intelligence
-- **Audience Targeting:** Personalized messaging based on user segments, behaviors, and preferences
-- **Skill Orchestration:** Complex multi-step workflows with parallel execution and error handling
+The README's framing is "Marketing frameworks that Claude Code actually executes. Not guides. Not courses. *Skills* — packaged expertise your AI coding agent loads and follows." Skills cover 5 marketing domains and range from positioning and cold outreach to LinkedIn authority building, homepage auditing, and daily operations.
 
 ## Architecture
 
@@ -29,435 +22,107 @@ Key capabilities include:
 
 | Component | Purpose | Key Features |
 |-----------|---------|-------------|
-| **SKILL_MODE Pattern** | Three-tier execution (quick/standard/deep) | Adaptive performance based on context |
-| **Agent Skills** | Specialized marketing instructions | 23 free + 10 pro skills |
-| **Workflow Engine** | Complex multi-step execution | Parallel processing, error recovery |
-| **Data Integration** | Real-time insights & analytics | Web data, social signals, competitive intel |
-| **Auth System** | Secure access management | API keys, OAuth, role-based permissions |
+| **23 Free Skills** | Specialized marketing instructions | One directory per skill at repo root, each with SKILL.md + SKILL-OC.md |
+| **SKILL_MODE Pattern** | Three-tier execution (quick/standard/deep) | Documented in SKILL-MODE-PATTERN.md (76 lines); mode table in every skill |
+| **Structured Skill Format** | Consistent execution | YAML frontmatter, Mode section, Context Loading Gates, INTAKE→ANALYZE→OUTPUT phases, Output Format |
+| **Multi-Platform Install** | Cross-harness distribution | `scripts/install.sh` auto-detects Claude Code, OpenClaw, Cursor, Windsurf; 5-platform table in README |
+| **Premium Tier** | Paid skills via Gumroad | 7 individual products + bundle, $9-49 |
 
-### Available Skill Categories
+There is **no TypeScript, no Python backend, no SQLite, and no OpenAI/Google API integration code** — the skills are instructions that run inside the agent harness, backed only by the three shell scripts in `scripts/` (`install.sh`, `convert.sh`, `list-skills.sh`).
 
-#### Strategy & Planning
-- **Positioning Basics** – Value proposition and differentiation framework
-- **Marketing Principles** – Growth hacking and conversion optimization
-- **Marketing Framework** – AIA framework with 4 Cs
+### Skill Layout — at the repo root
 
-#### Content Creation
-- **Cold Outreach** – Personalized 4-touch sequences
-- **Content Idea Generator** – Trending topics and pillar creation
-- **Homepage Audit** – Conversion optimization analysis
-- **Testimonial Collector** – Social proof generation
-
-#### Social Media & Community
-- **LinkedIn Authority Builder** – Follower growth and engagement
-- **LinkedIn Profile Optimizer** – Personal branding enhancement
-- **Reddit Insights** – Community sentiment and trends
-- **Last30Days** – Monthly performance analysis
-- **Social Card Gen** – Visual content creation
-
-#### Analytics & Optimization
-- **AI Discoverability Audit** – Google visibility and AI search optimization
-- **Marketing Principles** – Data-driven marketing frameworks
-- **Homepage Audit** – Conversion optimization analysis
-
-### Technology Stack
-
-- **Language:** TypeScript (primary), Python (backend)
-- **Framework:** Claude Code skill architecture
-- **Storage:** SQLite for skill state and user data
-- **APIs:** OpenAI, Google APIs, web scraping, social media platforms
-- **Deployment:** Claude Code native skill system
-
-## How It Works
-
-### Skill Discovery
-When you interact with Claude Code, skills are automatically discovered based on:
-
-1. **Context Analysis** – Identifying topic domains (marketing, social, content, etc.)
-2. **Intent Detection** – Recognizing what type of marketing task you're performing
-3. **Skill Matching** – Selecting the most appropriate skill for the situation
-4. **Mode Detection** – Quick vs. standard vs. deep execution based on user intent
-
-### Execution Flow
-
-```
-User Request → Context Analysis → Skill Selection → Mode Detection → Skill Execution
-```
-
-1. **Context Analysis:** Claude Code analyzes your request to understand marketing domain and intent
-2. **Skill Selection:** Automatically chooses the most relevant skill(s)
-3. **Mode Detection:** Determines execution depth (quick for simple requests, standard for complex workflows, deep for extensive research)
-4. **Skill Execution:** The selected skill follows its predefined workflow with appropriate output format
-
-## Quick Start
-
-### Installation
-
-```bash
-# Clone the repository
-git clone https://github.com/BrianRWagner/ai-marketing-claude-code-skills.git
-
-# Install skills into Claude Code
-mkdir -p ~/.claude/skills
-cp -r ai-marketing-claude-code-skills/* ~/.claude/skills/
-```
-
-### Basic Usage
-
-Once installed, you can use skills in Claude Code directly:
-
-```
-I'll create a cold outreach sequence for your SaaS company.
-```
-
-Or for specific tasks:
-
-```
-Analyze my LinkedIn profile and suggest improvements.
-```
-
-### Skill Categories
-
-Navigate to the skills folder in Claude Code's skill directory:
-
-- `skills/.marketing/` – Core marketing skills
-- `skills/.social/` – Social media engagement skills
-- `skills/.content/` – Content creation and optimization
-- `skills/.analytics/` – Marketing analytics and insights
-
-## Key Features
-
-### Adaptive Execution
-
-Every skill supports three modes automatically detected from context:
-
-#### Quick Mode (< 15 minutes)
-- Minimum viable output
-- Single-pass execution
-- No deep research or scoring
-- Best for: Simple tasks, initial drafts, quick checks
-
-#### Standard Mode (30-45 minutes)
-- Full process execution
-- All phases with scoring where relevant
-- Priority output generation
-- Best for: Complete workflows, comprehensive analysis, feature requests
-
-#### Deep Mode (60-90 minutes)
-- Extended research and iteration
-- Framework generation for ongoing use
-- Competitive intelligence integration
-- Best for: Strategic planning, competitive analysis, long-term initiatives
-
-### Workflow Capabilities
-
-#### Sequential Execution
-Skills can chain together for complex workflows:
-
-1. Analyze current marketing position
-2. Generate content strategy
-3. Create campaign outline
-4. Execute content creation
-5. Optimize based on performance
-
-#### Parallel Processing
-Independent tasks can run simultaneously:
-
-- Multi-channel content generation
-- Simultaneous social media monitoring
-- Parallel competitive analysis
-- Concurrent audience segmentation
-
-#### Error Recovery
-Built-in resilience for marketing workflows:
-- **Retry Logic:** Automatic retry for transient failures
-- **Fallback Strategies:** Alternative approaches when primary fails
-- **Partial Output:** Get what you can when something goes wrong
-
-### Data & Integration
-
-#### Real-Time Insights
-Skills pull real-time data from:
-- **Web Analytics:** Google Analytics, site performance
-- **Social Signals:** Engagement metrics, sentiment analysis
-- **Competitive Intelligence:** Competitor strategies, market trends
-- **Industry Data:** Marketing benchmarks, best practices
-
-#### Personal Data
-User preferences are stored and learned:
-- **Targeting Preferences:** Preferred industries, audience segments
-- **Content Preferences:** Writing style, tone, format preferences
-- **Performance History:** Learn from previous campaign results
-
-## Use Cases
-
-### For Marketing Teams
-
-**Campaign Automation**
-```
-Create a LinkedIn lead gen campaign for B2B SaaS featuring:
-- 4-touch sequence with personalization
-- Automated follow-up based on engagement
-- Competitive intelligence integration
-- Performance tracking and optimization
-```
-
-**Content Strategy**
-```
-Develop a 30-day content plan for our tech startup covering:
-- Industry trends and insights
-- Product launch coverage
-- Thought leadership pieces
-- Customer success stories
-```
-
-**Market Research**
-```
-Analyze the competitive landscape for sustainable fashion:
-- Competitor SWOT analysis
-- Trend identification
-- Audience segmentation
-- Opportunity gaps
-```
-
-### For Individual Marketers
-
-**Personal Branding**
-```
-Optimize my LinkedIn profile for senior marketing role:
-- Headline and summary optimization
-- Skills categorization and keyword optimization
-- Content strategy suggestions
-- Network building recommendations
-```
-
-**Campaign Management**
-```
-Setup and run a Q4 marketing campaign:
-- Goal setting and KPI definition
-- Budget allocation and channel strategy
-- Content calendar and execution
-- Performance tracking and reporting
-```
-
-## Technical Details
-
-### Skill Architecture
-
-Each skill follows a consistent pattern:
-
-1. **SKILL.md** – Skill entry point, routing table, core rules
-2. **references/** – On-demand knowledge files (looking up and citing sources)
-3. **scripts/** – Python execution scripts for complex operations
-4. **templates/** – Reusable templates for skill outputs
-
-#### Skill Structure
-
-```
-skills/
-  <skill-name>/               # Skill directory
-    SKILL.md                  # Skill definition
-    references/              # Knowledge base
-    scripts/                 # Python scripts
-    templates/               # Output templates
-    config/                  # Skill configuration
-    tests/                   # Automated tests
-    README.md               # Skill documentation
-```
-
-### Configuration
-
-Skills support extensive customization:
-
-#### Environment Variables
-- `API_KEY` – Service API keys
-- `DATABASE_URL` – Data storage connection
-- `LOG_LEVEL` – Logging verbosity
-- `EXECUTION_MODE` – Skill execution mode
-
-#### Configuration Files
-- `config/skill-config.json` – Skill-specific settings
-- `config/defaults.json` – Default configuration
-- `config/development.json` – Development overrides
-
-### Development
-
-#### Adding New Skills
-
-To add a new skill:
-
-1. **Create skill directory** with SKILL.md
-2. **Add references** for knowledge requirements
-3. **Implement scripts** for skill logic
-4. **Create templates** for output formatting
-5. **Write tests** for validation
-6. **Update documentation** for usage examples
-
-#### Testing
-
-Skills include comprehensive testing:
-
-- **Unit Tests:** Individual skill component testing
-- **Integration Tests:** End-to-end workflow testing
-- **Performance Tests:** Execution time and resource usage
-- **Compatibility Tests:** Cross-platform and cross-skill compatibility
-
-### File Structure
+There is no `skills/` subdirectory and no dot-prefixed category directories. Skills are top-level directories:
 
 ```
 ai-marketing-claude-code-skills/
-├── skills/                    # Skill directories
-│   ├── <skill-name>/         # Individual skills
-│   │   ├── SKILL.md          # Skill definition
-│   │   ├── references/       # Knowledge files
-│   │   ├── scripts/          # Python scripts
-│   │   ├── templates/        # Output templates
-│   │   └── config/           # Configuration
-│   └── ...
-├── README.md                  # Project documentation
-├── CHANGELOG.md              # Version history
-├── SKILL-MODE-PATTERN.md       # Pattern documentation
-└── tests/                    # Automated tests
+  README.md
+  CHANGELOG.md
+  SKILL-MODE-PATTERN.md
+  scripts/                       # 3 bash scripts: install.sh, convert.sh, list-skills.sh
+  ai-discoverability-audit/      # 23 skill directories, each with:
+    SKILL.md                     #   SKILL.md (Claude Code edition)
+    SKILL-OC.md                  #   SKILL-OC.md (OpenClaw edition)
+  case-study-builder/
+  ... (21 more skills)
 ```
 
-## Integration
+Install via `cp -r ai-marketing-claude-code-skills/* ~/.claude/skills/` — the copy brings in every skill directory directly.
 
-### With Claude Code
+### The 23 Free Skills (5 domains)
 
-AI Marketing Skills integrates seamlessly with Claude Code:
+README.md groups 19 skills by domain (section headers at lines 46, 75, 122, 160, 198); the remaining 4 directories exist but are not in the grouped listing (they're CHANGELOG-verified instead):
 
-#### Automatic Discovery
-Skills are automatically discovered based on conversation context.
+| Domain | Skills (per README grouping) |
+|--------|------------------------------|
+| **Strategy & Positioning** | positioning-basics, ai-discoverability-audit, marketing-principles |
+| **Content & Authority** | linkedin-authority-builder, content-idea-generator, voice-extractor, de-ai-ify, social-card-gen |
+| **Research & Intelligence** | last30days, reddit-insights, youtube-summarizer, linkedin-profile-optimizer |
+| **Conversion & Sales** | homepage-audit, cold-outreach-sequence, case-study-builder, testimonial-collector |
+| **Productivity & Operations** | plan-my-day, newsletter-creation-curation, go-mode |
+| *(not in grouped listing)* | daily-briefing-builder, meeting-prep, tweet-draft-reviewer, vault-cleanup-auditor (all 4 confirmed via CHANGELOG v3.0.0 "Front Matter Verified") |
 
-#### Context-Aware Selection
-Claude Code selects the most appropriate skill for each marketing task.
+## The SKILL_MODE Pattern
 
-#### Mode Adaptation
-Skills automatically adapt their complexity based on user intent and context.
+Every skill supports three execution depths (SKILL-MODE-PATTERN.md:8-20):
 
-### Claude Code Compatibility
+| Mode | Output depth | Time expectation |
+|------|-------------|-----------------|
+| `quick` | Minimum viable output — single pass, no deep research, no scoring | < 15 min |
+| `standard` | Full process — all phases, scoring where relevant, priority output | 30–45 min |
+| `deep` | Extended research + iteration + frameworks for ongoing use | 60–90 min |
 
-- **Native Integration:** Works directly within Claude Code's skill system
-- **Command Line Interface:** Direct CLI commands for complex operations
-- **API Integration:** Programmatic access for custom integrations
-- **Plugin Architecture:** Extensible system for new skill types
+Each skill carries a Mode table immediately after the intro, before Phase 1 (e.g. homepage-audit/SKILL.md:14-22: `quick` = 5-second test + top 3 fixes, `standard` = full section-by-section audit, `deep` = full audit + rewrites + A/B test hypotheses). Design principles (SKILL-MODE-PATTERN.md:68-71): quick is not worse, don't change core logic, detect from context first, deep should earn its time. **Pattern introduced: March 8, 2026** (SKILL-MODE-PATTERN.md:75), inspired by everything-claude-code (ECC) runtime profile system.
 
-## Benefits
+## Structured Skill Format
 
-### For Organizations
+- **YAML frontmatter** with `name`/`description` on every skill (so the trigger system sees them)
+- **Context Loading Gates** — mandatory inputs loaded before execution
+- **Phased execution** — INTAKE→ANALYZE→OUTPUT (CHANGELOG v3.0.0; meeting-prep/SKILL.md)
+- **Output Format section** describing what each mode delivers
+- Conversion-optimized output: scoring, rewrite recommendations, A/B test hypotheses (homepage-audit)
 
-- **Consistency:** Standardized marketing execution across teams
-- **Scalability:** Handle increasing marketing complexity without proportional overhead
-- **Speed:** Rapid execution of marketing tasks without manual intervention
-- **Quality:** Consistent, professional outputs based on expert frameworks
+## Installation
 
-### For Individuals
+- `git clone https://github.com/BrianRWagner/ai-marketing-claude-code-skills.git`
+- `./scripts/install.sh` — auto-detects Claude Code, OpenClaw, Cursor, and Windsurf (README.md:229-237); flags `--all`, `--platform=claude|openclaw|cursor|windsurf|generic`, `--include-pro`, `--dry-run` (scripts/install.sh:10-15)
+- `./scripts/convert.sh` — converts SKILL.md → `.mdc` (Cursor) / `.md` (Windsurf) rule format
+- `./scripts/list-skills.sh` — lists available skills
+- Manual: `mkdir -p ~/.claude/skills && cp -r ai-marketing-claude-code-skills/* ~/.claude/skills/`
 
-- **Efficiency:** Automate repetitive marketing tasks
-- **Learning:** Access expert marketing knowledge and frameworks
-- **Productivity:** Focus on strategy while skills handle execution
-- **Growth:** Build marketing expertise through guided practice
+### Platform Support (README.md:245-256)
 
-### For Content Creators
+| Platform | Install Location | File Used |
+|----------|-----------------|-----------|
+| Claude Code | `~/.claude/skills/` | `SKILL.md` |
+| OpenClaw | `~/.openclaw/skills/` | `SKILL-OC.md` |
+| Cursor | `.cursor/rules/` | `SKILL.md` → `.mdc` |
+| Windsurf | `.windsurf/rules/` | `SKILL.md` → `.md` |
+| Generic | `./ai-marketing-skills/` | `SKILL.md` |
 
-- **Creativity:** AI-powered content generation and optimization
-- **Distribution:** Multi-channel content automation
-- **Engagement:** Personalized audience targeting and nurturing
-- **Analytics:** Data-driven content optimization
+Dual-file system: each skill ships `SKILL.md` (Claude Code, verbose, all phases) and `SKILL-OC.md` (OpenClaw, condensed, ~200 lines, token-efficient) — 23 + 23 files (README.md:257).
 
-## Limitations
+## Premium Skills (Gumroad)
 
-### Technical Considerations
+The README badge claims "23 Free + 10 Pro" (README.md:8), but the actual Gumroad catalog (README.md:287-301) lists **7 individual paid products** plus the bundle:
 
-- **Context Understanding:** Limited to marketing domain contexts
-- **Creative Originality:** Generated content follows established frameworks
-- **Personal Touch:** AI-generated content may lack personal anecdotes
-- **Cultural Sensitivity:** Requires local customization for different markets
+| Skill | Price |
+|-------|-------|
+| AI Marketing Bundle (all 7) | $49 |
+| AI Discoverability Audit v2 | $19 |
+| Founder Intelligence | $15 |
+| Morning Brief System | $14 |
+| Competitor Intel Brief | $12 |
+| Brand Voice Extractor | $9 |
+| AI Employee Onboarding | $9 |
+| Brand Positioning Audit | $9 |
 
-### Skill Coverage
+→ [Browse all on Gumroad](https://brianrwagner.gumroad.com). Pro editions are "full Claude Code editions with structured reasoning phases, self-critique loops, and output precision." The "10 Pro" badge count is not supported by the product table — 7 individual products are listed.
 
-- **Specialized Knowledge:** May not cover highly specialized marketing niches
-- **Industry Specificity:** Framework-based approach may miss industry-specific nuances
-- **Regulatory Compliance:** Legal and regulatory considerations require human oversight
+## Version History (CHANGELOG.md)
 
-## Future Directions
-
-### Planned Enhancements
-
-1. **Advanced AI Integration:** Deeper integration with emerging AI models
-2. **Custom Skill Development:** Tools for creating specialized marketing skills
-3. **Cross-Platform Synchronization:** Unified skill across multiple platforms
-4. **Advanced Analytics:** Predictive analytics and marketing intelligence
-
-### Research Areas
-
-- **Marketing Attribution:** Advanced attribution modeling
-- **Customer Journey Optimization:** AI-powered journey optimization
-- **Content Personalization:** Hyper-personalized content generation
-- **Marketing ROI Measurement:** Advanced ROI calculation and attribution
-
-## Support & Community
-
-### Documentation
-
-- **README.md:** Project overview and quick start
-- **SKILL-MODE-PATTERN.md:** Pattern documentation
-- **CHANGELOG.md:** Version history and updates
-- **SKILL.md:** Individual skill documentation (in each skill directory)
-
-### Community
-
-- **GitHub Issues:** Bug reports and feature requests
-- **Discussions:** Community Q&A and best practices
-- **Social Networks:** Updates and networking opportunities
-- **Learning Resources:** Tutorials, examples, and case studies
-
-### Contact
-
-For questions, support, or collaboration opportunities:
-
-- **GitHub Issues:** https://github.com/BrianRWagner/ai-marketing-claude-code-skills/issues
-- **Discussions:** https://github.com/BrianRWagner/ai-marketing-claude-code-skills/discussions
-- **Email:** brian@marketingclaude.com
-
-## Legal & Licensing
-
-This project is licensed under the MIT License. See LICENSE file for details.
-
-## Acknowledgments
-
-- **Inspired by:** Everything Claude Code (ECC) runtime profile system
-- **Based on:** Agent Skills open standard
-- **Powered by:** Claude Code skill architecture
-- **Contributors:** Special thanks to all skill developers and contributors
-
-## Version History
-
-### v3.1 (March 2026)
-- Added SKILL_MODE pattern support
-- Enhanced workflow automation
-- Improved user experience
-- Bug fixes and stability improvements
-
-### v2.0 (January 2026)
-- Initial release
-- Basic skill framework
-- Core marketing skills
-
----
-
-## References
-
-### Source Documentation
-
-- `sources/ai-marketing-claude-code-skills/` – Full source code repository
-- `raw/ai-marketing-claude-code-skills/ai-marketing-claude-code-skills.xml` – Repomix XML export
-
-### External Resources
-
-- [Agent Skills Standard](https://agentskills.io/) – Skills definition and distribution
-- [Claude Code Documentation](https://claude.ai/claude-code) – Claude Code platform docs
-- [Marketing Frameworks](https://www.marketingframeworks.com/) – Marketing framework references
+- **v3.1.0 — March 8, 2026** — `quick|standard|deep` execution mode added to all free skills; `SKILL-MODE-PATTERN.md` shipped; mode table in every skill; no breaking changes (standard = v3.0.0 behavior)
+- **v3.0.0 — February 28, 2026** — 3-layer architecture refactor; new Meeting Prep skill (INTAKE→ANALYZE→OUTPUT, vault search + prior brief lookup); front matter verified across skills; "All skills follow INTAKE→ANALYZE→OUTPUT structure. No autonomy triggers."
 
 ---
 
@@ -465,6 +130,5 @@ This project is licensed under the MIT License. See LICENSE file for details.
 
 ---
 
-**Last Updated:** March 14, 2026  
-**Generated:** Claude Code Wiki Generator  
+**Last Updated:** 2026-07-30
 **Verification:** Source code verified against `sources/ai-marketing-claude-code-skills/`

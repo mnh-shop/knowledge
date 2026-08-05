@@ -8,19 +8,22 @@ source: sources/openclaw/
 # OpenClaw API Reference
 **Source:** `sources/openclaw/`
 
-OpenClaw runs a single HTTP/WebSocket gateway server on port 18789 by default (configurable via `--port`, `gateway.port`, or `OPENCLAW_GATEWAY_PORT`). It multiplexes HTTP, WebSocket, and HTTPS on the same port. The primary control plane is a WebSocket-based RPC protocol (version 4), supplemented by auxiliary HTTP endpoints for health, OpenAI compatibility, and automation.
+OpenClaw runs a single HTTP/WebSocket gateway server on port 18789 by default (`DEFAULT_GATEWAY_PORT = 18789`, `src/config/paths.ts:344`; configurable via `--port`, `gateway.port`, or `OPENCLAW_GATEWAY_PORT`). It multiplexes HTTP, WebSocket, and HTTPS on the same port, defaulting to loopback-only binding. The primary control plane is a WebSocket-based RPC protocol (version 4), supplemented by auxiliary HTTP endpoints for health, OpenAI compatibility, and automation.
 
 ## Table of Contents
 
 - [Overview](#overview)
+- [Gateway HTTP Surface](#gateway-http-surface)
 - [Health Endpoints](#health-endpoints)
 - [Agent/Session API (WebSocket RPC)](#agentsession-api-websocket-rpc)
+- [Gateway Protocol Package](#gateway-protocol-package)
 - [OpenAI-Compatible HTTP Endpoints](#openai-compatible-http-endpoints)
 - [HTTP Auxiliary Endpoints](#http-auxiliary-endpoints)
 - [Channel Management API](#channel-management-api)
 - [Message API](#message-api)
 - [ACP API](#acp-api)
 - [MCP Integration Points](#mcp-integration-points)
+- [Tailscale and Wide-Area Discovery](#tailscale-and-wide-area-discovery)
 - [Auth and Security](#auth-and-security)
 - [WebSocket Streaming](#websocket-streaming)
 - [Examples](#examples)
@@ -34,14 +37,32 @@ OpenClaw runs a single HTTP/WebSocket gateway server on port 18789 by default (c
 
 | Feature | Detail |
 |---------|--------|
-| Default port | `18789` |
+| Default port | `18789` (`DEFAULT_GATEWAY_PORT`, `src/config/paths.ts:344`) |
+| Default bind | Loopback (`127.0.0.1`); `lan` in Docker |
 | Primary protocol | WebSocket JSON-RPC (version 4) |
-| HTTP endpoints | Health, OpenAI-compatible, tools, sessions |
+| HTTP endpoints | Health, OpenAI-compatible, tools, sessions, control UI, plugin routes, hooks |
 | TLS | Yes, via `createHttpsServer` |
-| API specification | TypeScript types + TypeBox schemas (no OpenAPI spec) |
+| API specification | TypeScript types + TypeBox schemas (no OpenAPI spec) + generated `protocol.schema.json` |
 | Bind modes | loopback, lan, tailnet, auto, custom |
 
 The HTTP server is created in `src/gateway/server-http.ts` via `createGatewayHttpServer()`. WebSocket transport runs on the same server via WebSocket upgrade events.
+
+---
+
+## Gateway HTTP Surface
+
+The gateway multiplexes several HTTP surfaces on the single port, dispatched through the stage-based router in `server-http.ts`:
+
+| Surface | Paths | Notes |
+|---------|-------|-------|
+| Health probes | `/health`, `/healthz`, `/ready`, `/readyz` | `GATEWAY_PROBE_STATUS_BY_PATH` (`server-http.ts:142-145`) |
+| Lifecycle hooks | hook-registered paths | Registered by plugins/config |
+| OpenAI-compatible | `/v1/models`, `/v1/embeddings`, `/v1/chat/completions`, `/v1/responses` | Optional, config-gated |
+| Tool invocation | `/tools/invoke` | Always enabled |
+| Session control | `/sessions/{key}/kill`, `/sessions/{key}/history` | |
+| Plugin HTTP | plugin-registered routes | `plugin-http` stage |
+| Control UI | SPA at configurable base path | `control-ui` fallback stage |
+| WebSocket upgrades | upgrade event on any path | Auth-gated, role/scope handshake |
 
 ---
 
@@ -97,8 +118,8 @@ The primary agent/session API is a **WebSocket-based RPC protocol**, not REST.
 ### Connection Flow
 
 1. **Connect**: Establish WebSocket to `ws://gateway-host:18789`
-2. **Handshake**: Send `ConnectParams` JSON frame with auth credentials
-3. **Hello**: Receive `HelloOk` with negotiated protocol version, server info, available methods
+2. **Handshake**: Send `ConnectParams` JSON frame with auth credentials, protocol version range, client metadata, and the client's **role + scopes** (operators, nodes, probes, and plugins all connect over the same socket and declare role/scope at handshake time; `docs/gateway/protocol.md:12-13`)
+3. **Hello**: Receive `HelloOk` with negotiated protocol version, server info, available methods/events, state snapshot, auth info
 4. **Communicate**: Send/receive JSON request/response/event frames
 
 ### Wire Frame Format
@@ -123,10 +144,20 @@ The primary agent/session API is a **WebSocket-based RPC protocol**, not REST.
 {"type":"event","event":"chat","payload":{...},"seq":142}
 ```
 
+Frame shapes are specified in `docs/gateway/protocol.md:36-42`.
+
 ### Protocol Version
 
-- Current: `PROTOCOL_VERSION = 4`
-- Minimum client: `4`
+Version constants live in `packages/gateway-protocol/src/version.ts`:
+
+| Constant | Value | Meaning |
+|----------|-------|---------|
+| `PROTOCOL_VERSION` | `4` | Current wire protocol |
+| `MIN_CLIENT_PROTOCOL_VERSION` | `4` | Lowest general client version accepted |
+| `MIN_NODE_PROTOCOL_VERSION` | `3` | Lowest authenticated node version (N-1 rolling-upgrade window) |
+| `MIN_PROBE_PROTOCOL_VERSION` | `3` | Lowest lightweight probe version |
+
+The wire version is distinct from the `YYYY.M.PATCH` calendar version of the `@openclaw/gateway-protocol` npm package. Method-level authorization failures return `code: "FORBIDDEN"` with structured `MISSING_SCOPE` details (`requiredScopes`, `missingScope`) and HTTP scope failures use status `403` mirroring the same object.
 
 ### Frame Limits
 
@@ -219,7 +250,7 @@ Each method requires specific operator scopes from the six-scope model: `operato
 - `exec.approvals.*`, `exec.approval.*`, `plugin.approval.*` (approvals)
 - `gateway.identity.get`, `gateway.restart.*` (read/admin)
 
-Full method reference: `docs/reference/rpc.md` and `docs/gateway/protocol.md` in the source tree.
+Full method reference: `docs/reference/rpc.md` and `docs/gateway/protocol.md` in the source tree. The surface totals 90+ RPC methods across all categories.
 
 ### Server Push Events
 
@@ -246,6 +277,38 @@ Events are scope-gated. The server pushes:
 | `exec.approval.requested/resolved` | read | Execution approvals |
 | `plugin.approval.requested/resolved` | admin/write | Plugin approvals |
 | `update.available` | read | Software update available |
+
+---
+
+## Gateway Protocol Package
+
+The wire protocol is shipped as two npm packages under `packages/`:
+
+### `@openclaw/gateway-protocol`
+
+Typed schemas, inferred TypeScript types, and runtime validators for the Gateway WebSocket protocol (calendar-versioned `2026.7.2`). Entry points:
+
+- `@openclaw/gateway-protocol` -- runtime validators, selected schemas, error formatting
+- `@openclaw/gateway-protocol/schema` -- TypeBox schema graph incl. the `ProtocolSchemas` registry
+- `@openclaw/gateway-protocol/frame-guards` -- dependency-free structural guards for event/response envelopes
+- `@openclaw/gateway-protocol/client-info` -- client ID/mode/capability registries
+- `@openclaw/gateway-protocol/connect-error-details` -- structured connect error details
+- `@openclaw/gateway-protocol/gateway-error-details` -- `GatewayErrorDetailsSchema`, `MissingScopeErrorDetailsSchema`
+
+`protocol.schema.json` is generated at pack time (`scripts/protocol-gen.ts`, `prepack` in `packages/gateway-protocol/package.json`) and shipped in the package.
+
+### `@openclaw/gateway-client`
+
+The official client library (`packages/gateway-client/`):
+
+- `protocol-client.ts` -- client-side protocol implementation
+- `client.handshake.ts` / `connect-auth.ts` -- handshake and auth
+- `reconnect-policy.ts` -- reconnection policy
+- `event-loop-ready.ts` -- readiness detection
+- `session-projection.ts` / `session-subscriptions.ts` -- session state projection and subscriptions
+- `device-auth.ts` / `browser-device-auth.ts` -- device authentication
+- `browser.ts` -- browser-safe build (re-exports error-details helpers)
+- `client.watchdog.ts` -- connection watchdog
 
 ---
 
@@ -409,15 +472,17 @@ Channel configuration is managed through `config.set`/`config.patch` RPC methods
 
 ## ACP API
 
-The ACP (Agent Client Protocol) implementation lives in `src/acp/`. It uses the `@agentclientprotocol/sdk` npm package.
+The ACP (Agent Client Protocol) implementation lives in `src/acp/`. It uses the `@agentclientprotocol/sdk` npm package (v1.3.0, `package.json:1922`) and speaks **protocol version 4**.
 
 ### Architecture
 
 - **ACP server** (`src/acp/server.ts`): Runs as a stdio bridge. Spawns a `GatewayClient` connecting to the OpenClaw gateway over WebSocket, then translates ACP stdio JSON-RPC frames to gateway RPC calls.
 - **ACP client** (`src/acp/client.ts`): Interactive stdio client that spawns the OpenClaw CLI with "acp" subcommand args and creates a `ClientSideConnection` using the ACP SDK.
-- **ACP translator** (`src/acp/translator.ts`): Maps between ACP session lifecycle events and OpenClaw gateway events.
-- **Control plane** (`src/acp/control-plane/`): Session management, policies, permission relay.
-- **Event ledger** (`src/acp/event-ledger.ts`): SQLite-backed audit trail.
+- **ACP translator** (`src/acp/translator.ts`): Maps between ACP session lifecycle events and OpenClaw gateway events (sessions, prompts, tool streams, stop reasons, cancel scoping).
+- **Approval classifier** (`src/acp/approval-classifier.ts`): Classifies tool-call approval requests into risk buckets for permission relay.
+- **Event ledger** (`src/acp/event-ledger.ts`): SQLite-backed audit trail with rehydration caps: max 200 sessions, 5,000 events per session, 16 MB serialized (`event-ledger.ts:13-15`).
+- **Control plane** (`src/acp/control-plane/`): Session management, active-turns tracking, manager backend-failover, background tasks, policies, permission relay.
+- **Support modules**: `conversation-id.ts`, `session-mapper.ts`, `event-mapper.ts`, `persistent-bindings.*`, `secret-file.ts`, `tool-status.ts`, `commands.ts`.
 
 ### Usage
 
@@ -452,15 +517,55 @@ For full details, see [[domains/acp/openclaw-acp-implementation.md]].
 
 ## MCP Integration Points
 
-OpenClaw provides three MCP servers (see [[domains/mcp/openclaw-mcp-implementation.md]]):
+OpenClaw's MCP support is **bidirectional**: it can act as an MCP client (registering external servers) and as an MCP server (exposing Gateway capabilities). See [[domains/mcp/openclaw-mcp-implementation.md]].
+
+### As MCP Client (Registry)
+
+External MCP servers are registered under `mcp.servers` in config and managed via the `openclaw mcp` CLI (`src/cli/mcp-cli.ts`):
+
+| Command | Purpose |
+|---------|---------|
+| `openclaw mcp add <name> --command <command>` | Register a new MCP server |
+| `openclaw mcp set <name> '<json>'` | Set/update a server definition |
+| `openclaw mcp doctor` | Validate configured servers |
+| `openclaw mcp probe` | Probe server connectivity |
+| `openclaw mcp list` | List configured servers |
+| `openclaw mcp serve` | Expose OpenClaw as an MCP server (see below) |
+
+### As MCP Server (Serve)
+
+`openclaw mcp serve` exposes the Gateway (conversations, tools) to external MCP hosts. The `src/mcp/` directory (12 source files + tests) provides:
 
 | Server | Purpose | Transport |
 |--------|---------|-----------|
-| Channel Bridge | Bridges messaging channels | stdio |
-| Plugin Tools | Exposes plugin-registered tools | stdio |
-| OpenClaw Tools | Exposes built-in tools (cron) | stdio |
+| Channel Bridge (`channel-server.ts` / `channel-bridge.ts`) | Bridges messaging channels to MCP | stdio |
+| Plugin Tools (`plugin-tools-serve.ts`) | Exposes plugin-registered tools | stdio |
+| OpenClaw Tools (`openclaw-tools-serve.ts`) | Exposes built-in tools (cron, etc.) | stdio |
+| Codex Supervision (`codex-supervision-tools-serve.ts`) | Codex supervision tooling | stdio |
+| `tools-stdio-server.ts` | Shared stdio server scaffolding | stdio |
 
-All three use `@modelcontextprotocol/sdk` v1.x with stdio transport only.
+Shared helpers: `channel-tools.ts`, `channel-shared.ts`, `plugin-tools-handlers.ts`, `openclaw-tools-serve-config.ts`, `agent-session-env.ts`. All use `@modelcontextprotocol/sdk` v1.x with stdio transport. Gateway-side MCP HTTP surfaces live in `src/gateway/mcp-http.*` (protocol, request, runtime, schema, loopback-runtime) and `src/gateway/mcp-app-*` (channel action, operations, sandbox-http, standalone).
+
+---
+
+## Tailscale and Wide-Area Discovery
+
+### Tailscale Integration
+
+The Gateway integrates with Tailscale for secure remote access:
+
+- `allowTailscale` auth mode -- non-loopback connections authenticated via the Tailscale WhoIs API
+- `tailnet` bind mode -- bind to the Tailscale interface only
+- Tailscale serve mode for exposing the gateway over a tailnet without manual TLS configuration
+- Docs: `docs/gateway/tailscale.md`, `docs/gateway/remote.md`, `docs/gateway/remote-gateway-readme.md`
+
+### `openclaw dns` (CoreDNS)
+
+`openclaw dns` (`src/cli/dns-cli.ts`) provides DNS helpers for wide-area discovery using Tailscale addresses and CoreDNS:
+
+- Sets up CoreDNS to serve a discovery domain for unicast DNS-SD (Wide-Area Bonjour)
+- Zone/CoreDNS paths may be root-owned; falls back to `sudo tee` after normal write fails
+- Related: Bonjour/mDNS local discovery (`docs/gateway/bonjour.md`), `docs/gateway/discovery.md`
 
 ---
 
@@ -667,13 +772,20 @@ for chunk in stream:
 | `src/gateway/server/health-state.ts` | Health snapshot building |
 | `src/gateway/server/readiness.ts` | Readiness checking |
 | `src/gateway/methods/core-descriptors.ts` | 150+ RPC method definitions |
-| `packages/gateway-protocol/src/version.ts` | Protocol version constants |
+| `packages/gateway-protocol/src/version.ts` | Protocol version constants (v4, min client v4 / node v3 / probe v3) |
 | `packages/gateway-protocol/src/schema/frames.ts` | Wire frame TypeBox schemas |
 | `packages/gateway-protocol/src/schema/protocol-schemas.ts` | Schema registry |
-| `src/acp/server.ts` | ACP stdio server |
+| `packages/gateway-protocol/package.json` | `@openclaw/gateway-protocol` package + `protocol.schema.json` generation |
+| `packages/gateway-client/src/protocol-client.ts` | `@openclaw/gateway-client` client protocol |
+| `src/acp/server.ts` | ACP stdio server (protocol v4) |
+| `src/acp/approval-classifier.ts` | ACP approval risk classification |
+| `src/acp/event-ledger.ts` | SQLite event ledger (200 sessions / 5,000 events / 16 MB caps) |
 | `src/mcp/channel-server.ts` | MCP channel bridge server |
 | `src/mcp/plugin-tools-serve.ts` | MCP plugin tools server |
 | `src/mcp/openclaw-tools-serve.ts` | MCP built-in tools server |
+| `src/mcp/codex-supervision-tools-serve.ts` | MCP codex supervision tools server |
+| `src/cli/mcp-cli.ts` | MCP CLI (add/set/doctor/probe/list/serve) |
+| `src/cli/dns-cli.ts` | CoreDNS wide-area discovery setup |
 
 ## Related
 

@@ -7,12 +7,12 @@ source: sources/pydantic-ai-skills/
 
 # Codegraph Verification: pydantic-ai-skills
 
-**Date:** 2026-07-12
+**Date:** 2026-07-30
 
 ## Claim 1: Type-safe Python library implementing the Agent Skills specification for Pydantic AI
 - **Wiki says:** A lightweight, type-safe Python library (Python >=3.10) implementing the Agent Skills specification for the Pydantic AI ecosystem, providing standardized composable framework for modular Agent Skills.
 
-- **Source evidence:** `pyproject.toml` line 6-7: `name = "pydantic-ai-skills"` version `1.1.0`, line 29: `requires-python = ">=3.10"`. `README.md` lines 2-7: "A standardized, composable framework for building and managing Agent Skills within the Pydantic AI ecosystem... implements the Agent Skills specification (https://agentskills.io/home) for Pydantic AI." The `pydantic_ai_skills/` module uses Python dataclasses with full type hints throughout `types.py`, `toolset.py`, `capability.py`, etc. Source includes a `py.typed` marker file confirming PEP 561 compliance. `pyproject.toml` line 31-33: core dependencies on `pydantic-ai-slim>=1.105`, `anyio>=4.0.0`, `pyyaml>=6.0`.
+- **Source evidence:** `pyproject.toml` line 6-7: `name = "pydantic-ai-skills"` version `1.3.0`, line 29: `requires-python = ">=3.10"`. `README.md` lines 2-7: "A standardized, composable framework for building and managing Agent Skills within the Pydantic AI ecosystem... implements the Agent Skills specification (https://agentskills.io/home) for Pydantic AI." The `pydantic_ai_skills/` module uses Python dataclasses with full type hints throughout `types.py`, `toolset.py`, `capability.py`, etc. Source includes a `py.typed` marker file confirming PEP 561 compliance. `pyproject.toml` line 31-33: core dependencies on `pydantic-ai-slim>=1.105`, `anyio>=4.0.0`, `pyyaml>=6.0`.
 
 - **Verdict:** ✅ CORRECT
 - **Fix needed:** None
@@ -44,7 +44,7 @@ source: sources/pydantic-ai-skills/
 ## Claim 5: 15+ test files covering toolset, types, discovery, parsing, validation, registries, and edge cases
 - **Wiki says:** Test suite uses pytest with asyncio_mode=auto, covering core toolset behavior, dataclass validation, filesystem discovery, script execution, SKILL.md parsing, metadata validation, programmatic creation, edge cases, capability integration, Git and S3 registries, registry composition, and auto-reload.
 
-- **Source evidence:** The `tests/` directory contains 17 test files: `test_toolset.py`, `test_types.py`, `test_discovery.py`, `test_local.py`, `test_parsing.py`, `test_validation.py`, `test_programmatic_skills.py`, `test_edge_cases.py`, `test_capability.py`, `test_git_registry.py`, `test_s3_registry.py`, `test_registry_composition.py`, `test_reload.py`, `test_coverage_improvements.py`, `test_toolset_coverage.py`, `test_pydantic_ai_compat.py`. `pyproject.toml` lines 57-62 define `[test]` dependencies: `pytest>=8.0.0`, `pytest-asyncio>=0.23.0`, `pytest-cov>=4.1.0`, `types-PyYAML>=6.0.12`. `pytest.ini` confirms `asyncio_mode = auto`. `AGENTS.md` (the project AGENTS.md file) line 23 documents: "pytest.ini uses asyncio_mode = auto (do not require @pytest.mark.asyncio)."
+- **Source evidence:** The `tests/` directory contains 17 `.py` files (16 test modules plus `__init__.py`): `test_toolset.py`, `test_types.py`, `test_discovery.py`, `test_local.py`, `test_parsing.py`, `test_validation.py`, `test_programmatic_skills.py`, `test_edge_cases.py`, `test_capability.py`, `test_git_registry.py`, `test_s3_registry.py`, `test_registry_composition.py`, `test_reload.py`, `test_coverage_improvements.py`, `test_toolset_coverage.py`, `test_pydantic_ai_compat.py`. `pyproject.toml` lines 57-62 define `[test]` dependencies: `pytest>=8.0.0`, `pytest-asyncio>=0.23.0`, `pytest-cov>=4.1.0`, `types-PyYAML>=6.0.12`. `pytest.ini` confirms `asyncio_mode = auto`. `AGENTS.md` (the project AGENTS.md file) line 23 documents: "pytest.ini uses asyncio_mode = auto (do not require @pytest.mark.asyncio)."
 
 - **Verdict:** ✅ CORRECT
 - **Fix needed:** None

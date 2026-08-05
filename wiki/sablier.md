@@ -19,7 +19,7 @@ Scale-to-zero daemon for containerized workloads. Manages container lifecycle ba
 |-----|-------|
 | Origin | [sablierapp/sablier](https://github.com/sablierapp/sablier) |
 | License | Apache 2.0 |
-| Stack | Go 1.23+, Gin HTTP framework, Cobra/Viper CLI |
+| Stack | Go 1.26.3, Gin HTTP framework, Cobra/Viper CLI |
 | Source | `sources/sablier/` |
 | Wanted | Scale-to-zero for agent services (Hermes, OpenClaw, n8n) on constrained VPS |
 
@@ -57,11 +57,19 @@ Session-based idle detection. A reverse proxy plugin (Traefik, Caddy, Nginx, Env
 
 ## Scale Mode
 
-Alternative to stop/start. Throttles CPU/memory at idle instead of stopping. Zero cold-start latency. Enable with `sablier.idle.replicas=1`.
+Alternative to stop/start. Throttles CPU/memory at idle instead of stopping. Zero cold-start latency. Enable with `sablier.idle.replicas=1`. Block I/O throttling (`sablier.idle.blkio-weight` / `sablier.idle.blkio-device-*`) is **Docker-only** (README:504-507).
+
+## Advanced Features
+
+- **Anti-affinity** (`pkg/sablier/anti_affinity.go`): a workload backs off automatically (stopped or throttled to idle in scale mode) while another declared group is active — avoids GPU/RAM contention. Labels: `sablier.anti-affinity=<group>` (comma-separated groups allowed).
+- **Autostop / Autowarm** (`autostop.go`, `autowarm.go`): scheduled stop and pre-warm of workloads.
+- **Running-hours windows** (`running_hours.go`, `running_hours_watch.go`): `sablier.running-hours` restricts operation to scheduled uptime windows (e.g. "Mon-Fri 09:00-17:00"), with a watcher that reacts to window boundaries.
+- **Instance dependencies** (`instance_dependency.go`): declare dependencies between instances so dependent workloads start/stop in order.
+- **Group registry & watch** (`group_registry.go`, `group_watch.go`): group membership tracking and reactive updates when group labels change.
 
 ## Webhooks
 
-Fire-and-forget HTTP POST on start/stop events. Payload: `{"event": "started"|"stopped", "instance": {"name": "..."}, "timestamp": "..."}`. 10s timeout, no retry.
+Fire-and-forget HTTP POST on start/stop events. Payload: `{"event": "started"|"stopped", "instance": {"name": "..."}, "timestamp": "..."}` — normalized, provider-agnostic (dispatcher.go:29-42). 10s timeout, no retry; delivery is best-effort and must not block the event loop (dispatcher.go:137-139).
 
 ## Key Files (Source Repo)
 
@@ -70,8 +78,10 @@ Fire-and-forget HTTP POST on start/stop events. Payload: `{"event": "started"|"s
 | `pkg/sablier/provider.go` | Provider interface |
 | `pkg/sablier/instance_request.go` | Session orchestration, dedup |
 | `pkg/provider/docker/` | Docker provider |
-| `pkg/provider/podman/podman.go` | Podman provider (37-line Docker wrapper) |
-| `pkg/store/tinykv/tinykv.go` | In-memory store with TTL expiration |
+| `pkg/provider/podman/podman.go` | Podman provider (36-line Docker wrapper) |
+| `pkg/store/inmemory/` | In-memory session store with TTL expiration |
+| `pkg/store/valkey/` | Valkey-backed session store (Redis-compatible, `valkey-go` dep) |
+| `pkg/config/storage.go` | State persistence config — file path via `SABLIER_STORAGE_FILE` (empty = stateless) |
 | `internal/api/start_blocking.go` | Blocking strategy endpoint |
 | `internal/api/start_dynamic.go` | Dynamic strategy (waiting page) |
 | `pkg/theme/` | Waiting page themes |
@@ -84,9 +94,6 @@ Fire-and-forget HTTP POST on start/stop events. Payload: `{"event": "started"|"s
 - [Architecture](domains/architecture/sablier-architecture.md) — Scale-to-zero flow, request dedup, session expiry, proxy plugin model
 - [Deployment](domains/deployment/sablier-deployment.md) — Traefik/Caddy/Nginx/Envoy configs, agent service examples
 - [Quadlet Config](assets/deployment/sablier-quadlet.md) — Standalone, Traefik-integrated, agent service examples
-
-## Related
-
 - [[sablier-architecture]] -- Architecture deep-dive, boot flow, provider layer
 - [[sablier-deployment]] -- Deployment guide for Docker, Podman, Kubernetes
 - [[sablier-quadlet]] -- Quadlet `.container` files for rootless Podman

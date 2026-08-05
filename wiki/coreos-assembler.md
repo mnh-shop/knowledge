@@ -59,22 +59,39 @@ The COSA container bundles four primary CLI tools:
 
 ### cosa Sub-Commands
 
+The `cosa` entrypoint (`cmd/coreos-assembler.go:14-31`) is a dispatcher over ~50 commands grouped into five categories. Build commands (local dev path), advanced build commands, the `buildextend-*` platform family, utility commands, and other commands:
+
 | Command | Description |
 |---|---|
 | `cosa init <git-url>` | Initialize a build directory, cloning the specified config repo into `src/config/` |
+| `cosa fetch` | Fetch and import the latest packages from RPM repositories |
 | `cosa build` | Build a bootable container (OSTree commit + base images) |
 | `cosa osbuild <platform>` | Derive a bootable container into a platform-specific disk image |
 | `cosa run` | Boot the built image in QEMU with root shell access |
-| `cosa shell` | Get an interactive shell or run a command in the COSA container |
-| `cosa fetch` | Fetch and import the latest packages from RPM repositories |
+| `cosa prune` | Prune old builds from the build directory |
 | `cosa clean` | Delete all build artifacts |
 | `cosa list` | List builds available locally |
+| `cosa import` | Import an existing build into the build directory |
+| `cosa buildfetch` | Download a previous build from a remote source |
+| `cosa buildupload` | Upload a build to S3-compatible storage |
+| `cosa oc-adm-release` | Generate an OpenShift release payload from a build |
+| `cosa push-container` | Push the bootable container to a registry |
+| `cosa push-container-manifest` | Push a container manifest list to a registry |
 | `cosa kola` | Run tests with kola (VM-based integration tests) |
 | `cosa tag` | Operate on tags in `builds.json` |
 | `cosa sign` | Sign builds with RoboSignatory via fedora-messaging |
 | `cosa compress` | Compress all images in a build |
-| `cosa buildfetch` | Download a previous build from a remote source |
-| `cosa buildupload` | Upload a build to S3-compatible storage |
+| `cosa diff` | Diff two builds (container or image changes) |
+| `cosa copy-container` | Copy a container image between registries |
+| `cosa koji-upload` | Upload build artifacts to Koji |
+| `cosa remote-build-container` | Build a container on a remote host |
+| `cosa remote-session` | Execute commands on a remote COSA host (via `podman --remote`) |
+| `cosa aws-replicate` | Replicate AMIs across AWS regions |
+| `cosa update-variant` | Update a build variant's configuration |
+| `cosa meta` | Output build metadata (meta.json) |
+| `cosa shell` | Get an interactive shell or run a command in the COSA container |
+
+**Platform builds (`buildextend-*`)** — a dedicated family of 22 dispatcher entries (plus more scripts in `src/`) that derive platform-specific disk images from the bootable container: `buildextend-aliyun`, `-applehv`, `-aws`, `-azure`, `-digitalocean`, `-exoscale`, `-gcp`, `-hyperv`, `-ibmcloud`, `-kubevirt`, `-live`, `-metal`, `-metal4k`, `-nutanix`, `-nvidiabluefield`, `-openstack`, `-oraclecloud`, `-qemu`, `-secex`, `-virtualbox`, `-vmware`, `-vultr` — plus additional scripts (e.g. `buildextend-powervs`, `-azurestack`, `-proxmoxve`, `-hetzner`, `-qemu-secex`) present in `src/cmd-buildextend-*` (27 total).
 
 ### Operating System Concepts
 

@@ -10,58 +10,66 @@ date: 2026-07-12
 
 **Date:** 2026-07-12
 
-## Claim 1: 67 specialized agents for software development workflows
-- **Wiki says:** ECC provides 67 specialized subagents for delegation covering planner, architect, code reviewers, build resolvers, security reviewers, and more.
+## Claim 1: Version 2.1.0 with 67 agents, 281 skills, 94 command shims
+- **Wiki says:** ECC v2.1.0 ships 67 specialized agents, 281 workflow skills, and 94 legacy command shims.
 
-- **Source evidence:** `AGENTS.md` line 3 states: "67 specialized agents, 277 skills, 93 commands, and automated hook workflows." `AGENTS.md` lines 12-51 list agents by name and purpose, including: `planner`, `architect`, `tdd-guide`, `code-reviewer`, `security-reviewer`, `spec-miner`, `build-error-resolver`, `e2e-runner`, `refactor-cleaner`, `doc-updater`, `cpp-reviewer`, `go-reviewer`, `rust-reviewer`, `python-reviewer`, `java-reviewer`, `kotlin-reviewer`, `django-reviewer`, `typescript-reviewer`, `mle-reviewer`, `database-reviewer`, `loop-operator`, `harness-optimizer`, and more. `the-shortform-guide.md` lines 82-93 document subagent structure at `~/.claude/agents/` with files per agent. `CLAUDE.md` line 34 confirms `agents/` directory holds "Specialized subagents for delegation." The `agents/` directory on disk contains individual `.md` agent files.
+- **Source evidence:** `package.json` declares `"version": "2.1.0"`; `AGENTS.md` line 5 states "**Version:** 2.1.0"; the `VERSION` file contains `2.1.0`. `AGENTS.md` line 3 states "67 specialized agents, 281 skills, 94 commands, and automated hook workflows." `README.md` line 119 states "Access to 67 agents, 281 skills, and 94 legacy command shims," and lines 123-124 tabulate "67 agents" and "281 skills." `docs/releases/2.1.0/release-notes.md` closes with "The catalog now stands at **67 agents, 281 skills, and 94 command shims** (2.0.0 shipped 64/261/84)." On disk: `agents/` contains 67 `.md` files, `skills/` contains 281 SKILL.md directories, `commands/` contains 94 `.md` files.
+
+- **Verdict:** ✅ CORRECT (wiki corrected from 2.0.0/271 skills/92 commands)
+- **Fix needed:** None
+
+## Claim 2: 122 rules across 22 packs (common + 21 language packs)
+- **Wiki says:** ECC ships 122 always-follow rules across 22 packs: `common/` plus 21 language-specific packs.
+
+- **Source evidence:** The `rules/` directory contains exactly 22 pack directories — `common` plus `typescript`, `python`, `golang`, `swift`, `php`, `arkts`, `cpp`, `csharp`, `dart`, `fsharp`, `java`, `kotlin`, `perl`, `ruby`, `rust`, `vue`, `react`, `react-native`, `angular`, `nuxt`, `web` — plus a top-level `README.md`. `find rules -name "*.md"` returns 122 files total. No source text claims "250+ multi-language rules"; the earlier wiki figure was unsupported.
+
+- **Verdict:** ✅ CORRECT (wiki corrected from unsupported "250+ rules")
+- **Fix needed:** None
+
+## Claim 3: 21 hook automations with per-event breakdown
+- **Wiki says:** ECC ships 21 trigger-based hook automations across PreToolUse, Stop, PostToolUse, SessionStart, PostToolUseFailure, PreCompact, and SessionEnd.
+
+- **Source evidence:** `hooks/hooks.json` defines: `PreToolUse` 8 (bash dispatcher, doc-file-warning, suggest-compact, observe-runner, governance-capture, config-protection, mcp-health-check, gateguard-fact-force), `Stop` 6 (format-typecheck, check-console-log, session-end, evaluate-session, cost-tracker, desktop-notify), `PostToolUse` 2 (sync + async dispatchers), `SessionStart` 2 (session start bootstrap, plan-canvas-sessions), `PostToolUseFailure` 1, `PreCompact` 1, `SessionEnd` 1 — 21 total.
+
+- **Verdict:** ✅ CORRECT (wiki corrected from "20+")
+- **Fix needed:** None
+
+## Claim 4: Cross-harness support — 11 install targets plus Cursor's 15 hook events
+- **Wiki says:** ECC installs into Cursor (15 hook events), OpenCode, Gemini, Zed, Antigravity, Qwen, Hermes, OpenClaw, Kimi, CodeBuddy, and JoyCode, with GitHub Copilot support built in.
+
+- **Source evidence:** `README.md` lines 253-266 tabulate the install targets: Cursor, OpenCode, Gemini CLI, Zed, Antigravity, Qwen CLI, Hermes, OpenClaw, Kimi Code CLI, CodeBuddy, JoyCode — each with an `./install.sh --target <name>` command — and the following lines document built-in GitHub Copilot support via `.github/copilot-instructions.md` and `.github/prompts/`. `.cursor/hooks.json` defines 15 distinct hook event types (sessionStart, sessionEnd, beforeShellExecution ×2, afterShellExecution, afterFileEdit, beforeMCPExecution, afterMCPExecution, beforeReadFile, beforeSubmitPrompt, subagentStart, subagentStop, beforeTabFileRead, afterTabFileEdit, preCompact, stop).
 
 - **Verdict:** ✅ CORRECT
 - **Fix needed:** None
 
-## Claim 2: 277 skills as primary workflow surface
-- **Wiki says:** ECC provides 277 skills as the primary workflow surface, organized by domain category.
+## Claim 5: Selective install with 7 profiles including opencode
+- **Wiki says:** Manifest-driven selective install exposes 7 profiles: minimal, opencode, core, developer, security, research, and full.
 
-- **Source evidence:** `AGENTS.md` line 3 states "277 skills." `AGENTS.md` lines 64-65 document the workflow surface policy: "`skills/` is the canonical workflow surface." `the-shortform-guide.md` lines 15-22 describe skills as "the primary workflow surface. They act like scoped workflow bundles: reusable prompts, structure, supporting files, and codemaps." `README.md` v2.0.0 release notes mention "261 skills, the control-pane substrate." `README.md` v2.0.0-rc.1 states "66 agents, 268 skills, and 84 legacy command shims." The `skills/` directory on disk confirms domain-organized skill folders.
+- **Source evidence:** `manifests/install-profiles.json` defines exactly seven profiles — `minimal`, `opencode`, `core`, `developer`, `security`, `research`, `full` — each mapping to a module list (e.g., `opencode` = commands-core + platform-configs + workflow-quality, intentionally excluding hooks-runtime). `README.md` lines 264-276 document the `--profile` install flow and line 324 documents `npx ecc consult "security reviews" --target claude`. The runner lives at `scripts/consult.js`.
 
-- **Verdict:** ✅ CORRECT (277 per AGENTS.md — the live canonical source)
+- **Verdict:** ✅ CORRECT (wiki corrected from 6 profiles — `opencode` was omitted)
 - **Fix needed:** None
 
-## Claim 3: Cross-harness support across 7+ AI agent platforms
-- **Wiki says:** ECC works across Codex, Claude Code, Cursor, OpenCode, Gemini, Zed, GitHub Copilot, and other AI agent harnesses.
+## Claim 6: orch-* is a skill/workflow family, not part of ecc2
+- **Wiki says:** The `orch-*` orchestrator family is a skill/workflow family (`orch-add-feature`, `orch-build-mvp`, `orch-change-feature`, `orch-fix-defect`, `orch-refine-code`, `orch-review`) with dynamic workflow team orchestration — separate from the `ecc2/` Rust prototype.
 
-- **Source evidence:** `README.md` lines 47-48 state: "Works across **Codex**, **Claude Code**, **Cursor**, **OpenCode**, **Gemini**, **Zed**, **GitHub Copilot**, and other AI agent harnesses." `AGENTS.md` line 71 lists supported harnesses in the project structure. `README.md` v1.8.0 release notes document "cross-harness parity — behavior tightened across Claude Code, Cursor, OpenCode, and Codex app/CLI." `README.md` v1.7.0 release notes document "Codex app + CLI support" and "Cursor, Codex, and OpenCode support tightened." `README.md` v1.3.0 documents "Full OpenCode integration — 12 agents, 24 commands, 16 skills with hook support." The `install.sh`, `install.ps1`, and `npx ecc-install` paths confirm multi-harness targeting via `--target` flag.
+- **Source evidence:** `agent.yaml` lines 214-219 list the `orch-*` entries alongside other skills/commands; the workflow driver exists at `workflows/orch-review.workflow.js`; `docs/releases/2.0.0/release-notes.md` line 11 lists "`orch-*` orchestrator skill family plus dynamic workflow team orchestration" as a 2.0.0 highlight. `ecc2/README.md` opens "ECC 2.0 Alpha — the current Rust-based ECC 2.0 control-plane scaffold" with 16 `.rs` files in `ecc2/src/` (session, worktree, tui, observability, comms) — no `orch-*` code lives in `ecc2/`.
+
+- **Verdict:** ✅ CORRECT (wiki corrected — previously misattributed `orch-*` to `ecc2/`)
+- **Fix needed:** None
+
+## Claim 7: 2.1 features — Plan Canvas, Unified Memory Vault, Itô RFQ bridge
+- **Wiki says:** ECC 2.1 adds Plan Canvas, the Unified Memory Vault (`ecc memory` + optional `ecc-memory-mcp`), and the guarded Itô RFQ bridge (`ecc ito find`), plus the Kimi install target.
+
+- **Source evidence:** `docs/releases/2.1.0/release-notes.md` lines 1-18 document Plan Canvas ("review plans by pointing, not retyping," `ecc-plan-canvas` CLI, CONFIRM-gate mapping); `README.md` lines 643-654 describe Plan Canvas with the demo plan at `docs/releases/2.1.0/plan-canvas-demo.plan.md`. `README.md` lines 663-665 and 815-829 document "Current development: Unified Memory Vault" — `ecc memory init --scope project`, `ecc memory search ... --target-harness codex`, `ecc memory doctor`, and the optional `ecc-memory-mcp` stdio server that "does not enable itself by default." `README.md` line 466 and `docs/releases/2.1.0/release-notes.md` lines 29-37 document `ecc ito find`: an opt-in bridge invoking the canonical Itô CLI to submit a live authenticated RFQ (no capacity reservation; credential-bearing CLI shims rejected).
 
 - **Verdict:** ✅ CORRECT
 - **Fix needed:** None
 
-## Claim 4: Hermes operator story with dedicated setup guide
-- **Wiki says:** ECC v2.0.0 adds the public Hermes operator story, a dedicated setup guide, and cross-harness architecture documentation.
+## Claim 8: AgentShield, dashboard, and consult verified
+- **Wiki says:** AgentShield has 1282 tests, 98% coverage, and 102 static analysis rules; the 3-Opus pipeline runs via `--opus --stream`; the Tkinter dashboard is 956 lines; `npx ecc consult` is the component finder.
 
-- **Source evidence:** `README.md` lines 49-50 state: "ECC v2.0.0 adds the public Hermes operator story on top of that reusable layer: start with the [Hermes setup guide](docs/HERMES-SETUP.md), then review the [2.0.0 release notes](docs/releases/2.0.0/release-notes.md) and [cross-harness architecture](docs/architecture/cross-harness.md)." The file `docs/HERMES-SETUP.md` exists in the source tree. `README.md` v2.0.0 release notes confirm "61 skills, the control-pane substrate (session adapters + MCP inventory), the worktree-lifecycle service, the `orch-*` orchestrator family." The `.hermes/README.md` provides Hermes-specific guidance within the repo.
-
-- **Verdict:** ✅ CORRECT
-- **Fix needed:** None
-
-## Claim 5: AgentShield security integration
-- **Wiki says:** ECC includes AgentShield integration for automated security scanning, with 1282 tests and 102 rules.
-
-- **Source evidence:** `README.md` v1.6.0 release notes document "AgentShield integration — `/security-scan` skill runs AgentShield directly from Claude Code; 1282 tests, 102 rules." `AGENTS.md` line 49 includes `security-reviewer` as a core agent for "Vulnerability detection." `AGENTS.md` lines 51-59 document security guidelines: "Before ANY commit: No hardcoded secrets, All user inputs validated, SQL injection prevention, XSS prevention." `README.md` points to `the-security-guide.md` covering "Attack vectors, sandboxing, sanitization, CVEs, AgentShield." The `ecc-agentshield` npm package is documented in README badges with weekly download counts.
-
-- **Verdict:** ✅ CORRECT
-- **Fix needed:** None
-
-## Claim 6: Selective install architecture with manifest-driven pipeline
-- **Wiki says:** ECC v1.9.0 introduced a manifest-driven selective install pipeline with state tracking and incremental updates.
-
-- **Source evidence:** `README.md` v1.9.0 release notes state: "Selective install architecture — Manifest-driven install pipeline with `install-plan.js` and `install-apply.js` for targeted component installation. State store tracks what's installed and enables incremental updates." `README.md` lines 264-276 document the `--profile minimal`, `--profile core`, and `--profile full` installation profiles. `README.md` lines 294-300 document `npx ecc consult` for finding the right components: "It returns matching components, related profiles, and preview/install commands." Source files `manifests/install-profiles.json`, `manifests/install-modules.json`, and `manifests/install-components.json` define the modular install manifests.
-
-- **Verdict:** ✅ CORRECT
-- **Fix needed:** None
-
-## Claim 7: Continuous learning with hooks, instincts, and skill lifecycle management
-- **Wiki says:** ECC provides continuous learning through hooks, instinct-based learning with confidence scoring, and automated skill lifecycle management.
-
-- **Source evidence:** `the-shortform-guide.md` lines 38-72 document hook types: PreToolUse, PostToolUse, UserPromptSubmit, Stop, PreCompact, and Notification with JSON-based hook definitions and matcher conditions. v1.2.0 release notes document "Continuous learning v2 — Instinct-based learning with confidence scoring, import/export, evolution." v1.9.0 release notes document "Skill evolution foundation for self-improving skills." `the-shortform-guide.md` line 72 documents the `hookify` plugin for creating hooks conversationally. README topic table includes "Continuous Learning — Auto-extract patterns from sessions into reusable skills" and "Memory Persistence — Hooks that save/load context across sessions automatically."
+- **Source evidence:** `README.md` line 1196: "Built at the Claude Code Hackathon (Cerebral Valley x Anthropic, Feb 2026). 1282 tests, 98% coverage, 102 static analysis rules." `skills/security-scan/SKILL.md` line 98 documents `npx ecc-agentshield scan --opus --stream` and lines 100-106 the Attacker/Defender/Auditor (red/blue/auditor) roles — the pipeline itself executes in the external `agentshield` repo (`npx ecc-agentshield`). `package.json` line 456 defines `"dashboard": "python3 ./ecc_dashboard.py"` and `ecc_dashboard.py` is 956 lines. `scripts/consult.js` exists with `SUPPORTED_INSTALL_TARGETS` and `listInstallComponents`. Plugin-hook convention: `README.md` line 409 — "Claude Code v2.1+ already auto-loads plugin `hooks/hooks.json`"; do not duplicate in `settings.json`.
 
 - **Verdict:** ✅ CORRECT
 - **Fix needed:** None

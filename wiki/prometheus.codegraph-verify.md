@@ -45,10 +45,10 @@ source: sources/prometheus/
 ## Claim 4: Multi-source service discovery at discovery/
 - **Wiki says:** Prometheus supports automatic target discovery for Kubernetes, Consul, EC2, Azure, GCE, DNS, and other dynamic environments via the `discovery/` package.
 - **Source evidence:**
-  - `discovery/` contains 30+ service discovery providers: `kubernetes/`, `consul/`, `aws/` (EC2), `azure/`, `gce/`, `dns/`, `file/`, `http/`, `docker/` (`moby/`), `eureka/`, `digitalocean/`, `hetzner/`, `ionos/`, `linode/`, `nomad/`, `openstack/`, `ovhcloud/`, `puppetdb/`, `scaleway/`, `stackit/`, `triton/`, `uyuni/`, `vultr/`, `zookeeper/`, `xds/`, `marathon/`, `refresh/`, `install/`, `targetgroup/`, `metrics/`, and `metrics_k8s_client/`
+  - `discovery/` contains 29 service discovery providers: `kubernetes/`, `consul/`, `aws/` (EC2), `azure/`, `gce/`, `dns/`, `file/`, `http/`, `docker/` (`moby/`), `eureka/`, `digitalocean/`, `hetzner/`, `ionos/`, `linode/`, `nomad/`, `openstack/`, `outscale/`, `ovhcloud/`, `puppetdb/`, `scaleway/`, `stackit/`, `triton/`, `uyuni/`, `vultr/`, `zookeeper/`, `xds/`, `marathon/`, `targetgroup/`, plus `install/`, `refresh/`, and metrics helpers
   - `discovery/discovery.go` defines the `Discoverer` and `Provider` interfaces
   - `discovery/manager.go` manages discoverer lifecycle and target updates
-  - Service discovery plugins are controllable via Go build tags
+  - `plugins/` holds 27 optional build-tag plugin files (`//go:build !remove_all_sd || enable_<sd>_sd`), e.g. `plugin_kubernetes.go`, `plugin_aws.go`, `plugin_dns.go`; see `CHANGELOG.md:209`
 - **Verdict:** ✅ CORRECT
 - **Fix needed:** None
 
@@ -76,15 +76,36 @@ source: sources/prometheus/
 - **Verdict:** ✅ CORRECT
 - **Fix needed:** None
 
+## Claim 7: CLI tooling (promtool) and remote read/write (storage/remote)
+- **Wiki says:** `cmd/promtool/` ships CLI tooling for config checking, rule validation, querying, and TSDB debugging; `storage/remote/` implements the remote read/write protocol for long-term storage and agent-mode forwarding.
+- **Source evidence:**
+  - `cmd/promtool/` contains the promtool CLI: `main.go`, `rules.go` (rule check/test), `config.go` (config check), `query.go` (server queries), `tsdb.go` (TSDB admin/debug commands)
+  - `storage/remote/` implements remote read/write endpoints: `storage.go` (RemoteStorage with Write/ReadQueues), `write_handler.go` (`/api/v1/write`), `read_handler.go` (`/api/v1/read`), `queue_manager.go` (sharded write queue), `client.go` (remote client), `generic.go` (generic read/write with exemplars/histograms)
+  - Agent-mode forwarding uses `storage/remote` + `tsdb/agent/`; agent mode flag at `cmd/prometheus/main.go:146` (`agentMode`), documented in `docs/prometheus_agent.md`
+- **Verdict:** ✅ CORRECT
+- **Fix needed:** None
+
+## Claim 8: Web UI — react-app and mantine-ui (v3) in a pnpm workspace
+- **Wiki says:** The web UI lives under `web/ui/` as a pnpm workspace with the established `react-app` and a `mantine-ui` v3 rewrite shipping alongside it.
+- **Source evidence:**
+  - `web/ui/` contains `react-app/`, `mantine-ui/`, `pnpm-workspace.yaml`, `package.json`, `pnpm-lock.yaml`, and `build_ui.sh` — confirming a pnpm workspace
+  - `web/ui/react-app/` is the TypeScript/React UI (expression browser, targets, alerts pages) with `web/ui/react-app/src/`
+  - `web/ui/mantine-ui/` is the v3 Mantine-based rewrite, embedded alongside react-app
+  - `web/ui/ui.go` and `web/ui/assets_embed.go` embed the built UI into the Go binary
+- **Verdict:** ✅ CORRECT
+- **Fix needed:** None
+
 ## Summary
 
-All 6 key claims from the Prometheus wiki have been verified against the source code via directory exploration:
+All 8 key claims from the Prometheus wiki have been verified against the source code via directory exploration:
 - ✅ Pull-based architecture: HTTP scraping via `scrape/`, `config/`, and `cmd/prometheus/` confirmed
 - ✅ Local TSDB storage: `tsdb/` with block-based compaction and chunk encoding confirmed
 - ✅ PromQL query language: `promql/` with parser, engine, and built-in functions confirmed
-- ✅ Service discovery: 30+ providers in `discovery/` confirmed
+- ✅ Service discovery: 29 providers in `discovery/` with optional build-tag plugins confirmed
 - ✅ Alertmanager integration: `notifier/` with alert dispatch and send loop confirmed
 - ✅ Dimensional data model: `model/` and `labels/` packages confirmed
+- ✅ CLI tooling (`cmd/promtool/`) and remote read/write (`storage/remote/`) confirmed
+- ✅ Web UI: `react-app` + `mantine-ui` v3 in a pnpm workspace confirmed
 
 ## Related
 

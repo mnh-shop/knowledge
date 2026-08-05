@@ -13,14 +13,17 @@ Pi is a self-extensible coding agent harness and orchestration toolkit built as 
 
 ## Description
 
-Pi is organized as a multi-package monorepo under the `@earendil-works` npm scope. It is designed to give developers a programmable agent runtime with pluggable LLM providers, session persistence, and an interactive TUI mode. The project emphasizes supply-chain hardening with pinned dependencies, lockfile-as-ground-truth, and release smoke testing.
+Pi is organized as a multi-package monorepo under the `@earendil-works` npm scope with seven packages: `pi-ai`, `pi-agent-core`, `pi-coding-agent`, `pi-tui`, `pi-storage-sqlite-node`, `pi-server`, and `pi-evals`. It is designed to give developers a programmable agent runtime with pluggable LLM providers, session persistence, and an interactive TUI mode. The project emphasizes supply-chain hardening with pinned dependencies, lockfile-as-ground-truth, and release smoke testing.
 
 ## Key Features
 
-- **Unified Multi-Provider LLM API** (`@earendil-works/pi-ai`): Common interface across OpenAI, Anthropic, Google, Amazon Bedrock, DeepSeek, NVIDIA NIM, and more — with provider-specific auth, streaming, and transport (`sse`, `websocket`, `auto`).
+- **Unified Multi-Provider LLM API** (`@earendil-works/pi-ai`): Common interface across OpenAI, Anthropic, Google, Amazon Bedrock, DeepSeek, NVIDIA NIM, and more (40+ provider files in `packages/ai/src/providers/`) — with provider-specific auth, streaming, and transport (`sse`, `websocket`, `websocket-cached`, `auto`).
 - **Agent Runtime** (`@earendil-works/pi-agent-core`): Core agent loop with tool calling, session state management, message compaction, branch summarization, and harness support for testing.
-- **Interactive Coding Agent CLI** (`@earendil-works/pi-coding-agent`): Full interactive mode with session resume, provider configuration, and an extensible extension system (`~/.pi/extensions/`).
+- **Interactive Coding Agent CLI** (`@earendil-works/pi-coding-agent`): Full interactive mode with session resume, provider configuration, and an extensible extension system (`~/.pi/agent/extensions/` global + `.pi/extensions/` project-local).
 - **Terminal UI** (`@earendil-works/pi-tui`): Differential-rendering TUI library powering the interactive mode.
+- **SQLite Storage Backend** (`@earendil-works/pi-storage-sqlite-node`): `node:sqlite` adapter plus a SQLite session repo/storage implementation (migrations, materialized views) as an alternative to JSONL sessions.
+- **Experimental Server** (`@earendil-works/pi-server`): Actively-developed, unstable server package (supervisor, RPC-over-process, radius, IPC, storage) — API may change or be removed without notice.
+- **Evals** (`@earendil-works/pi-evals`): Behavioral, model-backed checks that run a real `AgentSession` under `vitest-evals` in isolated temp directories.
 - **Session Management**: Persistent session storage via JSONL with branching, summarization, and CWD tracking.
 - **Containerization Support**: Three isolation patterns — Gondolin (micro-VM), plain Docker, and OpenShell sandbox.
 - **Supply-Chain Hardening**: Pinned direct deps, lockfile-as-ground-truth, shrinkwrap for published CLI, CI with `--ignore-scripts`, and scheduled `npm audit`.
@@ -29,12 +32,15 @@ Pi is organized as a multi-package monorepo under the `@earendil-works` npm scop
 
 Pi follows a layered architecture:
 
-- **`packages/ai/`** — Abstraction layer over LLM providers. Defines `Provider`, `Model`, `StreamOptions`, and auth resolution. Each provider (Anthropic, OpenAI, Google, Bedrock, etc.) implements a common interface. Transport negotiation (SSE vs WebSocket) is handled per-provider.
+- **`packages/ai/`** — Abstraction layer over LLM providers. Defines `Provider`, `Model`, `StreamOptions`, and auth resolution. Each provider (Anthropic, OpenAI, Google, Bedrock, DeepSeek, NVIDIA, Kimi Coding, xAI, etc.) implements a common interface. Transport negotiation (`sse` | `websocket` | `websocket-cached` | `auto`) is handled per-provider.
 - **`packages/agent/`** — Agent runtime core. Owns the agent loop (`agent-loop.ts`), tool execution, message conversion, session management (`session/`), harness for test/CI (`harness/`), and state types (`types.ts`). The `AgentTool` type has 58 callers across the codebase, making it a central abstraction.
 - **`packages/coding-agent/`** — CLI layer exposing the interactive coding agent. Handles session runtime (`agent-session-runtime.ts`), interactive mode (`interactive-mode.ts`), extensions (`extensions/`), and entry points (`main.ts`).
 - **`packages/tui/`** — Terminal UI library with differential rendering for the interactive interface.
+- **`packages/storage/sqlite-node/`** — `@earendil-works/pi-storage-sqlite-node`: `node:sqlite` adapter (`SqliteDatabase`) and `SqliteSessionRepo` with migrations and materialized views for agent sessions.
+- **`packages/server/`** — `@earendil-works/pi-server`: experimental server layer (supervisor, RPC-over-process, radius, IPC, storage) under active development.
+- **`packages/evals/`** — `@earendil-works/pi-evals`: model-backed behavioral evals (extension/smoke evals) run via `npm run eval`.
 
-Data flows: User input → CLI (`coding-agent`) → Agent Runtime (`agent`) → AI Provider (`ai`) → LLM response → tool execution loop → session persistence.
+Data flows: User input → CLI (`coding-agent`) → Agent Runtime (`agent`) → AI Provider (`ai`) → LLM response → tool execution loop → session persistence (JSONL or SQLite).
 
 ## Quick Start
 

@@ -94,6 +94,7 @@ The repository includes a full example output from a live session under `example
 - `market_analysis.md` — TAM/SAM/SOM with real 2026-estimate numbers ($1.2T TAM, $14.1B SAM, $215M SOM), market trends, key opportunities.
 - `competitor_map.md` — 5 real competitor profiles.
 - `product_spec.md`, `business_model.md`, `pitch_deck.md`, `product_roadmap.md`, `investor_pitch.md`, `index.html` — all 8 files present.
+- **Naming drift:** the spec file is named `landing_page.html` (SKILL.md:82), but the example kit ships it as `index.html` — the wiki flags this drift.
 
 **Supporting detail:** `examples/forge-kit/market_analysis.md` lines 1-21 show concrete data: "TAM (Total Addressable Market): $1.2 Trillion" with specific percentages, named trends, and named opportunities. This confirms the skill produces real, non-placeholder content. `README.md` line 43: "See the `/examples/` folder for the full FORGE launch kit we built during our live session."
 
@@ -114,6 +115,22 @@ The landing page specification mandates Tailwind CDN, Inter font, Unsplash image
 ```
 
 **Supporting detail:** The `examples/forge-kit/index.html` file (confirmed present via filesystem listing) is the actual rendered output matching this spec. `README.md` line 42: "`landing_page.html` (High-fidelity Tailwind CSS site)."
+
+## Claim-7: Pitch deck slide 4 is "Business Model"
+
+The 5-slide pitch deck names the fourth slide "Business Model" — not just "Model" as some summaries state.
+
+**Source evidence:** `SKILL.md:69` — "5 slides (Problem, Solution, Market, Business Model, Ask)." The wiki was corrected to the full slide title.
+
+## Claim-8: No LICENSE file — license status is an upstream gap; SETUP.md duplicates README.md
+
+The repository contains no license file of any kind, and `SETUP.md` is byte-identical to `README.md`.
+
+**Source evidence:**
+- `find . -iname "LICENSE*"` at repo root returns zero results (only `.git/`, `README.md`, `SETUP.md`, `examples/`, `skills/` present)
+- `diff README.md SETUP.md` exits 0 — both files are exactly 2205 bytes, byte-identical
+- `README.md` contains no license section; earlier claims of "MIT-licensed" are NOT supported by the repo itself
+- **Verdict:** ⚠️ FLAGGED as upstream gap — wiki states the license is unspecified and notes the SETUP.md duplication
 
 ## Dependency Map
 

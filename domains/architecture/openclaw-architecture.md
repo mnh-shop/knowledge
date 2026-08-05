@@ -8,35 +8,80 @@ source: sources/openclaw/
 # OpenClaw Architecture
 **Source:** `sources/openclaw/`
 
-OpenClaw is a self-hosted, open-source gateway and agent runtime for building autonomous AI agent deployment stacks. Written in TypeScript (Node.js, no Express/Fastify), it provides a custom HTTP+WebSocket server, plugin system, 30+ channel adapters, and dual-protocol ACP/MCP surfaces.
+OpenClaw is a self-hosted, open-source gateway and agent runtime for building autonomous AI agent deployment stacks. Written in TypeScript (Node.js, no Express/Fastify), it provides a custom HTTP+WebSocket server, plugin system, 150+ bundled plugins, and dual-protocol ACP/MCP surfaces.
 
 ## Table of Contents
 
+- [Version and Runtime](#version-and-runtime)
+- [Source Map](#source-map)
 - [Gateway Architecture](#gateway-architecture)
 - [Startup Sequence and Lifecycle](#startup-sequence-and-lifecycle)
 - [WebSocket Runtime](#websocket-runtime)
+- [Gateway Protocol](#gateway-protocol)
 - [Agent System](#agent-system)
 - [Channel Architecture](#channel-architecture)
 - [Plugin System](#plugin-system)
+- [Skills System](#skills-system)
 - [State and Storage](#state-and-storage)
+- [Config System](#config-system)
 - [Tool System](#tool-system)
-- [Gateway Protocol](#gateway-protocol)
+- [Memory System](#memory-system)
+- [MCP Subsystem](#mcp-subsystem)
+- [ACP Subsystem](#acp-subsystem)
 - [UI and Live Canvas (A2UI)](#ui-and-live-canvas-a2ui)
 - [Security Architecture](#security-architecture)
 - [CLI Architecture](#cli-architecture)
 - [Talk System (Voice/Video)](#talk-system-voicevideo)
-- [Node and Device Pairing](#node-and-device-pairing)
+- [Companion Apps and Device Pairing](#companion-apps-and-device-pairing)
+- [LLM Provider Ecosystem](#llm-provider-ecosystem)
 - [Key Source Components](#key-source-components)
+
+---
+
+## Version and Runtime
+
+| Attribute | Value |
+|-----------|-------|
+| Version | `2026.7.2` (`package.json:3`) |
+| Language | TypeScript, ESM (`"type": "module"`) |
+| Node.js | `>=22.22.3 <23`, `>=24.15.0 <25`, or `>=25.9.0`; Node 26 is the recommended major (`openclaw.mjs:11-15`) |
+| Package manager | pnpm workspace (`pnpm-workspace.yaml`) |
+| License | MIT |
+| CLI binary | `bin.openclaw` → `openclaw.mjs` |
+| Schema versions | state schema v6, agent schema v16 (`package.json` → `openclaw.schemaVersions`) |
+
+Entry chain: `openclaw.mjs` → `src/entry.ts` (compile cache, Windows argv normalization, container detection, version/help fast-paths) → `src/cli/run-main.ts` `runCli()`.
+
+---
+
+## Source Map
+
+The `src/` tree is organized by subsystem. Measured as non-test TypeScript source files (July 2026):
+
+| Directory | Non-test files | Contents |
+|-----------|---------------|----------|
+| `src/gateway/` | ~830 | Control plane: auth, server-http, control-ui, health/collector, events, config-reload, hooks, conversation-*, chat-*, mcp-http, device-auth, exec-approval-manager, call, credentials, board-http, channel-health-monitor, assistant-identity, transcripts |
+| `src/agents/` | ~1420 | Workspace, agent-create, acp-spawn, model-discovery, tool-search, board-*, session-*, usage, embedded-agent-runner |
+| `src/channels/` | ~250 | Registry, config, session, targets, thread-bindings, allowlists, pairing, dm-*, status-reactions, typing, streaming, run-state-machine, plugins/ |
+| `src/mcp/` | 12 (20 incl. tests) | channel-bridge, channel-server, channel-tools, plugin-tools-serve, plugin-tools-handlers, tools-stdio-server, openclaw-tools-serve, openclaw-tools-serve-config, codex-supervision-tools-serve, agent-session-env, channel-shared |
+| `src/acp/` | ~55 (~100 incl. tests) | server.ts bridge, translator.ts, client.ts, approval-classifier.ts, event-ledger.ts, commands.ts, conversation-id.ts, session-mapper, event-mapper, policy, permission-relay, persistent-bindings, secret-file, tool-status + control-plane/ (manager, active-turns, spawn) |
+| `src/plugins/` | ~500 | Loader, install (npm/git/ClawHub), manifest, registry, slots, clawhub, hooks phases, providers |
+| `src/plugin-sdk/` | — | Public plugin authoring contract (narrow subpath exports) |
+| `src/skills/` | ~113 | config/, discovery/, lifecycle/, loading/, research/, runtime/, security/, workshop/ |
+| `src/tools/` | 1 | **Only** `types.ts` — the real tool system lives in `src/agents/tools/` (~120 non-test files: cron-tool, ask-user-tool, dashboard-tool, tool-search) |
+| `src/memory/` | 1 | **Only** `root-memory-files.ts` (MEMORY.md location) — real memory lives in `extensions/memory-core` + `src/memory-host-sdk/` (13 files) |
 
 ---
 
 ## Gateway Architecture
 
-The Gateway is a Node.js HTTP+WebSocket server built from scratch (no Express, no Fastify). Entry at `src/entry.ts` via `isMainModule()`, delegating to `src/cli/run-main.ts` `runCli()` which bootstraps proxies, runs Crestodian onboarding for fresh installs, builds a Commander program, registers plugin commands, and launches `startGatewayServer()`.
+The Gateway is the **control plane** for the entire system. It is a Node.js HTTP+WebSocket server built from scratch (no Express, no Fastify). `src/gateway/server-http.ts` routes the control UI SPA, OpenAI-compatible APIs, plugin HTTP surfaces, lifecycle hooks, readiness probes, auth, and WebSocket upgrades on the same port. The full protocol is specified in `docs/gateway/protocol.md`.
+
+Entry via `src/entry.ts` → `src/cli/run-main.ts` `runCli()` which bootstraps proxies, runs Crestodian onboarding for fresh installs, builds a Commander program, registers plugin commands, and launches `startGatewayServer()`.
 
 ### Server Implementation
 
-The actual server lives in `src/gateway/server.impl.ts` (~1300 lines). It assembles runtime state:
+The public server contract lives in `src/gateway/server-public.ts` with startup in `server-start.ts`; `server.impl.ts` is a thin lazy-load facade re-exporting from those modules. It assembles runtime state:
 
 - Method registries (RPC method catalog)
 - Plugin channel registries
@@ -155,11 +200,11 @@ OPC (Operator Capabilities) model: each capability can expose methods, events, a
 The gateway startup (`src/daemon/gateway-entrypoint.ts`) follows 8 phases tracked by `startupTrace.measure()`:
 
 1. **Proxy bootstrap** -- SSH tunnel proxies for channel connectivity
-2. **Config loading** -- Load `openclaw.json5` with `$include` resolution, env var substitution, validation
-3. **Database initialization** -- Open shared state SQLite DB (`openclaw-state-db`), run migrations
+2. **Config loading** -- Load `openclaw.json` (parsed as JSON5) with `$include` resolution, env var substitution, validation
+3. **Database initialization** -- Open shared state SQLite DB (`openclaw.sqlite`), run migrations
 4. **Plugin system initialization** -- Load plugin manifests, activate bundled plugins, register runtime hooks
 5. **Channel startup** -- Start configured channel adapters (Telegram, Discord, etc.)
-6. **Method registration** -- Register all gateway RPC methods (150+) in the method registry
+6. **Method registration** -- Register all gateway RPC methods (90+) in the method registry
 7. **HTTP+WebSocket server start** -- Bind port, start accepting connections
 8. **Startup sidecar completion** -- Mark readiness probes as successful
 
@@ -223,15 +268,10 @@ JSON-over-WebSocket with three frame types discriminated by a `type` field:
 - Post-handshake max payload: 25 MB (configurable via `hello-ok.policy.maxPayload`)
 - Max buffered bytes: Configurable via `hello-ok.policy.maxBufferedBytes`
 
-### Protocol Version
-
-- Current: 4 (`PROTOCOL_VERSION = 4`)
-- Minimum client version: 4
-
 ### Connect Flow
 
 1. Client connects WebSocket to `ws://gateway-host:18789`
-2. Client sends `ConnectParams` JSON frame with protocol version range, client metadata, auth credentials
+2. Client sends `ConnectParams` JSON frame with protocol version range, client metadata, auth credentials, and its **role + scopes** (operators, nodes, probes, plugins all connect over the same socket and declare role/scope at handshake time; `docs/gateway/protocol.md:12-13`)
 3. Server responds with `HelloOk` containing negotiated protocol version, server info, available methods/events, state snapshot, auth info
 4. Normal RPC communication begins
 
@@ -241,272 +281,18 @@ Events are scope-gated. Major event types include: `chat` (delta text, UI update
 
 ---
 
-## Agent System
-
-OpenClaw is fundamentally agent-based. Each agent has an identity (name, avatar, description), model configuration, tool sets, permission scopes, and file attachments.
-
-### Agent Lifecycle
-
-Agents are created/updated/deleted via CLI or gateway RPC methods. The session lifecycle is defined in `src/gateway/session-lifecycle-state.ts`:
-
-- **State machine** with phases (`start`, `end`, `error`) and terminal statuses (`done`, `timeout`, `killed`, `failed`)
-- **Session persistence** to shared state database with compaction support for long-running conversations
-- **Restart recovery** detects stale sessions and resumes them
-- **Steering queue**: interrupt-and-steer variant for active sessions (`sessions.steer`)
-
-### Subagent Spawning (ACP)
-
-Subagent spawning uses ACP (`src/agents/acp-spawn.ts`):
-
-- Spawn depth limits (default 4)
-- Max children per agent (default 10)
-- Requester origin resolution for child agents
-- Thread binding policy
-- Workspace isolation
-- Parent-stream relay (`acp-spawn-parent-stream.ts`) for stdout/stderr relay to subagent sessions
-
-### Workspaces
-
-Workspaces are per-agent directories containing configuration, files, and `BOOT.md` files. `src/gateway/boot.ts` processes BOOT.md on gateway startup by running them as agent commands with internal-runtime-context delimiters.
-
-### Embedded Runners
-
-Agent execution uses embedded runners (`src/agents/embedded-agent-runner/`) with hooks:
-
-- `before-agent-start`
-- `before-tool-call`
-- `before-agent-reply`
-- `after-tool-call`
-- Compaction
-- Finalization
-
-Agent settings, steering queues, and sandbox runtime status are managed in `src/agents/`.
-
-### Identity
-
-Identity management via `src/agents/identity-avatar.ts` resolves assistant identity from config and serves avatar images through the control UI HTTP handler.
-
----
-
-## Channel Architecture
-
-The channel system provides transport-agnostic message adapters for external platforms. 30+ supported channels including: WhatsApp, Telegram, Slack, Discord, Google Chat, Signal, iMessage, IRC, Microsoft Teams, Matrix, Feishu, LINE, Mattermost, Nextcloud Talk, Nostr, Synology Chat, Tlon, Twitch, Zalo, WeChat, QQ, and WebChat.
-
-Channel plugins live in `extensions/` as bundled plugins, discovered and loaded through the plugin system.
-
-### Core Abstractions
-
-Core channel abstractions in `src/channels/`:
-
-- **Session management** -- Per-channel session IDs, thread binding
-- **Message routing** -- `resolve-route.ts` with `RoutePeer` (kind + id), `ChatType` (direct/group/channel)
-- **Thread binding** -- Reply-to-thread, conversation resolution
-- **Streaming config** -- `streaming.ts` normalizes legacy flat keys and current nested config: preview modes (`off`, `partial`, `block`, `progress`), text chunking (`length`, `newline`), block coalescing
-- **DM policy** -- Who can DM the agent
-- **Mention gating** -- Whether the agent responds to @mentions only
-- **Typing lifecycle** -- Typing indicators when agent is generating
-- **Reaction handling** -- Emoji reactions on messages
-- **Status monitoring** -- Per-channel health checks
-- **Outbound delivery** -- Queue-based outbound message delivery
-
-### Channel Manager
-
-`src/gateway/server-channels.ts` defines the `ChannelManager` type:
-
-- `startChannels()` -- Start all configured channels
-- `startChannel(id, accountId)` -- Start a specific channel + account
-- `stopChannel(id, accountId, opts)` -- Stop a specific channel
-- `getRuntimeSnapshot()` -- Get channel runtime health/status
-
-Channel lifecycle hooks: `onChannelStarted`, `onChannelStopped`, health check callbacks.
-
-### Plugin SDK for Channels
-
-The Plugin SDK (`src/plugin-sdk/core.ts`) provides:
-
-- `defineChannelPluginEntry()` -- Define a channel plugin entry point
-- `createChatChannelPlugin()` -- Create a chat channel plugin
-- `createChannelPluginBase()` -- Base constructor for channel plugins
-
-It composes security (DM policy), pairing (approval notification), threading (reply-to modes), and outbound delivery behavior.
-
-### Proxy Bootstrap
-
-Channel connectivity through restricted networks uses SSH tunnel proxies configured at startup. The proxy bootstrap phase establishes tunnels before channel plugins start.
-
----
-
-## Plugin System
-
-The plugin system is one of the most complex subsystems. It supports:
-
-1. **Bundled plugins** -- Shipped in `extensions/` (85+ plugins: Anthropic, OpenAI, Google, AWS Bedrock, Slack, Discord, Telegram, canvas, browser, etc.)
-2. **Third-party/community plugins** -- Installed via ClawHub marketplace, npm, or git.
-
-### Plugin SDK Contract
-
-The plugin SDK (`src/plugin-sdk/`) is the public contract between plugins and core, using narrow subpaths and acyclic exports. Plugin authors should only ever import from `openclaw/plugin-sdk/*`.
-
-The SDK provides ~70+ registration methods including:
-
-- `definePluginEntry()` -- Core entry point definition
-- `defineToolPlugin()` -- Tool plugin with TypeBox schemas
-- `defineChannelPluginEntry()` -- Channel plugin entry
-- `registerTool()`, `registerHook()`, `registerCommand()`, `registerHTTPRoute()`, `registerChannel()`, etc.
-
-### Plugin Entry System
-
-`src/plugin-sdk/plugin-entry.ts`: `DefinePluginEntryOptions` with `id`, `name`, `description`, `configSchema`, and a `register` callback that receives `OpenClawPluginApi`. Uses jiti (JavaScript Import Transform Interop) for module loading.
-
-### Lifecycle
-
-Plugin lifecycle (`src/plugins/loader.ts`):
-
-1. **Discovery** -- From bundled dirs (`extensions/`), npm packages, git repos, local paths
-2. **Manifest validation** -- `manifest.json5` with `id`, `version`, `capabilities`, `hooks`, `tools`, `entrypoints`
-3. **Compatibility check** -- `min-host-version` enforcement
-4. **Activation** -- Through `src/plugins/activation-planner.ts` which resolves dependency order
-5. **Runtime tracking** -- Via `src/plugins/runtime.ts` tracking: active plugins, HTTP routes, session extensions, gateway methods, channel registrations
-
-### Plugin Types
-
-From `src/plugins/types.ts`:
-
-- **Providers** -- LLM model providers (Anthropic, OpenAI, Google, etc.) with auth, model catalogs, streaming, replay policies
-- **Channels** -- External platform adapters (Slack, Discord, etc.)
-- **Skills** -- Agent capabilities (browser, file-transfer, web-search, etc.)
-- **Hooks** -- Lifecycle hooks (before-agent-start, before-tool-call, etc.)
-- **Capability providers** -- Feature providers (memory, document extraction, web fetching, etc.)
-- **Embedding providers** -- Vector embedding providers
-
-### Manifest System
-
-The manifest system (`src/plugins/manifest.ts`, `src/plugins/manifest-types.ts`) validates and serves plugin manifests. The ClawHub marketplace (`src/plugins/clawhub.ts`, `src/plugins/marketplace.ts`) handles install/uninstall/update flows.
-
-### Hook System
-
-`src/plugins/hooks.ts` wires plugin hooks into agent execution phases:
-
-- Before/after agent start
-- Before/after tool call
-- Before agent finalize
-- Before install
-- Compaction
-- Message routing
-- Decision making
-- Correlation tracking
-
-### Canonical Record Architecture
-
-Plugins use a Canonical Install Record (CIR) system for tracking installed versions across migrations. The `src/plugins/canonical-record.ts` stores install provenance (source, version, install date) and is used for update detection and migration.
-
-### Tool Plugin Pattern
-
-`src/plugin-sdk/tool-plugin.ts`: `defineToolPlugin()` creates plugins that expose tools. Uses TypeBox schemas for input/output validation. Factory pattern with:
-
-- `defineToolPlugin({ toolName, description, inputSchema, outputSchema, execute })`
-- Automatic schema generation from TypeBox definitions
-- Error handling and retry support
-
----
-
-## State and Storage
-
-State is stored in a dual SQLite database design, both using Kysely query builder with generated TypeScript types.
-
-### Shared State Database
-
-`src/state/openclaw-state-db.ts` (940 lines): `openclaw-state-db` -- global runtime state with tables for:
-
-- Cron jobs (scheduling, execution tracking)
-- Delivery queue entries (outbound channel message queue)
-- Node pairing (paired nodes, capabilities)
-- Sandbox registry (sandbox runtime status)
-- Subagent runs (ACP subagent tracking)
-- Task runs (async task tracking)
-- Agent database registrations (links to per-agent DBs)
-- Conversation bindings (session-to-channel mapping)
-- ACP event ledger sessions and events
-- Schema migrations (versioned, idempotent)
-
-Uses 30-second busy timeout, synchronous WAL mode, private 0o600/0o700 file permissions.
-
-### Per-Agent Database
-
-`src/state/openclaw-agent-db.ts` (298 lines): `openclaw-agent-db` -- agent-scoped state with ownership assertion to prevent cross-agent access. Registers itself in the shared state's `agent_databases` table.
-
-### Config Storage
-
-JSON5 config file (`openclaw.json5`) with `$include` directives for modular composition. Loaded by `src/config/io.ts` (2984 lines):
-
-1. Load `.env` files (process env, `./.env`, `~/.openclaw/.env`)
-2. Resolve config path from env or default
-3. Read file (JSON or JSON5), parse
-4. Resolve `$include` chains (modular composition across files)
-5. Apply `config.env` block to `process.env`
-6. Resolve `${VAR}` env references
-7. Strip shipped plugin install records (migrated to plugin index)
-8. Validate against Zod schemas
-9. Load shell env fallback if configured
-10. Materialize runtime config
-
-Config write safety: atomic file replace via temp file + rename, SHA256 hash-based conflict detection, backup rotation before writes, audit logging, `${VAR}` reference preservation, clobber protection.
-
-### Secrets
-
-`src/secrets/` stores sensitive values (API keys, tokens) with three reference types:
-
-| Type | Syntax | Description |
-|------|--------|-------------|
-| Environment | `$env:VAR_NAME` | Read from environment variable |
-| File | `$file:/path/to/secret` | Read from file |
-| Exec | `$exec:command` | Execute command to resolve |
-
-Resolved at runtime through the secrets runtime state (`src/secrets/runtime-state.ts`).
-
-### OAuth and Auth Profiles
-
-- Auth profiles stored per-agent in SQLite (newer installs) or `auth-profiles.json`
-- Auth profile encryption keys stored in `~/.config/openclaw/` (separate Docker mountpoint for security)
-- OAuth credentials in `~/.openclaw/credentials/oauth.json`
-
----
-
-## Tool System
-
-The tool system uses a descriptor-driven planning architecture. Core types in `src/tools/types.ts`.
-
-### Tool Descriptors
-
-- `ToolDescriptor` -- Name, description, input/output schemas (JSON Schema), owner reference, optional executor binding, availability expression, annotations
-- `ToolOwnerRef` -- Classifies ownership: `core`, `plugin` (by pluginId), `channel` (by channelId + optional pluginId), `MCP server` (by serverId)
-- `ToolExecutorRef` -- Resolved executor after planning: core executor, plugin tool, channel action, or MCP server tool
-- `ToolAvailabilityExpression` -- Boolean tree of signals: `always`, `auth` (providerId), `config` (path + check type), `env` (var name), `plugin-enabled`, `context` (key + optional equals value), combined with `allOf`/`anyOf`
-- `ToolPlan` -- Split into visible and hidden entries, with diagnostics explaining each hidden descriptor's unavailability
-
-### Tool Planner
-
-The planner (`src/tools/planner.ts`): `buildToolPlan()` sorts descriptors by `sortKey`, evaluates availability against runtime context, returns visible+hidden plan. Throws `ToolPlanContractError` on duplicate names or missing executors.
-
-### Availability Evaluation
-
-`src/tools/availability.ts` (186 lines): Evaluates each signal against a `ToolAvailabilityContext` containing auth provider IDs, config (JSON), env vars, enabled plugin IDs, and custom context values. `allOf` = all pass, `anyOf` = at least one passes.
-
-### Gateway RPC Methods
-
-The gateway protocol includes tool RPC methods:
-
-- `tools.catalog` -- List available tools
-- `tools.effective` -- See the effective (visibility-resolved) tool set
-- `tools.invoke` -- Invoke tools
-
-Built-in tools include browser, canvas, cron, nodes, sessions, and system tools.
-
----
-
 ## Gateway Protocol
 
-The gateway protocol is a custom WebSocket RPC protocol defined in the `packages/gateway-protocol/` package. Current version is 4.
+The gateway protocol is a custom WebSocket RPC protocol defined in the `packages/gateway-protocol/` package. Current version is 4 (`packages/gateway-protocol/src/version.ts:1`), shipped as the npm package `@openclaw/gateway-protocol` (calendar-versioned `2026.7.2`, package.json:3).
+
+### Versioning Rules
+
+- `PROTOCOL_VERSION = 4` -- current wire protocol
+- `MIN_CLIENT_PROTOCOL_VERSION = 4` -- lowest general client version
+- `MIN_NODE_PROTOCOL_VERSION = 3` -- lowest authenticated node version (N-1 rolling-upgrade window)
+- `MIN_PROBE_PROTOCOL_VERSION = 3` -- lowest lightweight probe version
+- Wire version is separate from the package's `YYYY.M.PATCH` calendar version
+- `protocol.schema.json` is generated at pack time (`scripts/protocol-gen.ts`)
 
 ### Schema Validation
 
@@ -514,7 +300,7 @@ All frames and method params are validated against TypeBox-generated JSON schema
 
 ### Method Surface
 
-150+ RPC methods across categories:
+90+ RPC methods across categories:
 
 | Category | Key Methods |
 |----------|-------------|
@@ -549,9 +335,385 @@ Six scopes defined in `src/gateway/operator-scopes.ts`:
 | `operator.pairing` | Device/node pairing |
 | `operator.talk.secrets` | Voice/video session secrets |
 
+### Client Package
+
+`@openclaw/gateway-client` (`packages/gateway-client/`) is the official client library: protocol-client, handshake, reconnect policy, event-loop readiness, session projections/subscriptions, device-auth, browser build.
+
 ### HTTP Compatibility
 
 Gateway also exposes OpenAI-compatible HTTP endpoints (`/v1/chat/completions`, `/v1/responses`, `/v1/models`, `/v1/embeddings`) and a custom `/tools/invoke` endpoint, authenticated through the same gateway auth system.
+
+---
+
+## Agent System
+
+OpenClaw is fundamentally agent-based. Each agent has an identity (name, avatar, description), model configuration, tool sets, permission scopes, and file attachments.
+
+### Agent Lifecycle
+
+Agents are created/updated/deleted via CLI or gateway RPC methods (`src/agents/agent-create.ts`). The session lifecycle is defined in `src/gateway/session-lifecycle-state.ts`:
+
+- **State machine** with phases (`start`, `end`, `error`) and terminal statuses (`done`, `timeout`, `killed`, `failed`)
+- **Session persistence** to shared state database with compaction support for long-running conversations
+- **Restart recovery** detects stale sessions and resumes them
+- **Steering queue**: interrupt-and-steer variant for active sessions (`sessions.steer`)
+
+### Subagent Spawning (ACP)
+
+Subagent spawning uses ACP (`src/agents/acp-spawn.ts`, plus acp-spawn-runtime, acp-spawn-target, acp-spawn-requester, acp-spawn-heartbeat, acp-spawn-parent-stream):
+
+- Spawn depth limits (default 4)
+- Max children per agent (default 10)
+- Requester origin resolution for child agents
+- Thread binding policy
+- Workspace isolation
+- Parent-stream relay (`acp-spawn-parent-stream.ts`) for stdout/stderr relay to subagent sessions
+
+### Workspaces
+
+Workspaces are per-agent directories containing configuration, files, and `BOOT.md` files. `src/gateway/boot.ts` processes BOOT.md on gateway startup by running them as agent commands with internal-runtime-context delimiters.
+
+### Embedded Runners
+
+Agent execution uses embedded runners (`src/agents/embedded-agent-runner/`) with hooks:
+
+- `before-agent-start`
+- `before-tool-call`
+- `before-agent-reply`
+- `after-tool-call`
+- Compaction
+- Finalization
+
+Agent settings, steering queues, and sandbox runtime status are managed in `src/agents/`.
+
+### Identity
+
+Identity management via `src/agents/identity-avatar.ts` resolves assistant identity from config and serves avatar images through the control UI HTTP handler. `src/gateway/assistant-identity.ts` handles gateway-level assistant identity configuration.
+
+---
+
+## Channel Architecture
+
+The channel system provides transport-agnostic message adapters for external platforms. Bundled channel plugins include: WhatsApp, Telegram, Slack, Discord, Google Chat, Signal, iMessage, IRC, Microsoft Teams, Matrix, Feishu, LINE, Mattermost, Nextcloud Talk, Nostr, Synology Chat, Tlon, Twitch, Zalo, WeChat, QQ, and WebChat.
+
+Channel plugins live in `extensions/` as bundled plugins, discovered and loaded through the plugin system.
+
+### Core Abstractions
+
+Core channel abstractions in `src/channels/`:
+
+- **Session management** -- Per-channel session IDs, thread binding
+- **Message routing** -- `resolve-route.ts` with `RoutePeer` (kind + id), `ChatType` (direct/group/channel)
+- **Thread binding** -- Reply-to-thread, conversation resolution
+- **Streaming config** -- `streaming.ts` normalizes legacy flat keys and current nested config: preview modes (`off`, `partial`, `block`, `progress`), text chunking (`length`, `newline`), block coalescing
+- **DM policy** -- Who can DM the agent (`dm-*.ts`, `direct-dm.ts`)
+- **Mention gating** -- Whether the agent responds to @mentions only
+- **Typing lifecycle** -- Typing indicators when agent is generating
+- **Reaction handling** -- Emoji reactions on messages (`status-reactions`)
+- **Status monitoring** -- Per-channel health checks
+- **Outbound delivery** -- Queue-based outbound message delivery
+- **Allowlists** -- `allowlists/`, `allowlist-match.ts`
+- **Pairing** -- Channel pairing flows
+- **Run state machine** -- `run-state-machine.ts` for channel-backed agent runs
+
+### Channel Manager
+
+`src/gateway/server-channels.ts` defines the `ChannelManager` type:
+
+- `startChannels()` -- Start all configured channels
+- `startChannel(id, accountId)` -- Start a specific channel + account
+- `stopChannel(id, accountId, opts)` -- Stop a specific channel
+- `getRuntimeSnapshot()` -- Get channel runtime health/status
+
+Channel lifecycle hooks: `onChannelStarted`, `onChannelStopped`, health check callbacks.
+
+### Plugin SDK for Channels
+
+The Plugin SDK (`src/plugin-sdk/core.ts`) provides:
+
+- `defineChannelPluginEntry()` -- Define a channel plugin entry point
+- `createChatChannelPlugin()` -- Create a chat channel plugin
+- `createChannelPluginBase()` -- Base constructor for channel plugins
+
+It composes security (DM policy), pairing (approval notification), threading (reply-to modes), and outbound delivery behavior.
+
+### Proxy Bootstrap
+
+Channel connectivity through restricted networks uses SSH tunnel proxies configured at startup. The proxy bootstrap phase establishes tunnels before channel plugins start.
+
+---
+
+## Plugin System
+
+The plugin system is one of the most complex subsystems. It supports:
+
+1. **Bundled plugins** -- Shipped in `extensions/` (~150 plugins with `openclaw.plugin.json` manifests: Anthropic, OpenAI, Google, AWS Bedrock, Slack, Discord, Telegram, canvas, browser, codex, diagnostics-otel, memory-core, migrate-claude, migrate-hermes, etc.)
+2. **Third-party/community plugins** -- Installed via ClawHub marketplace, npm, or git.
+
+### Plugin SDK Contract
+
+The plugin SDK (`src/plugin-sdk/`) is the public contract between plugins and core, using narrow subpaths and acyclic exports. Plugin authors should only ever import from `openclaw/plugin-sdk/*`.
+
+The SDK provides 300+ exports including:
+
+- `definePluginEntry()` -- Core entry point definition
+- `defineToolPlugin()` -- Tool plugin with TypeBox schemas
+- `defineChannelPluginEntry()` -- Channel plugin entry
+- `registerTool()`, `registerHook()`, `registerCommand()`, `registerHTTPRoute()`, `registerChannel()`, etc.
+
+### Plugin Entry System
+
+`src/plugin-sdk/plugin-entry.ts`: `DefinePluginEntryOptions` with `id`, `name`, `description`, `configSchema`, and a `register` callback that receives `OpenClawPluginApi`. Uses jiti (JavaScript Import Transform Interop) for module loading.
+
+### Lifecycle
+
+Plugin lifecycle (`src/plugins/loader.ts`):
+
+1. **Discovery** -- From bundled dirs (`extensions/`), npm packages, git repos, local paths
+2. **Manifest validation** -- `openclaw.plugin.json` (`PLUGIN_MANIFEST_FILENAME`, `src/plugins/manifest.ts:27`) with `id`, `version`, `capabilities`, `hooks`, `tools`, `entrypoints`
+3. **Compatibility check** -- `min-host-version` enforcement
+4. **Activation** -- Through `src/plugins/activation-planner.ts` which resolves dependency order
+5. **Runtime tracking** -- Via `src/plugins/runtime.ts` tracking: active plugins, HTTP routes, session extensions, gateway methods, channel registrations
+
+Install sources (`src/plugins/install/`): npm packages, git repositories, and ClawHub marketplace entries.
+
+### Plugin Types
+
+From `src/plugins/types.ts`:
+
+- **Providers** -- LLM model providers (Anthropic, OpenAI, Google, etc.) with auth, model catalogs, streaming, replay policies
+- **Channels** -- External platform adapters (Slack, Discord, etc.)
+- **Skills** -- Agent capabilities (browser, file-transfer, web-search, etc.)
+- **Hooks** -- Lifecycle hooks
+- **Capability providers** -- Feature providers (memory, document extraction, web fetching, etc.)
+- **Embedding providers** -- Vector embedding providers
+
+### Manifest System
+
+The manifest system (`src/plugins/manifest.ts`, `src/plugins/manifest-types.ts`) validates and serves plugin manifests. The ClawHub marketplace (`src/plugins/clawhub.ts`, `src/plugins/marketplace.ts`, `src/plugins/registry.ts`) handles install/uninstall/update flows.
+
+### Hook System
+
+`src/plugins/hooks.ts` wires plugin hooks into agent execution phases. The named hook phases include:
+
+- `before-agent-start`
+- `before-tool-call`
+- `before-agent-reply`
+- `after-tool-call`
+- Before/after agent finalize
+- Before install
+- Compaction
+- Message routing
+- Decision making
+- Correlation tracking
+
+### Canonical Record Architecture
+
+Plugins use a Canonical Install Record (CIR) system for tracking installed versions across migrations. The `src/plugins/canonical-record.ts` stores install provenance (source, version, install date) and is used for update detection and migration.
+
+### Tool Plugin Pattern
+
+`src/plugin-sdk/tool-plugin.ts`: `defineToolPlugin()` creates plugins that expose tools. Uses TypeBox schemas for input/output validation. Factory pattern with:
+
+- `defineToolPlugin({ toolName, description, inputSchema, outputSchema, execute })`
+- Automatic schema generation from TypeBox definitions
+- Error handling and retry support
+
+---
+
+## Skills System
+
+Skills are agent capabilities with a dedicated subsystem in `src/skills/`:
+
+- **config/** -- Skill configuration schemas
+- **discovery/** -- Skill discovery (workspace, plugin, bundled)
+- **lifecycle/** -- Skill install/lifecycle
+- **loading/** -- Skill resolution and loading (`workspace.ts`, `plugin-skills.ts`)
+- **research/** -- Research-oriented skills
+- **runtime/** -- Skill runtime execution
+- **security/** -- Skill security policy
+- **workshop/** -- Skill authoring/workshop tooling
+
+Skill precedence is a **6-tier model** resolved at load time: plugin-installed skills never shadow managed or bundled skills (see `src/skills/loading/plugin-skills.ts:211`), and workspace skills participate in the loading tier decision (`src/skills/loading/workspace.ts:1594`). The tiers determine prompt inclusion order and shadowing rules.
+
+---
+
+## State and Storage
+
+### Storage Doctrine
+
+**SQLite only.** OpenClaw does not use JSON/TXT sidecar files for runtime state; all durable runtime state lives in SQLite databases. Session transcripts are stored in the databases (not standalone JSONL sidecars for runtime state).
+
+### Shared State Database
+
+`src/state/openclaw-state-db.ts` (718 lines): shared state DB at `state/openclaw.sqlite`, schema **v6**. Tables include:
+
+- Cron jobs (scheduling, execution tracking)
+- Delivery queue entries (outbound channel message queue)
+- Node pairing (paired nodes, capabilities)
+- Sandbox registry (sandbox runtime status)
+- Subagent runs (ACP subagent tracking)
+- Task runs (async task tracking)
+- Agent database registrations (links to per-agent DBs)
+- Conversation bindings (session-to-channel mapping)
+- ACP event ledger sessions and events
+- Schema migrations (versioned, idempotent)
+
+Uses 30-second busy timeout, synchronous WAL mode, private 0o600/0o700 file permissions.
+
+### Per-Agent Database
+
+`src/state/openclaw-agent-db.ts` (663 lines): per-agent DB at `agents/<agentId>/agent/openclaw-agent.sqlite`, schema **v16**, with ownership assertion to prevent cross-agent access. Registers itself in the shared state's `agent_databases` table.
+
+### Auth Profiles
+
+Auth profiles (OAuth tokens, API keys) live at `~/.openclaw/agents/<agentId>/agent/auth-profiles.json` (or SQLite-backed on newer installs). A legacy credentials directory (`~/.openclaw/credentials/`) holds OAuth state.
+
+---
+
+## Config System
+
+### Config File
+
+JSON5 config file at `~/.openclaw/openclaw.json` (filename has no `.json5` extension, but JSON5 syntax is supported) with `$include` directives for modular composition. Loaded via `src/config/io.ts` (public facade) delegating to `io.factory.ts`, `io.runtime.ts` (493 lines), and `io.read-helpers.ts` (368 lines).
+
+### Two-Bucket Rule
+
+Configuration follows a two-bucket rule (`docs/gateway/configuration.md:17-21`):
+
+- **Root siblings** hold infrastructure and cross-agent defaults (gateway, channels, plugins, models, secrets)
+- **`agents.defaults`** holds agent-loop behavior
+- **`agents.entries`** may override either bucket per-agent where the schema supports a per-agent override
+
+Agents and automation should use `config.schema.lookup` for exact field-level docs before editing config.
+
+### Config Loading Flow
+
+1. Load `.env` files (process env, `./.env`, `~/.openclaw/.env`)
+2. Resolve config path from env or default
+3. Read file (JSON or JSON5), parse
+4. Resolve `$include` chains (modular composition across files)
+5. Apply `config.env` block to `process.env`
+6. Resolve `${VAR}` env references
+7. Strip shipped plugin install records (migrated to plugin index)
+8. Validate against Zod schemas
+9. Load shell env fallback if configured
+10. Materialize runtime config
+
+### Hot Reload
+
+Config supports hot reload: `config-reload-plan.ts`, `config-reload-recovery.ts`, `config-reload-settings.ts` in `src/gateway/` enable config changes without a full restart, with recovery for failed reloads.
+
+### Environment Variables
+
+~100 `OPENCLAW_*` environment variables across config and infra modules (219 unique `OPENCLAW_*` names measured across `src/config/` + `src/infra/`).
+
+### Config Write Safety
+
+Config write safety: atomic file replace via temp file + rename, SHA256 hash-based conflict detection, backup rotation before writes, audit logging, `${VAR}` reference preservation, clobber protection.
+
+### Secrets
+
+`src/secrets/` stores sensitive values (API keys, tokens) with three reference types:
+
+| Type | Syntax | Description |
+|------|--------|-------------|
+| Environment | `$env:VAR_NAME` | Read from environment variable |
+| File | `$file:/path/to/secret` | Read from file |
+| Exec | `$exec:command` | Execute command to resolve |
+
+Resolved at runtime through the secrets runtime state (`src/secrets/runtime-state.ts`).
+
+---
+
+## Tool System
+
+The **tool contract types** live in `src/tools/types.ts` (the only file in `src/tools/`). The actual tool implementations and planner live in `src/agents/tools/` (~120 non-test source files).
+
+### Tool Descriptors
+
+- `ToolDescriptor` -- Name, description, input/output schemas (JSON Schema), owner reference, optional executor binding, availability expression, annotations
+- `ToolOwnerRef` -- Classifies ownership: `core`, `plugin` (by pluginId), `channel` (by channelId + optional pluginId), `MCP server` (by serverId)
+- `ToolExecutorRef` -- Resolved executor after planning: core executor, plugin tool, channel action, or MCP server tool
+- `ToolAvailabilityExpression` -- Boolean tree of signals: `always`, `auth` (providerId), `config` (path + check type), `env` (var name), `plugin-enabled`, `context` (key + optional equals value), combined with `allOf`/`anyOf`
+- `ToolPlan` -- Split into visible and hidden entries, with diagnostics explaining each hidden descriptor's unavailability
+
+### Tool Planner
+
+The planner: `buildToolPlan()` sorts descriptors by `sortKey`, evaluates availability against runtime context, returns visible+hidden plan. Throws `ToolPlanContractError` on duplicate names or missing executors.
+
+### Built-in Tools
+
+Built-in tools implemented in `src/agents/tools/` include: `cron-tool`, `ask-user-tool`, `dashboard-tool`, `tool-search`, browser, canvas, nodes, sessions, and system tools.
+
+### Gateway RPC Methods
+
+The gateway protocol includes tool RPC methods:
+
+- `tools.catalog` -- List available tools
+- `tools.effective` -- See the effective (visibility-resolved) tool set
+- `tools.invoke` -- Invoke tools
+
+---
+
+## Memory System
+
+`src/memory/` contains only `root-memory-files.ts` -- it locates the canonical `MEMORY.md` root memory file (`CANONICAL_ROOT_MEMORY_FILENAME = "MEMORY.md"`) that seeds agent context.
+
+The real memory subsystem lives in:
+
+- **`extensions/memory-core/`** -- the memory plugin (manager-runtime, api, cli, doctor-contract-api)
+- **`src/memory-host-sdk/`** (13 files) -- host-side SDK: dreaming, engine-qmd, engine-storage, event-export, event-store, event-types, events, host, multimodal, query, secret, status
+
+---
+
+## MCP Subsystem
+
+`src/mcp/` (12 non-test files + 8 test files) implements the MCP surface:
+
+| File | Purpose |
+|------|---------|
+| `channel-bridge.ts` | MCP server bridging messaging channels |
+| `channel-server.ts` | Channel server runtime |
+| `channel-tools.ts` | Channel tools for MCP |
+| `channel-shared.ts` | Shared channel/MCP helpers |
+| `plugin-tools-serve.ts` | MCP server exposing plugin-registered tools |
+| `plugin-tools-handlers.ts` | MCP tool call handlers |
+| `tools-stdio-server.ts` | stdio server scaffolding for MCP servers |
+| `openclaw-tools-serve.ts` | MCP server exposing built-in OpenClaw tools |
+| `openclaw-tools-serve-config.ts` | Config for the OpenClaw tools server |
+| `codex-supervision-tools-serve.ts` | Codex supervision tools MCP server |
+| `agent-session-env.ts` | Agent session environment for MCP |
+
+Gateway-side MCP HTTP surfaces live in `src/gateway/mcp-http.*` (protocol, request, runtime, schema, loopback-runtime, handlers) and `src/gateway/mcp-app-*` (channel action, operations, sandbox-http, standalone, grant-store).
+
+The `openclaw mcp` CLI manages a bidirectional MCP story: client-side registry (`mcp.servers` config; `openclaw mcp add/set/doctor/probe`) plus server-side exposure (`openclaw mcp serve`). See [[domains/mcp/openclaw-mcp-implementation.md]].
+
+---
+
+## ACP Subsystem
+
+`src/acp/` (~55 non-test files, ~100 incl. tests) implements the ACP (Agent Client Protocol) bridge using `@agentclientprotocol/sdk` (v1.3.0, package.json:1922):
+
+| File | Purpose |
+|------|---------|
+| `server.ts` | ACP stdio/gateway bridge server (protocol version 4) |
+| `translator.ts` | Session/prompt/event translation between ACP and Gateway |
+| `client.ts` | Interactive stdio ACP client |
+| `approval-classifier.ts` | Risk-bucket classification of tool-call approvals |
+| `event-ledger.ts` | SQLite-backed audit trail with caps: 200 sessions, 5,000 events/session, 16 MB serialized |
+| `commands.ts` | ACP command surface |
+| `conversation-id.ts` | Conversation ID mapping |
+| `session-mapper.ts` | Session ID mapping |
+| `event-mapper.ts` | Event mapping |
+| `policy.ts` | ACP policy enforcement |
+| `permission-relay.ts` | Permission relay |
+| `persistent-bindings.*` | Persistent session bindings |
+| `secret-file.ts` | Secret file handling |
+| `tool-status.ts` | Tool status mapping |
+| `control-plane/` | manager, active-turns, spawn, backend-failover, background-task |
+
+See [[domains/acp/openclaw-acp-implementation.md]].
 
 ---
 
@@ -612,7 +774,7 @@ RPC methods require specific operator scopes. Scope model: `operator.read`, `ope
 ### TLS Support
 
 - HTTPS via `createHttpsServer`
-- Certificate configuration in `openclaw.json5`
+- Certificate configuration in `openclaw.json`
 - Tailscale integration for secure remote access without TLS configuration
 
 ---
@@ -623,7 +785,7 @@ The CLI is built on the Commander library. Entry point is `src/entry.ts`, which 
 
 ### CLI Orchestration
 
-Delegates to `src/cli/run-main.ts` `runCli()` (1097 lines) which orchestrates:
+Delegates to `src/cli/run-main.ts` `runCli()` which orchestrates:
 
 1. Container target detection
 2. Environment normalization
@@ -639,6 +801,7 @@ Plugin commands are registered at startup from plugin manifests and registry sna
 ### Key CLI Subcommands
 
 - `openclaw gateway` -- start/stop/restart/manage the gateway daemon
+- `openclaw daemon` -- legacy alias for the same Gateway service commands (launchd/systemd/schtasks)
 - `openclaw agent` -- one-shot agent execution
 - `openclaw message` -- send messages through channels
 - `openclaw channels` -- manage channel plugins
@@ -647,11 +810,14 @@ Plugin commands are registered at startup from plugin manifests and registry sna
 - `openclaw health` -- health probes
 - `openclaw doctor` -- diagnostics and repair
 - `openclaw backup` -- backup management
-- `openclaw update` -- self-update
+- `openclaw update` -- self-update (stable/extended-stable/beta/dev channels)
 - `openclaw onboard` -- initial setup wizard
 - `openclaw secrets` -- secret management
 - `openclaw acp` -- start ACP protocol server
+- `openclaw mcp` -- MCP client registry + server management (add/set/doctor/probe/serve)
+- `openclaw devices` -- device management
 - `openclaw nodes` -- node operations
+- `openclaw dns` -- CoreDNS wide-area discovery setup (Tailscale + CoreDNS)
 - `openclaw dev` -- developer utilities
 
 ---
@@ -664,10 +830,21 @@ The "Talk" system provides real-time voice/video sessions through its own protoc
 - **`TalkSession`** -- Session management with audio streaming
 - **TURN management** -- TURN server configuration for NAT traversal
 - Gateway RPC methods: `talk.session.*`, `talk.client.*`, `talk.speak`
+- **Voice Wake/Talk mode** -- wake-word activation and realtime transcription/TTS across companion apps
 
 ---
 
-## Node and Device Pairing
+## Companion Apps and Device Pairing
+
+### Companion Apps
+
+| App | Platform | Notes |
+|-----|----------|-------|
+| OpenClaw.app | macOS | Menu bar app (`dist/OpenClaw.app`, `apps/macos/` Swift) |
+| iOS node | iOS | `apps/ios/` -- one chat surface for text, realtime voice, dictation, voice notes |
+| Android node | Android | `apps/android/` (Kotlin) -- including Wear OS companion proxies |
+| Windows Hub | Windows | Native companion app: setup, tray status, chat, node mode, local MCP mode |
+| Linux | Linux | Tauri app (`apps/linux/` with `src-tauri` + `ui`) |
 
 ### Node Pairing
 
@@ -677,6 +854,7 @@ OpenClaw supports a node network where remote nodes can be paired for distribute
 - Node capability advertisement
 - Remote tool invocation (`node.invoke`)
 - SSH tunnel proxy support for nodes behind NAT
+- Managed via `openclaw nodes` CLI and `node.*` RPC methods
 
 ### Device Pairing
 
@@ -685,6 +863,30 @@ Device management for companion devices (mobile, desktop):
 - Pairing protocol (`device.pair.*`) with QR code or token
 - Key-based device proof verification
 - Push notification support
+- Managed via `openclaw devices` CLI and `device.*` RPC methods
+- Gateway-side: `src/gateway/device-auth.ts`, `exec-approval-manager.ts`
+
+---
+
+## LLM Provider Ecosystem
+
+OpenClaw supports ~40 model providers via bundled provider plugins (`extensions/`):
+
+- **Anthropic** (`anthropic`, `anthropic-vertex`)
+- **OpenAI** (ChatGPT + Codex OAuth flows, `openai`)
+- **Google** (`google`)
+- **xAI** (`xai`)
+- **OpenRouter** (`openrouter`)
+- **GitHub Copilot** (`copilot`, `github-copilot`, `copilot-proxy`)
+- **MiniMax** (`minimax`)
+- **Ollama** (`ollama`) -- local
+- **LM Studio** -- local (OpenAI-compatible)
+- **vLLM** (`vllm`) -- local
+- **llama.cpp** (`llama-cpp`) -- local
+- **sglang** (`sglang`) -- local
+- **litellm** (`litellm`) -- local gateway
+
+Runtime features: **model failover** across providers and **auth-profile rotation** per agent. Local model services are configured through `docs/gateway/local-model-services.md` and `docs/gateway/local-models.md`.
 
 ---
 
@@ -694,7 +896,9 @@ Device management for companion devices (mobile, desktop):
 |------|---------|
 | `src/entry.ts` | Node.js entry point with fast-paths |
 | `src/cli/run-main.ts` | CLI orchestration (Commander) |
-| `src/gateway/server.impl.ts` | Gateway server implementation |
+| `src/gateway/server.impl.ts` | Lazy-load facade for server implementation |
+| `src/gateway/server-public.ts` | Public gateway server contract |
+| `src/gateway/server-start.ts` | Gateway server startup |
 | `src/gateway/server.ts` | Lazy-loading server entry point |
 | `src/gateway/server-http.ts` | HTTP server with stage-based routing |
 | `src/gateway/server/ws-connection.ts` | WebSocket connection handler |
@@ -708,12 +912,14 @@ Device management for companion devices (mobile, desktop):
 | `src/gateway/control-ui.ts` | Built-in web control UI SPA |
 | `src/gateway/server/readiness.ts` | Readiness probe checking |
 | `src/gateway/server/health-state.ts` | Health snapshot building |
-| `src/gateway/methods/core-descriptors.ts` | 150+ RPC method definitions |
+| `src/gateway/health/collector.ts` | Health metric collection |
+| `src/gateway/methods/core-descriptors.ts` | 90+ RPC method definitions |
 | `src/gateway/method-scopes.ts` | Operator scope authorization |
 | `src/gateway/operator-scopes.ts` | Scope definitions |
 | `src/gateway/http-auth-utils.ts` | HTTP request auth utilities |
 | `src/gateway/server-channels.ts` | Channel manager lifecycle |
 | `src/gateway/server/event-loop-health-monitor.ts` | Event loop health monitoring |
+| `src/gateway/config-reload-plan.ts` | Hot config reload planning |
 | `src/daemon/gateway-entrypoint.ts` | Gateway startup sequence |
 | `src/plugins/loader.ts` | Plugin discovery and loading |
 | `src/plugins/runtime.ts` | Active plugin runtime registry |
@@ -722,18 +928,21 @@ Device management for companion devices (mobile, desktop):
 | `src/plugins/manifest.ts` | Plugin manifest validation |
 | `src/plugins/types.ts` | Plugin type definitions |
 | `src/plugins/canonical-record.ts` | Canonical Install Record system |
+| `src/plugins/registry.ts` | Plugin registry |
 | `src/plugin-sdk/core.ts` | Channel plugin SDK construction helpers |
 | `src/plugin-sdk/plugin-entry.ts` | Plugin entry point definition |
 | `src/plugin-sdk/tool-plugin.ts` | Tool plugin pattern with TypeBox |
 | `src/channels/streaming.ts` | Streaming config normalization |
 | `src/channels/resolve-route.ts` | Channel message routing |
-| `src/state/openclaw-state-db.ts` | Shared SQLite state DB |
-| `src/state/openclaw-agent-db.ts` | Per-agent SQLite DB |
-| `src/config/io.ts` | Config file load/write with atomic safety |
+| `src/channels/run-state-machine.ts` | Channel-backed run state machine |
+| `src/state/openclaw-state-db.ts` | Shared SQLite state DB (schema v6) |
+| `src/state/openclaw-agent-db.ts` | Per-agent SQLite DB (schema v16) |
+| `src/config/io.ts` | Config public facade (delegates to io.runtime/io.read-helpers) |
 | `src/tools/types.ts` | Tool descriptor and planning types |
-| `src/tools/planner.ts` | Tool availability planner |
-| `src/tools/availability.ts` | Availability signal evaluation |
+| `src/agents/tools/` | Tool implementations (~120 files) |
 | `src/agents/acp-spawn.ts` | ACP subagent spawning |
+| `src/memory/root-memory-files.ts` | Root memory file location |
+| `src/memory-host-sdk/` | Memory host SDK |
 | `src/acp/server.ts` | ACP stdio/gateway bridge server |
 | `src/acp/event-ledger.ts` | SQLite-backed ACP event audit trail |
 | `src/mcp/channel-server.ts` | MCP server for channel bridge |
@@ -741,10 +950,11 @@ Device management for companion devices (mobile, desktop):
 | `src/mcp/openclaw-tools-serve.ts` | MCP server for built-in tools |
 | `src/secrets/runtime-state.ts` | Runtime secret resolution |
 | `packages/gateway-protocol/src/index.ts` | Gateway RPC protocol types |
+| `packages/gateway-protocol/src/version.ts` | Protocol version constants (v4) |
 | `packages/gateway-protocol/src/schema/frames.ts` | Wire frame schemas |
 | `packages/gateway-protocol/src/schema/protocol-schemas.ts` | Schema registry |
-| `packages/gateway-protocol/src/version.ts` | Protocol version constants |
-| `extensions/` | 85+ bundled plugins (providers, channels, skills) |
+| `packages/gateway-client/` | Official gateway client library |
+| `extensions/` | ~150 bundled plugins (providers, channels, skills) |
 
 ## Related
 

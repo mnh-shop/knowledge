@@ -32,7 +32,7 @@ Headroom runs **entirely locally** — all data stays on the user's machine. The
 - **Library Mode** — `compress(messages)` in Python or TypeScript, inline in any application. Integrates with Anthropic SDK, OpenAI SDK, Vercel AI SDK, LiteLLM, LangChain, and Agno.
 - **Proxy Mode** — `headroom proxy --port 8787` runs a local HTTP proxy that intercepts and compresses all LLM traffic. Zero code changes, works with any OpenAI-compatible client.
 - **Agent Wrapping** — `headroom wrap claude|copilot|codex|opencode|openclaw|cursor|aider|...` configures and launches a wrapped agent session with compression preconfigured.
-- **MCP Server** — Provides `headroom_compress`, `headroom_retrieve`, and `headroom_stats` tools for any MCP client.
+- **MCP Server** — Provides four tools for any MCP client (`headroom/ccr/mcp_server.py`): `headroom_compress`, `headroom_retrieve`, `headroom_stats`, and `headroom_read` (file read caching via CCR, behind a feature flag). README.md:53 lists the first three.
 - **Content-Aware Compression** — ContentRouter automatically selects the optimal compressor:
   - **SmartCrusher** — universal JSON compression for arrays, nested objects, mixed types (60–95% reduction)
   - **CodeCompressor** — AST-aware compression for Python, JS/TS, Go, Rust, Java, C/C++, Perl (15–20% reduction)
@@ -73,6 +73,8 @@ Headroom runs **entirely locally** — all data stays on the user's machine. The
 Headroom exposes one stable request lifecycle: `Setup → Pre-Start → Post-Start → Input Received → Input Cached → Input Routed → Input Compressed → Input Remembered → Pre-Send → Post-Send → Response Received`. Pipeline extensions can observe or customize any stage.
 
 Provider-specific behavior lives under `headroom/providers/` (Claude, Codex, Copilot, Gemini, OpenClaw) so core orchestration stays focused on lifecycle and sequencing.
+
+**Rust workspace (`crates/`)** — alongside the Python core: `headroom-core` (transforms, relevance scoring, signal detection), `headroom-py` (native Python bindings), and `headroom-proxy`, `headroom-parity`, and `headroom-simulators`. File-based persistence is available via `--storage.file` with SQL schema in `sql/` (`create_dashboard_summary.sql`, `create_proxy_telemetry_v2.sql`, plus upgrade migrations).
 
 ## Compression Performance
 

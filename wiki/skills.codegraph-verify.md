@@ -7,55 +7,63 @@ source: sources/skills/
 
 # Codegraph Verification: skills
 
-**Date:** 2026-07-12
+**Date:** 2026-07-30
 
-## Claim 1: 16 engineering skills and 5 productivity skills in a composable, pluggable skill registry
-- **Wiki says:** The repo is organized as a skill registry with plugin manifest, with skills in bucket categories: engineering (daily code work), productivity (non-code workflow), misc, personal, in-progress, and deprecated.
+## Claim 1: 17 engineering skills and 5 productivity skills in a six-bucket skill registry
+- **Wiki says:** The repo is organized as a skill registry with plugin manifest, with skills in bucket categories: engineering (daily code work), productivity (daily non-code workflow), misc, personal, in-progress, and deprecated. The engineering bucket holds 17 skills.
 
-- **Source evidence:** The `skills/` directory contains 6 bucket folders: `engineering/` (16 skills), `productivity/` (5 skills), `misc/` (4 skills), `personal/`, `in-progress/`, `deprecated/`. The `engineering/` bucket includes: `ask-matt`, `code-review`, `codebase-design`, `diagnosing-bugs`, `domain-modeling`, `grill-with-docs`, `implement`, `improve-codebase-architecture`, `prototype`, `research`, `resolving-merge-conflicts`, `setup-matt-pocock-skills`, `tdd`, `to-issues`, `to-prd`, `triage`. The `productivity/` bucket includes: `grill-me`, `grilling`, `handoff`, `teach`, `writing-great-skills`. `.claude-plugin/plugin.json` lists 22 promoted skills across `engineering/` and `productivity/`. CLAUDE.md (the project CLAUDE.md file) lines 1-7 document the bucket organization. README.md confirms 30-second install via `npx skills@latest add mattpocock/skills`.
+- **Source evidence:** The `skills/` directory contains 6 bucket folders. `skills/engineering/` contains exactly 17 skill directories: `ask-matt`, `code-review`, `codebase-design`, `diagnosing-bugs`, `domain-modeling`, `grill-with-docs`, `implement`, `improve-codebase-architecture`, `prototype`, `research`, `resolving-merge-conflicts`, `setup-matt-pocock-skills`, `tdd`, `to-spec`, `to-tickets`, `triage`, `wayfinder`. `skills/productivity/` contains 5: `grill-me`, `grilling`, `handoff`, `teach`, `writing-great-skills`. `.claude-plugin/plugin.json` (lines 21-44) lists exactly the 22 promoted skills (17 engineering + 5 productivity). CLAUDE.md lines 1-8 document the bucket organization.
+
+- **Verdict:** ✅ CORRECT
+- **Fix needed:** None (previously stale: engineering was reported as 16 with `to-prd`/`to-issues` and missing `code-review`, `implement`, `research`, `to-spec`, `to-tickets`, `wayfinder`)
+
+## Claim 2: /to-spec and /to-tickets replaced /to-prd and /to-issues
+- **Wiki says:** /to-spec synthesizes the conversation into a spec (no interview) and publishes to the issue tracker; /to-tickets breaks plans/specs/conversations into tracer-bullet tickets declaring blocking edges.
+
+- **Source evidence:** Commit `386d4ff` (2026-07-02) "refactor: unify planning skills into /to-spec + /to-tickets" deleted `to-prd`/`to-issues` — neither exists in `skills/engineering/`. `skills/engineering/to-spec/SKILL.md` line 5: "This skill takes the current conversation context and codebase understanding and produces a spec (you may know this document as a PRD). Do NOT interview the user — just synthesize what you already know." `skills/engineering/to-tickets/SKILL.md` line 3: "Break a plan, spec, or conversation into a set of **tickets** — tracer-bullet vertical slices, each declaring the tickets that **block** it." Both are user-invoked (`disable-model-invocation: true`) and registered in `.claude-plugin/plugin.json` lines 29-30. README.md lines 199-200 describe them identically.
+
+- **Verdict:** ✅ CORRECT
+- **Fix needed:** None (previously stale: wiki and verify page listed `/to-prd` and `/to-issues`)
+
+## Claim 3: Invocation model split into user-invoked and model-invoked skills, documented in .agents/invocation.md
+- **Wiki says:** Skills are split on an invocation axis: user-invoked skills (orchestrators reachable only when typed by the user, e.g., /grill-me, /to-spec) and model-invoked skills (reachable by user or agent automatically when the task fits, e.g., /tdd, /domain-modeling, /codebase-design).
+
+- **Source evidence:** CLAUDE.md line 20: "Every `SKILL.md` is either user-invoked (`disable-model-invocation: true` plus `policy.allow_implicit_invocation: false` in `agents/openai.yaml`...) or model-invoked (model- or user-reachable). See [.agents/invocation.md]." `.agents/invocation.md` lines 1-10 document the split: user-invoked skills are "reachable **only by the human typing its name**"; model-invoked are "reachable by **model or user**"; line 8: "A user-invoked skill may invoke model-invoked skills, but it can never reach another user-invoked skill." The `.claude-plugin/plugin.json` manifest lists all promoted skills; the distinction lives in each `SKILL.md` frontmatter + `agents/openai.yaml`. Commit `6e178c6` moved `docs/invocation.md` to `.agents/invocation.md`; `docs/` now mirrors only `engineering/` + `productivity/` (README.md lines 199-202 list the user-invoked engineering skills as examples).
+
+- **Verdict:** ✅ CORRECT
+- **Fix needed:** None (previously stale: linked `docs/invocation.md`, which no longer exists)
+
+## Claim 4: Only promoted buckets (engineering/ + productivity/) get README refs and plugin.json entries
+- **Wiki says:** Every skill in `engineering/` or `productivity/` (the promoted buckets) must have a reference in the top-level README.md and an entry in `.claude-plugin/plugin.json`'s skills array; skills in `misc/`, `personal/`, `in-progress/`, and `deprecated/` must not appear in either.
+
+- **Source evidence:** CLAUDE.md line 10: "Every skill in `engineering/` or `productivity/` (the **promoted** buckets) must have a reference in the top-level `README.md` and an entry in `.claude-plugin/plugin.json`'s `skills` array... Skills in `misc/`, `personal/`, `in-progress/`, and `deprecated/` must not appear in either." CLAUDE.md line 18 extends the rule to docs pages: non-promoted buckets get **no** docs page. `.claude-plugin/plugin.json` lines 21-44 contain exactly the 22 promoted skills; `misc/` (e.g. `git-guardrails-claude-code`, `migrate-to-shoehorn`), `personal/`, `in-progress/` (e.g. `batch-grill-me`, `to-questionnaire`), and `deprecated/` (e.g. `qa`, `design-an-interface`) are absent.
+
+- **Verdict:** ✅ CORRECT
+- **Fix needed:** None (previously INVERTED: wiki claimed misc/ skills also require README ref + plugin.json entry)
+
+## Claim 5: Domain model in CONTEXT.md includes Decision ticket, Relationships, and Flagged ambiguities
+- **Wiki says:** The domain model uses Issue tracker, Issue, Decision ticket, and Triage role, plus documented Relationships and Flagged ambiguities.
+
+- **Source evidence:** CONTEXT.md defines **Issue tracker** (line 7-8), **Issue** (line 11-13), **Decision ticket** (line 15-16: "A `wayfinder` unit — a child **Issue** of a `wayfinder:map` holding a *question* whose resolution is a decision, not a slice of a build to execute"), and **Triage role** (line 18-19). The **Relationships** section (lines 21-25) states: an Issue tracker holds many Issues; an Issue carries one Triage role at a time; a Decision ticket is an Issue (a child of a `wayfinder:map`). The **Flagged ambiguities** section (lines 27-30) resolves "backlog" and "backlog backend"/"backlog manager" into the Issue tracker term. `skills/engineering/wayfinder/SKILL.md` line 3 confirms the decision-ticket vocabulary: "questions whose resolution is a decision, not slices of a build to execute."
+
+- **Verdict:** ✅ CORRECT
+- **Fix needed:** None (Decision ticket + Relationships + Flagged ambiguities newly added to wiki)
+
+## Claim 6: ask-matt is the router and ships first in the plugin manifest
+- **Wiki says:** ask-matt is the router that maps every user-reachable skill and how they relate, updated whenever skills are added, renamed, or removed.
+
+- **Source evidence:** CLAUDE.md line 22: "[`ask-matt`](./skills/engineering/ask-matt/SKILL.md) is the router that maps every user-reachable skill and how they relate... a new skill it never mentions, or a stale one it still routes to, is a router that lies." `.claude-plugin/plugin.json` line 22 registers `./skills/engineering/ask-matt` as the **first** entry in the `skills` array. `skills/engineering/README.md` lists `ask-matt` first. README.md line 194: "**ask-matt** — Ask which skill or flow fits your situation. A router over the user-invoked skills in this repo."
 
 - **Verdict:** ✅ CORRECT
 - **Fix needed:** None
 
-## Claim 2: Invocation model split into user-invoked and model-invoked skills
-- **Wiki says:** Skills are split on an invocation axis: user-invoked skills (orchestrators reachable only when typed by the user, e.g., /grill-me, /to-prd) and model-invoked skills (reachable by user or agent automatically when the task fits, e.g., /tdd, /domain-modeling, /codebase-design).
+## Claim 7: Two install routes — managed Claude Code plugin and npx skills.sh
+- **Wiki says:** The registry installs via `npx skills@latest add mattpocock/skills` (editable copies) or as a managed Claude Code plugin from the official marketplace (`claude plugins install mattpocock-skills` / `/plugin install mattpocock-skills`).
 
-- **Source evidence:** CLAUDE.md lines 7-14 document the invocation model: "User-invoked skills (e.g., /grill-me, /to-prd) — reachable only when typed by the user. Their job is to orchestrate. A user-invoked skill may invoke model-invoked skills but never another user-invoked one. Model-invoked skills (e.g., /tdd, /domain-modeling, /codebase-design) — can be invoked by the user or reached automatically by the agent when the task fits. They hold the reusable discipline." The `.claude-plugin/plugin.json` manifest lists all promoted skills without distinguishing invocation — that distinction lives in each SKILL.md via `disable-model-invocation: true` frontmatter. `docs/invocation.md` provides extended documentation. `docs/engineering/` directory mirrors the skill structure.
-
-- **Verdict:** ✅ CORRECT
-- **Fix needed:** None
-
-## Claim 3: Deep-module vocabulary shared across all engineering skills via domain-modeling and codebase-design
-- **Wiki says:** Domain-modeling and codebase-design skills provide shared vocabulary (ubiquitous language and deep-module vocabulary) reused across all engineering skills.
-
-- **Source evidence:** `skills/engineering/domain-modeling/SKILL.md` and `skills/engineering/codebase-design/SKILL.md` define the shared vocabulary. README.md documents codebase-design as providing "Shared vocabulary for designing deep modules" and domain-modeling as "Build and sharpen a project's domain model." CLAUDE.md states model-invoked skills "hold the reusable discipline." Every engineering skill can reference these shared patterns. The `CONTEXT.md` file defines the domain model vocabulary used across skills: "Issue tracker" (the tool), "Issue" (a single tracked work unit), and "Triage role" (state-machine label). The `handoff` skill compacts conversations using this shared vocabulary.
+- **Source evidence:** README.md line 27: "**The [Claude Code plugin](https://code.claude.com/docs/en/plugins)** installs the whole set as a managed, read-only bundle... **[skills.sh](https://skills.sh/mattpocock/skills)** copies editable skill files into your project." README.md lines 34-44 document `claude plugins install mattpocock-skills` and `/plugin install mattpocock-skills` from the official marketplace ("there's nothing to add first, and updates arrive automatically"). README.md lines 51-57 document `npx skills@latest add mattpocock/skills` for Codex and other agents. `.claude-plugin/marketplace.json` (lines 1-23) makes the repo its own single-plugin marketplace listing the one `mattpocock-skills` plugin; CLAUDE.md line 12 documents the version-sync rule between `plugin.json` and `package.json`. The `/setup-matt-pocock-skills` wizard (README.md lines 74-82) configures issue tracker, triage labels, and docs location.
 
 - **Verdict:** ✅ CORRECT
-- **Fix needed:** None
-
-## Claim 4: Plugin manifest auto-discovered by agent harnesses with documentation site and human-facing docs
-- **Wiki says:** The registry is installable via `npx skills@latest add mattpocock/skills` and a setup wizard configures per-repo issue tracking and documentation layout.
-
-- **Source evidence:** `.claude-plugin/plugin.json` registers 22 skills for auto-discovery. `docs/` directory contains `engineering/` and `productivity/` subdirectories with human-facing docs pages for each promoted skill (matching the standard URL pattern `https://aihero.dev/skills-<skill-name>`). CLAUDE.md lines 19-21: "Skills in engineering/ and productivity/ also have a human-facing docs page at docs/<bucket>/<skill-name>.md. The published URL is https://aihero.dev/skills-<skill-name> regardless of bucket." README.md documents the 30-second install flow. The `setup-matt-pocock-skills` skill (`skills/engineering/setup-matt-pocock-skills/SKILL.md`) configures per-repo issue tracker selection, triage labels, and doc layout on first run. `scripts/link-skills.sh` provides local symlinking for development. `.agents/writing-docs.md` documents the docs page creation process.
-
-- **Verdict:** ✅ CORRECT
-- **Fix needed:** None
-
-## Claim 5: Bug diagnosis loop and TDD skills with discipline-gated workflows
-- **Wiki says:** The diagnosing-bugs skill implements a disciplined bug diagnosis loop (reproduce, minimize, hypothesize, instrument, fix, regression-test) and the tdd skill provides red-green-refactor test-driven development with guidance on deep-module design.
-
-- **Source evidence:** `skills/engineering/diagnosing-bugs/SKILL.md` exists implementing the diagnosis loop described in README.md line 14: "Diagnosis loop for hard bugs and performance regressions." README.md documents it as: "Disciplined bug diagnosis loop: reproduce, minimize, hypothesize, instrument, fix, regression-test." `skills/engineering/tdd/SKILL.md` implements test-driven development. README.md lines 14-15 document tdd: "Red-green-refactor test-driven development loop for features and bug fixes, with guidance on test quality and deep-module design." The `improve-codebase-architecture` skill (`skills/engineering/improve-codebase-architecture/SKILL.md`) scans for deepening opportunities and uses the codebase-design vocabulary — linking these as a coherent discipline stack.
-
-- **Verdict:** ✅ CORRECT
-- **Fix needed:** None
-
-## Claim 6: Ask-matt router serving as the skill discovery entry point across all flows
-- **Wiki says:** Ask-matt is the router that maps every user-reachable skill and how they relate, updated whenever skills are added, renamed, or removed.
-
-- **Source evidence:** `skills/engineering/ask-matt/SKILL.md` is the router skill. CLAUDE.md lines 26-28 state: "ask-matt is the router that maps every user-reachable skill and how they relate. The same trigger that re-syncs a docs page applies to it: whenever you add, rename, remove, or change how a user-reachable skill fits the flows, re-read ask-matt's SKILL.md and update it so the map stays accurate." The plugin.json registers `ask-matt` as the first skill. The `skills/engineering/README.md` lists `ask-matt` as the first entry. README.md promotes `/grill-me` and `/improve-codebase-architecture` as example entry points that are routed through ask-matt.
-
-- **Verdict:** ✅ CORRECT
-- **Fix needed:** None
+- **Fix needed:** None (Claude Code official-marketplace route + marketplace.json newly added to wiki)
 
 ## Related
 

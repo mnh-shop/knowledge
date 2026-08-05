@@ -11,7 +11,8 @@ verified_by: codegraph-verify
 
 | Field | Value |
 |---|---|
-| **Origin** | [tank-OS/tank-agent-os](https://github.com/tank-OS/tank-agent-os) |
+| **Origin** | [np6126/tank-agent-os](https://github.com/np6126/tank-agent-os) |
+| **Fork Source** | [LobsterTrap/tank-os](https://github.com/LobsterTrap/tank-os) — the appliance architecture this repo forks |
 | **License** | MIT |
 | **Stack** | Fedora bootc, rootless Podman, Quadlet, nftables, cloud-init |
 | **Source** | `sources/tank-agent-os/` |
@@ -66,10 +67,13 @@ tank-agent-os/
 │   ├── rootfs/                    ← OS filesystem overlay (systemd units, nftables rules, sudoers)
 │   ├── keys/                      ← GPG keys for signed release verification
 │   └── patches/                   ← Patches applied to claw-code build
-├── docs/                          ← Documentation (15 markdown files)
-├── audits/                        ← MCP server security adoptions
-└── tools/                         ← Utility scripts and unit tests
+├── docs/                          ← Documentation (13 markdown files)
+├── audits/                        ← MCP server security adoptions (5 audits)
+├── examples/                      ← cloud-init templates, Proxmox rebuild script, service-gator example
+└── tools/                         ← Test suite: static-checks, unit-tests, check-selinux-mcs, test-*.py
 ```
+
+The `tools/` directory runs CI-style checks (`static-checks.sh`, `unit-tests.sh`, `check-selinux-mcs.sh`) plus per-feature Python tests (`test-claude-config.py`, `test-gen-opencode-config.py`, `test-strip-proxy.py`). Runtime containment self-tests are provided by `clawx-selftest` (`clawx selftest`), installed at `bootc/rootfs/usr/libexec/tank-os/`. The `examples/` directory ships cloud-init templates (`cloud-init/clawx-user-data.yaml`, `clawx-with-proxy-user-data.yaml`, `clawx-leash-user-data.yaml`, `meta-data`), the `proxmox/rebuild-vm.sh` recovery script, and a `service-gator/scopes.json.example`.
 
 ### Security Layers (Stacked Defense)
 
@@ -146,7 +150,7 @@ sudo sha256sum -c /usr/local/share/tank-os/agent.sha256
 
 ```bash
 # Clone the repository
-git clone https://github.com/tank-OS/tank-agent-os.git
+git clone https://github.com/np6126/tank-agent-os.git
 cd tank-agent-os
 
 # Build the clawx runtime image
@@ -216,7 +220,7 @@ Recovery is **rebuild, not restore**. `rebuild-vm.sh` is the recovery path for a
 
 ## Related
 
-- [[tank-os]] — Fedora bootc image for general deployment; the parent project whose appliance architecture tank-agent-os forks
+- [[tank-os]] — Fedora bootc image; the appliance architecture here forks [LobsterTrap/tank-os](https://github.com/LobsterTrap/tank-os), not the `tank-os` repo in this index
 - [[bootc]] — Bootable container technology underlying Tank Agent OS; provides the transactional, atomic OS update mechanism
 - [[openclaw]] — Personal AI assistant deployable on Tank Agent OS; one of the agent runtime options
 - [[podman]] — Container runtime used for the agent container and supporting services; supplies rootless container execution

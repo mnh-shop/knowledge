@@ -172,7 +172,6 @@ Floci supports **69 AWS services** across categories. In-process services run di
 | Transfer Family | In-process | Server lifecycle, user management |
 | Amazon MQ (control) | In-process | Broker configuration |
 | CodeBuild | In-process with real Docker | Real buildspec execution, CloudWatch logs, S3 artifacts |
-| CodePipeline | In-process | Pipeline orchestration, S3 artifacts |
 | AWS Batch | In-process | Compute environments, job queues, job definitions |
 | MemoryDB (control) | In-process | Redis/Valkey protocol via real containers |
 | Data Firehose | In-process | Streaming delivery, NDJSON flush to S3 |
@@ -181,7 +180,7 @@ Floci supports **69 AWS services** across categories. In-process services run di
 
 | Service | Default Image | What runs |
 |---|---|---|
-| Lambda | `public.ecr.aws/lambda/<runtime>` | AWS runtime environment, warm container pool |
+| Lambda | `public.ecr.aws/lambda/<runtime>` | AWS runtime environment, warm container pool (`services/lambda/WarmPool.java`: containers reused across invocations, idle-evicted after `container-idle-timeout-seconds`; `FLOCI_SERVICES_LAMBDA_EPHEMERAL=true` disables reuse; hot-reload bucket bind-mounts code updates) |
 | RDS | `postgres:16-alpine`, `mysql:8.0`, `mariadb:11` | PostgreSQL, MySQL, MariaDB engines |
 | ElastiCache | `valkey/valkey:8` | Redis/Valkey protocol, IAM/SigV4 auth |
 | Neptune | `tinkerpop/gremlin-server:3.7.3` | Gremlin WebSocket on port 8182 |
@@ -205,6 +204,60 @@ Floci implements real AWS wire protocols — not convenience APIs — ensuring c
 | **REST JSON** | JAX-RS controllers | Lambda (management), API Gateway v2, SES v2, Bedrock Runtime |
 | **REST XML** | JAX-RS `S3Controller` | S3, S3 Control |
 | **TCP** | TCP proxy containers | ElastiCache (RESP), RDS (JDBC), Neptune (Gremlin WebSocket) |
+
+## TLS Proxy Mode
+
+Floci can serve **HTTP and HTTPS on the same port 4566** (LocalStack parity), enabled via `FLOCI_TLS_ENABLED` (default `false`):
+
+- `config/TlsProxyServer.java` — a Vert.x TCP proxy listens on the public port (4566) and **sniffs the first byte** of each incoming connection to decide the backend:
+  - `0x16` (TLS ClientHello) → proxy to the HTTPS backend on internal port 4511
+  - anything else → proxy to the HTTP backend on internal port 4510
+- When TLS is disabled, Quarkus serves HTTP directly on 4566 and the proxy is not started.
+- Related config: `FLOCI_TLS_CERT_PATH`, `FLOCI_TLS_KEY_PATH`, `FLOCI_TLS_SELF_SIGNED` (auto-generate a cert), and `FLOCI_TLS_AWS_HTTPS_PORT` (also bind 443 so AWS-on-443 callbacks like CDK cfn-response reach Floci).
+
+## Configuration Surface (`FLOCI_*`)
+
+All settings are overridable via `FLOCI_` environment variables, resolved from `EmulatorConfig.java` (1645 lines) + `application.yml`. Notable groups beyond the basics (`FLOCI_PORT`, `FLOCI_STORAGE_MODE`, `FLOCI_DEFAULT_REGION`, `FLOCI_DEFAULT_ACCOUNT_ID`):
+
+- **`FLOCI_SERVICES_*`** — per-service configuration:
+  - `FLOCI_SERVICES_LAMBDA_DOCKER_NETWORK` — Docker network for Lambda containers
+  - `FLOCI_SERVICES_<SVC>_DEFAULT_IMAGE` — override default container images (ElastiCache, RDS postgres/mysql/mariadb, MSK, OpenSearch, Neptune/Neo4j, DocDB, EKS, ECR registry)
+  - `FLOCI_SERVICES_RDS_...` — RDS mock mode (`FLOCI_SERVICES_RDS_MOCK`) and proxy base ports
+  - Lambda hot reload: the magic bucket name `hot-reload` triggers a bind-mount of function code into warm containers (`EmulatorConfig.java:1365-1378`)
+  - Per-service `dockerNetwork` overrides (EmulatorConfig `Optional<String> dockerNetwork()`)
+- **Proxy base ports** (`application.yml`): ElastiCache 6379, MemoryDB 6400, RDS 7001, Neptune 8182, OpenSearch 9400 (ranges 6379-6399 / 7001-7099 / 9200-9299 in docker-compose).
+- **Region resolution** — `core/common/RegionResolver.java` maps any requested region to the emulator (any region works; default `us-east-1`).
+- **Migration parity** — `LOCALSTACK_HOST`, `PERSISTENCE=1`, `LAMBDA_DOCKER_NETWORK`, `LAMBDA_REMOVE_CONTAINERS`, `DEBUG=1` translate automatically (README.md:702-712).
+
+## Admin & State Management Endpoints
+
+Under the `/_floci|/_localstack` prefix (`lifecycle/EmulatorInfoController.java`):
+
+| Endpoint | Purpose |
+|---|---|
+| `/_floci/health` | Health check (LocalStack parity) |
+| `/_floci/info` | Emulator info |
+| `/_floci/init` | Initialization-hook status (boot.d/start.d/ready.d/stop.d) |
+| `/_floci/diagnose` | Diagnostics |
+| `/_floci/config` | Effective configuration |
+| `/_floci/state/reset` | Reset emulator state |
+| `/_floci/state/nuke` | Nuke all state |
+| `/_floci/ecr/gc` | **Admin endpoint** (`services/ecr/registry/EcrGcController.java`) — triggers garbage collection on the backing `registry:2` container to reclaim disk after `BatchDeleteImage` |
+| `/_floci/ui` | Web management UI (`lifecycle/UiController.java`) |
+
+## Docker Image Build Layout
+
+The official images are built from `docker/`:
+
+- `docker/Dockerfile` — standard runtime image
+- `docker/Dockerfile.compat` — includes AWS CLI + boto3 (`-compat` tags)
+- `docker/Dockerfile.native` + `docker/Dockerfile.native-package` — GraalVM native binary builds
+- `docker/entrypoint.sh` — container entrypoint; `docker/localstack-parity.sh` — LocalStack env translation
+- Channels/tags: `latest`, `x.y.z`, `nightly`, `nightly-mmddyyyy`, each with `-compat` variants (README.md:716-741)
+
+## Documentation Site
+
+The docs site (https://floci.io/floci/) is built with **MkDocs** from the in-repo `docs/` directory: `mkdocs.yml` + `docs/` (getting-started, services, configuration, testcontainers, contributing).
 
 ## Storage
 
@@ -294,11 +347,11 @@ The [floci-cli](https://github.com/floci-io/floci-cli) (separate repo) provides:
 
 ## Source Reference
 
-- **POM**: `pom.xml` (lines 7-14) — `io.github.hectorvent:floci:1.5.32`, Quarkus 3.36.3 parent
-- **Config**: `EmulatorConfig.java` (1603 lines) — All `floci.*` configuration options
-- **Storage factory**: `core/storage/StorageFactory.java` (129 lines) — Creates memory/persistent/hybrid/WAL backends
-- **Query controller**: `core/common/AwsQueryController.java` (495 lines) — Routes Query-protocol services via handlers
-- **JSON 1.1 controller**: `core/common/AwsJson11Controller.java` (249 lines) — Routes JSON 1.1 services via handlers
+- **POM**: `pom.xml` (lines 7-14) — `io.github.hectorvent:floci:1.5.34`, Quarkus 3.36.3 parent
+- **Config**: `EmulatorConfig.java` (1645 lines) — All `floci.*` configuration options
+- **Storage factory**: `core/storage/StorageFactory.java` (145 lines) — Creates memory/persistent/hybrid/WAL backends
+- **Query controller**: `core/common/AwsQueryController.java` (496 lines) — Routes Query-protocol services via handlers
+- **JSON 1.1 controller**: `core/common/AwsJson11Controller.java` (260 lines) — Routes JSON 1.1 services via handlers
 - **Error handling**: `core/common/AwsException.java` (72 lines) + `AwsExceptionMapper.java` (46 lines) — Standardized AWS error responses
 - **Service registry**: `core/common/ServiceRegistry.java` (61 lines) — Enabled/disabled service management
 - **Lambda executor**: `services/lambda/LambdaExecutorService.java` (140 lines) — Orchestrates Docker-backed function invocations

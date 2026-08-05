@@ -8,7 +8,7 @@ verification_date: 2026-07-12
 verified_by: codegraph-verify
 license: MIT
 org: Jo Inc
-version: 1.11.2
+version: 1.13.0
 ---
 
 # camofox-browser
@@ -41,7 +41,7 @@ camofox-browser
 
 ### server.js
 
-Single-file Express server (~6000 lines). Handles all REST API routes, manages browser sessions, coordinates the Camoufox browser lifecycle, and loads plugins. Key internal state:
+Single-file Express server (6,321 lines). Handles all REST API routes, manages browser sessions, coordinates the Camoufox browser lifecycle, and loads plugins. Key internal state:
 
 - `sessions` (Map) -- `userId -> { context, tabGroups, lastAccess }` -- each user gets an isolated browser context
 - `CONFIG` -- merged from env vars, defaults, and `camofox.config.json`
@@ -76,20 +76,24 @@ Single-file Express server (~6000 lines). Handles all REST API routes, manages b
 | Tmp-cleanup | `lib/tmp-cleanup.js` | Temp directory size monitoring and cleanup |
 | Request-utils | `lib/request-utils.js` | Request ID generation, validation utilities |
 | Camoufox-executable | `lib/camoufox-executable.js` | Camoufox binary path resolution |
+| Browser-errors | `lib/browser-errors.js` | Browser error classification and URL sanitization |
+| Browser-processes | `lib/browser-processes.js` | Browser child-process detection/selection (kill logic) |
+| New-page-recovery | `lib/new-page-recovery.js` | Page creation with session recovery on dead-context/timeout errors |
+| Process-ownership | `lib/process-ownership.js` | Browser/Xvfb process ownership detection via `/proc` |
 
 ### Plugins System
 
 Plugins live in `plugins/<name>/index.js` and export a `register(app, ctx, pluginConfig)` function. The plugin context (`ctx`) provides access to sessions, config, logging, auth middleware, core functions, and the EventEmitter for lifecycle hooks.
 
-**Plugin lifecycle events** (29 events across 7 categories):
-- Browser lifecycle: `browser:launching` (mutable), `browser:launched`, `browser:restart`, `browser:closed`, `browser:error`
-- Session lifecycle: `session:creating` (mutable), `session:created`, `session:destroying`, `session:destroyed`, `session:expired`
-- Tab lifecycle: `tab:created`, `tab:navigated`, `tab:destroyed`, `tab:recycled`, `tab:error`
-- Content: `tab:snapshot`, `tab:screenshot`, `tab:evaluate`, `tab:evaluated`
-- Input: `tab:click`, `tab:type`, `tab:scroll`, `tab:press`
-- Downloads: `tab:download:start`, `tab:download:complete`
-- Cookies/Auth: `session:cookies:import`, `session:storage:export`
-- Server: `server:starting`, `server:started`, `server:shutdown`
+**Plugin lifecycle events** (29 events across 8 categories; 28 emitted by core, 1 — `session:storage:export` — by plugins):
+- Browser lifecycle (5): `browser:launching` (mutable), `browser:launched`, `browser:restart`, `browser:closed`, `browser:error`
+- Session lifecycle (4): `session:creating` (mutable), `session:created`, `session:destroyed`, `session:expired`
+- Tab lifecycle (5): `tab:created`, `tab:navigated`, `tab:destroyed`, `tab:recycled`, `tab:error`
+- Content (4): `tab:snapshot`, `tab:screenshot`, `tab:evaluate`, `tab:evaluated`
+- Input (4): `tab:click`, `tab:type`, `tab:scroll`, `tab:press`
+- Downloads (2): `tab:download:start`, `tab:download:complete`
+- Cookies/Auth (2): `session:cookies:import`, `session:storage:export`
+- Server (3): `server:starting`, `server:started`, `server:shutdown`
 
 Some hooks are mutable -- plugins receive the options object by reference and can modify it before core processing.
 
@@ -172,10 +176,14 @@ See `AGENTS.md` for full reference.
 
 - **npm**: `npx @askjo/camofox-browser`
 - **Docker**: `make up` (auto-detects arch, pre-fetches binaries for fast rebuilds)
-- **Fly.io**: via `fly.toml` (horizontal scaling with `fly-replay`)
+- **Fly.io**: support via `fly-replay` headers (horizontal scaling; `server.js` sets the `fly-replay` response header to route tab requests to the owning machine). No `fly.toml` in the repo.
 - **Railway**: via `railway.toml`
 
 Docker image (`node:22-slim`) includes Camoufox binary, yt-dlp, Mesa for WebGL, Xvfb for virtual display, and fonts. Build uses multi-stage caching.
+
+## Crash Reporter
+
+Anonymized crash/hang telemetry flows from `lib/reporter.js` (stateless HTTP client — no credentials, no `fs`) to a Cloudflare Worker (`workers/crash-reporter/index.ts` + `wrangler.toml`) which holds GitHub App credentials as environment secrets and files GitHub Issues. Disable with `CAMOFOX_CRASH_REPORT_ENABLED=false`.
 
 ## Testing
 

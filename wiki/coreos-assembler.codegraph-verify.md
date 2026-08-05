@@ -15,8 +15,8 @@ source: sources/coreos-assembler/
 - **Source evidence:**
   - `README.md:1-7` — "The CoreOS Assembler (often abbreviated COSA) build environment. It is a collection of various tools used to build [Fedora CoreOS][fcos] style systems, including RHEL CoreOS. The goal is that everything needed to build and test the OS comes encapsulated in one (admittedly large) container."
   - `README.md:16-18` — "The container itself is available on [Quay.io](https://quay.io) at `quay.io/coreos-assembler/coreos-assembler`."
-  - `Dockerfile` — Present in repo root confirming containerized build environment
-  - `src/coreos-assembler.go` — Main entrypoint for the COSA tool
+  - `Dockerfile:44` — `ENTRYPOINT ["/usr/bin/dumb-init", "/usr/bin/coreos-assembler"]` — containerized build environment with dumb-init
+  - `cmd/coreos-assembler.go:1-4` — "This is the primary entrypoint for /usr/bin/coreos-assembler." — Go dispatcher (note: `src/coreos-assembler.go` does NOT exist; the entrypoint lives in `cmd/`)
   - `go.mod:1` — `module github.com/coreos/coreos-assembler` — Go module declaration
 
 - **Verdict:** ✅ CORRECT
@@ -51,18 +51,19 @@ source: sources/coreos-assembler/
 - **Verdict:** ✅ CORRECT
 - **Fix needed:** None
 
-## Claim 4: Multi-cloud platform support with 20+ `buildextend-*` commands
+## Claim 4: Multi-cloud platform support with `buildextend-*` commands
 - **Wiki says:** "COSA supports building images for 20+ cloud and virtualization platforms including AWS, Azure, GCP, VMware, Hyper-V, QEMU, Metal, OpenStack, and others via `buildextend-*` and `osbuild` commands."
 
 - **Source evidence:**
-  - `src/cmd-buildextend-metal:1-20` — Declares `SUPPORTED_PLATFORMS` associative array with 24 platform entries: aliyun, applehv, aws, azure, azurestack, digitalocean, exoscale, gcp, hetzner, hyperv, ibmcloud, kubevirt, metal4k, metal, nutanix, nvidiabluefield, openstack, oraclecloud, proxmoxve, qemu, qemu-secex, vultr, live
-  - Each platform has a corresponding `cmd-buildextend-<platform>` file in `src/` — confirmed for: aliyun, applehv, aws, azure, azurestack, digitalocean, exoscale, gcp, hetzner, hyperv, ibmcloud, kubevirt, metal, metal4k, nutanix, nvidiabluefield, openstack, oraclecloud, powervs, proxmoxve, qemu, qemu-secex, secex, virtualbox, vmware, vultr
-  - `src/cmd-buildextend-metal:55-60` — `postprocess_artifact` function stores artifact metadata (path, sha256, size) in `meta.json`
+  - `src/cmd-buildextend-metal:10-39` — Declares `SUPPORTED_PLATFORMS` associative array with **23 platform entries**: aliyun, applehv, aws, azure, azurestack, digitalocean, exoscale, gcp, hetzner, hyperv, ibmcloud, kubevirt, metal4k, metal, nutanix, nvidiabluefield, openstack, oraclecloud, proxmoxve, qemu, qemu-secex, vultr, live (each mapped to its image format, e.g. aws→vmdk, azure→vhd, metal→raw, live→iso)
+  - 27 `cmd-buildextend-*` scripts exist in `src/` — confirmed for: aliyun, applehv, aws, azure, azurestack, digitalocean, exoscale, gcp, hetzner, hyperv, ibmcloud, kubevirt, live, metal, metal4k, nutanix, nvidiabluefield, openstack, oraclecloud, powervs, proxmoxve, qemu, qemu-secex, secex, virtualbox, vmware, vultr (this includes hetzner, azurestack, powervs, proxmoxve, qemu-secex — all verified present on disk)
+  - `src/cmd-buildextend-metal:64` — `postprocess_artifact()` function stores artifact metadata (path, sha256, size) in `meta.json`
   - `src/cmd-buildextend-metal:95-105` — `postprocess_qemu_secex` for IBM Z secure execution
+  - `cmd/coreos-assembler.go:18` — `buildextendCommands` dispatcher slice lists 22 platform commands (`aliyun` … `vultr`) that map to `cmd-buildextend-*` scripts
   - `src/cmd-imageupload-aws`, `src/cmd-imageupload-azure`, `src/cmd-imageupload-gcp`, `src/cmd-imageupload-aliyun`, `src/cmd-imageupload-powervs` — Cloud upload commands for each supported platform
 
-- **Verdict:** ✅ CORRECT
-- **Fix needed:** None
+- **Verdict:** ⚠️ CORRECTED — platform count fixed from 24 to 23; postprocess_artifact cite moved from `:55-60` to `:64`; entrypoint path corrected to `cmd/`.
+- **Fix needed:** Verified against source (applied to wiki).
 
 ## Claim 5: Supermin-based QEMU virtual machine for disk image generation
 - **Wiki says:** "COSA uses `supermin` to run a virtual machine that writes the ostree content along with the filesystem layout into a disk image, for cases where container-based image generation is insufficient."
@@ -102,12 +103,13 @@ source: sources/coreos-assembler/
 ## Summary
 
 All 6 key claims from the CoreOS Assembler wiki have been verified against the source code:
-- ✅ **Containerized build environment:** `quay.io/coreos-assembler/coreos-assembler` confirmed
+- ✅ **Containerized build environment:** `quay.io/coreos-assembler/coreos-assembler` confirmed with `dumb-init` entrypoint
 - ✅ **Tool suite:** cosa, kola, kolet, ore, plume all confirmed with dedicated docs
 - ✅ **Build pipeline:** OSTree commits + disk images via `cosa build` and `cosa osbuild`
-- ✅ **Multi-cloud support:** 24 platform targets confirmed in `SUPPORTED_PLATFORMS`
+- ⚠️ **Multi-cloud support:** 23 platform targets confirmed in `SUPPORTED_PLATFORMS` (corrected from 24); 27 `cmd-buildextend-*` scripts on disk
 - ✅ **Supermin virtualization:** Default VM-based disk image generation confirmed
 - ✅ **RPM dependency management:** Architecture-specific and common dependency files confirmed
+- ⚠️ **Entrypoint:** corrected to `cmd/coreos-assembler.go` (not `src/coreos-assembler.go`)
 
 ## Related
 

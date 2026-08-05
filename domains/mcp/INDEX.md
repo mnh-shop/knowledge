@@ -24,7 +24,7 @@ Analysis of MCP (Model Context Protocol) implementations across repositories. Ea
 | [[n8n-mcp|n8n-MCP]] | n8n | 4 MCP surfaces: MCP apps, browser, Instance AI client, native server |
 | [[nanobot-mcp-implementation|Nanobot MCP]] | nanobot | Tool registration, resource model, and agent capability exposure |
 | [[oh-my-pi-mcp-implementation|oh-my-pi MCP]] | oh-my-pi | MCP tool system via mnemopi (30+ memory/beam tools) |
-| [[openclaw-mcp-implementation|OpenClaw MCP]] | openclaw | 3 stdio MCP servers: channel bridge, plugin tools, built-in tools |
+| [[openclaw-mcp-implementation|OpenClaw MCP]] | openclaw | Bidirectional: 4 stdio MCP servers (channel bridge, plugin tools, built-in tools, Codex compat) + `openclaw mcp` client-side registry + Gateway HTTP MCP surface |
 | [[pi-mcp-implementation|Pi MCP]] | pi | No MCP found (CLI tool, no protocol server) |
 | [[podlet-mcp-implementation|Podlet MCP]] | podlet | No MCP found (Rust CLI tool, no server) |
 | [[podman-mcp-implementation|Podman MCP]] | podman | Analysis of Podman's REST API (not MCP protocol) |

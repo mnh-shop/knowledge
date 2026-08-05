@@ -173,7 +173,7 @@ Pod states from [Podman pod state definitions](https://github.com/containers/pod
 
 ## UI Component Architecture
 
-- **PatternFly v6** (React): Cards, modals, forms, tables, alerts, toolbar
+- **PatternFly v6.6** (React): Cards, modals, forms, tables, alerts, toolbar
 - **xterm.js** with WebGL addon: Terminal emulator for container console and logs
 - **Cockpit shared libraries**: `ListingTable`, `Dialogs`, `cockpit-components-dropdown`, `cockpit-components-dynamic-list`
 - **Responsive design**: Mobile-aware layout with collapsible image section and adaptive terminal sizing
@@ -231,7 +231,7 @@ Debounced validation (500ms) is used extensively in create/edit dialogs:
 Key runtime dependencies from `package.json`:
 
 - **React 18.3** + **React DOM 18.3**: UI framework
-- **@patternfly/patternfly 6.5**: Design system and components
+- **@patternfly/patternfly 6.6.0**: Design system and components (package.json:41-45 — patternfly, react-core, react-icons, react-styles, react-table, react-tokens all at 6.6.0)
 - **@xterm/xterm 6.0** + **@xterm/addon-webgl**: Terminal emulator
 - **docker-names**: Random container name generation (e.g., "happy_curie")
 - **esbuild**: Bundler

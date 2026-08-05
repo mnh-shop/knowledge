@@ -9,18 +9,19 @@ source: sources/open-design/
 
 **Date:** 2026-07-12
 
-## Claim 1: Open-source Claude Design alternative with 100+ skills, 150 design systems, 261 plugins
-- **Wiki says:** Open Design (OD) is the open-source Claude Design alternative shipping 100+ skills, 150 brand-grade DESIGN.md systems, 261 ready-to-use plugins. Apache-2.0 licensed.
+## Claim 1: Open-source Claude Design alternative with 100+ skills, 150 design systems, 461 plugins
+- **Wiki says:** Open Design (OD) is the open-source Claude Design alternative shipping 164 skills, 150 brand-grade DESIGN.md systems, 461 ready-to-use plugins. Apache-2.0 licensed.
 - **Source evidence:**
   - `README.md` line 1: "Open Design: The open-source Claude Design alternative"
   - `README.md` line 34: "🎨 **The local-first, open-source [Claude Design][cd] alternative**"
-  - `README.md` line 34: "⚡ **100+ skills** · ✨ **150 brand-grade `DESIGN.md` systems** · 📦 **261 ready-to-use plugins**"
-  - `skills/` directory contains 163 skill directories confirmed by listing
-  - `design-systems/` directory exists with 150+ brand folders
-  - `plugins/_official/` directory with subdirectories: `scenarios/` (11), `image-templates/` (45), `video-templates/` (50), `design-systems/` (142), `atoms/` (13), `examples/` (140)
+  - `README.md` line 275: Comparison table showing "✅ Apache-2.0" for Open Design vs "❌" for Claude Design, Figma, Lovable/v0/Bolt, and "**✅ 151 systems shipped**" for brand-grade `DESIGN.md`
+  - `skills/` directory contains 164 skill directories confirmed by listing
+  - `design-systems/` directory exists with 153 total entries; 151 of them are brand folders with a `DESIGN.md` (the rest are `README.md` and `_schema/`)
+  - `plugins/_official/` directory with subdirectories: `scenarios/` (13), `image-templates/` (45), `video-templates/` (64), `design-systems/` (143), `atoms/` (13), `examples/` (183) = 461 total
+  - `prompt-templates/` contains `image/` (49 files) and `video/` (58 files)
+  - `README.md` line 604: "[x] **0.8.0** — plugin marketplace infrastructure (261 official plugins, manifest spec, per-agent install scripts)" — the 261 figure is a historical changelog milestone, not the current count
   - `LICENSE` is Apache-2.0
-  - `README.md` line 276: Comparison table showing "✅ Apache-2.0" for Open Design vs "❌" for Claude Design, Figma, Lovable/v0/Bolt
-- **Verdict:** ✅ CORRECT
+- **Verdict:** ✅ CORRECT (counts updated to verified totals)
 - **Fix needed:** None
 
 ## Claim 2: Agent-native, model-agnostic with 22+ CLI integrations + BYOK proxy
@@ -42,7 +43,7 @@ source: sources/open-design/
   - `README.md` line 268: "🌍 **Composable on three planes.** **Plugins** carry runnable workflows · **skills** carry the agent's design taste · **design systems** carry the brand."
   - `craft/README.md` lines 8-18: Explicit three-axis breakdown table: `skills/` (artifact shape), `design-systems/` (brand visual language), `craft/` (universal craft knowledge)
   - `craft/README.md` line 14: "Universal craft knowledge — true regardless of brand"
-  - `craft/` directory contains 10 craft files: `typography.md`, `typography-hierarchy.md`, `typography-hierarchy-editorial.md`, `color.md`, `anti-ai-slop.md`, `state-coverage.md`, `animation-discipline.md`, `accessibility-baseline.md`, `rtl-and-bidi.md`, `form-validation.md`, `laws-of-ux.md`
+  - `craft/` directory contains 11 craft content files: `typography.md`, `typography-hierarchy.md`, `typography-hierarchy-editorial.md`, `color.md`, `anti-ai-slop.md`, `state-coverage.md`, `animation-discipline.md`, `accessibility-baseline.md`, `rtl-and-bidi.md`, `form-validation.md`, `laws-of-ux.md` (plus `README.md` and `FUTURE_SECTIONS.md`)
   - `craft/README.md` line 26-30: Skills opt in via `od.craft.requires` frontmatter array
   - `README.md` lines 397-424: 100+ skills table with modes, scenarios, and output types
 - **Verdict:** ✅ CORRECT
@@ -59,13 +60,15 @@ source: sources/open-design/
   - `apps/desktop/` and `apps/packaged/` directories exist for Electron shell
   - `README.md` lines 373-391: MCP server documentation with `od mcp install` command
   - `AGENTS.md` Daemon data directory contract section documents data path resolution
+  - Additional top-level surface confirmed: `figma-plugin/` (manifest + ui.html + code.js), `clipper/` (browser extension: content.js, background.js, _locales), `charts/`, `nix/` (NixOS + home-manager modules: nixos.nix, home-manager.nix, package-daemon.nix), `deploy/` (Dockerfile, docker-compose.yml, aws/, azure/), `data/` (cards, contributors.json, events.jsonl, plugin-previews)
 - **Verdict:** ✅ CORRECT
 - **Fix needed:** None
 
 ## Claim 5: Plugin system with portable SKILL.md format and marketplace
-- **Wiki says:** 261 official plugins in `plugins/_official/`, each is a portable agent-skill folder with SKILL.md + optional open-design.json manifest. Plugins run in any coding agent, support migration workflows (Figma → React), and can be installed via CLI or web UI.
+- **Wiki says:** 461 official plugins in `plugins/_official/`, each is a portable agent-skill folder with SKILL.md + optional open-design.json manifest. Plugins run in any coding agent, support migration workflows (Figma → React), and can be installed via CLI or web UI.
 - **Source evidence:**
-  - `plugins/_official/` directory exists with subcategories: `scenarios/` (11), `image-templates/` (45), `video-templates/` (50), `design-systems/` (142), `atoms/` (13), `examples/` (140)
+  - `plugins/_official/` directory exists with subcategories: `scenarios/` (13), `image-templates/` (45), `video-templates/` (64), `design-systems/` (143), `atoms/` (13), `examples/` (183) — 461 total
+  - `prompt-templates/image/` contains 49 files and `prompt-templates/video/` contains 58 files
   - `README.md` line 503-506: "A plugin needs only a SKILL.md at minimum; to list it in the Open Design marketplace, add an open-design.json"
   - Plugin directory structure documented at `README.md` lines 507-514: `my-plugin/├── SKILL.md ├── open-design.json ├── README.md ├── preview/ └── examples/`
   - `README.md` lines 491-498: CLI commands: `od plugin list`, `od plugin search`, `od plugin info`, `od plugin install`, `od plugin apply`
@@ -79,11 +82,11 @@ source: sources/open-design/
 ## Summary
 
 All 5 key claims from the open-design wiki have been verified against the source code:
-- ✅ Open-source alternative: Apache-2.0, 163 skills, 150+ design systems, 261 plugins confirmed
+- ✅ Open-source alternative: Apache-2.0, 164 skills, 150+ design systems (151 DESIGN.md files across 153 dirs), 461 plugins confirmed
 - ✅ Agent-native 22+ CLIs: 15 agents in table + BYOK proxy confirmed; MCP install architecture documented
 - ✅ Three-axis composition: skills/ + design-systems/ + craft/ all present with documented roles
 - ✅ Local-first desktop app: Daemon + Web + Desktop apps confirmed with architecture diagram
-- ✅ Plugin system: 261 official plugins with SKILL.md format, marketplace, and CLI confirmed
+- ✅ Plugin system: 461 official plugins with SKILL.md format, marketplace, and CLI confirmed
 
 ## Related
 

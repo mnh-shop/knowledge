@@ -22,9 +22,9 @@ related:
 
 ---
 
-## Claim-1: AI-native security testing platform written in Go with 100+ integrated tools
+## Claim-1: AI-native security testing platform written in Go with 90 shipped YAML tools (README claims 100+)
 
-CyberStrikeAI is an **AI-native security testing platform** built in Go (Go 1.24+, module `cyberstrike-ai`). It integrates **100+ security tools** via YAML recipe files covering the full kill chain:
+CyberStrikeAI is an **AI-native security testing platform** built in Go 1.25 (module `cyberstrike-ai`). It ships **90 YAML tool recipes** covering the full kill chain:
 
 - **Network scanners:** nmap, masscan, rustscan, arp-scan, nbtscan
 - **Web scanners:** sqlmap, nikto, dirb, gobuster, feroxbuster, ffuf, httpx
@@ -33,9 +33,9 @@ CyberStrikeAI is an **AI-native security testing platform** built in Go (Go 1.24
 - **Exploitation:** metasploit, msfvenom, pwntools, ropper
 - **Post-exploitation:** linpeas, winpeas, mimikatz, bloodhound, impacket, responder
 
-The `tools/` directory on disk contains **92 YAML tool recipe files** (`tools/*.yaml`).
+The `tools/` directory on disk contains **90 YAML tool recipe files** (`tools/*.yaml` = 90; the directory holds 92 entries total, the other two being `README.md` and `README_EN.md`). The README's "100+" figure (README.md:119, :164) is aspirational, not the on-disk count.
 
-**Source evidence:** `sources/CyberStrikeAI/README.md` lines 149–166 (Tool Overview), `tools/` directory listing (92 `.yaml` files), `go.mod` line 1 (`module cyberstrike-ai`).
+**Source evidence:** `sources/CyberStrikeAI/README.md` lines 119 and 164 ("100+ curated YAML recipes"), `tools/` directory listing (90 `.yaml` files + 2 READMEs = 92 entries), `go.mod` line 1 (`module cyberstrike-ai`) and `go 1.25`.
 
 ---
 
@@ -106,34 +106,34 @@ The platform includes a complete RAG pipeline:
 - **Vector retrieval** — cosine similarity with configurable threshold
 - **HTTP rerank** — supports DashScope `gte-rerank` or Cohere-compatible `/v1/rerank`
 - **Post-processing** — normalized deduplication, char/token budget, final top_k
-- **Auto-indexing** — scans `knowledge_base/` directory for Markdown files, chunking via Eino (Markdown header split + recursive chunking)
+- **Auto-indexing** — scans `knowledge_base/` directory for Markdown files (on disk, seeded with `Prompt Injection/` and `SQL Injection/` docs), chunking via Eino (Markdown header split + recursive chunking)
 - **Web management** — CRUD for knowledge items, category-based organization, retrieval logs
 
 Rerank failures degrade to fusion order without breaking search. Pipeline configurable in `config.yaml` under `knowledge:` section.
 
-**Source evidence:** `sources/CyberStrikeAI/README.md` lines 469–511 (Knowledge Base section), `config.yaml` lines 551–572 (knowledge configuration block), `go.mod` lines 14–15 (Eino document loader/splitter components).
+**Source evidence:** `sources/CyberStrikeAI/internal/knowledge/eino_pipeline_retriever.go` line 17 (`MultiQuery → vector candidates → rerank → post-process`), README.md lines 469–511 (Knowledge Base section), `knowledge_base/` directory (seed documents), `config.yaml` lines 551–572 (knowledge configuration block), `go.mod` lines 14–15 (Eino document loader/splitter components).
 
 ---
 
-## Claim-6: Role-based testing with 15 predefined security roles and YAML-based extension
+## Claim-6: Role-based testing with 13 predefined security roles and YAML-based extension
 
-The platform ships **15 predefined security testing roles** in `roles/` directory:
+The platform ships **13 predefined security testing roles** in `roles/` directory (13 `.yaml` files + `README.md`):
 
 | Role | Focus |
 |------|-------|
-| Penetration Testing | Full pentest with nmap, sqlmap, nuclei, metasploit |
-| Web App Scanning | Web application vulnerability scanning |
+| Penetration Testing (渗透测试) | Full pentest with nmap, sqlmap, nuclei, metasploit |
+| Web App Scanning (Web应用扫描) | Web application vulnerability scanning |
 | CTF | Capture-the-flag utilities |
-| API Security Testing | API-focused testing |
-| Binary Analysis | Reverse engineering tools |
-| Cloud Security Audit | Cloud posture assessment |
-| Container Security | Container/K8s audit |
-| Digital Forensics | Forensic analysis |
-| Post-Exploitation | Lateral movement and escalation |
+| API Security Testing (API安全测试) | API-focused testing |
+| Binary Analysis (二进制分析) | Reverse engineering tools |
+| Cloud Security Audit (云安全审计) | Cloud posture assessment |
+| Container Security (容器安全) | Container/K8s audit |
+| Digital Forensics (数字取证) | Forensic analysis |
+| Post-Exploitation (后渗透测试) | Lateral movement and escalation |
 
-Each role is a YAML file defining `name`, `description`, `user_prompt`, `icon`, `tools` (allowlist), and `enabled`. Custom roles can be created by adding YAML files. Tool restrictions allow focused testing scenarios.
+Each role is a YAML file defining only `name`, `description`, `user_prompt`, `icon`, and `enabled`. **None of the 13 shipped roles sets a `tools` allowlist** — a key scan across all 13 `roles/*.yaml` files finds no `tools:` field. The code supports an optional `tools` field (serialized in `internal/handler/role.go:439-448`, "优先使用tools字段"), but no shipped role uses it; tool restrictions are applied per-engagement rather than baked into shipped roles. Custom roles can be created by adding YAML files.
 
-**Source evidence:** `sources/CyberStrikeAI/README.md` lines 278–299 (Role-Based Testing), `roles/` directory (15 `.yaml` files), `config.yaml` line 573 (`roles_dir: "roles"`).
+**Source evidence:** `sources/CyberStrikeAI/roles/` directory (13 `.yaml` files + README.md), frontmatter key scan of all 13 role files (only `name`/`description`/`user_prompt`/`icon`/`enabled` present, zero `tools:`), `internal/handler/role.go` lines 439–448 (optional `tools`/`mcps` serialization), README.md lines 278–299 (Role-Based Testing), `config.example.yaml` (`roles_dir: "roles"`).
 
 ---
 

@@ -1,30 +1,22 @@
 ---
 name: claude-ai-music-skills
-tags: [claude-ai-music-skills, agent, skill, music, ai-llm, automation, cli, typescript, python, authorization]
-description: "Claude AI Music Skills: Comprehensive AI-powered music creation and analysis suite for Claude Code with 90+ music generation skills"
+tags: [claude-ai-music-skills, agent, skill, music, ai-llm, automation, cli, python, mcp]
+description: "Claude AI Music Skills: Suno-based album production pipeline for Claude Code with 53 skills and multi-model tier orchestration"
 source: sources/claude-ai-music-skills/
 verification_date: 2026-07-12
 verified_by: codegraph-verify
-updated: 2026-07-06
+updated: 2026-07-30
 ---
 
 # Claude AI Music Skills
 
 ## Project Overview
 
-**Claude AI Music Skills** is an all-encompassing music creation and analysis platform for Claude Code that provides 90+ specialized skills across music theory, composition, performance, and production. Built on a modular architecture with adaptive execution modes, this repository transforms Claude Code into a powerful musical collaboration partner.
+**Claude AI Music Skills** (bitwize-music) is a Claude Code plugin from the **bitwize-music-studio** org that turns a conversation into a full album production pipeline: concept → research → lyrics → Suno generation → mastering → release. It ships **53 skills**, a **388-genre reference library**, and an **MCP server** (bitwize-music-mcp, stdio) that provides structured access to project state. Current plugin version: **0.101.0** (2026-07-21).
 
 ## What it is
 
-Claude AI Music Skills revolutionizes music creation within Claude Code by providing a complete ecosystem of musical intelligence. From simple melody generation to complex orchestral composition, this suite enables users to:
-
-- Compose, analyze, and produce music entirely through AI interaction
-- Generate melodies, harmonies, rhythms, and arrangements
-- Learn music theory and composition principles through practical application
-- Collaborate with AI on creative musical projects
-- Integrate music into applications, games, and creative workflows
-
-The platform bridges the gap between musical creativity and AI-powered assistance, making sophisticated music creation accessible to everyone.
+Claude AI Music Skills is an AI music generation workflow for [Suno](https://suno.com). Skills contain domain expertise; `CLAUDE.md` contains workflow rules and structure that apply every session. Instead of a general "music creation suite," this is a focused production system: it manages albums end-to-end — from idea and concept planning through research, lyric writing with Suno-specific pronunciation handling, track generation, mixing/mastering, promo assets, and release.
 
 ## Architecture
 
@@ -32,573 +24,114 @@ The platform bridges the gap between musical creativity and AI-powered assistanc
 
 | Component | Purpose | Key Features |
 |-----------|---------|-------------|
-| **90+ Music Skills** | Specialized musical capabilities | Melody, harmony, rhythm, arrangement generation |
-| **Character Voice Engine** | Voice cloning and synthesis | Professional voice modeling, emotion expression |
-| **Music Theory Agent** | Theoretical foundation | Scales, chords, progressions, analysis |
-| **Composition Engine** | Creative generation | Thematic development, variation techniques |
-| **Performance Simulator** | Real-world playback | MIDI, audio generation, instrument mapping |
-| **Learning System** | Education and training | Progressive skill development, feedback loops |
-| **Collaboration Tools** | Team-based creation | Multi-agent coordination, version control |
-
-### Skill Categories
-
-#### Melody & Harmony
-- **Melody Generator** – Melodic contour, rhythm, phrasing
-- **Harmony Analyzer** – Chord progressions, voice leading, harmonic functions
-- **Counterpoint Composer** – Species counterpoint, invertible counterpoint
-- **Voice Leading** – Smooth voice leading, four-part writing
-- **Cadence Analysis** – Authentic, plagal, half, quarters cadences
-
-#### Rhythm & Meter
-- **Rhythm Programmer** – Complex rhythmic patterns, syncopation
-- **Meter Analysis** – Time signatures, conducting patterns
-
-#### Form & Structure
-- **Form Designer** – AABA, ABA, rondo, sonata form
-- **Development Techniques** – Modulation, development sections
-- **Transition Writing** – Smooth modulations and cadences
-
-#### Instrumentation
-- **Orchestration** – Ensemble writing, timbral consideration
-- **Transposition** – Transposition for different instruments
-- **Arrangement** – Solo, duet, ensemble arrangements
-
-#### Performance
-- **Improvisation** – Real-time creative generation
-- **Accompaniment** – Harmony and rhythm support
-- **Expression Marking** – Articulation, phrasing, dynamics
-
-### Technology Stack
-
-- **Language:** TypeScript (primary), Python (backend processing)
-- **Audio Engine:** Web Audio API, AudioWorklet, MIDI
-- **AI Models:** Claude 3.5 Sonnet, music-specific fine-tuning
-- **Storage:** IndexedDB, WebStorage for user preferences and projects
-- **File Format:** WAV, MP3, MIDI, JSON for musical data
-- **Platform:** Claude Code native skill integration
-
-## How It Works
-
-### Skill Discovery
-When you interact with Claude Code, music skills are automatically discovered based on:
-
-1. **Genre Detection** – Identifying musical style and era (classical, jazz, pop, rock, etc.)
-2. **Complexity Analysis** – Recognizing required technical depth
-3. **Skill Matching** – Selecting appropriate musical capabilities
-4. **Mode Detection** – Quick vs. standard vs. deep musical generation
-
-### Execution Flow
-
-```
-User Request → Musical Context Analysis → Skill Selection → Mode Detection → Musical Generation
-```
-
-1. **Musical Context Analysis:** Claude Code analyzes your request to understand genre, complexity, and musical intent
-2. **Skill Selection:** Automatically selects the most appropriate musical skill(s)
-3. **Mode Detection:** Determines execution depth based on user intent and musical complexity
-4. **Musical Generation:** Selected skill executes musical creation with specified parameters
-
-### Musical Skill Examples
-
-#### Melody Creation
-```
-Generate a melody in C major with the following characteristics:
-- Theme: Upward opening gesture
-- Rhythm: Mixed subdivision with syncopation
-- Phrase structure: AAABA form
-- Scale: Major pentatonic with passing tones
-```
-
-#### Harmony Progressions
-```
-Create a II-V-I progression in G major with modern tensions:
-- Chords: Dm7, C7sus4, Gmaj7
-- Rhythm: Syncopated quarter note pulse
-- Voice leading: Smooth inner voice motion
-```
-
-#### Form Design
-```
-Design an ABA scherzo form:
-- Section A: Fugal subject in D minor
-- Section B: contrasting melodic material in F major
-- Section A': Varied return with development
-- Transition techniques for modulation
-```
-
-## Key Features
-
-### Adaptive Musical Intelligence
-
-Every skill supports three modes automatically detected from musical context:
-
-#### Quick Mode (< 15 minutes)
-- Minimal viable output
-- Single-pass generation
-- Basic musical structure
-- Best for: Simple melodies, quick tests, basic exercises
-
-#### Standard Mode (30-45 minutes)
-- Full musical composition
-- Complete harmonic and rhythmic structure
-- Advanced voice leading and counterpoint
-- Best for: Song sections, simple arrangements, music analysis
-
-#### Deep Mode (60-90 minutes)
-- Extended musical development
-- Complex formal structures, thematic transformation
-- Advanced orchestration and arrangement
-- Best for: Full compositions, large-scale works, academic projects
-
-### Musical Capabilities
-
-#### Creation & Composition
-
-#### Sequential Composition
-Musical skills can chain together for complex works:
-
-1. Melodic theme generation
-2. Harmonic progression design
-3. Rhythmic structure development
-4. Form construction
-5. Orchestration and arrangement
-
-#### Parallel Processing
-Independent musical tasks can run simultaneously:
-
-- Multi-voice counterpoint
-- Harmonic progression analysis
-- Rhythmic pattern generation
-- Timbral and instrumental considerations
-
-#### Learning & Feedback
-
-Music education with built-in remediation:
-- **Progressive Skill Building:** Gradual complexity increase
-- **Immediate Feedback:** Musical analysis and correction suggestions
-- **Practice Integration:** Real-time application of theory
-- **Performance Optimization:** Technical and artistic refinement
-
-### Musical Integration
-
-#### Real-Time Feedback
-Skills provide real-time musical analysis and suggestions:
-
-- **Harmonic Analysis:** Chord quality, voice leading, functional harmony
-- **Melodic Analysis:** Contour, rhythm, phrasing quality
-- **Structural Analysis:** Formal balance, development effectiveness
-- **Performance Consideration:** Articulation, dynamics, expression
-
-#### Musical Theory Application
-Skills apply music theory principles:
-
-- **Scale Theory:** Major, minor, modal scales with appropriate extensions
-- **Chord Progressions:** Functional harmony, modern extensions
-- **Voice Leading:** Smooth soprano-alto-tenor-bass motion
-- **Form Theory:** Classical and contemporary formal structures
-
-## Use Cases
-
-### For Musicians
-
-**Melody Creation**
-```
-Generate a memorable melody for a pop song:
-- Key: C major
-- Tempo: 120 BPM
-- Style: Contemporary pop with gentle rock influences
-- Structure: Verse-chorus-bridge format
-```
-
-**Harmony Analysis**
-```
-Analyze the chord progression in this classical piece:
-- Provide voice leading suggestions
-- Identify functional harmony
-- Suggest smooth voice leading options
-```
-
-**Rhythm Composition**
-```
-Create a complex rhythm pattern for a jazz ensemble:
-- Time signature: 7/8 with syncopation
-- Instrumentation: Rhythm section with percussion
-- Groove feel: Latin-influenced swing
-```
-
-### For Music Educators
-
-**Theory Application**
-```
-Teach students about functional harmony:
-- Provide clear examples and explanations
-- Include practice exercises
-- Offer instant feedback on compositions
-- Demonstrate real-world applications
-```
-
-**Improvisation Skills**
-```
-Generate improvisational phrases:
-- Based on given chord progression
-- Following style guidelines
-- Suitable for specific instruments
-- Educational and creative
-```
-
-### For Content Creators
-
-**Background Music**
-```
-Create ambient music for a video:
-- Mood: peaceful, contemplative
-- Tempo: 80 BPM
-- Instrumentation: piano, strings, gentle percussion
-- Duration: 3-minute loop
-```
-
-**Melodic Themes**
-```
-Generate music for a movie trailer:
-- Genre: epic adventure
-- Emotional impact: inspiring, heroic
-- Orchestration: full symphony
-- Narrative function: underscores key scenes
-```
-
-### For Game Developers
-
-**Level Themes**
-```
-Create music for a fantasy game level:
-- Setting: enchanted forest
-- Mood: magical, mysterious
-- Instrumentation: Celtic harp, strings, woodwinds
-- Interactive elements: responsive to player actions
-```
-
-**Achievement Music**
-```
-Generate victory jingles:
-- Style: celebratory, uplifting
-- Instrumentation: brass, strings, percussion
-- Length: 5-10 seconds
-- Volume: build to peak then fade
-```
-
-## Technical Details
-
-### Musical Representation
-
-Each musical element is represented with comprehensive detail:
-
-#### Melody Data
-- **Notes:** Pitch, duration, velocity
-- **Rhythm:** Subdivision, syncopation, tempo
-- **Structure:** Phrase boundaries, cadences
-
-#### Harmony Data
-- **Chords:** Root, quality, inversion
-- **Progressions:** Function, voice leading
-- **Voicings:** Inversion, spacing, doubling
-
-#### Form Data
-- నిర్మాణ‌విజ్ఞానము (Structure): Section definitions, transitions
-- **Analysis:** Formal balance, development sections
-- **Development:** Modulatory possibilities
-
-#### Performance Data
-- **Expression:** Articulation, phrasing, dynamics
-- **Technique:** Brush effects, bow distribution
-- **Interpretation:** Stylistic considerations
-
-### File Formats
-
-Musical data stored in:
-
-- **MIDI:** MIDI files for instruments and sequencing
-- **Audio:** WAV, MP3 for playback and rendering
-- **JSON:** Structured musical data with comprehensive metadata
-- **XML:** MusicML and other standardized formats
-
-### API Integration
-
-Musical data exposed through:
-
-#### HTTP/REST API
-```bash
-GET /api/melodies?genre=classical&key=C&tempo=120
-POST /api/compose {
-  "genre": "jazz",
-  "structure": "AABA",
-  "instruments": ["piano", "saxophone"]
+| **53 Skills** | Domain-expertise markdown skills | Auto-discovered by Claude Code; invoked as `/bitwize-music:<name>` |
+| **Multi-Model Orchestration** | Model-tier routing | Opus 4.8 (creative) / Sonnet 4.6 (reasoning) / Haiku 4.5 (mechanical) |
+| **MCP Server** | Structured project-state access | `servers/bitwize-music-server/`, stdio, 80+ tools |
+| **Genre Library** | Musical style reference | 388 genre files in `genres/` |
+| **State Cache + Migrations** | Persistent project state | `migrations/` (7 entries) tracks plugin upgrades |
+| **Quality Gates** | Workflow enforcement | `hooks/` (6 entries), source verification gate |
+
+The technology stack is **Python + Markdown + shell** — no TypeScript, no Web Audio API, no AudioWorklet, no IndexedDB/SQLite, and no HTTP/WebSocket server. The MCP server speaks stdio only. The Makefile drives linting/testing (ruff + bandit + mypy + pytest); Python 3.11+ is required for the MCP server and audio tools (README.md:51).
+
+### Multi-Model Tier Orchestration (headline feature)
+
+Skills declare which Claude model they need, and the tier is enforced by the plugin (README.md:66-75):
+
+| Tier | Model | Skills | Rationale |
+|------|-------|--------|-----------|
+| Creative | Opus 4.8 | 7 | Lyrics, Suno prompts, album concepts, legal/verification research — output quality defines the music |
+| Reasoning | Sonnet 4.6 | 30 | Research coordination, pronunciation analysis, most workflows |
+| Mechanical | Haiku 4.5 | 16 | Imports, validation, clipboard, help — speed over creativity |
+
+Skills use tier aliases (`opus`/`sonnet`/`haiku`) that auto-track the frontier model (CLAUDE.md:109). Per-skill rationale lives in `reference/model-strategy.md`.
+
+### MCP Server
+
+`servers/bitwize-music-server/` implements the MCP server (Python, `run.py`/`server.py` + `handlers/`, launched via `mcp-launch`). `.mcp.json` registers `bitwize-music-mcp` as a **stdio** server:
+
+```json
+{
+  "mcpServers": {
+    "bitwize-music-mcp": {
+      "type": "stdio",
+      "command": "${CLAUDE_PLUGIN_ROOT}/servers/bitwize-music-server/mcp-launch"
+    }
+  }
 }
 ```
 
-#### WebSocket API
-```javascript
-const musicSocket = new WebSocket('ws://localhost:8080/music');
+The MCP server is the **preferred way to query project state** (CLAUDE.md:52-62): `list_albums`, `find_album`, `get_track`, `list_skills`, `get_skill`, `get_ideas`, `get_pending_verifications`, `get_config`, `get_session`, `update_session`, `search`, `rebuild_state`. The cache schema is documented in `reference/state-schema.md`. The server exposes 80+ tools (README.md:77 "MCP Server (80+ Tools)").
 
-musicSocket.onmessage = function(event) {
-  const musicalData = JSON.parse(event.data);
-  renderMusic(musicalData);
-};
+## Album Production Pipeline
+
+The core workflow (CLAUDE.md:143):
+
+```
+Concept → Research → Write (+Suno Prompt) → [Refine] → QC/Verify → Generate → [Polish] → Master → Promo Videos (optional) → Promo Copy (optional) → Release
 ```
 
-#### Claude Code Integration
-```
-Generate a jazz improvisation based on this chord progression:
-C7 - F7 - Bb7 - Ebm7
-```
+Each phase maps to dedicated skills:
 
-## Performance
+- **Concept** — `album-conceptualizer` (Phase 1-7 planning), `album-ideas`, `promote-idea`
+- **Research** — `researcher` plus 10 specializations (`researchers-biographical`, `researchers-financial`, `researchers-gov`, `researchers-historical`, `researchers-journalism`, `researchers-legal`, `researchers-primary-source`, `researchers-security`, `researchers-tech`, `researchers-verifier`); `document-hunter`
+- **Lyrics** — `lyric-writer` (prosody rules, rhyme schemes, Suno pronunciation quirks), `lyric-refiner`, `lyric-reviewer`, `pronunciation-specialist`, `explicit-checker`, `plagiarism-checker`, `voice-checker`
+- **Suno generation** — `suno-engineer` (style boxes, Suno prompt engineering)
+- **Polish/Master** — `mix-engineer`, `mastering-engineer` (loudness targets per platform, genre-specific EQ curves), `sheet-music-publisher`
+- **Release** — `promo-writer`, `promo-director`, `promo-reviewer`, `release-director`
 
-### Generation Speed
+Track statuses flow `Not Started → Sources Pending → Sources Verified → In Progress → Generated → Final`; album statuses flow `Concept → Research Complete → Sources Verified → In Progress → Complete → Released` (CLAUDE.md:185-209). An album advances only when ALL its tracks reach the corresponding level.
 
-| Task Type | Quick Time | Standard Time | Deep Time |
-|-----------|------------|---------------|-----------|
-| Single Note | < 1 second | < 2 seconds | < 3 seconds |
-| Simple Melody | 5-10 seconds | 30-60 seconds | 2-3 minutes |
-| Harmony Progression | 10-15 seconds | 1-2 minutes | 3-5 minutes |
-| Full Composition | 30-60 seconds | 5-10 minutes | 15-30 minutes |
+## Source Verification Gate
 
-### Resource Usage
+Human-in-the-loop research verification blocks generation (CLAUDE.md:175-180):
 
-- **Standard Generation:** 500-1000 MB RAM, 2 CPU cores
-- **Deep Generation:** 1-2 GB RAM, 4+ CPU cores
-- **Real-time Streaming:** 200-500 MB RAM, 2 CPU cores
+1. Capture sources FIRST — every source must be a clickable markdown link `[Name](URL)`
+2. Save RESEARCH.md and SOURCES.md to the album directory
+3. After adding sources → status `❌ Pending` → human verifies via `/bitwize-music:verify-sources` → `✅ Verified (DATE)`
+4. Generation is blocked if verification is incomplete — `/bitwize-music:pre-generation-check` enforces this
 
-### Scalability
+"Critical: Research must complete before writing for source-based content. Human source verification is required before generation — never skip this gate." (CLAUDE.md:145)
 
-- **Concurrent Users:** 50-100 with optimized resource allocation
-- **Project Size:** Supports individual melodies to full symphonies
-- **Genre Support:** Classical, jazz, pop, rock, folk, electronic, and custom genres
+## Genre Library
 
-## Monitoring & Logging
+`genres/` contains **388 genre reference files** (including `INDEX.md`), covering styles from `2-step-garage`, `a-cappella`, `abstract-hip-hop`, `acid-jazz`, `afro-house`, `afrobeats` through `zouk` and hundreds more. These files provide genre-specific guidance for Suno prompts, mastering targets, and stylistic defaults used during album conceptualization.
 
-### Musical Performance Metrics
+## Toolchain & Quality Gates
 
-- **Harmonic Accuracy:** Chord construction, voice leading quality
-- **Melodic Intelligence:** Contour, phrasing, rhythmic appropriateness
-- **Structural Balance:** Formal effectiveness, development quality
-- **Performance Quality:** Technical precision, expressive quality
+- **Python 3.11+** for the MCP server and audio tools (README.md:51)
+- **Makefile**: `make lint` runs ruff (scoped to tools/, servers/, hooks/) + bandit + mypy; `make check` = lint + test (pytest with coverage, `--cov-fail-under=75`); `make test` runs the pytest suite with `-n auto`
+- **Hooks** (`hooks/`, 6 entries): `hooks.json` (PostToolUse), `check_version_sync.py`, `validate_track.py`, `pre-commit`, `install.sh`, `README.md`
+- **Migrations** (`migrations/`, 7 entries): `0.40.0.md` → `0.91.0.md` + README; checked via the `get_pending_migrations` MCP tool; `acknowledge_migrations` advances `last_migrated_version`
+- **Cross-platform matrix**: `reference/cross-platform/tool-compatibility-matrix.md` + `wsl-setup-guide.md`; macOS, Linux, WSL2, and native Windows fully supported (CI runs on windows-latest, README.md:51)
+- **Session start health check**: `/bitwize-music:session-start` runs the health-check sequence (venv stale check, skills stale check, MCP state check, pending migrations) before work begins
 
-### Musical Quality Indicators
+## Key Skills
 
-- **Consonance:** Harmonic richness, pleasant intervals
-- **Variety:** Textural variety, emotional range
-- **Cohesion:** Musical unity and development
-- **Innovation:** Novel combinations and progressions
+- **`lyric-writer`** — prosody rules, rhyme-scheme analysis, Suno pronunciation quirks
+- **`mastering-engineer`** — loudness targets per platform, genre-specific EQ curves
+- **`researcher`** — coordinates parallel sub-agents across 10 domain specializations
+- **`suno-engineer`** — Suno prompt/style-box expertise (usually auto-invoked by lyric-writer)
+- **`album-conceptualizer`** — Phase 1-7 album planning
+- **`mix-engineer`** — audio polishing and Suno artifact fixes
+- **`verify-sources`** / **`pre-generation-check`** — human verification gate enforcement
+- **`genre-creator`** — adds new genre reference files
+- **`sheet-music-publisher`** — MuseScore PDF export (CI-verified on windows-latest)
 
-### Progress Tracking
+## Configuration
 
-- **Skill Development:** Musical skill progression over time
-- **Learning Metrics:** Theoretical understanding improvement
-- **Performance Metrics:** Real-world musical applications
-- **Creative Metrics:** Original composition quality
+- **Config is always at** `~/.bitwize-music/config.yaml` (CLAUDE.md:26)
+- Setup via `/bitwize-music:setup` (detects environment, installs dependencies) and `/bitwize-music:configure` (artist name, workspace paths)
+- Workspace layout: `{audio_root}/artists/[artist]/albums/[genre]/[album]/` for mastered audio
 
-## Security
+## Version History
 
-### Access Control
+- **[0.101.0] — 2026-07-21** (CHANGELOG.md:9) — current release
+- Migration files track the upgrade path from **0.40.0** through **0.91.0**
 
-- **Authentication:** Secure MIDI communication
-- **Authorization:** Musical role-based access control
-- **Data Encryption:** Musical data encryption during transmission
-- **IP Protection:** Musical algorithm and composition protection
+## License & Origin
 
-### Data Protection
-
-- **Musical Intellectual Property:** Copyright protection for compositions
-- **User Preferences:** Personal musical settings and customizations
-- **Performance Analytics:** Anonymized musical performance data
-- **Backup:** Regular backups of musical projects
-
-## Compliance
-
-### Industry Standards
-
-- **MIDI Specifications:** Electronic musical data standards
-- **Audio Engineering:** Professional audio standards and practices
-- **Copyright Law:** Musical composition and performance rights
-- **Data Privacy:** Musical data privacy and consent
-
-### Accessibility
-
-- **Screen Reader Support:** Musical information access for visually impaired users
-- **Adaptive Interfaces:** Custom musical interfaces for different abilities
-- **Alternative Output:** Braille, large print, and simplified musical displays
-
-## Future Roadmap
-
-### Phase martial Achievement
-
-#### Immediate (Next 6 months)
-
-1. **Enhanced Harmonic Intelligence:** Advanced chord progression analysis
-2. **Rhythm Generation:** Complex rhythmic pattern generation
-3. **Cross-Genre Integration:** Seamless blending of multiple genres
-4. **Performance Visualization:** Real-time performance visualization
-
-#### Medium Term (6-12 months)
-
-1. **AI Composition Analysis:** Deep analysis of existing musical works
-2. **Collaborative Music Making:** Multi-user musical collaboration
-3. **Cultural Musical Integration:** Non-Western musical systems
-4. **Virtual Reality Music:** Immersive musical VR experiences
-
-#### Long Term (12+ months)
-
-1. **Quantum Music Generation:** Quantum algorithm integration
-2. **Emotional Musical AI:** Emotion-responsive musical generation
-3. **Neuromusic Integration:** Brainwave-controlled music
-4. **Biological Rhythm Music:** Adaptation to human physiological rhythms
-
-## Community
-
-### Contributing
-
-- **GitHub Repository:** https://github.com/AgriciDaniel/claude-ai-music-skills
-- **Issue Tracker:** Bug reports and feature requests
-- **Pull Requests:** Code contributions and improvements
-- **Discussions:** Musical discussions and best practices
-
-### Communication Channels
-
-- **GitHub Discussions:** Musical discussions and technical Q&A
-- **Twitter:** @claude_music for music updates and inspiration
-- **Discord:** Musical community chat and support
-- **LinkedIn:** Professional musical networking and announcements
-
-### Support
-
-#### Documentation
-- **README.md:** Project overview and quick start
-- **CLAUDE.md:** Musical composition principles and conventions
-- **SKILL.md:** Individual skill documentation (in each skill directory)
-
-#### Learning Resources
-- **Tutorials:** Step-by-step musical guides
-- **Examples:** Real-world musical compositions
-- **Theory:** Musical theory application and explanation
-- **Technique:** Performance technique and practice guides
-
-#### Professional Support
-- **Professional Services:** Custom musical composition and arrangement
-- **Consulting:** Musical project planning and strategy
-- **Training:** On-site and online musical training programs
-- **Certification:** Claude AI Music Skills professional certification
-
-## Contacts
-
-### Project Team
-
-- **Lead Developer:** Daniel Agrici
-- **Music Advisors:** Professional musicians and composers
-- **Contributors:** Multiple volunteers and open-source contributors
-
-### Support Channels
-
-- **GitHub Issues:** Primary channel for bug reports and feature requests
-- **Email:** daniel@musicclaude.com for urgent support
-
-## Acknowledgments
-
-### Special Thanks
-
-- **Open-source community:** For inspiration, code, and shared musical knowledge
-- **Contributors:** For their time, expertise, and musical collaboration
-- **Beta testers:** For testing and providing feedback
-- **Musicians:** For real-world musical testing and validation
-
-### Inspirations
-
-- **Classical Composers:** For foundational musical patterns and techniques
-- **Jazz Legends:** For improvisation and harmonic innovations
-- **Electronic Musicians:** For technology integration and new genres
-- **Modern Producers:** For contemporary production techniques
-
-## Change Log
-
-### Version 2.0.0 (March 2026)
-- **Major Features:** Modular skill architecture, adaptive execution
-- **New Capabilities:** Voice engine, advanced theory application
-- **Breaking Changes:** Updated skill structure, new agent capabilities
-- **Bug Fixes:** Performance improvements, stability enhancements
-
-### Version 1.9.0 (January 2026)
-- **Major Features:** Enhanced melodic generation, harmony analysis
-- **New Skills:** Improvisation, counterpoint, advanced theory
-- **Bug Fixes:** Audio generation, performance issues
-
-### Version 1.0.0 (October 2025)
-- **Initial Release:** Core musical generation functionality
-- **Features:** Basic melody creation, simple harmony
-- **Limitations:** Limited skill set, basic output formats
-
-## References
-
-### Source Documentation
-
-- **GitHub Repository:** https://github.com/AgriciDaniel/claude-ai-music-skills
-- **Wiki Documentation:** https://github.com/Pictures/AI-Marketing-Hub/wiki
-- **Source Code:** https://github.com/AgriciDaniel/claude-ai-music-skills/tree/main/sources/claude-ai-music-skills
-- **Audio Samples:** https://github.com/AgriciDaniel/claude-ai-music-skills/wiki/Audio-Demos
-
-### External Resources
-
-- **MIDI Standards:** https://www.midi.org/
-- **Music Theory:** https://www.musictheory.net/
-- **Audio Engineering:** https://www.aes.org/
-- **Sound Design:** https://www.sounddesign.com/
-- **Music Production:** https://www.mixer.com/learn
-- **Music Psychology:** https://www.bethmusic.org/
-- **Acoustics:** https://en.wikipedia.org/wiki/Acoustics
-
-### Professional Resources
-
-- **International Musicians' Union:** https://www.fim-cap.com/
-- **American Music Teachers Association:** https://www.amtaweb.org/
-- **Piano Teachers Federation:** https://www.pianoteacher.org/
-- **National Association for Music Education:** https://www.musiceducation.org/
-
-## Future Enhancements
-
-### Immediate (Next Release)
-
-1. **Enhanced Harmonic Intelligence:** Advanced chord progression analysis
-2. **Rhythm Generation:** Complex rhythmic pattern generation
-3. **Cross-Genre Integration:** Seamless blending of musical genres
-4. **Performance Visualization:** Real-time performance visualization
-
-### Medium Term (3-6 months)
-
-1. **Machine Learning Integration:** Predictive musical generation
-2. **Collaborative Music Making:** Multi-user musical collaboration
-3. **Cultural Musical Integration:** Non-Western musical systems
-4. **Virtual Reality Music:** Immersive musical VR experiences
-
-### Long Term (6+ months)
-
-1. **Quantum Music Generation:** Quantum algorithm integration
-2. **Emotional Musical AI:** Emotion-responsive musical generation
-3. **Neuromusic Integration:** Brainwave-controlled music
-4. **Biological Rhythm Music:** Adaptation to human physiological rhythms
-
-## Conclusion
-
-Claude AI Music Skills represents a revolutionary approach to music creation through AI. By leveraging modular skill architecture, adaptive execution, and sophisticated musical intelligence, Claude AI Music Skills provides users with powerful musical creation capabilities accessible to everyone.
-
-The project's focus on musical authenticity, educational value, and performance quality makes it suitable for:
-
-- **Professional Musicians:** Advanced composition and arrangement
-- **Music Students:** Learning and practice assistance
-- **Content Creators:** Background music and audio content
-- **Game Developers:** Interactive musical experiences
-- **Educators:** Teaching and curriculum development
-
-As music technology continues to evolve, Claude AI Music Skills' architecture ensures it can adapt to new requirements and technologies while maintaining its core principles of musical quality, educational value, and user experience.
-
-For ongoing updates, documentation, and community support, visit the Claude AI Music Skills GitHub repository and documentation portal.
+- **Origin:** [bitwize-music-studio/claude-ai-music-skills](https://github.com/bitwize-music-studio/claude-ai-music-skills) (plugin.json repository field + README marketplace badges)
+- **License:** CC0-1.0 (plugin.json)
 
 ---
 
@@ -606,25 +139,6 @@ For ongoing updates, documentation, and community support, visit the Claude AI M
 
 ---
 
-**Last Updated:** March 14, 2026  
-**Generated:** Claude Code Wiki Generator  
-**Verification:** Source code verified against `sources/claude-ai-music-skills/`  
-**Version:** 2.0.0
-
----  
-
-## Table of Contents
-
-1. [Overview](#overview)
-2. [Architecture](#architecture)
-3. [Skill Categories](#skill-categories)
-4. [Technical Details](#technical-details)
-5. [Performance](#performance)
-6. [Security](#security)
-7. [Future Roadmap](#future-roadmap)
-8. [Community](#community)
-9. [Legal & Compliance](#legal--compliance)
-10. [Acknowledgments](#acknowledgments)
-11. [Change Log](#change-log)
-12. [References](#references)
-13. [Future Enhancements](#future-enhancements)
+**Last Updated:** 2026-07-30
+**Verification:** Source code verified against `sources/claude-ai-music-skills/`
+**Version:** 0.101.0

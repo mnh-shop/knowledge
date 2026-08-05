@@ -41,7 +41,7 @@ The backend (`packages/backend/src/services/`) provides a comprehensive set of s
 |---|---|
 | `MainService` | Orchestrates all services, manages extension lifecycle (activate/deactivate) |
 | `QuadletService` | CRUD operations for Quadlet `.container`, `.volume`, `.network`, and `.pod` files |
-| `SystemdService` | Start/stop/restart/enable/disable Quadlet units via `systemctl --user` |
+| `SystemdService` | Start/stop/restart Quadlet units via `systemctl --user` |
 | `ContainerService` | Container inspection, status checking, integration with Podman containers page |
 | `PodService` | Pod-level operations and status |
 | `VolumeService` | Volume management for Quadlet volumes |
@@ -61,11 +61,11 @@ The extension implements the Podman Desktop extension lifecycle through `activat
 
 ## Key Features
 
-- **Quadlet Unit Management** — Create, edit, delete, enable, and disable Quadlet `.container`, `.volume`, `.network`, and `.pod` files. Files are stored in the standard Quadlet directories (`~/.config/containers/systemd/` for rootless, `/etc/containers/systemd/` for rootful).
+- **Quadlet Unit Management** — List, generate, edit, save, and delete Quadlet `.container`, `.volume`, `.network`, and `.pod` files, plus start/stop/restart and status via systemd. Files are stored in the standard Quadlet directories (`~/.config/containers/systemd/` for rootless, `/etc/containers/systemd/` for rootful).
 - **Generation from Running Containers** — Convert an existing running container into a Quadlet `.container` file with one click. The generated output can be reviewed and edited before saving, with podlet-js formatting the directives correctly.
 - **Compose-to-Quadlet Conversion** — Generate Quadlet files from Docker Compose specifications. The extension detects Compose projects from container labels (`com.docker.compose.project.config_files`) and can produce `Container`, `Kube`, or `Pod` type Quadlets from the compose definition.
 - **Visual Editor** — Form-based editing of Quadlet unit directives with validation. Users fill in fields rather than hand-editing INI-style files, reducing syntax errors.
-- **Status Dashboard** — Real-time view of Quadlet unit states (active, inactive, failed, enabled, disabled) with color-coded indicators in the Podman Desktop interface.
+- **Status Dashboard** — Real-time view of Quadlet unit states (active, inactive, failed) with color-coded indicators in the Podman Desktop interface.
 - **Journal Integration** — View container logs through the desktop interface via systemd journal integration, avoiding the need to drop to the terminal for `journalctl --user`.
 - **Systemd Integration** — Start/stop/restart operations through systemd user services. The extension calls `systemctl --user` commands with proper error handling and output parsing.
 - **Template Support** — Pre-configured Quadlet templates for common service patterns, making it easy to bootstrap new services without remembering the full Quadlet syntax.
@@ -75,8 +75,10 @@ The extension implements the Podman Desktop extension lifecycle through `activat
 
 The frontend is built with **Svelte 5** and uses **Tailwind CSS** for styling. Key UI components:
 
-- **Quadlet List Page** — Shows all discovered Quadlet files with their status (active/inactive/failed), type (container/volume/network/pod), and systemd service state.
-- **Quadlet Generation Dialog** — Wizards for generating Quadlets from running containers and Compose files, with preview-and-edit steps before saving.
+- **Quadlets List Page** (`QuadletsList.svelte`) — Shows all discovered Quadlet files with their status (active/inactive/failed), type (container/volume/network/pod), and systemd service state.
+- **Quadlet Details Page** (`QuadletDetails.svelte`) — Per-unit detail view with status, logs, and lifecycle actions.
+- **Quadlet Generate Page** (`QuadletGenerate.svelte`) — Wizard for generating Quadlets from running containers, with preview-and-edit steps before saving.
+- **Quadlet Compose Page** (`QuadletCompose.svelte`) — Wizard for generating Quadlets from Compose files (Container, Kube, or Pod modes), with preview-and-edit steps before saving.
 - **Quadlet Editor** — Form-based editor with sections for `[Unit]`, `[Container]`, `[Service]`, and `[Install]` directives, with field-level validation and inline help.
 - **Status Dashboard** — Dashboard cards showing aggregate status across all Quadlet units with quick-action buttons.
 
@@ -104,7 +106,7 @@ Podman Desktop
         │     └── ... (12+ other services)
         ├── Frontend (packages/frontend/)
         │     ├── App.svelte            ← Root Svelte component
-        │     ├── pages/                ← QuadletList, GenerateFromContainer, etc.
+        │     ├── pages/                ← QuadletsList, QuadletDetails, QuadletGenerate, QuadletCompose
         │     ├── lib/components/       ← Reusable Svelte components
         │     └── stores/              ← Reactive state management
         ├── Shared (packages/shared/)

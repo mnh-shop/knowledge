@@ -112,6 +112,15 @@ The guide includes explicit security guidance for production deployments.
 
 **Supporting detail:** The guide is explicitly marked as an independent deployment guide not affiliated with Nous Research (lines 334-335).
 
+## Claim-8: Cron jobs created conversationally; repo ships no executable artifacts
+
+There is no CLI subcommand for creating cron jobs. Cron jobs are created conversationally inside the interactive `hermes chat` shell, and the scheduler is managed read-only via `hermes cron status` / `hermes cron list`.
+
+**Source evidence:** README lines 133-156 (cron job creation):
+> Start Hermes: `hermes chat` — Inside the interactive shell: "Create a cronjob that runs every 10 minutes. The task should: Write a short reflective paragraph about technology trends. Limit response to 180 words." — Hermes will return a job ID.
+
+**Supporting detail:** The only cron CLI commands present are `hermes cron status` (lines 210-212, 272-276) and `hermes cron list` (lines 266-270). The repository contains a single `README.md` (335 lines) with the systemd unit inline — no scripts, service files, or test artifacts.
+
 ## Dependency Map
 
 ```

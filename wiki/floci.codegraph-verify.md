@@ -21,19 +21,21 @@ source: sources/floci/
 - **Verdict:** ✅ CORRECT
 - **Fix needed:** None
 
-## Claim 2: AWS protocol support — Query, JSON 1.1, REST JSON, REST XML, TCP
+## Claim 2: AWS protocol support — Query, JSON 1.1, REST JSON, REST XML, TCP (+ TLS same-port proxy)
 
-- **Wiki says:** Floci implements five AWS wire protocols: Query (form-encoded POST → XML), JSON 1.1 (POST + `X-Amz-Target` → JSON), REST JSON, REST XML, and raw TCP proxies.
+- **Wiki says:** Floci implements five AWS wire protocols: Query (form-encoded POST → XML), JSON 1.1 (POST + `X-Amz-Target` → JSON), REST JSON, REST XML, and raw TCP proxies — plus optional TLS proxy mode serving HTTP and HTTPS on the same port 4566.
 - **Source evidence:**
-  - `src/main/java/io/github/hectorvent/floci/core/common/AwsQueryController.java` (495 lines) — The `AwsQueryController` class handles Query protocol requests. Line 239: `@POST @Consumes(MediaType.APPLICATION_FORM_URLENCODED) @Produces(MediaType.APPLICATION_XML)`. Routes to 16 query handlers (SQS, SNS, IAM, STS, SES, RDS, ElastiCache, CloudFormation, CloudWatch Metrics, EC2, ELB v2, Auto Scaling, Elastic Beanstalk, Neptune, DocDb, Cognito).
-  - `src/main/java/io/github/hectorvent/floci/core/common/AwsJson11Controller.java` (249 lines) — The `AwsJson11Controller` class handles JSON 1.1 protocol. Line 172: `@POST @Consumes(CONTENT_TYPE_AWS_JSON_1_1) @Produces(CONTENT_TYPE_AWS_JSON_1_1)`. Routes to 30+ JSON handlers (SSM, EventBridge, CloudWatch Logs, KMS, Kinesis, Cognito, Secrets Manager, ACM, ECS, ECR, Glue, Athena, Firehose, etc.).
+  - `src/main/java/io/github/hectorvent/floci/core/common/AwsQueryController.java` (496 lines) — The `AwsQueryController` class handles Query protocol requests. Line 239: `@POST @Consumes(MediaType.APPLICATION_FORM_URLENCODED) @Produces(MediaType.APPLICATION_XML)`. Routes to 16 query handlers (SQS, SNS, IAM, STS, SES, RDS, ElastiCache, CloudFormation, CloudWatch Metrics, EC2, ELB v2, Auto Scaling, Elastic Beanstalk, Neptune, DocDb, Cognito).
+  - `src/main/java/io/github/hectorvent/floci/core/common/AwsJson11Controller.java` (260 lines) — The `AwsJson11Controller` class handles JSON 1.1 protocol. Line 172: `@POST @Consumes(CONTENT_TYPE_AWS_JSON_1_1) @Produces(CONTENT_TYPE_AWS_JSON_1_1)`. Routes to 30+ JSON handlers (SSM, EventBridge, CloudWatch Logs, KMS, Kinesis, Cognito, Secrets Manager, ACM, ECS, ECR, Glue, Athena, Firehose, etc.).
   - `src/main/java/io/github/hectorvent/floci/core/common/AwsJsonCborController.java` — JSON/CBOR protocol for DynamoDB via Smithy RPC v2.
   - `src/main/java/io/github/hectorvent/floci/services/lambda/LambdaController.java` — REST JSON controller for Lambda management API.
   - `src/main/java/io/github/hectorvent/floci/services/s3/S3Controller.java` — REST XML controller for S3.
   - `src/main/java/io/github/hectorvent/floci/services/elasticache/proxy/` — TCP proxy for ElastiCache RESP protocol.
   - `docker-compose.yml` lines 9-11 — Port ranges 6379-6399 (ElastiCache), 7001-7099 (RDS), 9200-9299 (OpenSearch) for TCP proxy services.
+  - `src/main/java/io/github/hectorvent/floci/config/TlsProxyServer.java` lines 23-28 — TLS proxy listens on public port 4566, sniffs the first byte (`0x16` TLS ClientHello → internal HTTPS port 4511; else → internal HTTP port 4510). Line 42: when TLS is disabled Quarkus serves HTTP directly on 4566 and the proxy is not started.
+  - `src/main/resources/application.yml` line 173 — `tls.enabled: false # FLOCI_TLS_ENABLED (default: false)`; `FLOCI_TLS_SELF_SIGNED`, `FLOCI_TLS_AWS_HTTPS_PORT` alongside.
   - `sources/floci/AGENTS.md` has a table listing all 5 protocols with their implementation details.
-- **Verdict:** ✅ CORRECT
+- **Verdict:** ✅ CORRECT (line counts corrected: AwsQueryController 496, AwsJson11Controller 260)
 - **Fix needed:** None
 
 ## Claim 3: Docker integration — Lambda, RDS, ElastiCache, and 10+ services use real Docker containers
@@ -54,6 +56,8 @@ source: sources/floci/
   - `src/main/java/io/github/hectorvent/floci/services/amazonmq/AmazonMqController.java` — Amazon MQ RabbitMQ containers
   - `src/main/java/io/github/hectorvent/floci/services/opensearch/OpenSearchController.java` — OpenSearch containers
   - `src/main/java/io/github/hectorvent/floci/services/ecr/registry/` — ECR Docker registry
+  - `src/main/java/io/github/hectorvent/floci/services/ecr/registry/EcrGcController.java` — admin endpoint `_floci/ecr/gc` (POST) triggering garbage collection on the backing `registry:2` container after `BatchDeleteImage`
+  - `src/main/java/io/github/hectorvent/floci/services/lambda/WarmPool.java` — warm Lambda container pool: reuse across invocations, idle eviction via `container-idle-timeout-seconds`, `FLOCI_SERVICES_LAMBDA_EPHEMERAL=true` disables reuse, hot-reload bucket invalidates warm containers
   - `src/main/java/io/github/hectorvent/floci/core/common/docker/` — Shared Docker infrastructure (12+ files): `ContainerBuilder.java`, `ContainerLifecycleManager.java`, `ContainerSpec.java`, `DockerHostResolver.java`, etc.
   - `docker-compose.yml` line 13: `- /var/run/docker.sock:/var/run/docker.sock` — Docker socket mount required
 - **Verdict:** ✅ CORRECT
@@ -63,7 +67,7 @@ source: sources/floci/
 
 - **Wiki says:** Floci provides four configurable storage modes: memory, persistent, hybrid, and write-ahead log (WAL), configured via `FLOCI_STORAGE_MODE` or per-service overrides.
 - **Source evidence:**
-  - `src/main/java/io/github/hectorvent/floci/core/storage/StorageFactory.java` (129 lines) — Lines 62-79: `switch (mode)` creates `InMemoryStorage`, `PersistentStorage`, `HybridStorage`, or `WalStorage` based on resolved configuration:
+  - `src/main/java/io/github/hectorvent/floci/core/storage/StorageFactory.java` (145 lines) — Lines 62-79: `switch (mode)` creates `InMemoryStorage`, `PersistentStorage`, `HybridStorage`, or `WalStorage` based on resolved configuration:
     - Line 63: `case "memory" -> new InMemoryStorage<>()`
     - Line 64: `case "persistent" -> new PersistentStorage<>(filePath, typeReference)`
     - Line 65-69: `case "hybrid" -> { var hybrid = new HybridStorage<>(filePath, typeReference, flushInterval); ... }`
@@ -125,13 +129,16 @@ source: sources/floci/
 - **Verdict:** ✅ CORRECT
 - **Fix needed:** None
 
-## Claim 8: ServiceRegistry enabled/disabled service management with ResolvedServiceCatalog
+## Claim 8: ServiceRegistry + ResolvedServiceCatalog, RegionResolver, and admin endpoints
 
-- **Wiki says:** Floci's `ServiceRegistry` manages enabled/disabled services through a `ResolvedServiceCatalog`, supporting per-service enablement via configuration.
+- **Wiki says:** Floci's `ServiceRegistry` manages enabled/disabled services through a `ResolvedServiceCatalog`; a `RegionResolver` accepts any region; admin/state endpoints under `/_floci|/_localstack` expose init/diagnose/config/state-reset/state-nuke/health/info.
 - **Source evidence:**
   - `src/main/java/io/github/hectorvent/floci/core/common/ServiceRegistry.java` (61 lines) — Line 16: `@ApplicationScoped public class ServiceRegistry`. Line 27-31: `isServiceEnabled()` queries `ResolvedServiceCatalog` for `ServiceDescriptor.enabled()`. Line 33-41: `getEnabledServices()` iterates `catalog.allStatusDescriptors()` returning enabled services.
   - `src/main/java/io/github/hectorvent/floci/core/common/ServiceRegistry.java` line 46-52: `getServices()` returns a map of all known services with "running" or "available" status based on `descriptor.enabled()`.
   - `src/main/java/io/github/hectorvent/floci/core/common/ServiceRegistry.java` line 20: `private final ResolvedServiceCatalog catalog` — injected catalog via constructor injection (line 23).
   - `src/main/java/io/github/hectorvent/floci/core/common/AwsQueryController.java` line 194-195: `ResolvedServiceCatalog catalog` and `RegionResolver regionResolver` — also uses the catalog for protocol-aware service resolution.
+  - `src/main/java/io/github/hectorvent/floci/core/common/RegionResolver.java` — resolves any requested region to the emulator (README.md:74 "Any region works").
+  - `src/main/java/io/github/hectorvent/floci/lifecycle/EmulatorInfoController.java` — `@Path("{prefix:(_floci|_localstack)}")` (line 20) with `GET /health` (line 44), `GET /init` (line 54), `GET /info` (line 76), `GET /diagnose` (line 82), `GET /config` (line 88), `GET /state/reset` (line 94), `GET /state/nuke` (line 101).
+  - `src/main/java/io/github/hectorvent/floci/lifecycle/UiController.java` — `@Path("{prefix:(_floci|_localstack)}/ui")` (line 25) serving the web UI and `GET /ui/status` (line 47-48).
 - **Verdict:** ✅ CORRECT
 - **Fix needed:** None

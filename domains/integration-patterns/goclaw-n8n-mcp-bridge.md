@@ -2,550 +2,141 @@
 name: goclaw-n8n-mcp-bridge
 type: integration-pattern
 tag: [goclaw, n8n, mcp, integration-patterns, workflow-automation]
-description: "Model Context Protocol bridge integration between GoClaw Go-based agent gateway and n8n workflow automation platform"
+description: "MCP integration surfaces between GoClaw (Go agent gateway) and n8n workflow automation — MCP client, goclaw-bridge server, CRUD MCP server, webhooks, OpenAI-compatible API"
 ---
 
-# Integration Pattern: GoClaw ↔ n8n MCP Bridge
+# Integration Pattern: GoClaw ↔ n8n — Real Integration Surfaces
+
+> **Correction notice:** An earlier version of this document described GoClaw as a
+> Python SDK (a Python `import` of a goclaw package with an `Agent` constructor), a
+> dedicated MCP port environment variable, and a separate "mcp-bridge" container
+> image. **None of these exist.** GoClaw is a Go application (v3.15.0-beta.181,
+> `sources/goclaw/`) that is an **MCP client** and exposes **two MCP servers**
+> plus HTTP/webhook/OpenAI-compatible surfaces. This page documents the actual,
+> verifiable integration points.
 
 ## Overview
 
-This integration pattern enables **seamless MCP (Model Context Protocol) connectivity** between GoClaw's Go-based agent orchestration platform and n8n's visual workflow automation engine. This pattern combines GoClaw's powerful multi-agent coordination with n8n's extensive integration capabilities, creating a unified automation ecosystem that spans both programmatic and visual workflow paradigms.
+GoClaw is an enterprise AI agent gateway written in Go. It integrates with n8n as a workflow-automation platform through four real surfaces:
 
-## Pattern Purpose
+1. **MCP client** — GoClaw connects *to* external MCP servers (including one n8n may expose) via `tools.mcp_servers` config.
+2. **MCP bridge server** — GoClaw exposes its own tools as the MCP server `goclaw-bridge` (streamable-http) at `/mcp/bridge`, which any MCP client holding the gateway token — n8n MCP client nodes included — can call.
+3. **CRUD MCP server** — a second MCP server at `/api/mcp/` exposing GoClaw's resource-management surface (agents, sessions, skills, cron, config, …), gated by its own token `gateway.mcp_server_token`.
+4. **HTTP surfaces n8n can target directly** — webhooks (`/v1/webhooks/llm`, `/v1/webhooks/message`) and an OpenAI-compatible API (`/v1/chat/completions`, `/v1/responses`, `/v1/tools/invoke`) consumable by n8n's OpenAI / HTTP Request nodes.
 
-### Use Cases
-1. **Hybrid Automation Workflows**: Combine GoClaw's agent intelligence with n8n's integration breadth
-2. **Visual Agent Orchestration**: Create visual workflow interfaces for GoClaw agent processes
-3. **Integration Workflow Automation**: Automate the setup and deployment of n8n workflows triggered by GoClaw agents
-4. **Cross-Platform Tool Chaining**: Chain GoClaw agent outputs with n8n integration capabilities
+No separate bridge service, broker container, or Python package is involved — GoClaw *is* the bridge.
 
-## Technical Architecture
+## 1. GoClaw as an MCP Client (GoClaw → n8n)
 
-### Bridge Component Structure
+GoClaw's MCP integration lives in `internal/mcp/` (`manager.go`, `manager_connect.go`, `pool.go`). The `Manager` handles server lifecycle: connect, tool discovery, keepalive, reconnection with exponential backoff, connection pooling, and OAuth 2.0 with DCR + token refresh. `createClient` (`internal/mcp/manager_connect.go:313-326`) supports three transports:
 
-The GoClav ↔ n8n MCP Bridge serves as the intermediary layer facilitating communication between both platforms:
+| Transport | Construction |
+|---|---|
+| `stdio` | `mcpclient.NewStdioMCPClient(command, envSlice, args...)` |
+| `sse` | `mcpclient.NewSSEMCPClient(url, opts...)` (optional headers) |
+| `streamable-http` | `mcpclient.NewStreamableHttpClient(url, opts...)` (optional headers) |
 
-**Core Responsibilities:**
-- MCP protocol translation for bidirectional communication
-- Tool and workflow discovery and mapping
-- Authentication and authorization bridging
-- Session management and lifecycle coordination
-- Error handling and retry logic across platforms
+External MCP servers are declared under **`tools.mcp_servers`** in the JSON5 config (`internal/config/config_channels.go:465`, `MCPServerConfig` at `config_channels.go:480-503`): `transport`, `command`/`args`/`env` (stdio), `url`/`headers` (sse/streamable-http), `enabled` (default true), `tool_prefix` (collision avoidance), `timeout_sec` (default 60). MCP tools are wrapped as GoClaw-native tools via `BridgeTool` and filtered per agent (`tool_filter.go`), with BM25 search for lazy discovery (`mcp_tool_search.go`).
 
-**Integration Flow:**
-```
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   GoClaw        │    │   n8n MCP        │    │   n8n          │
-│   (Go Agent)    │    │   (Bridge)       │    │   (Workflow)    │
-│                 │    │                 │    │                 │
-│ MCP Client      │───▶│ MCP Bridge Server│───▶│ Workflow Engine │
-│ (Tool Consumer) │    │ (Bridge Component) │    │ (Node-Based)    │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-         │                       │                       │
-         │                       │                       │
-    GoClaw APIs   MCP Protocol      n8n APIs\n    (Go)         <─▶         (TypeScript)\n         │                       │                       │\n    Agent Orchestration     Workflow          Integration\n     Management              Orchestration      Manager\n```
+To let a GoClaw agent call n8n workflow endpoints, register n8n's MCP server endpoint (if n8n exposes one) as a streamable-http or SSE server:
 
-## Pattern Implementation
-
-### Bridge Architecture
-
-#### MCP Bridge Service
-```python
-class GoClawN8NBridge:
-    def __init__(self):
-        self.goclaw_client = GoClawMCPClient()
-        self.n8n_client = n8nRESTClient()
-        self.workflow_mapper = WorkflowMapper()
-        self.auth_gateway = AuthGateway()
-    
-    async def connect_platforms(self):
-        """Establish MCP connections between platforms"""
-        await self.goclaw_client.connect()
-        await self.n8n_client.connect()
-        await self.tool_mapper.register_mappings()
-    
-    async def execute_cross_platform_workflow(self, workflow_spec):
-        """Execute workflow across both platforms"""
-        stages = workflow_spec['stages']
-        
-        for stage in stages:
-            if stage['platform'] == 'goclaw':
-                result = await self._execute_goclaw_stage(stage)
-            elif stage['platform'] == 'n8n':
-                result = await self._execute_n8n_stage(stage)
-            elif stage['platform'] == 'bridge':
-                result = await self._execute_bridge_stage(stage)
-            
-            await self._validate_stage_result(stage, result)
-        
-        return {'status': 'completed', 'workflow_id': workflow_spec['id']}
-```
-
-### Tool Mapping Configuration
-```yaml
-tool_mappings:
-  # GoClaw tools exposed as MCP servers
-  goclaw_tools:
-    - name: "agent_orchestration"
-      mapping: "n8n-webhook"
-      input_transform: "convert_agent_request"
-      output_transform: "extract_workflow_result"
-    
-    - name: "tool_execution"
-      mapping: "n8n-code-action"
-      input_transform: "format_tool_params"
-      output_transform: "parse_tool_response"
-    
-    - name: "memory_management"
-      mapping: "n8n-set-variable"
-      input_transform: "serialize_memory_data"
-      output_transform: "deserialize_memory_values"
-
-  # n8n workflows accessible from GoClaw
-  n8n_workflows:
-    - workflow_id: "n8n-automation-workflow"
-      input_node: "workflow-trigger"
-      output_node: "workflow-result"
-      integration_points:
-        - "data_pipeline"
-        - "error_handling"
-        - "monitoring"
-```
-
-### Configuration Example
-```yaml
-apiVersion: bridge/v1
-kind: GoClawN8NBridgeConfiguration
-metadata:
-  name: "goclaw-n8n-mcp-bridge"
-  namespace: "integration-patterns"
-spec:
-  platforms:
-    goclaw:
-      type: "go-agent-gateway"
-      runtime: "go1.21"
-      mcp_port: 8080
-      capabilities:
-        - "agent_lifecycle"
-        - "tool_execution"
-        - "memory_management"
-        
-    n8n:
-      type: "workflow-automation"
-      runtime: "nodejs18"
-      mcp_port: 8081
-      capabilities:
-        - "http_requests"
-        - "data_processing"
-        - "ai_toolkit"
-  
-  bridge:
-    type: "unified-orchestrator"
-    transport: "websocket"
-    max_connections: 100
-    timeout: 30
-    health_check_interval: 60
-    
-    auth:
-      method: "jwt"
-      shared_secret: "bridge-secret-key"
-      token_expiry: "24h"
-      
-  workflows:
-    - name: "agent-setup-automation"
-      description: "Create n8n workflows from GoClaw agent configurations"
-      trigger_type: "event_based"
-      complexity: "medium"
-      estimated_duration: 120
-      
-    - name: "monitoring-integration"
-      description: "Setup monitoring and alerting from GoClaw agents"
-      trigger_type: "scheduled"
-      complexity: "high"
-      estimated_duration: 300
-```
-
-### Usage Examples
-
-#### Example 1: Create n8n Workflow from GoClaw Agent
-
-```python
-# GoClaw agent configuration
-from goclaw import Agent
-
-# Create an agent with cross-platform capabilities
-agent_config = Agent(
-    name="automation-orchestrator",
-    platform="goclaw",
-    skills=["agent_lifecycle", "tool_execution", "memory_management"],
-    mcp_enabled=True
-)
-
-# Register for cross-platform integration
-agent_config.register_cross_platform_tool(
-    platform="n8n",
-    tool_id="automation-workflow",
-    configuration={
-        "trigger": "event_based",
-        "workflow_template": "agent-to-workflow-pipeline",
-        "automation_rules": ["auto_create", "monitor", "escalate"]
+```json5
+{
+  tools: {
+    mcp_servers: {
+      n8n: {
+        transport: "streamable-http",
+        url: "http://n8n:5678/mcp",           // n8n-hosted MCP endpoint
+        headers: { Authorization: "Bearer <n8n-mcp-token>" },
+        tool_prefix: "n8n_",                   // avoid tool-name collisions
+        timeout_sec: 60
+      }
     }
-)
-
-# Execute cross-platform workflow
-result = await agent_config.execute_cross_platform_workflow(
-    workflow_type="n8n-deployment",
-    parameters={
-        "agent_profile": agent_config.profile,
-        "target_platform": "production",
-        "integration_mode": "mcp-bridge"
-    }
-)
+  }
+}
 ```
 
-#### Example 2: n8n Workflow Automation Trigger
-```python
-# n8n MCP client implementation
-class n8nBridge:
-    def __init__(self, bridge_config):
-        self.bridge_config = bridge_config
-        self.mcp_client = self._setup_mcp_client()
-    
-    async def create_workflow_from_goclaw_agent(self, agent_data):
-        """Create n8n workflow triggered by GoClaw agent"""
-        
-        # Map GoClaw agent capabilities to n8n nodes
-        workflow_definition = self._map_agent_to_workflow(agent_data)
-        
-        # Create n8n workflow
-        workflow_id = await self.n8n_client.create_workflow(workflow_definition)
-        
-        # Configure MCP bridge for the new workflow
-        await self._configure_mcp_bridge(workflow_id)
-        
-        return {
-            "workflow_id": workflow_id,
-            "status": "created",
-            "integration_points": self._get_integration_points(agent_data)
-        }
-    
-    def _map_agent_to_workflow(self, agent_data):
-        """Map GoClaw agent to n8n workflow template"""
-        
-        # Determine workflow complexity based on agent capabilities
-        complexity = self._calculate_workflow_complexity(agent_data)
-        
-        # Create workflow based on agent type and requirements
-        if agent_data["type"] == "data_processing":
-            return self._create_data_pipeline_workflow(agent_data)
-        elif agent_data["type"] == "automation":
-            return self._create_automation_workflow(agent_data)
-        elif agent_data["type"] == "monitoring":
-            return self._create_monitoring_workflow(agent_data)
-        else:
-            return self._create_generic_workflow(agent_data)
-```
+Config hot-reloads (fsnotify, ~300ms debounce), but MCP server connections are lifecycle-managed by the `Manager` — see `manager.go` for reconnection behavior after config changes.
 
-#### Example 3: Bridge Orchestration Service
-```yaml
-# Service configuration for bridge orchestration
-services:
-  # GoClaw agent service
-  goclaw-agent-service:
-    image: "ghcr.io/nextlevelbuilder/goclaw:latest"
-    ports:
-      - "8080:8080"
-    environment:
-      GOCLAW_MODE: "production"
-      GOCLAW_MCP_PORT: "8080"
-      LOG_LEVEL: "info"
-    volumes:
-      - ./configs:/etc/goclaw/config
-    depends_on:
-      - mcp-bridge-service
-    
-  # n8n workflow service  
-  n8n-service:
-    image: "docker.n8n.io/n8nio/n8n:2.28.1"
-    ports:
-      - "5678:5678"
-    environment:
-      N8N_EDITOR_BASE_URL: "http://localhost:5678"
-      N8N_ENCRYPTION_KEY: "your-secret-key"
-    volumes:
-      - ./workflows:/home/node/.n8n/workflows
-      - ./templates:/home/node/.n8n/templates
-    depends_on:
-      - mcp-bridge-service
-    
-  # MCP bridge service (central component)
-  mcp-bridge-service:
-    image: "goclaw/mcp-bridge:latest"
-    ports:
-      - "8081:8081"
-    environment:
-      BRIDGE_TYPE: "unified"
-      GOCLAW_MCP_ENDPOINT: "http://goclaw-agent-service:8080"
-      N8N_MCP_ENDPOINT: "http://n8n-service:5678"
-      AUTH_SECRET: "bridge-secret-key"
-      LOG_LEVEL: "info"
-    depends_on:
-      - goclaw-agent-service
-      - n8n-service
-    restart_policy:
-      type: "unless-stopped"
-      max_restarts: 3
-```
+## 2. GoClaw's Bridge MCP Server (`goclaw-bridge`) — n8n → GoClaw
 
-## Integration Benefits
+GoClaw exposes its tool registry as an MCP server named **`goclaw-bridge`** (`mcpserver.NewMCPServer("goclaw-bridge", version, ...)` in `internal/mcp/bridge_server.go:135`), served over **streamable-http in stateless mode** (`NewStreamableHTTPServer(..., mcpserver.WithStateLess(true))`, `bridge_server.go:133-146`). Tools are read from the registry, filtered to `BridgeToolNames`, and every call is additionally checked against the calling agent's policy allowlist (`bridge_server.go:120-131`).
 
-### For GoClaw Users
-- **Extended Capabilities**: Access n8n's extensive integration catalog
-- **Visual Workflow Management**: Create and manage workflows through n8n UI
-- **Data Processing Automation**: Leverage n8n's data processing capabilities
-- **Integration Ecosystem**: Access 400+ third-party integrations
+It is mounted on the gateway HTTP server at **`/mcp/bridge`** (`internal/gateway/server.go:248-258`) behind `tokenAuthMiddleware(s.cfg.Gateway.Token, ...)`:
 
-### For n8n Users
-- **Agent Intelligence**: Incorporate GoClaw's advanced agent orchestration
-- **Complex Task Handling**: Manage sophisticated agent-based workflows
-- **Multi-Agent Coordination**: Orchestrate multiple agents for complex tasks
-- **Enterprise Features**: Utilize GoClaw's enterprise-grade security and monitoring
+- **Auth:** requires `Authorization: Bearer <GOCLAW_GATEWAY_TOKEN>` (constant-time comparison).
+- **Fail-safe:** when no gateway token is configured, the bridge is **disabled** — the route returns `403 {"error":"mcp bridge disabled: set GOCLAW_GATEWAY_TOKEN to enable"}` (`server.go:254-258`) so an exposed port can never serve unauthenticated tool invocations.
+- **Primary consumer today:** the Claude CLI subprocess (ACP provider) running on the same machine (`bridge_server.go:123`, "All MCP bridge traffic originates from the Claude CLI subprocess").
 
-### For Bridge Architecture
-- **Protocol Abstraction**: Unified interface across different platforms
-- **Tool Standardization**: Consistent tool definitions and mappings
-- **Runtime Flexibility**: Dynamic tool discovery and registration
-- **Scalability**: Support for large-scale distributed systems
+An n8n workflow with an **MCP client node** can call GoClaw tools the same way: point it at `http://<goclaw-host>:18790/mcp/bridge` with the gateway token as bearer, and any registered bridge-capable tool appears (per-caller filtering still applies per agent context).
 
-## Challenges and Mitigations
+## 3. CRUD MCP Server (`/api/mcp/`) — Admin/Automation Surface
 
-### Challenge 1: Protocol Differences
-**Problem**: GoClaw uses Go-based MCP, n8n uses JavaScript-based MCP
-**Solution**: Bridge layer handles protocol translation automatically
+Distinct from the tool bridge, the CRUD MCP server (`NewCRUDServer`, `internal/mcp/crud_server.go:107`) exposes GoClaw's **resource-management surface as MCP tools backed by the real stores** — the same stores the gateway's own WebSocket RPC uses. Tool families include agents, sessions, skills, cron, config, agent links, API keys, config permissions, Bitrix24 portals, run timelines, teams (+ tasks/workspace), channels (+ instances), hooks, heartbeat, pairing, **exec approval**, usage/quota, chat/chat-behavior, LLM completion, runtime logs, outbound send, and TTS voices (tool names use the `goclaw_*` prefix, e.g. `goclaw_agent_get`, `goclaw_chat_send`, `goclaw_llm_complete` — see `crud_server.go` package comment and `CRUDDeps`).
 
-### Challenge 2: Tool Mapping Complexity
-**Problem**: Different tool naming and parameter conventions
-**Solution**: Centralized tool mapping service with configurable transformations
+- **Gating:** its own bearer token `gateway.mcp_server_token` (env: `GOCLAW_MCP_SERVER_TOKEN`), independent from the gateway token so it can be rotated/disabled separately (`internal/config/config_channels.go:429`, `internal/config/config_secrets.go:181`).
+- **Mounting:** at `/api/mcp/` behind `mcpServerTokenAuthMiddleware` (`internal/gateway/server.go:281-337`). When the token is unset the route is **not mounted at all** — no 403 handler, the endpoint simply does not exist.
+- **Tenant scoping:** callers may pass an optional `X-GoClaw-Tenant-Id` header (UUID or slug) to scope a request to a tenant; absent/unresolvable → master tenant. No membership check — the token is the full-trust boundary.
 
-### Challenge 3: Authentication Management
-**Problem**: Different authentication mechanisms across platforms
-**Solution**: Shared token management and cross-platform authentication gateway
+n8n workflows (HTTP Request → MCP over streamable-http, or an MCP client node) can drive GoClaw administration/automation through this endpoint with the dedicated token.
 
-### Challenge 4: Performance Overhead
-**Problem**: Additional processing layer adds latency
-**Solution**: Optimized caching and connection pooling
+## 4. Direct HTTP Surfaces for n8n
 
-## Monitoring and Observability
+### Webhooks — trigger agents from n8n (`docs/webhooks.md`)
 
-### Health Checks
-```yaml
-health_checks:
-  mcp_bridge:
-    status: "healthy"
-    connections:
-      goclaw: "active"
-      n8n: "active"
-    tools:
-      registered: 50
-      available: 48
-    performance:
-      response_time: 45ms
-      throughput: 2000 req/min
-      error_rate: 0.01%
-      
-  goclaw_platform:
-    status: "healthy"\n    services:
-      - agent_lifecycle: "running"
-      - tool_execution: "healthy"
-      - memory_management: "operational"
-      
-  n8n_platform:
-    status: "healthy"
-    services:
-      - workflow_execution: "running"
-      - integration_hub: "healthy"
-      - template_management: "operational"
-```
+GoClaw webhooks let external systems trigger agents or deliver messages:
 
-### Alert Configuration
-```yaml
-alerts:
-  - name: "Bridge High Latency"
-    condition: "response_time > 1000ms"
-    severity: "warning"
-    action: "scale_bridge_resources"
-    
-  - name: "Tool Registration Failure"
-    condition: "tools.registered < 45"
-    severity: "critical"
-    action: "reinitialize_mcp_bridge"
-    
-  - name: "Cross-Platform Communication Failure"
-    condition: "mcp_connection_status != 'active'"
-    severity: "critical"
-    action: "restart_bridge_services"
-```
+| Kind | Endpoint | Purpose | Edition |
+|---|---|---|---|
+| `llm` | `POST /v1/webhooks/llm` | Invoke an agent with a user prompt (sync or async) | Standard + Lite |
+| `message` | `POST /v1/webhooks/message` | Send a message to a user on a channel | Standard only |
+
+Webhooks are tenant-scoped registry entries (`POST /v1/webhooks` admin CRUD). Two auth modes:
+
+- **Bearer:** `Authorization: Bearer wh_...` (secret returned once at creation; `secret_prefix` like `wh_ABCD`).
+- **HMAC:** header `X-GoClaw-Signature: t=<unix_seconds>,v1=<hmac_hex>` (`internal/http/webhooks_auth.go:238`, `docs/webhooks.md:171-198`). Signature = `HMAC_SHA256(key=hex.Decode(hmac_signing_key), payload="{ts}.{body}")` where `hmac_signing_key = hex(SHA-256(secret))`. Replay protection: the gateway records `sha256(tenant_id + "|" + signature_hex)` in a nonce cache with 320s TTL and rejects replays with `401` + `security.webhook.hmac_replay` (`docs/webhooks.md:196-198`). `require_hmac=true` on the webhook row disables bearer auth.
+
+An n8n **Webhook node** pattern: n8n workflow → `POST /v1/webhooks/llm` (Bearer `wh_...` or signed `X-GoClaw-Signature`) → GoClaw agent runs → response streamed/returned to n8n.
+
+### OpenAI-compatible API — n8n's OpenAI node can target GoClaw
+
+| Endpoint | Purpose | Source |
+|---|---|---|
+| `POST /v1/chat/completions` | OpenAI-compatible chat completions | `internal/http/chat_completions.go:20` |
+| `POST /v1/responses` | OpenResponses protocol | `internal/http/responses.go:19` |
+| `POST /v1/tools/invoke` | Direct tool invocation | `internal/http/tools_invoke.go:14` |
+
+These accept the gateway token or an API key as `Authorization: Bearer`, so n8n's **OpenAI node** (custom base URL + model) or **HTTP Request node** can drive GoClaw agents and even invoke tools directly without any MCP setup. Gateway rate limiting (`gateway.rate_limit_rpm`) applies to `/v1/chat/completions` as well (`docs/09-security.md:272`).
+
+## 5. Which Surface to Use
+
+| Need | Use |
+|---|---|
+| n8n triggers a GoClaw agent with a prompt | `POST /v1/webhooks/llm` (Bearer or HMAC) |
+| n8n sends a message out through a GoClaw channel | `POST /v1/webhooks/message` |
+| n8n workflow calls GoClaw as an LLM (OpenAI node) | `/v1/chat/completions` or `/v1/responses` |
+| n8n invokes a single GoClaw tool | `/v1/tools/invoke` |
+| GoClaw agent calls tools exposed by n8n's MCP server | `tools.mcp_servers` (MCP client) |
+| n8n calls GoClaw's tools as an MCP client | `/mcp/bridge` (bearer = gateway token) |
+| n8n automates GoClaw administration (agents/sessions/skills/cron/config) | `/api/mcp/` (bearer = `gateway.mcp_server_token`) |
+
+## Security Notes
+
+- Every inbound surface is authenticated: gateway token (constant-time) for `/mcp/bridge` and the OpenAI-compatible API, `wh_` bearer or HMAC `X-GoClaw-Signature` (with 320s replay protection) for webhooks, `mcp_server_token` for `/api/mcp/`.
+- SSRF-safe HTTP clients are required for outbound calls (`internal/security/ssrf.go`); MCP server configs are validated by `internal/mcp.ValidateServerConfig()` with stdio restricted to bare allowlisted runtime names (`docs/09-security.md:80`).
+- `message`-kind webhooks and several CRUD MCP tool families require the Standard edition; the `llm` webhook and the bridge server work in Lite too.
 
 ## Related Documentation
 
-### Main Documentation
-- [[goclaw]] — GoClaw platform documentation
+- [[goclaw]] — GoClaw platform wiki
+- [[goclaw-architecture]] — gateway architecture, ports, config
+- [[goclaw-security-and-credentials]] — injection guard, SSRF, exec approval, MCP server token gating
 - [[n8n]] — n8n workflow automation platform
-- [[mcp]] — Model Context Protocol documentation
-- [[integration-patterns]] — Other integration patterns
-
-### Component Documentation
-- [[domains/architecture/goclaw-architecture]] — GoClaw architecture
-- [[domains/architecture/n8n-architecture]] — n8n architecture
-- [[domains/api/goclaw-api]] — GoClaw API reference
-- [[domains/api/n8n-api]] — n8n API reference
-
-### Bridge Components
-- [[assets/mcp-servers/goclaw-mcp-server]] — GoClaw MCP server
-- [[assets/mcp-servers/n8n-mcp-server]] — n8n MCP server
-- [[domains/mcp/goclaw-mcp-implementation]] — GoClaw MCP implementation
-- [[domains/mcp/n8n-mcp-implementation]] — n8n MCP implementation
-
-## Pattern Lifecycle
-
-### Development
-1. **Requirements Analysis**: Define cross-platform use cases and requirements
-2. **Architecture Design**: Design bridge component structure and interfaces
-3. **Implementation**: Develop bridge service and integration logic
-4. **Testing**: Validate functionality and performance
-
-### Deployment
-1. **Configuration**: Set up bridge configuration in target environment
-2. **Integration**: Connect platforms and test end-to-end workflows
-3. **Validation**: Verify integration meets business requirements
-4. **Optimization**: Fine-tune performance and reliability
-
-### Operations
-1. **Monitoring**: Track bridge health and performance
-2. **Maintenance**: Regular updates and patches
-3. **Scaling**: Handle growth in connections and workflows
-4. **Troubleshooting**: Diagnose and resolve issues
-
-## Future Enhancements
-
-### Planned Features
-1. **Template Library**: Pre-built workflow templates for common use cases
-2. **AI Workflow Optimization**: Machine learning-based workflow optimization
-3. **Multi-Cloud Support**: Support for cloud-based deployments
-4. **Advanced Analytics**: Real-time analytics and insights from cross-platform workflows
-
-### Research Areas
-- **Protocol Standardization**: Emerging MCP protocol developments
-- **Performance Optimization**: Advanced caching and load balancing
-- **Security Enhancement**: Zero-trust security architectures
-- **Reliability Improvement**: Fault tolerance and disaster recovery
-
-## Summary
-
-The GoClaw ↔ n8n MCP Bridge integration pattern provides a robust, scalable solution for unifying AI agent orchestration with visual workflow automation. By leveraging MCP for protocol standardization and maintaining platform-specific optimizations, this pattern enables organizations to build sophisticated automation ecosystems that combine the best of both GoClaw's agent intelligence and n8n's integration breadth.
-
-This pattern serves as a foundational building block for:
-- Enterprise automation platforms
-- Hybrid cloud workflows
-- Multi-agent coordination systems
-- Cross-platform tool integration
-
-The pattern emphasizes **platform abstraction** through MCP while preserving **platform-specific optimizations** for maximum performance and capability.
-
----
-
-## Related Integration Patterns
-
-### Similar Patterns
-- [[openclaw-goclaw-mcp-bridge]] — OpenClaw ↔ GoClaw MCP integration
-- [[hermes-goclaw-composite]] — Hermes ↔ GoClaw composite orchestration
-- [[agentfield-goclaw-adapters]] — AgentField ↔ GoClaw adapters
-
-### Related Documentation
-- [[goclaw]] — GoClaw platform documentation
-- [[n8n]] — n8n workflow automation
 - [[mcp]] — Model Context Protocol ecosystem
-- [[integration-patterns]] — Complete integration patterns index
+- [[integration-patterns]] — integration patterns index
 
-## Pattern Verification
+## Verification
 
-This pattern has been validated against:
-
-1. **Architecture Requirements**: Cross-platform integration feasibility
-2. **Component Compatibility**: GoClaw and n8n API compatibility
-3. **Performance Criteria**: Throughput and latency benchmarks
-4. **Security Standards**: Authentication and authorization requirements
-5. **Operational Excellence**: Monitoring and maintenance procedures
-
-**Status**: ✅ **IMPLEMENTATION COMPLETE**
-
-The GoClaw ↔ n8n MCP Bridge integration pattern provides a production-ready solution for unifying advanced AI agent orchestration with powerful workflow automation capabilities, enabling organizations to build sophisticated, multi-platform automation ecosystems.
-
----
-
-## Quick Start Guide
-
-### Installation
-```bash
-# Clone the repository
-git clone https://github.com/YOUR_USERNAME/integration-patterns.git
-cd integration-patterns
-
-# Add to your project
-#add integration pattern to docker-compose.yml
-#add bridge configuration to your env file
-
-# Deploy services
-./deploy-bridge.sh
-alias bridge-up="docker-compose up -d"
-alias bridge-down="docker-compose down"
-```
-
-### Configuration
-```yaml
-# .env
-goclaw_mcp_endpoint=http://localhost:8080
-n8n_mcp_endpoint=http://localhost:5678
-bridge_secret=your-super-secret-key
-```
-
-### Usage
-```python
-# Initialize bridge connection
-from integration_patterns import GoClawN8NBridge
-
-bridge = GoClawN8NBridge(
-    config={
-        'goclaw_endpoint': 'http://localhost:8080',
-        'n8n_endpoint': 'http://localhost:5678',
-        'auth_secret': 'your-secret-key'
-    }
-)
-
-# Setup cross-platform workflows
-await bridge.setup_cross_platform_workflow(
-    workflow_type="agent-automation",
-    config={
-        'stages': [
-            {'platform': 'goclaw', 'action': 'orchestrate_agents'},
-            {'platform': 'n8n', 'action': 'create_workflow'},
-            {'platform': 'bridge', 'action': 'coordinate_execution'}
-        ]
-    }
-)
-```
-
-```
-
-## Support
-
-For questions and technical support:
-- **GitHub Issues**: Report bugs and feature requests
-- **Documentation**: API references and implementation guides
-- **Community**: Discussion forums and best practices
-
-**Pattern Purpose**: This pattern enables seamless integration between GoClaw's advanced agent orchestration and n8n's powerful workflow automation capabilities, creating a unified automation ecosystem for enterprise automation and integration scenarios.
-
----
-
-The GoClaw ↔ n8n MCP Bridge integration pattern represents a foundational building block for next-generation automation platforms that combine the best of both traditional agent-based orchestration and visual workflow engineering.
+- Corrected hallucinated content: no Python SDK API surface, no dedicated MCP port environment variable, no "mcp-bridge" container image — all removed and replaced with the real surfaces cited above.
+- All facts cited against `sources/goclaw/` source files and `docs/` references (see inline citations).
+- **Status:** REWRITTEN — reflects the real GoClaw v3.15.0-beta.181 integration surfaces.

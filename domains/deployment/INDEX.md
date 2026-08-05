@@ -13,6 +13,7 @@ Deployment guides, operations templates, and infrastructure configuration for ea
 | Doc | Repo | Description |
 |-----|------|-------------|
 | [[agentfield-deployment|AgentField Deployment]] | agentfield | Rootless Podman Quadlet setup with NixOS |
+| [[alphaclaw-deployment|AlphaClaw Deployment]] | alphaclaw | OpenClaw gateway manager — Render/Railway/Docker/macOS, git shim, hourly sync |
 | [[buildah-deployment|Buildah Deployment]] | buildah | Container build tooling deployment |
 | [[clawpier-deployment|ClawPier Deployment]] | clawpier | Tauri desktop app deployment |
 | [[crun-vm-deployment|crun-vm Deployment]] | crun-vm | VM runtime deployment guide |

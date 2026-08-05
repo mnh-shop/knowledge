@@ -1,7 +1,7 @@
 ---
 name: agentfield-deployment
 tags: [agentfield, cli, container, control-plane, deployment, docker, git, golang, harness, identity, monitoring, orchestration, plugin-sdk, podman, quadlet, security, storage, systemd, webhook]
-description: "AgentField deployment guide: rootless Podman Quadlet setup with NixOS flake, Redis, and Postgres"
+description: "AgentField deployment guide: local dev, Docker Compose (pgvector), Helm/Kubernetes, production operations, and the desktop app"
 source: sources/agentfield/
 ---
 
@@ -22,7 +22,8 @@ source: sources/agentfield/
 6. [Quadlet Deployment (Rootless Podman)](#6-quadlet-deployment-rootless-podman)
 7. [Ecosystem Agent Deployment](#7-ecosystem-agent-deployment)
 8. [Helm/Kubernetes](#8-helmkubernetes)
-9. [Release Builds](#9-release-builds)
+9. [Desktop App and Menu-Bar Companion](#9-desktop-app-and-menu-bar-companion)
+10. [Release Builds](#10-release-builds)
 
 ---
 
@@ -37,7 +38,7 @@ source: sources/agentfield/
 | Node.js | 20+ | For web UI build + TypeScript SDK |
 | PostgreSQL | 15+ | Required for cloud/production mode; pgvector extension needed |
 | Docker | 20+ | For Docker Compose deployments |
-| Air | optional | Hot-reload for Go development |
+| Air | optional | Auto-reload for Go server development (watches .go files; not required — `af dev --watch` covers agent packages) |
 
 ### Production Minimum (Local/SQLite Mode)
 
@@ -64,11 +65,15 @@ source: sources/agentfield/
 
 ## 2. Local Development
 
-### Single-Binary Mode (No Dependencies)
+### Single-Binary Server Mode (No Dependencies)
+
+Bare `af` defaults to server mode (`root.go:37` — the root command's `Run` is the server function); `af server` is the explicit alias.
 
 ```bash
 cd control-plane
-go run ./cmd/af dev
+go run ./cmd/af        # bare `af` = server mode
+# or
+go run ./cmd/af server
 ```
 
 This starts the control plane with:
@@ -77,14 +82,29 @@ This starts the control plane with:
 - Data under `~/.agentfield/data/`
 - No PostgreSQL, no Redis, no external database required
 
-### Hot-Reload with Air
+### Agent Package Dev Mode (`af dev`)
+
+`af dev [path]` runs an **AgentField agent package** in development mode — NOT the control plane. It looks for `agentfield.yaml` in the current directory (or the specified path), starts the agent without requiring installation, and auto-restarts on file changes (`commands/dev.go:37`).
+
+```bash
+af dev                    # Run package in current directory
+af dev ./my-agent         # Run package in specified directory
+af dev --port 8005        # Use a specific port
+af dev --watch            # Watch for changes and auto-restart
+```
+
+Flags: `--port/-p`, `--watch/-w` (auto-restart on file changes), `--verbose/-v`. Watch/auto-restart is provided exclusively by `--watch`/`-w` — the CLI ships no alternative reload flag.
+
+### Go Server Dev Loop (Optional Air)
+
+For iterating on the Go server binary itself, Air can watch `.go`, `.yaml`, `.yml` files using `.air.toml` in `control-plane/`:
 
 ```bash
 # Uses .air.toml in control-plane/
 air
 ```
 
-Watches `.go`, `.yaml`, `.yml` files. Rebuild command:
+Rebuild command (as configured in `.air.toml`):
 ```
 go build -tags 'sqlite_fts5' -o ./tmp/agentfield-server ./cmd/agentfield-server
 ```
@@ -215,6 +235,17 @@ Default location: `control-plane/config/agentfield.yaml` (dev) or overridden via
 | `AGENTFIELD_STORAGE_POSTGRES_MAX_CONNECTIONS` | 25 | PostgreSQL connection pool |
 | `AGENTFIELD_STORAGE_POSTGRES_ENABLE_AUTO_MIGRATION` | false | Auto-run Goose migrations on startup |
 
+**Environment Variable Inventory:** `control-plane/.env.example` documents **43 `AGENTFIELD_*` variables** covering UI, CORS/API, cloud mode, storage (local/postgres/cloud), execution, and telemetry. `AGENTFIELD_CONFIG_FILE` points the server at an explicit YAML config; without it the server looks for `agentfield.yaml` in `.` or `./config`.
+
+**Telemetry:**
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `AGENTFIELD_TELEMETRY_ENABLED` | true | Toggle anonymous usage telemetry |
+| `AGENTFIELD_TELEMETRY_ENDPOINT` | `https://agentfield.ai/api/oss/telemetry` | OTLP/HTTP telemetry endpoint |
+| `AGENTFIELD_TELEMETRY_INSTALL_ID` | - | Install identifier for dedup |
+
+Set `AGENTFIELD_TELEMETRY_ENABLED=false` to disable telemetry entirely (the Docker Compose file forwards both variables, defaulting enabled to true).
+
 **Execution Queue (YAML config):**
 | Parameter | Default | Description |
 |-----------|---------|-------------|
@@ -259,6 +290,20 @@ The Helm chart sets `AGENTFIELD_CONFIG_FILE=/dev/null` -- the control plane uses
 | Approval Webhook Secret | `AGENTFIELD_APPROVAL_WEBHOOK_SECRET` | HMAC key for approval webhook callback verification |
 | Connector Token | `features.connector.token` in YAML | Authenticates agent connectors |
 
+### Encrypted Secret Store (`af secrets`)
+
+Node secrets (e.g. `GH_TOKEN`, LLM provider keys) declared as `type: secret` in an agent's `user_environment` section of `agentfield-package.yaml` are stored in an **encrypted store under `~/.agentfield`** (`secrets.go:19`):
+
+```bash
+af secrets set KEY [VALUE]   # store a secret (prompt hidden if VALUE omitted)
+af secrets ls                # list stored secrets (values masked; alias: list)
+af secrets rm KEY            # remove a secret (aliases: remove, delete)
+```
+
+- Encryption at rest: **AES-256-GCM**; decrypted only on demand
+- Secrets are injected into agents via the `user_environment` mechanism when a node is run/installed — `user_environment.required` entries prompt on first run and are remembered encrypted; `type: secret` hides input and stores it encrypted (see `docs/installing-agent-nodes.md`)
+- Scope: `global` (default, shared across nodes) or `node` (this node only)
+
 ### DID/VC Cryptographic Keys
 
 - Algorithm: Ed25519
@@ -270,6 +315,8 @@ The Helm chart sets `AGENTFIELD_CONFIG_FILE=/dev/null` -- the control plane uses
 
 Auto-generated on first run. No manual key provisioning needed, but the keystore directory must be persisted for production.
 
+> **Backup = copy the keystore directory.** The `af vc` command surface exposes **only `verify`** (plus the `verify` alias) — no export/import subcommands exist in `vc.go`. Backing up DID keys means copying `<data_dir>/keys/` (see [DID Key Management](#did-key-management)).
+
 ### LLM Provider Credentials
 
 Passed directly to agents, not stored in the control plane. Agents need their own:
@@ -278,6 +325,10 @@ Passed directly to agents, not stored in the control plane. Agents need their ow
 - `ANTHROPIC_API_KEY`
 - `GOOGLE_API_KEY`
 - `OPENROUTER_MODEL` (functional tests default to `google/gemini-2.5-flash-lite`)
+
+### Air-Gapped / Offline Deployments
+
+The Connector feature is a **token-authenticated REST surface** (`/api/v1/connector/*`, registered only when `features.connector.enabled` and `features.connector.token` are set — `routes_connector.go:22-28`) plus a config-management sub-route gated by a `config_management` capability. It is well suited to air-gapped control: external integrations authenticate with the connector token (no public internet or outbound WebSocket channel required), and agent↔control-plane communication is ordinary HTTP callbacks over the local network. The runtime has no hypervisor or virtual-machine dependency — agent nodes are plain processes/containers reached over HTTP.
 
 ### Helm Secrets
 
@@ -334,11 +385,13 @@ Pre-built images:
 ## 8. Helm/Kubernetes
 
 The Helm chart is at `deployments/helm/agentfield/`:
+- `values.yaml` (109 lines) + `values.schema.json` (JSON Schema validation, 91 lines)
 - Configurable replicas for horizontal scaling
 - Persistent volumes for PostgreSQL (5Gi default, with pgvector/pgvector:pg16 image)
 - Ingress configuration with TLS support
 - Multi-agent deployment support (demo Go agent + demo Python agent)
 - Sets `AGENTFIELD_CONFIG_FILE=/dev/null` to use built-in defaults + helm values only (fully declarative)
+- **Admin gRPC:** the control plane runs an `AdminReasonerService` on the gRPC port (`server.go:712-738`), which is **HTTP port + 100** (8180 by default; `values.yaml` `controlPlane.service.grpcPort: 0` = auto-compute). The gRPC server is protected by the API key via a unary interceptor when `api.auth.apiKey` is configured.
 
 ### Helm Values Breakdown
 
@@ -443,8 +496,8 @@ No shared state coordination needed. Each replica independently:
 
 Keys are auto-generated on first run. For production:
 
-- **Backup**: The keystore directory (`<data_dir>/keys/`, default `~/.agentfield/data/keys`) must be backed up. Losing keys invalidates all existing DIDs and VCs.
-- **Rotation**: Auto-rotation every 90 days (configurable via `features.did.key_rotation_days`). Rotated keys remain valid for verification but are no longer used for signing new credentials.
+- **Backup**: The keystore directory (`<data_dir>/keys/`, default `~/.agentfield/data/keys`) must be backed up. Losing keys invalidates all existing DIDs and VCs. **The `af vc` surface only exposes `verify`** — no export/import subcommand exists. Backing up keys means copying the keystore directory (below).
+- **Rotation**: Auto-rotation every 90 days (configurable via `features.did.key_rotation_days`). Rotated keys remain valid for verification but are no longer used for signing new credentials. A companion `x25519gen` utility (`cmd/x25519gen`) derives the X25519 key-agreement keypair for the DID service (HKDF-SHA256 with salt `agentfield-did-keyagreement-v1`, info `<path>/enc/<epoch>`), used for interop cross-checks with the SDK crypto layer.
 - **Restore**: Copy the keystore directory to the new deployment. Keys are AES-256-GCM encrypted at rest (requires `encryption_passphrase` if configured).
 
 ```bash
@@ -513,7 +566,38 @@ OpenTelemetry tracing: configurable via `features.tracing.*` with OTLP HTTP/gRPC
 | `connection pool exhausted` | Too many concurrent DB connections | Increase `AGENTFIELD_STORAGE_POSTGRES_MAX_CONNECTIONS` |
 | `agent_redeployed` errors | Agent restarted mid-execution | Expected during rolling updates. Retry failed executions |
 
-## 9. Release Builds
+## 9. Desktop App and Menu-Bar Companion
+
+### AgentField Desktop (Electron)
+
+The `desktop/` directory ships an **Electron desktop dashboard** for the control plane and locally installed agent nodes. Built with electron-vite (TypeScript, React renderer); `electron-builder` packages it with the `af` and `af-tray` binaries bundled as `extraResources` (`vendor/` → `bin/`, filtered to `af`, `af.exe`, `af-tray`). Registers the `agentfield://` deep-link protocol.
+
+- **Screens:** Home/Dashboard, Agents (marketplace-style library of installed + addable nodes), Activity (dense, filterable run history), Install (maps to the Agents view with add-mode), Settings
+- **`af`-as-contract:** the desktop shells out to the CLI for all node operations — `af install <source>` (installer), `af run/stop <name>` (agents), plus `af skill`/`af list`/`af version` — the CLI is the single source of truth for the package registry
+- **Autostart:** the app can start the local control plane and registered agents on launch (autostart plan); cold-launch goes to Home when agents exist, Agents add-mode when the library is empty
+- **IPC:** sandboxed preload exposes `agentfield:*` IPC channels (snapshot, install, agent-action, start-control-plane, secrets, settings, cli-status, app-update) to the renderer; all `~/.agentfield` and control-plane HTTP reads live in one data-access module pointed at the active control-plane base URL (default `http://localhost:8080`)
+
+Install the app, then point it at a local `af server` (or let autostart start one) — it manages the same `~/.agentfield` installation the CLI uses.
+
+### af-tray (macOS Menu Bar)
+
+`cmd/af-tray` is a **separate Go binary** for the macOS menu bar — it deliberately carries the systray/GUI dependency so the server binary never does (`af-tray/main.go`).
+
+- Subcommands: `af-tray run` (default), `af-tray install` (provisions `~/Applications/AgentField.app` + launchd LaunchAgent autostart), `af-tray uninstall`, `af-tray version`
+- Fleet status from the control plane, a **24h usage chart** (text-free image renderer, `chart_render.go`), and **Claude quota** rows (reads the user's Claude Code OAuth token from the macOS keychain, `claude_quota_darwin.go`)
+- `launchd_darwin.go` registers a LaunchAgent for autostart; the desktop's `tray-companion.ts` manages provisioning (installs/reloads when the launchd agent is missing). Non-macOS builds get no-op stubs (`tray_other.go`); headless runs exit cleanly.
+
+### Deployment Relationship
+
+```
+AgentField Desktop (Electron) ──HTTP──▶ local af server (control plane) ──▶ PostgreSQL (pgvector)
+        │                                        │
+        └──spawns af install/run/stop───────┐    └──spawns agent nodes (af run)
+                                             ▼
+                              ~/.agentfield (registry, secrets, keys)
+```
+
+## 10. Release Builds
 
 `.goreleaser.yml` at repo root builds four platform binaries via `./cmd/af`:
 - linux/amd64 (CGO_ENABLED=1, using system gcc)
@@ -567,6 +651,8 @@ All builds use tags `embedded sqlite_fts5` and link flags `-s -w`. The `af` CLI 
 - [[agentfield]] -- wiki page for the platform
 - [[agentfield-architecture]] -- system architecture
 - [[agentfield-api]] -- REST API reference
+- [[agentfield-cli]] -- `af` CLI command reference
+- [[agentfield-desktop]] -- Electron desktop app + af-tray architecture
 - [[agentfield-quadlet]] -- Quadlet deployment
 - [[agentfield-mcp-server]] -- MCP bridge server
 - [[hermes-profiles]] -- AgentField platform profile

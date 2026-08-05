@@ -19,7 +19,7 @@ A production-oriented [[hermes-agent]] skill for ACP-style multi-agent delegatio
 
 - **Parallel batch delegation with per-task overrides** — the skill supports submitting multiple tasks in a single call with per-task agent routing, toolsets, and goals. For example, a batch pipeline can delegate regression finding to `claude-code` (with `file` tools only), fix implementation to `codex` (with `terminal` and `file` tools), and merge-ready summary production to `hermes` (with `file` tools). Tasks run independently and results are collected as structured summaries.
 
-- **Safety guardrails for external agents** — the skill enforces configurable bounds on external agents: `external_timeout_seconds` (recommended 900s/15min) prevents runaway tasks, and `external_max_output_chars` (recommended 24,000) limits response size to keep costs predictable and output manageable. A `max_iterations` setting (default 50) caps the total delegation loop depth. These parameters are configured in the Hermes `delegation` block in `config.yaml`.
+- **Safety guardrails for external agents** — the skill enforces configurable bounds on external agents: `external_timeout_seconds` (recommended 900s/15min) prevents runaway tasks, and `external_max_output_chars` (recommended 24,000) limits response size to keep costs predictable and output manageable. A `max_iterations` setting (default 50) caps the total delegation loop depth. **These are skill-level recommendations (SKILL.md's "Recommended Delegation Config")** — `external_timeout_seconds` and `external_max_output_chars` are NOT existing Hermes config keys (no such keys in hermes-agent's `cli-config.yaml.example` or config schema). The real Hermes-side knob for subagent iteration limits is the `delegation.max_iterations` key (default 50), enforced per-subagent by `IterationBudget` in `hermes-agent/agent/iteration_budget.py` (lines 5-6, 21-26).
 
 - **Context isolation and structured output** — tasks receive explicit `context` parameters (file paths, constraints, expected output format) that serve as isolation boundaries. The skill mandates structured summaries from all agents: what changed, what passed, what failed. This pattern ensures that each delegated task returns actionable, merge-ready information rather than raw logs or conversational output.
 
@@ -60,6 +60,8 @@ delegate_task(
 
 ## Recommended Configuration
 
+Presented in SKILL.md as "Recommended Delegation Config" (SKILL.md:76-84). This is the **skill's own recommendation** — the `external_timeout_seconds` and `external_max_output_chars` keys are consumed by the skill's delegation workflow, not by Hermes core (they do not exist in hermes-agent's config schema; grep of the source finds no such keys). `max_iterations` does map to the real Hermes knob `delegation.max_iterations`, which caps each subagent's tool-calling iterations (default 50, enforced by `IterationBudget` in `agent/iteration_budget.py`).
+
 ```yaml
 delegation:
   max_iterations: 50
@@ -67,6 +69,8 @@ delegation:
   external_timeout_seconds: 900
   external_max_output_chars: 24000
 ```
+
+> **Instructions-only asset.** The repository contains exactly three files — `SKILL.md` (91 lines, the skill instructions), `README.md` (50 lines, overview), and `LICENSE` (MIT). There is no code, configuration, or script content; `delegate_task()` is the native Hermes tool the skill orchestrates, not something this repo implements.
 
 ## Troubleshooting
 
@@ -83,6 +87,6 @@ delegation:
 - [[hermes-agent-docker]] — Docker deployment for Hermes agents using ACP delegation
 - [[hermes-agent-template]] — Template for deploying Hermes agents that can leverage ACP delegation
 - [[hermes-workspace]] — Hermes workspace that can host multi-agent ACP workflows
-- [[opencode]] — AI coding agent that ACP delegation can route tasks to via Codex CLI
+- [[opencode]] — Separate standalone AI coding agent (Codex CLI-based workflow); the `codex` delegation target in this skill is the Codex CLI itself, not opencode
 - [[hermes-plugins]] — Plugin system that can extend ACP routing targets
 - [[n8n]] — Workflow automation platform that could trigger ACP delegation pipelines

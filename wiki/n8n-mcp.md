@@ -1,6 +1,6 @@
 ---
 name: n8n-mcp
-description: "n8n-MCP server — 1,845+ nodes indexed, MCP tools for AI-assisted n8n workflow authoring"
+description: "n8n-MCP server — 2,285 nodes indexed, MCP tools for AI-assisted n8n workflow authoring"
 source: sources/n8n-mcp/
 verification_date: 2026-07-12
 verified_by: codegraph-verify
@@ -11,16 +11,16 @@ tags: [cli, docker, fair-code, integration, mcp, n8n, orchestration, storage, ty
 
 ## Overview
 
-n8n-MCP is a **Model Context Protocol (MCP) server** that provides AI assistants (Claude, Copilot, Cursor, etc.) with comprehensive access to n8n workflow automation node documentation, properties, and operations. It bridges n8n's 1,845+ node ecosystem and AI models, enabling AI-assisted workflow authoring without memorizing every node's parameter schema.
+n8n-MCP is a **Model Context Protocol (MCP) server** that provides AI assistants (Claude, Copilot, Cursor, etc.) with comprehensive access to n8n workflow automation node documentation, properties, and operations. It bridges n8n's 2,285-node ecosystem (828 core + 1,457 community, 1,295 verified) and AI models, enabling AI-assisted workflow authoring without memorizing every node's parameter schema. Built for n8n 2.31.x compatibility — the README badge targets n8n 2.31.6, with all n8n packages pinned to 2.31.3.
 
 Created by **Romuald Czlonkowski** ([www.aiadvisors.pl/en](https://www.aiadvisors.pl/en)), this is the reference implementation for AI-assisted n8n workflow building — it is the canonical way for LLMs to interact with n8n.
 
 ### Relationship to the n8n Ecosystem
 
-- n8n is an open-source workflow automation platform with 816+ core nodes and 1,029+ community nodes spanning AI/LLM, HTTP, database, file, messaging, and SaaS integrations.
-- n8n-MCP **is not** an n8n plugin or package — it is a standalone MCP server that reads n8n's @n8n/nodes-base and @n8n/nodes-source packages to build a searchable SQLite database of every node's parameters, operations, and documentation.
+- n8n is an open-source workflow automation platform with 828+ core nodes and 1,457+ community nodes spanning AI/LLM, HTTP, database, file, messaging, and SaaS integrations.
+- n8n-MCP **is not** an n8n plugin or package — it is a standalone MCP server that reads n8n's `n8n-nodes-base`, `n8n-workflow`, `n8n-core`, and `@n8n/n8n-nodes-langchain` packages to build a searchable SQLite database of every node's parameters, operations, and documentation.
 - It connects to an n8n instance via HTTP API (optional) to **read, create, update, and validate real workflows** — making it a bidirectional bridge: AI learns n8n, then AI controls n8n.
-- The n8n product itself has a built-in "MCP Client Tool" node (`src/n8n/MCPNode.node.ts`) that can connect to external MCP servers from within a workflow, but n8n-MCP serves the opposite direction (AI -> n8n).
+- n8n-MCP also ships an **n8n community-node wrapper** (`src/n8n/`) — an n8n node (`MCPNode`) that connects to external MCP servers from within a workflow, serving the opposite direction (n8n -> external MCP server).
 
 ## Architecture
 
@@ -49,7 +49,7 @@ Created by **Romuald Czlonkowski** ([www.aiadvisors.pl/en](https://www.aiadvisor
 | Directory | Purpose |
 |---|---|
 | `src/mcp/` | MCP server, tool definitions, handlers, tool documentation |
-| `src/mcp/server.ts` | Core `N8NDocumentationMCPServer` class (179KB) — tool registration, execution, resource handling |
+| `src/mcp/server.ts` | Core `N8NDocumentationMCPServer` class (~171KB, class defined at server.ts:168) — tool registration, execution, resource handling |
 | `src/mcp/tools.ts` | Tool definitions for all MCP-exposed operations |
 | `src/mcp/tools-n8n-manager.ts` | n8n workflow CRUD management tools |
 | `src/mcp/handlers-n8n-manager.ts` | Handlers for n8n API operations (create, read, update, delete workflows) |
@@ -61,12 +61,12 @@ Created by **Romuald Czlonkowski** ([www.aiadvisors.pl/en](https://www.aiadvisor
 | `src/loaders/` | NPM package loader for n8n nodes |
 | `src/mappers/` | Documentation mapping |
 | `src/templates/` | n8n workflow template fetcher, repository, service |
-| `src/n8n/` | n8n-native node (MCPNode, MCPApi credentials) — allows n8n workflows to connect to external MCP servers |
+| `src/n8n/` | n8n community-node wrapper (MCPNode, MCPApi credentials) — allows n8n workflows to connect to external MCP servers |
 | `src/config/` | n8n API configuration |
 | `src/types/` | TypeScript type definitions (tool, resource, prompt, instance-context, session-state) |
 | `src/telemetry/` | Telemetry and anonymous usage tracking |
 | `src/utils/` | Utilities: MCP client, bridge, caching, logging, HTTP helpers |
-| `src/triggers/` | n8n trigger definitions |
+| `src/triggers/` | Trigger detection |
 | `src/community/` | Community node management |
 | `scripts/` | Build, validation, migration, test, and deployment scripts (80+ scripts) |
 | `tests/` | Unit, integration, and E2E tests |
@@ -76,49 +76,49 @@ Created by **Romuald Czlonkowski** ([www.aiadvisors.pl/en](https://www.aiadvisor
 
 ## MCP Tools
 
-The server exposes tools organized into these categories:
+The server registers **23 MCP tools** (defined in `manifest.json:84-177`, repo root): **7 core documentation/validation tools** that work offline against the bundled SQLite node database, and **16 n8n management tools** that require a live n8n instance via `N8N_API_URL` / `N8N_API_KEY`.
 
-### Discovery Tools
-- **n8n_list_available_tools** — List all available n8n tools/functions
-- **n8n_search_nodes** — Full-text search across 1,845 node types
-- **n8n_get_node_essentials** — Get essential parameters for a node (optimized, faster)
-- **n8n_get_node_info** — Get full node information
-- **n8n_get_node_documentation** — Get external documentation for a node
-- **n8n_search_node_properties** — Search within a node's properties
-- **n8n_list_ai_tools** — List AI-capable tool variants (265+ detected)
+### Core Tools (7, offline)
 
-### Configuration Tools
-- **n8n_validate_node_operation** — Validate a full node configuration
-- **n8n_validate_node_minimal** — Check minimal required fields
-- **n8n_generate_workflow** — Generate a complete workflow from a description
-- **n8n_generate_workflow_doc** — Generate documentation for existing workflows
+| Tool | Purpose |
+|---|---|
+| `tools_documentation` | Get documentation for any MCP tool (START HERE) |
+| `search_nodes` | Full-text search across all 2,285 nodes; `source: 'community'\|'verified'` filter, `includeExamples` for real configs |
+| `get_node` | Unified node info: `detail: 'minimal'\|'standard'\|'full'`; modes `docs`, `search_properties`, `versions`, `compare`, `breaking`, `migrations` |
+| `validate_node` | Node config validation: `mode: 'minimal'` (quick) or `'full'` (profiles: minimal, runtime, ai-friendly, strict) |
+| `validate_workflow` | Complete workflow validation: structure, connections, expressions, AI tools |
+| `search_templates` | Template search: `searchMode: 'keyword'\|'by_nodes'\|'by_task'\|'by_metadata'` |
+| `get_template` | Get complete workflow JSON by template ID (modes: nodes_only, structure, full) |
 
-### Workflow Validation Tools
-- **n8n_validate_workflow** — Complete workflow structure validation
-- **n8n_update_partial_workflow** — Update specific parts of a workflow
-- **n8n_list_available_tools** — Discover available tools for workflow building
-- **Workflow diff engine** — Efficient diff-based workflow updates
+### n8n Management Tools (16, require n8n API)
 
-### Management Tools (require n8n API connection)
-- **n8n_create_workflow** — Create a new workflow on the n8n instance
-- **n8n_read_workflow** — Read workflow definitions
-- **n8n_update_workflow** — Update existing workflows
-- **n8n_delete_workflow** — Delete workflows
-- **n8n_activate_workflow** / **n8n_deactivate_workflow** — Toggle workflow active state
-- **n8n_list_workflows** — List all workflows
-- **n8n_execute_workflow** — Trigger workflow execution
-- **n8n_get_execution** — Get execution status and results
-- **n8n_audit_instance** — Audit the n8n instance configuration
-- **n8n_diagnostic** — Run diagnostics on the n8n instance
-- **n8n_health_check** — Check n8n instance health
+**Workflow management**
+- `n8n_create_workflow` — Create new workflows with nodes and connections
+- `n8n_get_workflow` — Get workflow by ID (modes: full, details, structure, minimal)
+- `n8n_update_full_workflow` — Replace an entire workflow
+- `n8n_update_partial_workflow` — Incremental diff-based updates (preferred; `addConnection`/`removeConnection` use four-parameter syntax)
+- `n8n_delete_workflow` — Permanently delete workflows
+- `n8n_list_workflows` — List workflows (minimal metadata)
+- `n8n_validate_workflow` — Validate a deployed workflow by ID
+- `n8n_autofix_workflow` — Auto-fix common workflow validation errors
+- `n8n_workflow_versions` — Version history, rollback, cleanup
+- `n8n_deploy_template` — Deploy an n8n.io template directly to your instance with auto-fix
 
-## MCP Resources
+**Execution**
+- `n8n_test_workflow` — Test/trigger workflow execution (webhook, form, chat)
+- `n8n_executions` — Unified execution management (get details, list, delete)
 
-The server exposes resources for node documentation:
-- `n8n://docs/{nodeType}` — Documentation for a specific node
-- `n8n://essentials/{nodeType}` — Essential parameters for a node
-- UI app resources (dashboard)
-- Skill resources (Claude skills integration)
+**Data & credentials**
+- `n8n_manage_datatable` — Manage n8n data tables and rows (list, get, create, update, delete)
+- `n8n_manage_credentials` — Manage n8n credentials (list, get, create, update, delete, getSchema)
+
+**Security & system**
+- `n8n_audit_instance` — Security audit combining n8n's audit API with deep workflow scanning
+- `n8n_health_check` — Check n8n API connectivity and features
+
+> **Note:** `n8n_list_available_tools` and `n8n_diagnostic` are **NOT** registered MCP tools — they exist only as tool-docs in `src/mcp/tool-docs/system/`.
+
+Read-only deployment is supported: `DISABLED_TOOLS` removes write/destructive tools, `DISABLED_TOOL_OPERATIONS` blocks destructive operations on tools that bundle reads and writes (e.g. `n8n_workflow_versions:delete,rollback,prune`, `n8n_executions:delete`).
 
 ## Tools Documentation System
 
@@ -126,13 +126,13 @@ The server exposes resources for node documentation:
 
 | Category | Files |
 |---|---|
-| `configuration/` | `get-node.ts`, `validate-node.ts` |
-| `discovery/` | `search-nodes.ts`, `list-available-tools.ts` |
+| `configuration/` | `get-node.ts` |
+| `discovery/` | `search-nodes.ts` |
 | `guides/` | `ai-agents-guide.ts` |
-| `system/` | `health-check.ts`, `diagnostic.ts`, `audit-instance.ts` |
-| `templates/` | Template-related documentation |
-| `validation/` | `validate-workflow.ts` |
-| `workflow_management/` | CRUD operations, execution, update, diff |
+| `system/` | `n8n-health-check.ts`, `n8n-diagnostic.ts`, `n8n-audit-instance.ts`, `n8n-list-available-tools.ts`, `tools-documentation.ts` |
+| `templates/` | `get-template.ts`, `search-templates.ts` |
+| `validation/` | `validate-node.ts`, `validate-workflow.ts` |
+| `workflow_management/` | `n8n-*.ts` — CRUD, executions, versions, test, autofix, deploy-template, manage-datatable, manage-credentials |
 
 Each `ToolDocumentation` has:
 - **essentials**: Short description, key parameters, example, performance notes, tips
@@ -140,7 +140,7 @@ Each `ToolDocumentation` has:
 
 ## Data Layer
 
-- **SQLite database** (`data/nodes.db`) stores parsed node metadata with FTS5 full-text search
+- **SQLite database** (`data/nodes.db`, ~95MB) stores parsed node metadata with FTS5 full-text search
 - **Repository pattern**: All database operations through `NodeRepository`
 - **Universal adapter**: Supports both `better-sqlite3` and `sql.js` backends
 - **Workflow template cache**: 2,352+ templates fetched from n8n.io API with 99.96% AI metadata coverage
@@ -148,34 +148,44 @@ Each `ToolDocumentation` has:
 
 ## Key Features
 
-- **1,845 n8n nodes** indexed: 816 core + 1,029 community (911 verified)
+- **2,285 n8n nodes** indexed: 828 core + 1,457 community (1,295 verified)
 - **99% node property coverage** with detailed parameter schemas
-- **63.6% operation coverage** across available node actions
-- **87% documentation coverage** from official n8n docs
-- **265 AI-capable tool variants** detected and documented
+- **66.5% operation coverage** across available node actions
+- **86% documentation coverage** from official n8n docs (including AI nodes)
+- **267 AI-capable tool variants** detected and documented
 - **156 ranked configurations** extracted from popular templates
 - **2,352 workflow templates** with metadata
+- **n8n 2.31.x compatibility** — README badge 2.31.6; n8n packages pinned to 2.31.3
 - **Multi-profile validation**: minimal, runtime, ai-friendly, strict profiles
 - **Type structure validation**: Complex nested types (filter, resourceMapper, etc.)
 - **n8n expression syntax validation**
 - **Complete workflow structure validation** with diff engine
 
-## n8n Node Module
+## n8n Community-Node Wrapper (src/n8n/)
 
-The `src/n8n/` directory contains n8n-native integration code:
-- **MCPNode** (`MCPNode.node.ts`) — An n8n node type that connects to external MCP servers, supporting operations: callTool, listTools, readResource, listResources, getPrompt, listPrompts
+The `src/n8n/` directory is the **n8n community-node wrapper** shipped with this repo — not the n8n product's built-in node. It lets n8n workflows connect to **external** MCP servers:
+
+- **MCPNode** (`MCPNode.node.ts`) — An n8n community node that connects to external MCP servers, supporting operations: callTool, listTools, readResource, listResources, getPrompt, listPrompts
 - **MCPApi** (`MCPApi.credentials.ts`) — Credential type for MCP server auth (Server URL, Auth Token, Connection Type)
 
-This means n8n-MCP is both an **MCP server** (AI tools for n8n) and provides an **MCP client node** for n8n workflows (n8n calling external MCP servers).
+This makes n8n-MCP a bidirectional bridge: the MCP server gives AI tools for n8n (AI → n8n), while the wrapper node lets n8n workflows call external MCP servers (n8n → MCP).
 
 ## Deployment
 
-Supports multiple deployment modes:
-- **stdio** — Direct integration with Claude Desktop, Claude Code, VS Code
-- **HTTP** — Remote MCP server with SSE transport
-- **Docker** — Containerized deployment via Docker Compose
+### Managed Hosting
+
+**[dashboard.n8n-mcp.com](https://dashboard.n8n-mcp.com)** — the fastest way to try n8n-MCP with no installation:
+- Free tier: 100 tool calls/day
+- Always up-to-date n8n nodes and templates
+- No infrastructure to manage — sign up, get an API key, connect your MCP client
+
+### Self-Hosting
+
+Supports multiple deployment modes (see `docs/SELF_HOSTING.md` and `docs/N8N_DEPLOYMENT.md`):
+- **npx** — `npx -y n8n-mcp` (stdio)
+- **Docker** — `ghcr.io/czlonkowski/n8n-mcp`
 - **Railway** — One-click cloud deploy
-- **Single-session HTTP** — Session-persistent HTTP mode for multi-tenant
+- **Local / HTTP** — stdio and HTTP (SSE) transports, plus single-session HTTP for multi-tenant; n8n instance via `N8N_API_URL` / `N8N_API_KEY`, optional Cloudflare Access auth (`N8N_CF_CLIENT_ID` / `N8N_CF_CLIENT_SECRET`), and read-only deployment via `DISABLED_TOOLS` / `DISABLED_TOOL_OPERATIONS`
 
 ## Development
 
@@ -193,11 +203,10 @@ npm run dev            # Build + rebuild + validate pipeline
 
 - `@modelcontextprotocol/sdk` — MCP protocol implementation
 - `n8n-workflow` — n8n core type definitions
-- `@n8n/nodes-base` — n8n core node packages (runtime)
-- `better-sqlite3` / `sql.js` — SQLite database backends
+- `n8n-nodes-base` — n8n core node packages (runtime)
+- `n8n-core`, `@n8n/n8n-nodes-langchain` — supporting n8n packages (all n8n packages pinned to 2.31.3)
+- `better-sqlite3` (optional) / `sql.js` — SQLite database backends
 - `express` — HTTP server framework
-- `node-fetch` — HTTP client for n8n API
-- `winston` — Logging
 
 ## Related Docs in This Vault
 

@@ -12,7 +12,7 @@ verified_by: codegraph-verify
 | Field | Value |
 |-------|-------|
 | Origin | <https://github.com/containers/podlet> |
-| License | Apache 2.0 |
+| License | MPL-2.0 |
 | Stack | Rust |
 | Source | `sources/podlet/` |
 | Wanted | Critical dev tool for converting ad-hoc container commands to persistent systemd-managed Quadlet services |
@@ -75,7 +75,7 @@ Input (CLI args / compose file / existing object)
     -> Output (stdout / file / unit-directory / .quadlets file)
 ```
 
-**Key insight**: The mapping phase is the core of the tool. Podlet's CLI structs (`src/cli/container/quadlet.rs`) define every Quadlet key as a clap argument with a doc comment documenting the exact Quadlet key it maps to. The `From` trait implementations in `src/cli/container.rs` then convert these CLI structs into Quadlet domain structs (`src/quadlet/container.rs`). Flags without native Quadlet keys are accumulated into `PodmanArgs=` via `podman_args_push_str`.
+**Key insight**: The mapping phase is the core of the tool. Podlet's CLI structs (`src/cli/container/quadlet.rs`) define every Quadlet key as a clap argument with a doc comment documenting the exact Quadlet key it maps to. The `From` trait implementations in `src/cli/container.rs` then convert these CLI structs into Quadlet domain structs (`src/quadlet/container.rs`). Flags without native Quadlet keys are accumulated into `PodmanArgs=` via `podman_args_push_str` (defined at `src/quadlet/container.rs:711`, invoked from the `Downgrade` implementation).
 
 ## Source Files and Roles
 
@@ -84,7 +84,7 @@ Input (CLI args / compose file / existing object)
 | `src/main.rs` | Entry point: calls `Cli::parse().print_or_write_files()` |
 | `src/cli.rs` | Main CLI struct (`Cli`), output modes, file writing, service conflict check |
 | `src/cli/container.rs` | Container-specific CLI struct, `TryFrom<compose_spec::Service>`, `From` for `quadlet::Container` |
-| `src/cli/container/quadlet.rs` | All Quadlet container key definitions as clap args (~80+ options) |
+| `src/cli/container/quadlet.rs` | All Quadlet container key definitions as clap args (67 `#[arg(...)]` annotations / 86 fields) |
 | `src/cli/container/podman.rs` | Podman passthrough args converted to `PodmanArgs=` |
 | `src/cli/container/compose.rs` | Compose service extraction: supported/unsupported option tracking |
 | `src/cli/container/security_opt.rs` | Security option parsing (maps `--security-opt` to Quadlet keys or PodmanArgs) |
@@ -134,7 +134,7 @@ The `podlet compose` command is particularly valuable for converting our Compose
 ## Cargo.toml Key Dependencies
 
 - **clap**: Argument parsing (derive-based, with custom value parsers)
-- **compose_spec**: Docker Compose file deserialization (from the podlet-compose fork)
+- **compose_spec**: Docker Compose file deserialization (plain crates.io dependency, `compose_spec = "0.3.0"` at Cargo.toml:63 — not a fork)
 - **serde** / **serde_yaml**: Serialization framework and YAML output
 - **k8s-openapi**: Kubernetes Pod and PersistentVolumeClaim types
 - **zbus**: D-Bus communication with systemd for service conflict detection

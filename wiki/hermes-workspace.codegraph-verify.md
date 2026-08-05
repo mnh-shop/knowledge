@@ -16,7 +16,8 @@ source: sources/hermes-workspace/
   - `electron/main.cjs` is the Electron desktop entry point with `BrowserWindow`, `app`, `ipcMain` — spawns gateway + dashboard services
   - `electron-builder.config.cjs` configures `electron-builder` for macOS (DMG, arm64+x64), Windows (portable+NSIS), with GitHub publisher
   - `electron/preload.cjs` and `electron/prod-server.cjs` support the Electron shell
-  - UI screens in `src/screens/`: `chat/`, `files/`, `terminal/`, `memory/`, `skills/`, `mcp/`, `swarm/`, `swarm2/`, `dashboard/`, `tasks/` (kanban), `gateway/`, `profiles/`, `settings/`, `playground/`, `agora/`, `crew/`, `jobs/`
+  - UI screens in `src/screens/`: 19 modules — `agents/`, `agora/`, `chat/`, `crew/`, `dashboard/`, `echo-studio/`, `files/` (incl. Monaco explorer + xterm terminal), `gateway/`, `jobs/`, `mcp/`, `memory/`, `playground/`, `profiles/`, `settings/`, `skills/`, `swarm/`, `swarm2/`, `tasks/` (kanban), `vt-capital/`
+  - Skills screens are `src/screens/skills/skills-screen.tsx` + `workspace-skills-screen.tsx` (no `src/components/skill-browser/` directory exists)
   - `src/server/terminal-sessions.ts` implements PTY-based terminal via Python helper
   - `src/server/memory-browser.ts` and `src/server/external-memory-browser.ts` provide memory CRUD
   - `skills/` directory at repo root contains workspace-dispatch skills
@@ -30,10 +31,11 @@ source: sources/hermes-workspace/
   - `src/server/` contains 24 `swarm-*.ts` modules: `swarm-lifecycle.ts`, `swarm-mode.ts`, `swarm-missions.ts`, `swarm-checkpoints.ts`, `swarm-memory.ts`, `swarm-kanban-store.ts`, `swarm-environment.ts`, `swarm-foundation.ts`, `swarm-chat-reader.ts`, `swarm-notifications.ts`, `swarm-model-resolver.ts`, `swarm-profile-config.ts`, etc.
   - `agents/` directory contains 10 README.md profiles: `orchestrator`, `km-agent`, `builder`, `maintainer`, `ops-watch`, `qa`, `researcher`, `reviewer`, `strategist`, `inbox-triage`
   - `src/screens/swarm/` and `src/screens/swarm2/` contain swarm UI components
-  - `docs/swarm/` contains architecture docs: `ARCHITECTURE.md`, `QUICKSTART.md`, `ROLES.md`, `SKILLS.md`
+  - `docs/swarm/` contains architecture docs: `ARCHITECTURE.md`, `QUICKSTART.md`, `ROLES.md`, `SKILLS.md`, `AUTORESEARCH.md` (swarm-autoresearch mode)
   - `docs/swarm2-*-spec.md` files exist for swarm v2 specs
   - `AGENTS.md` documents the "semantic swarm workers" contract with tool/skill/MCP assignment per worker
-  - 20 API routes for swarm: `src/routes/api/swarm-*.ts` (chat, dispatch, health, lifecycle, missions, memory, runtime, kanban, decompositions, etc.)
+  - 24 `swarm-*.ts` files under `src/server/` (14 modules + 10 `swarm-*.test.ts` companions) — full list: `swarm-lifecycle`, `swarm-mode`, `swarm-missions`, `swarm-checkpoints`, `swarm-memory`, `swarm-kanban-store`, `swarm-environment`, `swarm-foundation`, `swarm-chat-reader`, `swarm-notifications`, `swarm-model-resolver`, `swarm-profile-config`, `swarm-roster`, `swarm-runtime-reset`
+  - API routes for swarm: `src/routes/api/swarm-*.ts` (chat, dispatch, health, lifecycle, missions, memory, runtime, kanban, decompositions, roster, orchestrator-loop, tmux-*, reports, project, etc.)
 - **Verdict:** ✅ CORRECT
 - **Fix needed:** None
 
@@ -80,16 +82,17 @@ source: sources/hermes-workspace/
 - **Verdict:** ✅ CORRECT
 - **Fix needed:** None
 
-## Claim 6: REST API surface with 30+ endpoint modules
+## Claim 6: REST API surface with 130+ endpoint modules
 - **Wiki says:** API routes under `src/routes/api/` cover sessions, memory, skills, MCP, profiles, dashboard, claude-proxy, knowledge, external-memory, model info, runs, swarm-memory, hermesworld, and update.
 - **Source evidence:**
-  - `src/routes/api/` contains 60+ route modules/files organized by domain
-  - Confirmed route modules: `sessions/`, `memory/`, `skills/`, `mcp/`, `profiles/`, `dashboard/`, `claude-proxy/`, `knowledge/`, `external-memory/`, `model/`, `runs/`, `swarm-memory/`, `hermesworld/`, `update/`, `files.ts`, `terminal-*.ts`, `swarm-*.ts`, `gateway-status.ts`, `plugins.ts`, etc.
+  - `src/routes/api/` contains **132 non-test route modules** (`find src/routes/api -name '*.ts' ! -path '*__tests__*' ! -name '*.test.ts'` = 132; 150 total .ts incl. tests) in 14 domain groups plus ~82 top-level modules
+  - Confirmed route groups: `sessions/`, `memory/`, `skills/`, `mcp/`, `profiles/`, `dashboard/`, `claude-proxy/`, `knowledge/`, `external-memory/`, `model/`, `runs/`, `swarm-memory/`, `hermesworld/`, `update/`
+  - Top-level modules include `agent-bus.ts`, `conductor-spawn.ts`, `conductor-stop.ts`, `crew-status.ts`, `vt-capital.ts`, `oauth.device-code.ts`, `oauth.poll-token.ts`, `send-stream.ts`, `swarm-*.ts` (20+), `terminal-*.ts`, `transcribe.ts`, `workspace.ts`, `auth.ts`, `auth-check.ts`, etc.
   - Dashboard: `src/server/dashboard-aggregator.ts` (36,271 bytes) aggregates metrics
   - Kanban: `src/server/kanban-backend.ts` (21,668 bytes) with task management
   - Auth: `src/server/auth-middleware.ts` (9,101 bytes)
   - Data stores: `src/server/hermes-config-store.ts`, `src/server/mcp-hub-sources-store.ts`, `src/server/local-session-store.ts`
-- **Verdict:** ✅ CORRECT (API surface confirmed; precise count of 60+ route files exceeds wiki's listed 15+ endpoint groups)
+- **Verdict:** ✅ CORRECT (132 non-test route modules confirmed — exceeds the previously counted "60+")
 - **Fix needed:** None
 
 ## Claim 7: Gateway integration with WebSocket protocol
@@ -111,13 +114,15 @@ All 7 key claims from the Hermes Workspace wiki have been verified against the s
 - ✅ MCP Hub: Unified search over local/mcp-get/generic-json sources confirmed
 - ✅ Docker deployment: Dockerfile, docker-compose.yml, install.sh, flake.nix confirmed
 - ✅ SSE streaming chat: Event bus with multiple backend abstraction confirmed
-- ✅ REST API: 60+ route modules across 15+ domain groups confirmed
+- ✅ REST API: 132 non-test route modules across 14 domain groups + top-level confirmed
 - ✅ Gateway integration: WebSocket protocol with cryptographic frames confirmed
 
 ## Related
 
 - [[hermes-workspace]] -- Main wiki entry
 - [[hermes-workspace-architecture]] -- System architecture
+- [[hermes-workspace-features]] -- Feature inventory (19 screens, Conductor, jobs)
+- [[hermes-workspace-security]] -- Security model
 - [[hermes-workspace-mcp-hub]] -- MCP hub implementation
 - [[hermes-workspace-swarm-architecture]] -- Swarm architecture
 - [[hermes-workspace-deployment]] -- Deployment guide

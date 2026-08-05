@@ -9,7 +9,25 @@ source: sources/tank-agent-os/
 
 **Date:** 2026-07-12
 
-## Claim 1: Fedora bootc image with multi-runtime agent building (opencode, claw-code, Claude Code)
+## Claim 1: Repository origin (np6126) and fork source (LobsterTrap/tank-os)
+
+- **Wiki says:** "Origin np6126/tank-agent-os; fork source LobsterTrap/tank-os; MIT license; docs/ contains 13 markdown files; examples/ and tools/ test suite present."
+
+- **Source evidence:**
+  - Git remote: `origin https://github.com/np6126/tank-agent-os` (fetch/push)
+  - `README.md:9` — `last-commit` badge URL `np6126/tank-agent-os`
+  - `README.md:116` — Lists `[LobsterTrap/tank-os](https://github.com/LobsterTrap/tank-os)` as "the appliance architecture this repo forks"
+  - `README.md:123` — `[MIT](LICENSE) © 2026 np6126 · portions © Lobster Trap`
+  - `docs/` — 13 markdown files: build, cli, docs-lookup, first-boot, llm-wiki, memory, model-providers, provisioning, proxmox-import, security, service-gator, skills, web-search (plus `diagrams/` directory)
+  - `examples/cloud-init/` — `clawx-user-data.yaml`, `clawx-with-proxy-user-data.yaml`, `clawx-leash-user-data.yaml`, `meta-data`
+  - `examples/proxmox/rebuild-vm.sh` — recovery script; `examples/service-gator/scopes.json.example`
+  - `tools/` — `static-checks.sh`, `unit-tests.sh`, `check-selinux-mcs.sh`, `test-claude-config.py`, `test-gen-opencode-config.py`, `test-strip-proxy.py`
+  - `bootc/rootfs/usr/libexec/tank-os/clawx-selftest` — containment self-test wired to `clawx selftest` (`rootfs/usr/local/bin/clawx:211-216`)
+
+- **Verdict:** ✅ CORRECT
+- **Fix needed:** None
+
+## Claim 2: Fedora bootc image with multi-runtime agent building (opencode, claw-code, Claude Code)
 
 - **Wiki says:** tank-agent-os builds a Fedora bootc image that ships one of three AI coding agent runtimes — opencode (default), claw-code, or Claude Code. Each is built or verified in a dedicated multi-stage build stage, SHA-256-pinned, and the chosen one is installed into the final image.
 
@@ -27,7 +45,7 @@ source: sources/tank-agent-os/
 - **Verdict:** ✅ CORRECT
 - **Fix needed:** None
 
-## Claim 2: OS-level network lockdown via nftables — agent UID confined to egress proxy
+## Claim 3: OS-level network lockdown via nftables — agent UID confined to egress proxy
 
 - **Wiki says:** The agent container has no `CAP_NET_ADMIN`. Host nftables block every outbound packet from the agent UID (1000, "clawx") except to the configured egress proxy, enforced in the kernel — not by agent cooperation. A deny-all baseline applies even with no proxy configured.
 
@@ -49,7 +67,7 @@ source: sources/tank-agent-os/
 - **Verdict:** ✅ CORRECT
 - **Fix needed:** None
 
-## Claim 3: Rootless Podman Quadlets managing the entire service stack
+## Claim 4: Rootless Podman Quadlets managing the entire service stack
 
 - **Wiki says:** All services run as rootless Podman Quadlet units under UID 1000 (clawx user): clawx (agent), service-gator (MCP proxy), searxng, mcp-searxng, docs-mcp, llm-wiki. Services share an isolated network (`clawx-isolated.network`) with a `/28` subnet. User linger is enabled.
 
@@ -70,7 +88,7 @@ source: sources/tank-agent-os/
 - **Verdict:** ✅ CORRECT
 - **Fix needed:** None
 
-## Claim 4: Secret management via rootless Podman secrets with bootstrap scripts
+## Claim 5: Secret management via rootless Podman secrets with bootstrap scripts
 
 - **Wiki says:** API keys and tokens are stored as rootless Podman secrets — never baked into the image. Custom scripts (`tank-clawx-secrets`, `sync-podman-secrets`, `bootstrap-service-gator`) generate agent config from active secrets at container start.
 
@@ -92,7 +110,7 @@ source: sources/tank-agent-os/
 - **Verdict:** ✅ CORRECT
 - **Fix needed:** None
 
-## Claim 5: Cloud-init provisioning with SSH, QEMU guest agent, and first-boot setup
+## Claim 6: Cloud-init provisioning with SSH, QEMU guest agent, and first-boot setup
 
 - **Wiki says:** The image includes cloud-init for first-boot provisioning: SSH key injection, the clawx user pre-configured, and cloud-init's systemd services enabled. QEMU guest agent supports VM integration.
 
@@ -110,12 +128,12 @@ source: sources/tank-agent-os/
   - `Containerfile:311-312`: clawx user created with home directory at `/var/home/clawx`
   - `Containerfile:317-318`: User directories initialized: `.clawx/`, `workspaces/`
   - `docs/provisioning.md`, `docs/first-boot.md`, `docs/proxmox-import.md` — document the cloud-init workflow for VMware, Proxmox, and QEMU deployments
-  - `examples/bootc-config.toml` — cloud-init configuration template
+  - `examples/cloud-init/` — cloud-init templates: `clawx-user-data.yaml`, `clawx-with-proxy-user-data.yaml` (proxy + CA cert injection), `clawx-leash-user-data.yaml`, `meta-data`
 
 - **Verdict:** ✅ CORRECT
 - **Fix needed:** None
 
-## Claim 6: Supply-chain security with SHA-256 pinned binaries and GPG-verified manifest
+## Claim 7: Supply-chain security with SHA-256 pinned binaries and GPG-verified manifest
 
 - **Wiki says:** Every agent binary is pinned by SHA-256. opencode tarballs and claw-code binaries are checked against hardcoded hashes. Claude Code additionally verifies a GPG-signed manifest against the Anthropic release signing key before checking the binary SHA. Build fails on mismatch.
 
@@ -143,13 +161,14 @@ source: sources/tank-agent-os/
 
 ## Summary
 
-All 6 key claims from the tank-agent-os wiki have been verified against the source code:
+All 7 key claims from the tank-agent-os wiki have been verified against the source code:
 
+- ✅ **Origin/fork:** np6126/tank-agent-os origin, LobsterTrap/tank-os fork source, 13 docs, examples/ + tools/ test suite confirmed
 - ✅ **Multi-runtime bootc image:** 4-stage Dockerfile confirmed with opencode/claw-code/Claude Code builds
 - ✅ **nftables network lockdown:** `setup-clawx-nftables` with proxy-aware ruleset and deny-all baseline confirmed
 - ✅ **Rootless Podman Quadlets:** 7 Quadlet files with isolated `/28` network and linger setup confirmed
 - ✅ **Podman secrets:** Bootstrap scripts, secret token files in service-gator, and proxy CA secret handling confirmed
-- ✅ **Cloud-init provisioning:** Package installation, service enablement, user setup, and documentation confirmed
+- ✅ **Cloud-init provisioning:** Package installation, service enablement, user setup, and `examples/cloud-init/` templates confirmed
 - ✅ **Supply-chain security:** SHA-256 pins, GPG-verified Claude Code manifest, and build-failure-on-mismatch confirmed
 
 tank-agent-os delivers a production-hardened agent runtime appliance with defense-in-depth that matches the documentation — every documented control is implemented in the source.

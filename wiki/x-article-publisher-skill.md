@@ -11,7 +11,7 @@ verified_by: codegraph-verify
 
 | Field | Value |
 |---|---|
-| **Origin** | [omarmoataz/x-article-publisher-skill](https://github.com/omarmoataz/x-article-publisher-skill) |
+| **Origin** | [wshuyi/x-article-publisher-skill](https://github.com/wshuyi/x-article-publisher-skill) |
 | **Source** | `sources/x-article-publisher-skill/` |
 | **Repomix** | `raw/x-article-publisher-skill/x-article-publisher-skill.xml` |
 | **Codegraph** | `graphs/x-article-publisher-skill/` |
@@ -21,6 +21,8 @@ verified_by: codegraph-verify
 The X Article Publisher Skill is a Claude Code skill that automates publishing Markdown articles to X (Twitter) Articles with one command. It solves the painful manual process of converting Markdown to X's rich text editor — eliminating 15–20 minutes of manual formatting per article through browser automation via Playwright MCP.
 
 At version 1.2.0, the skill supports divider insertion, table-to-image conversion, Mermaid diagram rendering, cross-platform clipboard operations (macOS and Windows), and YAML frontmatter handling. The core workflow: parse a Markdown file into structured data, open the X Articles editor via browser automation, paste formatted content via clipboard, insert images at precise block-index positions, and save as a draft — never auto-publishing. This achieves a 10x efficiency improvement, reducing total article publishing time from 20–30 minutes to 2–3 minutes.
+
+> **Version note:** The feature set is documented as **v1.2.0** (README.md:7; changelog `### v1.2.0 (2025-01)` at README.md:297), but the `.claude-plugin/plugin.json` manifest still declares **1.1.0** — the manifest lags the shipped feature set.
 
 The project is structured as a Claude Code plugin with a skill directory (`skills/x-article-publisher/`) containing the main SKILL.md instructions and Python helper scripts for Markdown parsing, cross-platform clipboard operations, and table-to-image rendering.
 

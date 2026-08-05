@@ -48,11 +48,11 @@ The site is built with Sphinx using MyST Markdown (MyST is a superset of CommonM
 
 ### Key Source Layout
 
-- `source/tutorials/first-steps/` — 5 tutorials covering ad-hoc shells, declarative shells, reproducible scripts, and pinning nixpkgs
+- `source/tutorials/first-steps/` — 4 tutorials + `index.md`: ad-hoc shell environments, declarative shells, reproducible scripts, and pinning nixpkgs
 - `source/tutorials/nix-language.md` — Complete Nix language tutorial
 - `source/tutorials/module-system/` — Module system tutorial
 - `source/tutorials/nixos/` — NixOS deployment tutorials (ISOs, Docker, Raspberry Pi, integration testing)
-- `source/guides/recipes/` — 8 recipe files: CC, binary cache, dependency management, direnv, post-build hook, Python environment, sharing dependencies
+- `source/guides/recipes/` — 7 recipes + `index.md`: add-binary-cache, continuous-integration-github-actions, dependency-management, direnv, post-build-hook, python-environment, sharing-dependencies
 - `source/concepts/flakes.md` — 322-line deep dive on Nix flakes (inputs, outputs, flake.lock, references, CLI integration)
 - `source/contributing/documentation/` — Style guide and Diataxis framework reference
 - `nix/` — Build infrastructure with `default.nix`, overlays, and version data
@@ -67,7 +67,8 @@ cd sources/nix.dev/
 nix build   # or use make
 
 # The site is published at https://nix.dev via Netlify
-# GitHub Actions workflows: build-and-deploy.yml, test.yml, vale.yml, update-nix-releases.yml
+# GitHub Actions workflows (6): build-and-deploy.yml, test.yml, vale.yml,
+#   update-nix-releases.yml, deploy-site-poc.yml, editorconfig.yml
 ```
 
 Content contributions follow the MyST Markdown syntax and the Diataxis framework. The repo includes `CONTRIBUTING.md` with detailed guidance on content style, writing tutorials, and the documentation contribution workflow. Automated CI runs Vale prose checks and builds the site on every PR.

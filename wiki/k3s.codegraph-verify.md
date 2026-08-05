@@ -9,84 +9,94 @@ source: sources/k3s/
 
 **Date:** 2026-07-12
 
-## Claim 1: Single binary packaging with server and agent commands
-- **Wiki says:** K3s packages all Kubernetes components into a single binary with `k3s server` and `k3s agent` as the main commands, plus bundled `kubectl`, `crictl`, `k3s-killall.sh`, and `k3s-uninstall.sh`.
+## Claim 1: Single binary less than 100 MB with server/agent/kubectl/crictl
+- **Wiki says:** K3s packages all Kubernetes components into a single binary less than 100 MB, with `k3s server`, `k3s agent`, bundled `kubectl`, `crictl`, `ctr`, `containerd`, and the `k3s-killall.sh` / `k3s-uninstall.sh` utilities.
 - **Source evidence:**
-  - `cmd/server/` implements the server subcommand for control plane nodes
-  - `cmd/agent/` implements the agent subcommand for worker nodes
-  - `cmd/k3s/` contains the main k3s binary entry point
-  - `cmd/kubectl/` provides bundled kubectl support
-  - `cmd/crictl/` provides bundled crictl (CRI tool) support
-  - `cmd/ctr/` provides bundled containerd CLI
-  - `pkg/cli/server/` and `pkg/cli/agent/` contain the server/agent CLI implementations
-  - `install.sh` provides the one-line installation script
+  - `README.md:13` — "all in a binary less than 100 MB" (the ~60 MB figure is NOT in the repo; the README claims only "< 100 MB" and "half the memory")
+  - `cmd/server/`, `cmd/agent/` — server and agent subcommands
+  - `cmd/kubectl/`, `cmd/crictl/`, `cmd/ctr/`, `cmd/containerd/` — bundled client/CLI commands
+  - `cmd/k3s/` — main k3s binary entry point
+  - `README.md:156` — install.sh installs utilities `kubectl`, `crictl`, `k3s-killall.sh`, `k3s-uninstall.sh`
+  - `install.sh` — one-line installation script
+- **Verdict:** ✅ CORRECT (binary size corrected from "~60MB" to "less than 100 MB")
+
+## Claim 2: SQLite via Kine with optional etcd/MariaDB/MySQL/Postgres
+- **Wiki says:** SQLite is the default state store via Kine (a datastore shim), with optional etcd, MariaDB, MySQL, and PostgreSQL support.
+- **Source evidence:**
+  - `README.md:31` — "It adds support for sqlite3 as the default storage backend. Etcd3, MariaDB, MySQL, and Postgres are also supported."
+  - `pkg/daemons/config/types.go:12` — imports `github.com/k3s-io/kine/pkg/endpoint` (datastore endpoint wiring)
+  - `pkg/cluster/storage.go` + `pkg/cluster/cluster.go` — cluster storage and datastore bootstrap
+  - `pkg/etcd/` — full embedded etcd integration: `etcd.go`, `etcdproxy.go`, `member_controller.go`, `metadata_controller.go`, `resolver.go`, `s3/` snapshot support, `snapshot/` management
 - **Verdict:** ✅ CORRECT
 - **Fix needed:** None
 
-## Claim 2: Embedded SQLite via Kine with optional etcd
-- **Wiki says:** SQLite is the default state store via Kine (a datastore shim), with optional etcd for multi-node HA clusters, plus MariaDB, MySQL, and PostgreSQL support.
+## Claim 3: Flannel-based default CNI with WireGuard, Klipper-lb, and netpol
+- **Wiki says:** Default CNI is Flannel with WireGuard encryption support; Klipper-lb provides the embedded service load balancer and Kube-router the netpol controller.
 - **Source evidence:**
-  - `pkg/etcd/` contains full etcd integration: `etcd.go`, `etcdproxy.go`, `apiaddresses_controller.go`, `member_controller.go`, `metadata_controller.go`, `resolver.go`, `s3/` snapshot support, and `snapshot/` management
-  - `pkg/cli/server/` handles datastore configuration including Kine-based SQLite backend
-  - `main.go` initializes the server with configurable datastore endpoint
-  - `pkg/daemons/config/` contains server configuration including datastore settings
-- **Verdict:** ✅ CORRECT
-- **Fix needed:** None
-
-## Claim 3: Flannel-based default CNI with WireGuard encryption
-- **Wiki says:** Default CNI is Flannel with WireGuard encryption support for cross-node traffic.
-- **Source evidence:**
-  - `pkg/agent/flannel/` contains Flannel CNI integration
-  - `pkg/agent/flannel/` configures pod networking via Flannel daemon
-  - `pkg/agent/netpol/` provides kube-router network policy controller
-  - `pkg/agent/loadbalancer/` provides Klipper-lb embedded service load balancer
+  - `pkg/agent/flannel/flannel.go:47-50` — backend constants `BackendVXLAN = "vxlan"`, `BackendHostGW = "host-gw"`, `BackendWireguardNative = "wireguard-native"`, `BackendTailscale = "tailscale"`
+  - `pkg/agent/flannel/setup.go:50-52` — `wireguardNativeBackend` flannel config: `"Type": "wireguard"`, `"PersistentKeepaliveInterval": 25`; wired at `setup.go:254`
+  - `pkg/agent/loadbalancer/` — Klipper-lb embedded load balancer (`loadbalancer.go`, `httpproxy.go`, `servers.go`)
+  - `pkg/agent/netpol/netpol.go` — kube-router netpol controller
 - **Verdict:** ✅ CORRECT
 - **Fix needed:** None
 
 ## Claim 4: Tunnel proxy for agent-to-server connectivity
 - **Wiki says:** K3s eliminates the need to expose a port on worker nodes for the kubelet API by tunneling through a websocket connection to the control plane.
 - **Source evidence:**
-  - `pkg/agent/tunnel/tunnel.go` implements the tunnel proxy for agent-server communication
-  - `pkg/agent/proxy/` provides the agent-side proxy for tunnel connectivity
-  - The tunnel eliminates direct node-to-node connectivity requirements by routing through the server
+  - `README.md:35` — "It eliminates the need to expose a port on Kubernetes worker nodes for the kubelet API by exposing this API to the Kubernetes control plane nodes over a websocket tunnel."
+  - `pkg/agent/tunnel/tunnel.go` — tunnel proxy implementation for agent-server communication
+  - `pkg/agent/proxy/apiproxy.go` — agent-side API proxy over the tunnel
 - **Verdict:** ✅ CORRECT
 - **Fix needed:** None
 
 ## Claim 5: Auto-deploying manifests from manifests/
 - **Wiki says:** K3s automatically deploys Kubernetes resources from local manifests in real-time as they change. Bundled components are defined in `manifests/`.
 - **Source evidence:**
-  - `manifests/` contains: `coredns.yaml`, `traefik.yaml`, `local-storage.yaml`, `ccm.yaml`, `metrics-server/`, `rolebindings.yaml`, and `runtimes.yaml`
-  - `pkg/deploy/` implements the auto-deploy controller that watches `manifests/` directory for changes
-  - Bundled manifests include CoreDNS (cluster DNS), Traefik (default ingress), local-path-provisioner (storage), metrics-server, and cloud controller manager
+  - `manifests/` — `coredns.yaml`, `traefik.yaml`, `local-storage.yaml`, `ccm.yaml`, `metrics-server/`, `rolebindings.yaml`, `runtimes.yaml`
+  - `pkg/deploy/` — auto-deploy controller that watches `manifests/` for changes
+  - `README.md:57` — "Auto-deploying Kubernetes resources from local manifests in realtime as they are changed."
 - **Verdict:** ✅ CORRECT
 - **Fix needed:** None
 
-## Claim 6: Containerd and runc bundled as OCI runtime
-- **Wiki says:** K3s ships with Containerd and runc as the OCI-compliant container runtime, plus `crictl` for debugging.
+## Claim 6: Bundled containerd/runc plus cridockerd shim
+- **Wiki says:** K3s ships Containerd and runc as the OCI runtime; the optional cridockerd shim provides a Docker-compatible runtime alternative.
 - **Source evidence:**
-  - `pkg/containerd/` contains containerd configuration and lifecycle management
-  - `pkg/agent/containerd/` contains agent-side containerd setup
-  - `cmd/containerd/` contains containerd command wrapping
-  - `pkg/agent/cri/` provides CRI (Container Runtime Interface) integration
-  - `pkg/agent/cridockerd/` provides dockerd shim support as an alternative runtime
+  - `pkg/containerd/` — containerd configuration and lifecycle management
+  - `cmd/containerd/` — containerd command wrapping; `pkg/agent/cri/` — CRI integration
+  - `pkg/agent/cridockerd/cridockerd.go` (+ `config_linux.go`, `config_windows.go`, `nocridockerd.go`) — dockerd shim alternative runtime
+  - `README.md:39` — "Containerd & runc" listed in bundled technologies
 - **Verdict:** ✅ CORRECT
 - **Fix needed:** None
+
+## Claim 7: Operations surface — encrypt/token/cert/etcd-snapshot, channels, rootless, build
+- **Wiki says:** K3s provides `k3s encrypt` (secret encryption), `k3s token` / `k3s certificate` management, `k3s etcd-snapshot`, version channels via `channel.yaml`, rootless systemd unit, and a documented build process.
+- **Source evidence:**
+  - `cmd/encrypt/main.go` — secret encryption subcommand; `pkg/cluster/encrypt.go` — encryption config implementation
+  - `cmd/token/main.go`, `cmd/cert/main.go` — token and certificate management subcommands
+  - `cmd/etcdsnapshot/main.go` — etcd snapshot management; `pkg/etcd/snapshot/` — snapshot implementation
+  - `channel.yaml` — version channels (stable/latest/testing/per-minor with `latestRegexp`/`excludeRegexp`)
+  - `updatecli/` — release automation (`updatecli.d/`, `values.yaml`, `scripts/`)
+  - `k3s-rootless.service` — rootless systemd unit alongside `k3s.service`
+  - `BUILDING.md`, `ADOPTERS.md` — build documentation and adoption list
+- **Verdict:** ✅ CORRECT
 
 ## Summary
 
-All 6 key claims from the K3s wiki have been verified against the source code via directory exploration:
-- ✅ Single binary with server, agent, kubectl, crictl in `cmd/` confirmed
-- ✅ Embedded SQLite via Kine with optional etcd in `pkg/etcd/` confirmed
-- ✅ Flannel-based CNI in `pkg/agent/flannel/` confirmed
-- ✅ Tunnel proxy in `pkg/agent/tunnel/` confirmed
-- ✅ Auto-deploying manifests in `manifests/` with `pkg/deploy/` controller confirmed
-- ✅ Containerd runtime integration in `pkg/containerd/` and `pkg/agent/cri/` confirmed
+All 7 key claims from the K3s wiki have been verified against the source via file:line evidence:
+- ✅ Single binary < 100 MB (README.md:13) with server/agent/kubectl/crictl in `cmd/` confirmed
+- ✅ SQLite via Kine (`pkg/daemons/config/types.go:12`) with etcd in `pkg/etcd/` confirmed
+- ✅ Flannel backends incl. WireGuard (`pkg/agent/flannel/flannel.go:47-50`, `setup.go:50-52`) confirmed
+- ✅ Tunnel proxy (`pkg/agent/tunnel/` + `pkg/agent/proxy/apiproxy.go`) confirmed
+- ✅ Auto-deploying manifests (`manifests/` + `pkg/deploy/`) confirmed
+- ✅ Containerd runtime + cridockerd shim (`pkg/agent/cridockerd/`) confirmed
+- ✅ Ops surface: `cmd/encrypt`, `cmd/token`, `cmd/cert`, `cmd/etcdsnapshot`, `channel.yaml`, `updatecli/`, `k3s-rootless.service`, `BUILDING.md`, `ADOPTERS.md` confirmed
 
 ## Related
 
 - [[k3s]] -- Main wiki entry
-- [[k3s-architecture]] -- Deep-dive into architecture
-- [[k3s-deployment]] -- Deployment guide
+- [[k3s-ha]] -- HA deployment deep-dive
+- [[k3s-edge-networking]] -- Edge networking deep-dive
+- [[k3s-day2]] -- Day-2 operations guide
 
 ## Cross-project
 

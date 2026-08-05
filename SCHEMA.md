@@ -11,7 +11,7 @@ tags: [index, reference]
 
 ## Domain
 
-This vault covers **AI agent infrastructure** — the software stack for building, deploying, and orchestrating autonomous AI agents. It tracks 115 open-source repos (sources), 98 wiki entries, 129 domain deep-dive docs, and reference deployment stacks.
+This vault covers **AI agent infrastructure** — the software stack for building, deploying, and orchestrating autonomous AI agents. It tracks 132 open-source repos (sources), 124 wiki entries, 166 domain deep-dive docs, and reference deployment stacks.
 
 It is a **curated, evidence-grounded reference** — not a general note vault, not a scratchpad. All claims should be traceable to source repos or verified documentation.
 
@@ -25,11 +25,11 @@ knowledge/
 ├── sources/               # Layer 1: Git clones / archived source repos (immutable)
 │   ├── hermes-agent/      #   One directory per repo
 │   ├── n8n/
-│   └── ...                #   115 source repos total
+│   └── ...                #   132 source repos total
 ├── wiki/                  # Layer 2: Wiki entry per repo (one markdown page each)
 │   ├── hermes-agent.md
 │   ├── n8n.md
-│   └── ...                #   98 wiki pages
+│   └── ...                #   124 wiki pages
 ├── domains/               # Layer 2: Deep-dive docs by dimension
 │   ├── architecture/      #   System design, component relationships, data flow
 │   ├── api/               #   REST / HTTP API references

@@ -20,7 +20,7 @@ verified_by: codegraph-verify
 
 Agent-Reach is a capability layer that gives AI agents read and search access to 15+ internet platforms through a unified installation, routing, and diagnostics toolchain. Rather than wrapping platform APIs behind a custom interface, Agent-Reach acts as a **glue layer**: it installs, configures, and health-checks upstream open-source CLI tools — `yt-dlp`, `twitter-cli`, `bili-cli`, `gh CLI`, `OpenCLI`, `feedparser`, and others — then lets agents call those tools directly. This design avoids the abstraction overhead and maintenance burden of a custom wrapper layer while providing zero-configuration setup, multi-backend failover routing, and a built-in diagnostic engine (`agent-reach doctor`) that reports the active backend for every platform.
 
-The project originated to solve a practical problem: AI agents (Claude Code, OpenClaw, Cursor, Windsurf, and any agent that can run shell commands) consistently struggle with internet access because each platform has its own barrier — paid APIs, IP blocks, login requirements, and data cleaning. Agent-Reach collapses these into a single install step and ongoing maintenance that routes around platform changes automatically.
+The project originated to solve a practical problem: AI agents (Claude Code, OpenClaw, Cursor, Windsurf, and any agent that can run shell commands) consistently struggle with internet access because each platform has its own barrier — paid APIs, IP blocks, login requirements, and data cleaning. Agent-Reach collapses these into a single install step and ongoing maintenance that routes around platform changes automatically. Current release: **v1.5.0** (`agent_reach/__init__.py:4`, `pyproject.toml:3`).
 
 ## Key Features
 
@@ -30,11 +30,12 @@ The project originated to solve a practical problem: AI agents (Claude Code, Ope
 - **Self-Diagnosis** — `agent-reach doctor` probes every platform channel and reports the status of each, including which backend is currently active, what is misconfigured, and how to fix it
 - **Cookie-Based Authentication** — For platforms requiring login (Twitter, XiaoHongShu, Reddit, Facebook, Instagram), the system supports browser-session reuse via OpenCLI or traditional Cookie-Editor export. Credentials are stored locally at `~/.agent-reach/config.yaml` with file permissions 600 and never transmitted
 - **MCP Search Integration** — Search functionality is provided via Exa through MCP (via mcporter), with a free tier that requires no API key
+- **Audio/Video Transcription** — `agent-reach transcribe` converts URLs or local audio files to text via Whisper (Groq primary, OpenAI fallback)
 - **Safe and Dry-Run Modes** — `--safe` mode prevents automatic system modifications; `--dry-run` previews all operations without making changes
 
 ## Architecture
 
-Agent-Reach follows a channel-based architecture where each internet platform is represented by a single Python file in `agent_reach/channels/`. Each channel inherits from `BaseChannel` and implements a standard contract: `can_handle(url)`, `read(url)`, `search(query)`, and `check()` methods. The system does not wrap upstream tools — after installation and configuration, agents call the upstream CLI tools directly, with Agent-Reach serving as the installer, router, and diagnostician.
+Agent-Reach follows a channel-based architecture where each internet platform is represented by a single Python file in `agent_reach/channels/`. Each channel inherits from `Channel` (`ABC` base class at `channels/base.py:29`) and provides platform availability checking. The only ABC-enforced contract is the abstract `can_handle(url)` method (`base.py:41`); `read()` and `search()` are per-channel methods rather than base-class-enforced — each channel implements whichever capabilities its platform actually supports. The system does not wrap upstream tools — after installation and configuration, agents call the upstream CLI tools directly, with Agent-Reach serving as the installer, router, and diagnostician.
 
 ```
 agent_reach/
@@ -51,10 +52,11 @@ agent_reach/
 │   ├── facebook.py  → OpenCLI (browser login session)
 │   ├── instagram.py → OpenCLI (browser login session)
 │   ├── xiaohongshu.py → OpenCLI → xiaohongshu-mcp → xhs-cli
-│   ├── linkedin.py  → linkedin-mcp → Jina Reader
+│   ├── linkedin.py  → linkedin-scraper-mcp → Jina Reader
 │   ├── web.py       → Jina Reader
 │   ├── rss.py       → feedparser
 │   ├── exa_search.py → Exa via mcporter
+│   ├── mcporter.py  → mcporter MCP config inspection (shared helper)
 │   └── v2ex.py / xueqiu.py / xiaoyuzhou.py
 ├── integrations/    — MCP server integration
 ├── skill/           — Agent skill files for OpenClaw and other platforms
@@ -95,7 +97,27 @@ Agent-Reach maintains a curated set of backends per platform with a clear primar
 | Reddit | OpenCLI | rdt-cli | Login required; anonymous API blocked |
 | Web Search | Exa (via MCP) | — | AI semantic search, free tier |
 | RSS | feedparser | — | Python ecosystem standard |
-| LinkedIn | linkedin-mcp | Jina Reader | OAuth-based MCP server |
+| LinkedIn | linkedin-scraper-mcp | Jina Reader | MCP server via mcporter |
+
+## CLI Commands
+
+`agent-reach` is a single argparse-based CLI (`agent_reach/cli.py`) exposing:
+
+| Command | Line | Purpose |
+|---|---|---|
+| `install` | cli.py:65 | One-shot installer with flags |
+| `setup` | cli.py:62 | Interactive configuration wizard |
+| `configure` | cli.py:81 | Set a config value or auto-extract from browser |
+| `doctor` | cli.py:107 | Check platform availability (reports active backend) |
+| `uninstall` | cli.py:112 | Remove all Agent Reach config, tokens, and skill files |
+| `skill` | cli.py:119 | Manage agent skill registration |
+| `format` | cli.py:127 | Clean and format platform API output |
+| `transcribe` | cli.py:132 | Transcribe a URL or local audio file (Whisper via Groq/OpenAI) |
+| `check-update` | cli.py:139 | Check for new versions and changes |
+| `watch` | cli.py:142 | Quick health check + update check (for scheduled tasks) |
+| `version` | cli.py:145 | Show version (v1.5.0 as of `agent_reach/__init__.py:4`) |
+
+Documentation lives in `llms.txt` plus `docs/` (install, update, cookie-export, dependency-locking, troubleshooting).
 
 ## Security Model
 

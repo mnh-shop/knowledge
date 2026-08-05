@@ -10,12 +10,13 @@ source: sources/Agent-Reach/
 **Date:** 2026-07-12
 
 ## Claim 1: Channel-based architecture with 15+ internet platform adapters
-- **Wiki says:** "15+ Platform Support — Twitter/X, Reddit, Facebook, Instagram, YouTube, GitHub, Bilibili, XiaoHongShu, LinkedIn, V2EX, Xueqiu, Xiaoyuzhou Podcast, RSS feeds, web search (Exa), and arbitrary web pages via Jina Reader. Each platform is a single Python file in `agent_reach/channels/`."
+- **Wiki says:** "15+ Platform Support — Twitter/X, Reddit, Facebook, Instagram, YouTube, GitHub, Bilibili, XiaoHongShu, LinkedIn, V2EX, Xueqiu, Xiaoyuzhou Podcast, RSS feeds, web search (Exa), and arbitrary web pages via Jina Reader. Each platform is a single Python file in `agent_reach/channels/`, inheriting from the `Channel` ABC with `can_handle(url)` as the only abstract method."
 - **Source evidence:**
-  - `agent_reach/channels/` — 18 platform files: `twitter.py`, `youtube.py`, `github.py`, `bilibili.py`, `reddit.py`, `facebook.py`, `instagram.py`, `xiaohongshu.py`, `linkedin.py`, `web.py`, `rss.py`, `exa_search.py`, `v2ex.py`, `xueqiu.py`, `xiaoyuzhou.py`, plus `base.py`, `__init__.py`, `_opencli_site.py`
-  - `agent_reach/channels/base.py` — `Channel(ABC)` base class with `can_handle(url)`, `check(config)`, `ordered_backends()` contract
+  - `agent_reach/channels/` — 19 platform files: `twitter.py`, `youtube.py`, `github.py`, `bilibili.py`, `reddit.py`, `facebook.py`, `instagram.py`, `xiaohongshu.py`, `linkedin.py`, `web.py`, `rss.py`, `exa_search.py`, `v2ex.py`, `xueqiu.py`, `xiaoyuzhou.py`, `mcporter.py`, plus `base.py`, `__init__.py`, `_opencli_site.py`
+  - `agent_reach/channels/base.py:29` — `class Channel(ABC)` is the base class (CLAUDE.md prose calls it `BaseChannel`, but code wins)
+  - `agent_reach/channels/base.py:40-41` — `@abstractmethod` + `def can_handle(self, url)` — the only ABC-enforced method; `read()`/`search()` are per-channel methods, not base-class-enforced
   - `agent_reach/channels/__init__.py` — `get_all_channels()` and `get_channel()` registration and discovery
-- **Verdict:** ✅ CORRECT (18 channel modules confirmed, exceeding the claimed 15+)
+- **Verdict:** ✅ CORRECT (19 channel modules confirmed, exceeding the claimed 15+; base-class name corrected to `Channel(ABC)`)
 - **Fix needed:** None
 
 ## Claim 2: Multi-backend routing with ordered fallback and doctor reporting
@@ -24,19 +25,20 @@ source: sources/Agent-Reach/
   - `agent_reach/channels/base.py:45-59` — `ordered_backends()` method implements user-configurable ordered candidate list: `candidates = list(self.backends)` with `<channel>_backend` override support
   - `agent_reach/channels/base.py:13-23` — Docstring specifies backend routing semantics: "backends[0] is the preferred backend, the rest are fallbacks"
   - `agent_reach/channels/base.py:61-70` — `check()` method sets `self.active_backend` and returns status
-  - `agent_reach/doctor.py:12-35` — `check_all()` iterates channels, calls each `ch.check(config)` and collects results including `active_backend`
-  - `agent_reach/doctor.py:38-44` — `_name_msg()` renders active backend for channels with `len(r.get('backends', [])) > 1`
+  - `agent_reach/doctor.py:16-35` — `check_all()` iterates channels, calls each `ch.check(config)` and collects results including `active_backend`
+  - `agent_reach/doctor.py:48` — `_name_msg()` renders active backend for channels with multiple backends
   - `agent_reach/core.py:34-42` — `AgentReach.doctor()` and `AgentReach.doctor_report()` expose diagnostics
 - **Verdict:** ✅ CORRECT
 - **Fix needed:** None
 
-## Claim 3: CLI entry point with install, doctor, and configure commands
-- **Wiki says:** "CLI entry point (argparse) at `agent_reach/cli.py` with commands: `agent-reach install`, `agent-reach doctor`, `agent-reach configure`, `agent-reach setup`."
+## Claim 3: CLI entry point with install, doctor, configure, and more commands
+- **Wiki says:** "`agent-reach` is a single argparse-based CLI (`agent_reach/cli.py`) exposing install, setup, configure, doctor, uninstall, skill, format, transcribe, check-update, watch, and version."
 - **Source evidence:**
   - `agent_reach/cli.py:50` — `main()` function as CLI entry point
-  - `agent_reach/cli.py:817` — `_install_rdt_cli()` function for rdt-cli installation
-  - `CLAUDE.md` — Documents commands: `pip install -e .`, `pytest tests/ -v`, `python -m agent_reach.cli doctor`, `python -m agent_reach.cli install --env=auto`
-  - `agent_reach/cli.py` — Contains argparse-based command dispatch
+  - `agent_reach/cli.py:58` — `--version` flag printing `Agent Reach v{__version__}`
+  - `agent_reach/cli.py:62` — `setup` subcommand (interactive wizard); `:65` — `install`; `:81` — `configure`; `:107` — `doctor`
+  - `agent_reach/cli.py:112` — `uninstall`; `:119` — `skill`; `:127` — `format`; `:132` — `transcribe`; `:139` — `check-update`; `:142` — `watch`; `:145` — `version`
+  - `agent_reach/cli.py:1741` — `_cmd_doctor()` implementation reporting active backends
   - `tests/test_cli.py` — CLI test coverage
 - **Verdict:** ✅ CORRECT
 - **Fix needed:** None
@@ -73,6 +75,16 @@ source: sources/Agent-Reach/
   - `agent_reach/channels/exa_search.py` — Exa search channel implementation
   - `agent_reach/integrations/mcp_server.py` — MCP server integration
   - `config/mcporter.json` — MCP tool configuration
+- **Verdict:** ✅ CORRECT
+- **Fix needed:** None
+
+## Claim 7: LinkedIn backends, transcribe command, and version tracking
+- **Wiki says:** "LinkedIn routes via linkedin-scraper-mcp → Jina Reader; `agent-reach transcribe` converts URLs/local audio to text via Whisper (Groq primary, OpenAI fallback); current release v1.5.0."
+- **Source evidence:**
+  - `agent_reach/channels/linkedin.py:15` — `backends = ["linkedin-scraper-mcp", "Jina Reader"]` (NOT `linkedin-mcp`); `_LINKEDIN_SERVER_NAMES = {"linkedin", "linkedin-scraper", "linkedin-scraper-mcp"}` at `linkedin.py:9`
+  - `agent_reach/cli.py:132` — `transcribe` subcommand "Transcribe a URL or local audio file (Whisper via Groq/OpenAI)"; `cli.py:1325` — `_cmd_transcribe()` implementation delegating to `agent_reach.transcribe` with Groq → OpenAI fallback
+  - `agent_reach/__init__.py:4` — `__version__ = "1.5.0"`; `pyproject.toml:3` — `version = "1.5.0"`
+  - `llms.txt` at repo root plus `docs/` (`cookie-export.md`, `dependency-locking.md`, `troubleshooting.md`, `install.md`, `update.md`)
 - **Verdict:** ✅ CORRECT
 - **Fix needed:** None
 

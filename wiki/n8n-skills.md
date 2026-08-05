@@ -22,7 +22,7 @@ tags: [plugin, skills-platform]
 
 ✅ **14 Specialized Skills** - From basic expression syntax to advanced self-hosting deployment
 ✅ **Always-On Enforcement** - Router skill and hooks layer surfaces guidance at decision moments
-✅ **Production-Ready Patterns** - 10+ production-tested Code node patterns, 2,653+ workflow templates for examples
+✅ **Production-Ready Patterns** - 10 production-tested Code node patterns, 2,653+ workflow templates for examples
 ✅ **Error-Proof Development** - Comprehensive error catalogs, validation guides, and troubleshooting assistance
 
 ## The 14 Skills
@@ -44,7 +44,7 @@ tags: [plugin, skills-platform]
 
 ## Key Features
 
-- **5,700+ Support Statistics** - 525+ n8n nodes supported, 5,700+ nodes discovered across 2,653+ workflow templates
+- **Support Statistics** - 525+ n8n nodes supported, 2,653+ workflow templates for examples
 - **Cross-Skill Integration** - Skills work together seamlessly for comprehensive workflow building
 - **Proactive Guidance** - Always-on router and PreToolUse/PostToolUse hooks provide real-time assistance
 - **Production Hardening** - Secure defaults, secret-free templates, and comprehensive deployment guidance
@@ -116,14 +116,11 @@ n8n-skills/
 
 ## Getting Started
 
-## Related
-
-- [[n8n]] — Core n8n platform
-- [[n8n-mcp]] — MCP server for n8n
-
-
 1. Install the plugin via Claude Code
 2. Configure your n8n-mcp MCP server
 3. Start building workflows! Skills will activate automatically when relevant
 
-**Ready to build flawless n8n workflows? Get started now! 🚀**
+## Related
+
+- [[n8n]] — Core n8n platform
+- [[n8n-mcp]] — MCP server for n8n

@@ -23,7 +23,7 @@ Developed for the NousResearch "Show us what Hermes Agent can do" challenge. Lic
 - **Parallel Subagent Investigation**: For multi-service environments, spawns subagents to simultaneously investigate nginx, database, application, and other layers -- then synthesizes findings to identify root cause.
 - **Multi-Platform Incident Notifications**: Real-time alerts via Telegram, Discord, or Slack through the Hermes Gateway. P0/P1 alerts within 60 seconds of detection, progress updates during active incidents, resolution notices with MTTR.
 - **Scheduled Monitoring via Cron**: Three-tier monitoring in natural language -- critical health check every 5 minutes (alerts on P0/P1), comprehensive system audit every hour, daily morning briefing with trend analysis.
-- **RL Training Environment**: Full Atropos-compatible reinforcement learning environment with 5 incident scenarios, multi-component reward function, Docker sandboxing, and GRPO training loop (see [[#Architecture]] below).
+- **RL Training Environment**: Full Atropos-compatible reinforcement learning environment with 5 incident scenarios, six-component reward function, Docker sandboxing, and GRPO training loop (see [[#Architecture]] below). The standalone demo CLI ships a 3-scenario subset of this set.
 - **Searchable Incident History**: Uses Hermes Session Search (FTS5) to find prior incidents matching the current error pattern.
 
 ## Architecture
@@ -48,13 +48,13 @@ The RL training environment (see [[domains/architecture/hermes-incident-commande
 
 | Interface | Description |
 |-----------|-------------|
-| **CLI (Demo)** | `python demo/demo_incident.py --scenario <name>` -- standalone demo requiring only `ANTHROPIC_API_KEY`. Five built-in scenarios. |
+| **CLI (Demo)** | `python demo/demo_incident.py --scenario <name>` -- standalone demo requiring only `ANTHROPIC_API_KEY`. Three built-in scenarios (a self-contained subset of the RL set). |
 | **Hermes Skill** | `skills/incident-commander/SKILL.md` -- installed into `~/.hermes/skills/` for full Hermes integration. Loaded via `/skills` in the Hermes CLI. |
-| **RL Training Environment** | `python environments/incident_env.py [process|serve|smoke] --config ...` -- Atropos-compatible environment for SFT data generation and GRPO training. |
+| **RL Training Environment** | `python environments/incident_env.py <serve|process|evaluate> --config environments/incident_config.yaml` -- Atropos-compatible environment for SFT data generation (`process`), GRPO training (`serve`), and eval runs (`evaluate`). Smoke-test runs via the `--smoke-test` flag, or automatically when hermes-agent is not installed. |
 | **Hermes Gateway** | Telegram/Discord/Slack notifications for incident alerts, progress updates, and resolution notices. Configured via `hermes gateway setup`. |
 | **Hermes Cron** | Natural-language scheduling for health checks, audits, and briefings. Jobs created automatically from conversation. |
 | **Hermes Session Search** | FTS5 full-text search across past incidents and conversations. "Have we seen this error before?" |
-| **MCP Integration** | Cloud provider APIs (AWS CloudWatch, GCP Cloud Monitoring, etc.) for auto-scaling and cloud-native remediation -- listed as future/planned. |
+| **MCP Integration** | Cloud provider APIs (AWS CloudWatch, GCP Cloud Monitoring, etc.) for auto-scaling and cloud-native remediation -- presented in the README feature table but listed under "What's Next" in the technical writeup: planned/aspirational, not yet implemented. |
 
 ## Project Structure
 
@@ -72,13 +72,17 @@ hermes-incident-commander/
 │   └── incident-commander/
 │       └── SKILL.md              # Hermes-compatible skill definition
 ├── tests/
-│   └── test_incident_env.py      # Pytest suite (scenarios, rewards, skill file)
+│   └── test_incident_env.py      # Pytest suite — 4 test classes: TestScenarioDefinitions, TestRewardFunction, TestSkillFile, TestDemoScript
 ├── README.md
 ├── requirements.txt
 └── LICENSE                       # MIT
 ```
 
 ## Incident Scenarios
+
+**Demo CLI (3 scenarios):** The standalone demo (`demo/demo_incident.py`) ships a self-contained subset of 3 scenarios — `disk-full-logs`, `svc-crash-nginx`, `cpu-runaway-process` — selected via `--scenario <name>` (default `disk-full-logs`). It requires only `ANTHROPIC_API_KEY`.
+
+**RL training environment (5 scenarios):** The full 5-scenario set lives in the Atropos RL environment (`environments/incident_env.py`), adding `memory-leak-process` and `failed-systemd-unit` for broader severity/category coverage:
 
 | ID | Severity | Category | Description |
 |----|----------|----------|-------------|
@@ -87,6 +91,11 @@ hermes-incident-commander/
 | `memory-leak-process` | P1 | memory | Mystery process eating 150MB+ |
 | `cpu-runaway-process` | P2 | cpu | 95% CPU from runaway computation |
 | `failed-systemd-unit` | P2 | service | Custom worker service in failed state |
+
+## Docs & Measured Results
+
+- **`docs/SETUP.md`** — Installation guide covering the demo quick-start, full Hermes setup (agent install, skill copy to `~/.hermes/skills/`, gateway alerts, conversational cron creation), and RL training setup (SFT data generation via `process`, GRPO training via `serve`, VLLM/W&B notes).
+- **`docs/WRITEUP.md`** — Technical writeup for the Hermes challenge, including measured GRPO results against the 5 RL scenarios: P0 service crash resolved in 4–7 turns, P1 disk full in 5–8 turns, P2 runaway process in 3–5 turns; post-incident reports written in 100% of successful runs; prevention skills created in ~60% of runs. MCP cloud integrations are listed under "What's Next" (planned).
 
 ## Related
 
