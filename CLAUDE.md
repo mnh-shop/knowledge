@@ -14,28 +14,25 @@ The focus is **Hermes, OpenClaw, AgentField, Podman, n8n, and surrounding ecosys
 
 ## Key Tools and Access Patterns
 
-### CodeGraph Verification (Recommended First Step)
+### Codebase-Memory Verification (Recommended First Step)
 
-**Always use CodeGraph to verify claims against source repos first:**
+**Always use codebase-memory-mcp to verify claims against source repos first:**
 
 ```bash
-# From the sources directory
-codegraph explore "function_name" -p "sources/<repo-name>"
-
-# Or from graphs directory (faster indexes)
-codegraph explore "function_name" -p "graphs/<repo-name>"
+# Search the source repo graph (project name = absolute path with / replaced by -)
+codebase-memory-mcp_search_graph query="function_name" project="Users-admin-repos-knowledge-sources-<repo-name>"
 ```
 
 **MCP tool equivalent:**
 ```json
 {
-  "tool": "codegraph_explore",
-  "projectPath": "sources/<repo-name>",
+  "tool": "codebase-memory-mcp_search_graph",
+  "project": "Users-admin-repos-knowledge-sources-<repo-name>",
   "query": "find_function_or_class_or_route"
 }
 ```
 
-**Rule:** Read the wiki page first, then use CodeGraph for specifics. The source code in `sources/` is always authoritative.
+**Rule:** Read the wiki page first, then use codebase-memory-mcp for specifics. The source code in `sources/` is always authoritative.
 
 ### Validation Commands
 
@@ -71,7 +68,7 @@ The vault includes specialized skills for different areas:
 
 1. **Start with the wiki** (`wiki/<repo>.md`) for high-level overviews
 2. **Check source** (`sources/<repo>/`) for actual code 
-3. **Use CodeGraph** to trace call chains and dependencies
+3. **Use codebase-memory-mcp_trace_path** to trace call chains and dependencies
 4. **Consult domains/** for deep-dive analysis (architecture, APIs, deployment, etc.)
 5. **Review assets/** for reusable templates and patterns
 
@@ -117,18 +114,18 @@ When documenting connections between systems:
 # Get quick overview of a repo's architecture
 read knowledge/wiki/<repo-name>.md
 
-# Deep dive into specific components using CodeGraph
-codegraph explore "class_name" -p "sources/<repo-name>"
+# Deep dive into specific components using codebase-memory-mcp
+codebase-memory-mcp_search_graph query="class_name" project="Users-admin-repos-knowledge-sources-<repo-name>"
 
 # Find callers/callees for key functions
-codegraph trace "function_name" -p "sources/<repo-name>"
+codebase-memory-mcp_trace_path function_name="function_name" project="Users-admin-repos-knowledge-sources-<repo-name>"
 ```
 
 #### 2. Making Changes
 
 **Wiki/Entry Updates:**
 - Edit wiki pages with insights from source code
-- Always verify claims against source using CodeGraph
+- Always verify claims against source using codebase-memory-mcp
 - Ensure proper wikilinks to related pages
 - Run validation: `bash tests/validate-wikilinks.sh`
 
@@ -151,8 +148,8 @@ python3 tests/add-capability-tags.py --dry-run
 
 ```bash
 # Find how systems interconnect
-codegraph explore "mcp_server" -p "sources/hermes-agent"
-codegraph explore "handler" -p "sources/openclaw"
+codebase-memory-mcp_search_graph query="mcp_server" project="Users-admin-repos-knowledge-sources-hermes-agent"
+codebase-memory-mcp_search_graph query="handler" project="Users-admin-repos-knowledge-sources-openclaw"
 ```
 
 Create `domains/integration-patterns/<name>-integration.md` for each new pattern.
@@ -171,7 +168,7 @@ The project has configured permissions for common vault operations:
 
 - Reading markdown files and sources
 - Running validation scripts
-- Using CodeGraph tools
+- Using codebase-memory-mcp tools
 - Writing to vault directories (`wiki/`, `domains/`, etc.)
 
 All changes should respect the Layer rules — never modify `sources/` or `raw/` directly.
